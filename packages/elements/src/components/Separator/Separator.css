@@ -1,0 +1,16 @@
+.kernel-Separator-root {
+  border: none;
+  background-color: var(--kernel-color-border);
+  margin: 0;
+}
+
+.kernel-Separator-root[data-orientation="horizontal"] {
+  inline-size: 100%;
+  block-size: var(--kernel-border-width);
+}
+
+.kernel-Separator-root[data-orientation="vertical"] {
+  inline-size: var(--kernel-border-width);
+  block-size: 100%;
+  align-self: stretch;
+}

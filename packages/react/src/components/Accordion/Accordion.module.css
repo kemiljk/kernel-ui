@@ -1,0 +1,88 @@
+.accordion {
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  overflow: hidden;
+  background-color: var(--kernel-color-surface);
+}
+
+.item {
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.item:last-of-type {
+  border-block-end: none;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-4);
+  font-family: var(--kernel-font-sans);
+  font-weight: 500;
+  cursor: default;
+  list-style: none;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.trigger::-webkit-details-marker {
+  display: none;
+}
+
+.trigger::marker {
+  content: "";
+}
+
+.trigger:hover {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.item[open] .chevron {
+  rotate: 180deg;
+}
+
+.content {
+  padding: 0 var(--kernel-space-4) var(--kernel-space-4);
+  color: var(--kernel-color-text-muted);
+}
+
+/* Progressive enhancement: animate open/close height where the browser
+   supports it. Everywhere else, `<details>` still opens and closes
+   correctly, just without the transition. */
+@supports selector(::details-content) {
+  .item::details-content {
+    overflow: hidden;
+    height: 0;
+    transition:
+      height var(--kernel-duration-base) var(--kernel-ease-spring),
+      content-visibility var(--kernel-duration-base) allow-discrete;
+  }
+
+  .item[open]::details-content {
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+
+  .item::details-content {
+    transition: none;
+  }
+}

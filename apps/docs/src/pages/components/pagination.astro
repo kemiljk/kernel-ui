@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import PaginationDemo from "../../components/demos/PaginationDemo";
+---
+
+<BaseLayout title="Pagination" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Pagination</h1>
+    <p>
+      A real <code>&lt;nav aria-label="Pagination"&gt;</code> wrapping a real
+      <code>&lt;ol&gt;</code> of page links. The active page is marked
+      <code>aria-current="page"</code>.
+    </p>
+
+    <div class="docs-example">
+      <PaginationDemo client:load />
+    </div>
+
+    <h2>Parts</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Renders</th></tr></thead>
+      <tbody>
+        <tr><td><code>Pagination</code></td><td><code>&lt;nav&gt;</code> + <code>&lt;ol&gt;</code></td></tr>
+        <tr><td><code>PaginationItem</code></td><td><code>&lt;li&gt;&lt;a&gt;</code>, accepts <code>current</code></td></tr>
+        <tr><td><code>PaginationPrevious</code> / <code>PaginationNext</code></td><td><code>&lt;li&gt;&lt;button&gt;</code></td></tr>
+        <tr><td><code>PaginationEllipsis</code></td><td><code>&lt;li aria-hidden&gt;</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

@@ -1,0 +1,106 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const overrideSnippet = `@import "@kernelui/styles";
+
+:root {
+  --kernel-hue-accent: 260;      /* → every accent shade re-hues */
+  --kernel-radius-base: 1.25rem; /* → every corner re-rounds */
+  --kernel-space-unit: 0.25rem;  /* → every gap and padding rescales */
+}`;
+
+const presetSnippet = `<html data-kernel-accent="violet">`;
+
+const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
+--kernel-accent-3   through -5   component background (rest / hover / pressed)
+--kernel-accent-6   through -8   borders (static / interactive / hover)
+--kernel-accent-9   through -10  solid fill (normal / hover)
+--kernel-accent-11  through -12  text (low-contrast / high-contrast)`;
+---
+
+<BaseLayout title="Theming" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Theming</h1>
+    <p>
+      Every colour, radius, spacing, and duration a component uses comes
+      from a CSS custom property in <code>@kernelui/styles</code> — there's
+      no per-component theme prop, no config file. Override a token on{" "}
+      <code>:root</code> (or on any container, for scoped theming) and it
+      reaches every component reading it, immediately, including whichever
+      accent and radius you've picked from the theme menu in this site's own
+      header.
+    </p>
+    <CodeBlock code={overrideSnippet} lang="css" />
+
+    <h2>Colour scale</h2>
+    <p>
+      Colours follow Radix Colors' scale model: a 12-step ramp per role
+      (accent, gray, danger, success, warning), generated in OKLCH from one
+      hue and one chroma rather than 12 hand-picked swatches. Every step has
+      one fixed job, so choosing a colour is choosing a step, not guessing a
+      shade:
+    </p>
+    <CodeBlock code={scaleSnippet} lang="bash" />
+    <p>
+      Components never read a raw scale step directly — they read semantic
+      aliases (<code>--kernel-color-accent</code>,{" "}
+      <code>--kernel-color-border</code>, <code>--kernel-color-text-muted</code>,
+      and similar) that point at a specific step. Change{" "}
+      <code>--kernel-hue-accent</code> and every alias downstream re-hues at
+      once.
+    </p>
+
+    <h2>Accent presets</h2>
+    <p>
+      <code>--kernel-hue-accent</code> reshades the accent scale with one
+      shared lightness/chroma curve across every hue — close, but not
+      individually calibrated per hue. For a curated, gamut-checked
+      alternative, seven named presets (amber, blue, green, red, violet,
+      orange, teal) ship as importable stylesheets, each hand-checked for
+      the punchiest chroma that still renders in sRGB at every step:
+    </p>
+    <CodeBlock code={presetSnippet} lang="html" />
+    <p>
+      This is exactly what the theme menu in the header writes when you pick
+      an accent swatch — a <code>data-kernel-accent</code> attribute on{" "}
+      <code>&lt;html&gt;</code>, persisted to <code>localStorage</code> so it
+      survives navigation.
+    </p>
+
+    <h2>Shape</h2>
+    <p>
+      One radius token, <code>--kernel-radius-base</code>, drives every
+      corner on the site. Components read a semantic tier —{" "}
+      <code>--kernel-radius-control</code> for standalone controls (buttons,
+      inputs), <code>--kernel-radius-container</code> and{" "}
+      <code>--kernel-radius-sheet</code> for surfaces that wrap them — and
+      those container tiers are generated as{" "}
+      <code>--kernel-radius-base + that container's own padding</code>, so a
+      button nested inside a card shares a concentric corner with it instead
+      of just looking independently rounded.
+    </p>
+
+    <h2>Space</h2>
+    <p>
+      Every gap and padding is a multiple of one unit,{" "}
+      <code>--kernel-space-unit</code> (<code>--kernel-space-1</code>{" "}
+      through <code>--kernel-space-12</code>). Changing the unit rescales
+      the entire site's density at once, rather than each component picking
+      its own gap value.
+    </p>
+
+    <h2>Type and motion</h2>
+    <p>
+      <code>--kernel-font-sans</code> and <code>--kernel-font-mono</code>{" "}
+      fall through to the system font stack unless you also load the named
+      webfonts yourself — the package never forces a font download.{" "}
+      <code>--kernel-duration-fast/base/slow</code> and{" "}
+      <code>--kernel-ease-spring/out/in</code> drive every transition the
+      same way: change the curve once, every hover, open, and close
+      animation on the page moves the same way.
+    </p>
+  </div>
+</BaseLayout>

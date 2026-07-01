@@ -1,0 +1,42 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  /* --kernel-radius-sheet is generated from --kernel-padding-sheet
+     (see tokens.css), the same token .header/.content/.footer pad
+     with below — reading the paired tokens instead of a literal
+     --kernel-space-6 is what keeps the two from drifting apart. */
+  border-radius: var(--kernel-radius-sheet);
+  background-color: var(--kernel-color-surface);
+  box-shadow: var(--kernel-shadow-sm);
+}
+
+.header {
+  padding: var(--kernel-padding-sheet) var(--kernel-padding-sheet) 0;
+}
+
+.content {
+  padding: var(--kernel-padding-sheet);
+}
+
+.footer {
+  padding: 0 var(--kernel-padding-sheet) var(--kernel-padding-sheet);
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+.title {
+  margin: 0 0 var(--kernel-space-1);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-lg);
+  font-weight: 600;
+  color: var(--kernel-color-text);
+}
+
+.description {
+  margin: 0;
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}

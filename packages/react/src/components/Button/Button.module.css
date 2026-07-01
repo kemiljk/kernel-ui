@@ -1,0 +1,145 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-2);
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid transparent;
+  font-family: var(--kernel-font-sans);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: default;
+  user-select: none;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+/* `render` can swap the underlying element for a real `<a>` (see
+   Button.tsx); when it does, this is a true navigational link, so it
+   gets the pointer cursor back, following the actual tag rather than
+   guessing from props. */
+.root:is(a) {
+  cursor: pointer;
+}
+
+.root:active:not(:disabled, [aria-disabled="true"]) {
+  scale: 0.97;
+}
+
+.root:disabled,
+.root[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Size */
+.root[data-size="sm"] {
+  padding-block: var(--kernel-space-1);
+  padding-inline: var(--kernel-space-3);
+  font-size: var(--kernel-font-size-sm);
+  block-size: calc(var(--kernel-space-unit) * 8);
+}
+
+.root[data-size="md"] {
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-4);
+  font-size: var(--kernel-font-size-base);
+  block-size: calc(var(--kernel-space-unit) * 10);
+}
+
+.root[data-size="lg"] {
+  padding-block: var(--kernel-space-3);
+  padding-inline: var(--kernel-space-6);
+  font-size: var(--kernel-font-size-lg);
+  block-size: calc(var(--kernel-space-unit) * 12);
+}
+
+/* Variant: primary */
+.root[data-variant="primary"] {
+  background-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+.root[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) {
+  background-color: var(--kernel-color-accent-hover);
+}
+
+.root[data-variant="primary"]:active:not(:disabled, [aria-disabled="true"]) {
+  background-color: var(--kernel-color-accent-active);
+}
+
+/* Variant: secondary */
+.root[data-variant="secondary"] {
+  background-color: var(--kernel-color-surface);
+  border-color: var(--kernel-color-border-interactive);
+  color: var(--kernel-color-text);
+}
+
+.root[data-variant="secondary"]:hover:not(:disabled, [aria-disabled="true"]) {
+  border-color: var(--kernel-color-border-hover);
+  background-color: var(--kernel-color-surface-raised);
+}
+
+/* Variant: ghost */
+.root[data-variant="ghost"] {
+  background-color: transparent;
+  color: var(--kernel-color-text);
+}
+
+.root[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+/* Variant: danger */
+.root[data-variant="danger"] {
+  background-color: var(--kernel-color-danger);
+  color: var(--kernel-color-on-danger);
+}
+
+.root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
+  background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+}
+
+.label {
+  display: inline-flex;
+}
+
+.icon {
+  display: inline-flex;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.spinner {
+  inline-size: 0.9em;
+  block-size: 0.9em;
+  border-radius: var(--kernel-radius-full);
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  animation: kernel-spin var(--kernel-duration-slow) linear infinite;
+}
+
+@keyframes kernel-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition: none;
+  }
+
+  .root:active:not(:disabled, [aria-disabled="true"]) {
+    scale: 1;
+  }
+
+  .spinner {
+    animation-duration: 1.2s;
+  }
+}

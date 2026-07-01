@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import DialogDemo from "../../components/demos/DialogDemo";
+---
+
+<BaseLayout title="Dialog" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Dialog</h1>
+    <p>
+      A real <code>&lt;dialog&gt;</code>, opened with <code>showModal()</code>.
+      That single call gets a native top-layer stacking context, a native
+      focus trap, native Escape-to-close, and a native <code>::backdrop</code>.
+    </p>
+
+    <div class="docs-example">
+      <DialogDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>open</code></td><td>boolean (required)</td><td>—</td></tr>
+        <tr><td><code>onOpenChange</code></td><td>(open: boolean) =&gt; void (required)</td><td>—</td></tr>
+        <tr><td><code>title</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>closeOnBackdropClick</code></td><td>boolean</td><td>true</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Focus moves into the dialog on open and returns to the trigger on close, both native to <code>showModal()</code>.</li>
+      <li>Escape closes it, also native, no keydown listener written for it.</li>
+      <li><code>title</code> is linked via <code>aria-labelledby</code> automatically.</li>
+    </ul>
+  </div>
+</BaseLayout>

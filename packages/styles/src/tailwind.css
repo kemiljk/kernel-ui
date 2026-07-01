@@ -1,0 +1,66 @@
+/**
+ * Optional Tailwind v4 bridge.
+ *
+ * Tailwind is not required to use Kernel. If you do use it, import this
+ * after Tailwind and after tokens.css:
+ *
+ *   @import "tailwindcss";
+ *   @import "@kernelui/styles/tokens.css";
+ *   @import "@kernelui/styles/tailwind.css";
+ *
+ * This maps Kernel's CSS custom properties into Tailwind's theme
+ * namespace with `@theme inline`, so utilities like `bg-accent`,
+ * `text-danger`, or `rounded-md` resolve to the exact same values the
+ * components themselves use. There is only ever one copy of each token;
+ * Tailwind just reads it.
+ */
+
+@theme inline {
+  --color-canvas: var(--kernel-color-canvas);
+  --color-surface: var(--kernel-color-surface);
+  --color-surface-raised: var(--kernel-color-surface-raised);
+  --color-border: var(--kernel-color-border);
+  --color-border-interactive: var(--kernel-color-border-interactive);
+  --color-border-hover: var(--kernel-color-border-hover);
+  --color-border-strong: var(--kernel-color-border-strong);
+  --color-text: var(--kernel-color-text);
+  --color-text-muted: var(--kernel-color-text-muted);
+
+  --color-accent: var(--kernel-color-accent);
+  --color-accent-hover: var(--kernel-color-accent-hover);
+  --color-accent-active: var(--kernel-color-accent-active);
+  --color-accent-subtle: var(--kernel-color-accent-subtle);
+  --color-on-accent: var(--kernel-color-on-accent);
+
+  --color-danger: var(--kernel-color-danger);
+  --color-danger-subtle: var(--kernel-color-danger-subtle);
+  --color-success: var(--kernel-color-success);
+  --color-success-subtle: var(--kernel-color-success-subtle);
+  --color-warning: var(--kernel-color-warning);
+  --color-warning-subtle: var(--kernel-color-warning-subtle);
+
+  --radius-sm: var(--kernel-radius-sm);
+  --radius-md: var(--kernel-radius-md);
+  --radius-lg: var(--kernel-radius-lg);
+  --radius-full: var(--kernel-radius-full);
+
+  --spacing-1: var(--kernel-space-1);
+  --spacing-2: var(--kernel-space-2);
+  --spacing-3: var(--kernel-space-3);
+  --spacing-4: var(--kernel-space-4);
+  --spacing-6: var(--kernel-space-6);
+  --spacing-8: var(--kernel-space-8);
+  --spacing-12: var(--kernel-space-12);
+
+  --font-sans: var(--kernel-font-sans);
+  --font-mono: var(--kernel-font-mono);
+
+  --text-sm: var(--kernel-font-size-sm);
+  --text-base: var(--kernel-font-size-base);
+  --text-lg: var(--kernel-font-size-lg);
+  --text-xl: var(--kernel-font-size-xl);
+
+  --shadow-sm: var(--kernel-shadow-sm);
+  --shadow-md: var(--kernel-shadow-md);
+  --shadow-lg: var(--kernel-shadow-lg);
+}

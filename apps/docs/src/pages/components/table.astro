@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TableDemo from "../../components/demos/TableDemo";
+---
+
+<BaseLayout title="Table" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Table</h1>
+    <p>
+      A thin set of wrappers around the real <code>&lt;table&gt;</code>
+      family: <code>&lt;caption&gt;</code>, <code>&lt;thead&gt;</code>,
+      <code>&lt;tbody&gt;</code>, and <code>&lt;th scope="col"&gt;</code>.
+      Sighted, mouse, keyboard, and screen reader users all get a real
+      table, not a grid of styled <code>&lt;div&gt;</code>s pretending to
+      be one.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <TableDemo client:load />
+    </div>
+
+    <h2>Components</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Renders</th></tr></thead>
+      <tbody>
+        <tr><td><code>Table</code></td><td><code>&lt;table&gt;</code></td></tr>
+        <tr><td><code>TableCaption</code></td><td><code>&lt;caption&gt;</code></td></tr>
+        <tr><td><code>TableHeader</code></td><td><code>&lt;thead&gt;</code></td></tr>
+        <tr><td><code>TableBody</code></td><td><code>&lt;tbody&gt;</code></td></tr>
+        <tr><td><code>TableRow</code></td><td><code>&lt;tr&gt;</code></td></tr>
+        <tr><td><code>TableHead</code></td><td><code>&lt;th scope="col"&gt;</code> by default</td></tr>
+        <tr><td><code>TableCell</code></td><td><code>&lt;td&gt;</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

@@ -1,0 +1,30 @@
+.root {
+  inline-size: 100%;
+  block-size: 1em;
+  border-radius: var(--kernel-radius-sm);
+  background-image: linear-gradient(
+    90deg,
+    var(--kernel-gray-4) 25%,
+    var(--kernel-gray-3) 50%,
+    var(--kernel-gray-4) 75%
+  );
+  background-size: 200% 100%;
+  animation: kernel-skeleton-sweep 1.6s ease-in-out infinite;
+}
+
+@keyframes kernel-skeleton-sweep {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    animation: none;
+    background-image: none;
+    background-color: var(--kernel-gray-4);
+  }
+}

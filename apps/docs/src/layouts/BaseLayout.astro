@@ -1,0 +1,85 @@
+---
+import "@fontsource-variable/inclusive-sans";
+import "@fontsource-variable/lilex";
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import MobileNav from "../components/MobileNav";
+import TableOfContents from "../components/TableOfContents.astro";
+import { components } from "../data/components";
+
+interface Props {
+  title: string;
+  description?: string;
+  withSidebar?: boolean;
+}
+
+const {
+  title,
+  description = "A component library built on the actual kernel of the web: real semantic HTML, not div soup.",
+  withSidebar = false,
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const navItems = components
+  .filter((component) => component.status === "available")
+  .map((component) => ({ href: `/components/${component.slug}/`, label: component.name }));
+---
+
+<!doctype html>
+<html lang="en" data-kernel-accent="amber">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      No-FOUC theme init: must run synchronously, before first paint,
+      so it can't `import` src/lib/theme.ts (a module import is async
+      relative to inline script execution). Keep these three storage
+      keys in sync with STORAGE_KEYS in that file by hand.
+    -->
+    <script is:inline>
+      (function () {
+        try {
+          var accent = localStorage.getItem("kernel:accent");
+          if (accent) document.documentElement.setAttribute("data-kernel-accent", accent);
+          var radius = localStorage.getItem("kernel:radius");
+          if (radius) document.documentElement.style.setProperty("--kernel-radius-base", radius);
+          var scheme = localStorage.getItem("kernel:color-scheme");
+          if (scheme === "light" || scheme === "dark") {
+            document.documentElement.setAttribute("data-theme", scheme);
+          }
+        } catch (error) {
+          // Storage can throw (private browsing, disabled storage) —
+          // the site still works, just without a remembered theme.
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · Kernel</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+  </head>
+  <body>
+    <SiteHeader />
+    <div class="docs-shell" data-with-sidebar={withSidebar ? "true" : "false"}>
+      {
+        withSidebar && (
+          <div class="docs-sidebar-slot">
+            <slot name="sidebar" />
+          </div>
+        )
+      }
+      <main class="docs-main">
+        {withSidebar && <MobileNav client:load items={navItems} currentPath={path} />}
+        <slot />
+      </main>
+      {
+        withSidebar && (
+          <div class="docs-toc-slot">
+            <TableOfContents />
+          </div>
+        )
+      }
+    </div>
+    <SiteFooter />
+  </body>
+</html>

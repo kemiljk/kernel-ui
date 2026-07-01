@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import BadgeDemo from "../../components/demos/BadgeDemo";
+---
+
+<BaseLayout title="Badge" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Badge</h1>
+    <p>
+      A small status chip. There's no HTML element for "badge",
+      <code>&lt;span&gt;</code> is the honest choice for an inline,
+      semantically neutral run of text that only needs presentational
+      styling, one of the rare cases here without a more specific native
+      anchor.
+    </p>
+
+    <div class="docs-example">
+      <BadgeDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>variant</code></td><td>"neutral" | "accent" | "success" | "warning" | "danger"</td><td>"neutral"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

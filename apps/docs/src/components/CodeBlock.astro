@@ -1,0 +1,16 @@
+---
+import { Code } from "astro:components";
+import CopyButton from "./CopyButton";
+
+interface Props {
+  code: string;
+  lang: "css" | "tsx" | "html" | "bash";
+}
+
+const { code, lang } = Astro.props;
+---
+
+<div class="code-block">
+  <Code code={code} lang={lang} theme="css-variables" />
+  <CopyButton client:load text={code} />
+</div>

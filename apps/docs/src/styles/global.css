@@ -1,0 +1,1146 @@
+@import "@kernelui/styles";
+@import "@kernelui/styles/themes/index.css";
+@import "@kernelui/react/styles.css";
+
+:root {
+  --docs-content-width: 44rem;
+  --docs-shell-width: 78rem;
+
+  /* Kernel's own brand treatment: pill-shaped controls (the same
+     capsule shape Apple uses for buttons and search fields), and a
+     larger base radius so Card/Dialog/Popover/Toast — which derive
+     their own radius from --kernel-radius-md, not -control, to stay
+     concentric without also turning into stadiums — grow into a
+     softer, more generous curve alongside it. This is a presentation
+     choice for this site; the library's own shipped default is
+     unaffected. */
+  --kernel-radius-control: var(--kernel-radius-full);
+  --kernel-radius-base: 1rem;
+
+  /* Shiki's "css-variables" theme (used by every <Code> block on this
+     site) reads these instead of shipping its own fixed palette, so
+     syntax highlighting re-themes itself with light/dark mode and
+     whichever accent is active, the same as every component. Astro's
+     built-in <Code> wraps Shiki with its own "--astro-code-" prefix
+     rather than Shiki's own default "--shiki-", confirmed from the
+     actual rendered output, not just the docs. */
+  --astro-code-foreground: var(--kernel-color-text);
+  /* Code's own <pre> sets background-color inline (reading this
+     variable), which beats any external stylesheet rule targeting the
+     same element on specificity — so the panel/canvas colour has to
+     be set here, not as a separate `pre { background-color: ... }`
+     rule downstream. */
+  --astro-code-background: var(--kernel-color-canvas);
+  --astro-code-token-comment: var(--kernel-color-text-muted);
+  --astro-code-token-string: var(--kernel-color-success-text);
+  --astro-code-token-string-expression: var(--kernel-color-success-text);
+  --astro-code-token-constant: var(--kernel-color-warning-text);
+  --astro-code-token-keyword: var(--kernel-color-accent-text);
+  --astro-code-token-parameter: var(--kernel-color-text);
+  --astro-code-token-function: var(--kernel-color-accent-text);
+  --astro-code-token-punctuation: var(--kernel-color-text-muted);
+  --astro-code-token-link: var(--kernel-color-accent-text);
+}
+
+body {
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.docs-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-inline-size: var(--docs-shell-width);
+  margin-inline: auto;
+}
+
+.docs-shell[data-with-sidebar="true"] {
+  grid-template-columns: 15rem minmax(0, 1fr);
+}
+
+/* Third column: "on this page". Only above 1100px — a sidebar, a
+   readable content column, and a toc all at once needs real width,
+   below that it's better hidden than squeezed. */
+@media (width >= 1100px) {
+  .docs-shell[data-with-sidebar="true"] {
+    grid-template-columns: 15rem minmax(0, 1fr) 14rem;
+  }
+}
+
+@media (width < 1100px) {
+  .docs-toc-slot {
+    display: none;
+  }
+}
+
+.docs-sidebar-slot,
+.docs-toc-slot {
+  position: sticky;
+  inset-block-start: calc(var(--kernel-space-unit) * 16);
+  max-block-size: calc(100dvh - calc(var(--kernel-space-unit) * 16));
+  overflow-y: auto;
+}
+
+@media (width < 900px) {
+  .docs-shell[data-with-sidebar="true"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* A ~30-link vertical nav stacked above the page, which is what the
+     grid collapse above would otherwise leave in place, pushes the
+     actual page content off the first screen. Below 900px the sidebar
+     is replaced by MobileNav's trigger + Dialog instead of being left
+     to stack. */
+  .docs-sidebar-slot {
+    display: none;
+  }
+}
+
+/* Same eyebrow language as .section-eyebrow (Vercel Geist-style group
+   label) but sized down for the sidebar's much tighter column — a
+   docs-prose-scale label here would outweigh the links it introduces. */
+.docs-sidebar-eyebrow {
+  margin: var(--kernel-space-4) 0 var(--kernel-space-1);
+  padding-inline: var(--kernel-space-3);
+  font-family: var(--kernel-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kernel-color-text-muted);
+}
+
+.docs-sidebar-eyebrow:first-child {
+  margin-block-start: 0;
+}
+
+.docs-sidebar-divider {
+  margin-block: var(--kernel-space-4);
+  border: none;
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.toc {
+  padding-block: var(--kernel-space-6) var(--kernel-space-4);
+  padding-inline-start: var(--kernel-space-4);
+  border-inline-start: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.toc-label {
+  margin: 0 0 var(--kernel-space-2);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc-item a {
+  display: block;
+  padding-block: var(--kernel-space-1);
+  color: var(--kernel-color-text-muted);
+  text-decoration: none;
+  font-size: var(--kernel-font-size-sm);
+  border-inline-start: var(--kernel-border-width) solid transparent;
+  padding-inline-start: var(--kernel-space-3);
+  margin-inline-start: calc(var(--kernel-space-3) * -1 - var(--kernel-border-width));
+  transition: color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.toc-item-sub a {
+  padding-inline-start: var(--kernel-space-6);
+}
+
+.toc-item a:hover {
+  color: var(--kernel-color-text);
+}
+
+.toc-item a[aria-current="true"] {
+  color: var(--kernel-color-accent-text);
+  border-inline-start-color: var(--kernel-color-accent);
+  font-weight: 500;
+}
+
+.mobile-nav-trigger {
+  display: none;
+  margin-block-end: var(--kernel-space-6);
+}
+
+@media (width < 900px) {
+  .mobile-nav-trigger {
+    display: inline-flex;
+  }
+}
+
+.site-header-toggle-desktop {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-3);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+.theme-toggle-icon {
+  color: var(--kernel-color-text-muted);
+  opacity: 0.5;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.theme-toggle-icon[data-active] {
+  color: var(--kernel-color-accent-text);
+  opacity: 1;
+  scale: 1.1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle-icon {
+    transition: none;
+  }
+}
+
+.theme-menu-trigger {
+  padding: 0;
+  inline-size: calc(var(--kernel-space-unit) * 8);
+  block-size: calc(var(--kernel-space-unit) * 8);
+}
+
+.theme-menu-swatch {
+  display: block;
+  inline-size: 1rem;
+  block-size: 1rem;
+  border-radius: var(--kernel-radius-full);
+  /* Reads the live token directly — no JS needed to keep this in sync
+     with whichever accent is active, the swatch just re-paints itself
+     along with everything else the moment the token changes. */
+  background-color: var(--kernel-accent-9);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+/* display is deliberately NOT set in the base rule here — only inside
+   :popover-open below. Setting it unconditionally is exactly the bug
+   fixed earlier in .command-palette and DropdownMenu.module.css: it
+   silently overrides the browser's own
+   [popover]:not(:popover-open) { display: none } default, leaving the
+   panel laid out and hit-testable at all times, just invisible via
+   opacity: 0. */
+/* No inset-* here at all: `useFloatingPosition` (the same hook
+   DropdownMenu/Combobox/Tooltip/Popover use) sets real CSS anchor
+   positioning — anchor-name on the trigger, position-anchor +
+   position-area on this panel — as inline styles, which always win
+   over anything set here. Hand-writing fixed insets (the previous
+   approach) only looked tethered to the trigger by coincidence,
+   because both happened to sit a constant distance from the same
+   viewport edge; it broke the moment that assumption didn't hold. */
+.theme-menu-panel {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  padding: var(--kernel-padding-container);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-lg);
+  inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.theme-menu-panel:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .theme-menu-panel:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-menu-panel {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+.site-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kernel-space-4);
+}
+
+.site-footer-nav a {
+  color: var(--kernel-color-text-muted);
+  text-decoration: none;
+}
+
+.site-footer-nav a:hover {
+  color: var(--kernel-color-text);
+}
+
+.site-footer-nav a:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
+/* Header collapse: four nav links, search, the theme menu, and the
+   theme switch need 699px next to the logo before nothing overflows
+   (measured via header.scrollWidth vs clientWidth — 698px of content
+   in a 699px box is the exact crossover), so below 800px they're
+   replaced by a single hamburger trigger + a popover panel
+   (MobileHeaderNav) instead of overflowing and getting clipped by
+   body's overflow-x: hidden. Re-measure this the same way if the
+   header ever gains another item — don't just guess a bigger number. */
+.mobile-header-nav-trigger {
+  display: none;
+}
+
+@media (width < 800px) {
+  .site-nav-desktop,
+  .site-header-toggle-desktop {
+    display: none;
+  }
+
+  .mobile-header-nav-trigger {
+    display: inline-flex;
+  }
+}
+
+/* A disclosure anchored to its trigger, not a modal: no backdrop (a
+   plain popover has none by default), flush with the header and the
+   viewport's sides, rounded only on the one free edge. */
+.mobile-header-nav-panel {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: calc(var(--kernel-space-unit) * 16);
+  margin: 0;
+  border: none;
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: 0 0 var(--kernel-radius-container) var(--kernel-radius-container);
+  padding: var(--kernel-space-4) var(--kernel-space-6) var(--kernel-space-6);
+  background-color: var(--kernel-color-surface);
+  box-shadow: var(--kernel-shadow-md);
+  max-inline-size: none;
+
+  opacity: 0;
+  translate: 0 -8px;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    translate var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.mobile-header-nav-panel:popover-open {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@starting-style {
+  .mobile-header-nav-panel:popover-open {
+    opacity: 0;
+    translate: 0 -8px;
+  }
+}
+
+.mobile-header-nav-theme {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  margin-block-start: var(--kernel-space-4);
+  padding-block-start: var(--kernel-space-4);
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.mobile-header-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-start: var(--kernel-space-4);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.mobile-header-nav-search {
+  margin-block-end: var(--kernel-space-4);
+  justify-content: flex-start;
+}
+
+/* Button's own label span (packages/react/.../Button.module.css) is
+   already display: inline-flex, but ships with no gap of its own —
+   invisible for the common case of a single text child, but any
+   button passing more than one node through `children` instead of
+   `iconStart`/`iconEnd` (this trigger's "Search" text plus its ⌘K
+   hint) rendered them flush against each other with zero space. One
+   gap here, on the class Button already emits, fixes every button of
+   that shape at once instead of hand-margining each one's extra node. */
+.kernel-Button-label {
+  gap: var(--kernel-space-2);
+}
+
+/* Command palette trigger (header, desktop) */
+.command-palette-trigger {
+  color: var(--kernel-color-text-muted);
+}
+
+.command-palette-kbd {
+  padding: 0.1em 0.4em;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-sm);
+  background-color: var(--kernel-color-canvas);
+  font-family: var(--kernel-font-mono);
+  font-size: 0.7em;
+}
+
+/* Command palette panel. `display` is deliberately NOT set here: this
+   rule used to carry `display: flex` unconditionally, which — because
+   author styles always beat the UA stylesheet — permanently overrode
+   the browser's own `[popover]:not(:popover-open) { display: none }`
+   default. The panel (links included) was laid out and hit-testable
+   at all times, just invisible via opacity: 0, which is how it ended
+   up sitting on top of unrelated page content as a phantom click
+   target. `display: flex` now only applies under :popover-open, so
+   the closed state genuinely falls back to `display: none`; it's kept
+   in the transition list with `allow-discrete` purely so the CLOSE
+   animation (opacity/scale) has a frame to play before display flips
+   to none, not to keep it laid out while closed. */
+.command-palette {
+  position: fixed;
+  inset-block-start: 15vh;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  margin: 0;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-sheet);
+  padding: 0;
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-lg);
+  inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));
+  max-block-size: min(28rem, calc(100dvh - 20vh));
+  flex-direction: column;
+  overflow: hidden;
+
+  opacity: 0;
+  scale: 0.98;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.command-palette:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .command-palette:popover-open {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
+
+.command-palette::backdrop {
+  background-color: oklch(0% 0 0 / 0.32);
+}
+
+.command-palette-input {
+  flex-shrink: 0;
+  border: none;
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: 0;
+  padding: var(--kernel-space-4) var(--kernel-space-6);
+  background: none;
+  color: var(--kernel-color-text);
+  font-size: var(--kernel-font-size-base);
+  font-family: var(--kernel-font-sans);
+}
+
+.command-palette-input:focus-visible {
+  outline: none;
+}
+
+.command-palette-list {
+  margin: 0;
+  padding: var(--kernel-space-2);
+  list-style: none;
+  overflow-y: auto;
+}
+
+.command-palette-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kernel-space-2);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-control);
+  text-decoration: none;
+  color: var(--kernel-color-text);
+}
+
+.command-palette-item[data-active] {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.command-palette-item-name {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.command-palette-item-summary {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-family: var(--kernel-font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-palette-empty {
+  padding: var(--kernel-space-4) var(--kernel-space-6);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .command-palette {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-header-nav-panel {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+.docs-main {
+  min-inline-size: 0;
+  padding: var(--kernel-space-8) var(--kernel-space-6);
+}
+
+.docs-prose {
+  max-inline-size: var(--docs-content-width);
+  /* max-inline-size alone caps growth, it doesn't centre — without an
+     inline margin a block element just left-aligns within whatever's
+     left over, which is why the reading column sat pinned to the left
+     edge on wide viewports instead of centred in the page. */
+  margin-inline: auto;
+}
+
+.docs-prose :where(h1, h2, h3) {
+  margin-block: var(--kernel-space-8) var(--kernel-space-3);
+}
+
+.docs-prose :where(p, ul, ol) {
+  color: var(--kernel-color-text-muted);
+  line-height: var(--kernel-line-height);
+}
+
+.docs-prose code {
+  font-family: var(--kernel-font-mono);
+  font-size: 0.9em;
+  background-color: var(--kernel-color-accent-subtle);
+  padding: 0.15em 0.4em;
+  border-radius: var(--kernel-radius-sm);
+}
+
+.docs-prose pre code {
+  background: none;
+  padding: 0;
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--kernel-font-size-sm);
+}
+
+.docs-table caption {
+  text-align: start;
+  color: var(--kernel-color-text-muted);
+  margin-block-end: var(--kernel-space-2);
+}
+
+.docs-table th,
+.docs-table td {
+  text-align: start;
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  vertical-align: top;
+}
+
+.docs-table th {
+  color: var(--kernel-color-text-muted);
+  font-weight: 500;
+}
+
+.docs-example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kernel-space-4);
+  padding: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  /* Concentric with whatever the demo inside it renders (usually a
+     control at --kernel-radius-md's actual radius, pill-shaped or
+     not): matches the same outer = inner + padding math the shared
+     components use, computed here since this box is docs-only
+     furniture, not a shipped component. */
+  border-radius: calc(var(--kernel-radius-md) + var(--kernel-space-8));
+  background-color: var(--kernel-color-canvas);
+  background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
+  background-size: 16px 16px;
+  margin-block-end: var(--kernel-space-6);
+}
+
+/* Homepage theme playground: docs-site furniture, deliberately plain
+   global CSS, to prove the library works without CSS Modules or
+   Tailwind too. */
+.playground {
+  display: grid;
+  gap: var(--kernel-space-8);
+  padding: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: calc(var(--kernel-radius-md) + var(--kernel-space-8));
+  background-color: var(--kernel-color-surface);
+}
+
+.playground-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kernel-space-8);
+}
+
+.playground-label {
+  margin: 0 0 var(--kernel-space-2);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.playground-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+.playground-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--kernel-space-4);
+  padding-block-start: var(--kernel-space-6);
+  border-block-start: var(--kernel-border-width) dashed var(--kernel-color-border);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--kernel-space-12);
+  padding-block: var(--kernel-space-12) var(--kernel-space-8);
+
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity var(--kernel-duration-slow) var(--kernel-ease-out),
+    translate var(--kernel-duration-slow) var(--kernel-ease-out);
+}
+
+@starting-style {
+  .hero {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+.hero-copy {
+  max-inline-size: 34rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.25rem, 2.4vw + 1.25rem, 2.75rem);
+  line-height: var(--kernel-line-height-display);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--kernel-space-4);
+}
+
+.hero p {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-lg);
+  margin: 0;
+}
+
+.hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kernel-space-3);
+  margin-block-start: var(--kernel-space-6);
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: center;
+}
+
+/* The hero's visual is this instead of a mocked-up product screenshot
+   on purpose: every other page on this site already shows real
+   Kernel components doing real things, so another one here would just
+   be redundant, not reassuring. This is a genuine demonstration
+   instead — every dot's colour is resolved from --kernel-accent-* at
+   runtime (see PhyllotaxisSpiral.astro), so switching themes in the
+   playground below reshades it live, live proof of the headline claim
+   rather than another screenshot of it.
+
+   A phyllotaxis spiral: the golden-angle (137.508°) pattern seed
+   heads, pinecones, and corn kernels actually grow in, rendered on a
+   canvas (adapted from a reference shader) rather than as static SVG —
+   the growth, glow, and lattice connections it draws only really read
+   as "alive" with a continuous per-frame loop, which SVG/CSS alone
+   couldn't give it. */
+.hero-phyllotaxis {
+  position: relative;
+  display: block;
+  inline-size: min(28rem, 100%);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+
+/* Deliberately bigger than its own container and centred over it
+   (sized in PhyllotaxisSpiral.astro's resize()): a <canvas> can't
+   overflow its box the way a DOM element can, so painting it larger
+   than the layout frame is the only way for the pattern to read as
+   extending past that frame instead of getting clipped at its edge. */
+.hero-phyllotaxis canvas {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  touch-action: none;
+  /* The library reset caps every canvas/img/svg at max-width: 100% of
+     its container, which is the right default everywhere else but
+     silently squashed this one specifically: JS sets an equal
+     width/height bigger than the container on purpose (see
+     PhyllotaxisSpiral.astro), and max-width alone clamped the width
+     back down while height stayed uncapped, stretching an otherwise
+     perfectly circular pattern into a tall oval. */
+  max-inline-size: none;
+}
+
+@media (width < 800px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding-block-start: var(--kernel-space-8);
+  }
+
+  .hero-visual {
+    order: -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    transition: none;
+  }
+}
+
+/* A short, uppercase, mono "eyebrow" label above a section's heading —
+   borrowed from Vercel's Geist docs, which use this instead of nesting
+   sections under ever-larger headings to show grouping. The gap to
+   whatever follows is this element's own bottom margin and ONLY this
+   margin: the sibling rule below zeroes every following heading's own
+   top margin (rather than each section re-zeroing it by hand, which is
+   exactly how #playground-heading ended up with no override at all and
+   a visibly bigger gap than the others), so the eyebrow-to-heading
+   distance can't drift per section. */
+.section-eyebrow {
+  margin: 0 0 var(--kernel-space-4);
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kernel-color-accent-text);
+}
+
+.section-eyebrow + * {
+  margin-block-start: 0;
+}
+
+.feature-section {
+  margin-block: var(--kernel-space-8) var(--kernel-space-12);
+}
+
+/* Shared section rhythm: a hairline top border between major sections
+   instead of a shadow or a card — a border reads as structure, a
+   shadow reads as decoration sitting on top of the page. Skips
+   .feature-section: right after the hero, a divider would cut the
+   page before it's said anything yet. */
+.principles,
+.comparison,
+.platforms,
+.playground-section,
+.closing {
+  padding-block: var(--kernel-space-12);
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+  margin-block-start: var(--kernel-space-8);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: var(--kernel-space-4);
+  /* No margin-block-start here: the "Why Kernel" eyebrow immediately
+     above sets this section's whole top gap via .section-eyebrow + *,
+     same as every other eyebrow, so this can't drift out of sync with
+     it by accumulating a second margin on top. */
+}
+
+/* .feature-featured and .feature-card are a shared visual group (one
+   bento grid) — they must read as ONE rounding language, not two.
+   Both take --kernel-radius-sheet: the larger of the two paddings in
+   play (this panel's own space-6) decides the radius for the whole
+   group, rather than each card computing its own smaller value from
+   its own smaller padding and visibly clashing with its neighbour. */
+.feature-featured {
+  grid-row: 1 / 3;
+  padding: var(--kernel-padding-sheet);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-sheet);
+  background-color: var(--kernel-color-surface);
+}
+
+.feature-featured .code-block {
+  margin-block-start: var(--kernel-space-2);
+}
+
+.feature-featured pre code {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+}
+
+/* Reads --kernel-padding-sheet, the same token .feature-featured pads
+   with, not the smaller --kernel-space-4 it used before: sharing
+   .feature-featured's --kernel-radius-sheet but not its padding was
+   exactly the mismatch that made these read as two different corner
+   languages side by side. */
+.feature-card {
+  padding: var(--kernel-padding-sheet);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-sheet);
+  background-color: var(--kernel-color-surface);
+}
+
+.feature-featured h2,
+.feature-card h3 {
+  margin-block: 0 var(--kernel-space-2);
+}
+
+.feature-featured h2 {
+  font-size: var(--kernel-font-size-lg);
+}
+
+.feature-card h3 {
+  font-size: var(--kernel-font-size-base);
+}
+
+.feature-featured p,
+.feature-card p {
+  margin: 0;
+  color: var(--kernel-color-text-muted);
+}
+
+.feature-card p {
+  font-size: var(--kernel-font-size-sm);
+}
+
+@media (width < 800px) {
+  .feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feature-featured {
+    grid-row: auto;
+  }
+}
+
+.principles h2 {
+  margin: 0 0 var(--kernel-space-2);
+}
+
+.principles-intro {
+  max-inline-size: 42rem;
+  margin: 0 0 var(--kernel-space-6);
+  color: var(--kernel-color-text-muted);
+}
+
+.principles-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--kernel-space-6) var(--kernel-space-8);
+  margin: 0;
+  counter-reset: principle;
+}
+
+/* A Vercel-style numbered index (01, 02, 03…) rather than a plain
+   term list — CSS-generated, so the ordering lives in one place (the
+   markup order) instead of being duplicated as hand-typed digits. */
+.principle {
+  counter-increment: principle;
+}
+
+.principle dt {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kernel-space-2);
+  font-weight: 600;
+  margin-block-end: var(--kernel-space-1);
+}
+
+.principle dt::before {
+  content: counter(principle, decimal-leading-zero);
+  font-family: var(--kernel-font-mono);
+  font-weight: 400;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-accent-text);
+}
+
+.principle dd {
+  margin: 0;
+  color: var(--kernel-color-text-muted);
+}
+
+.principle dd code {
+  font-family: var(--kernel-font-mono);
+  font-size: 0.9em;
+}
+
+@media (width < 700px) {
+  .principles-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.comparison h2,
+.platforms h2 {
+  margin: 0 0 var(--kernel-space-3);
+}
+
+.platforms-cta {
+  margin: var(--kernel-space-4) 0 0;
+}
+
+.platforms-cta a {
+  color: var(--kernel-color-accent-text);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.platforms-cta a:hover {
+  text-decoration: underline;
+}
+
+.comparison-intro {
+  max-inline-size: 42rem;
+  margin: 0 0 var(--kernel-space-6);
+  color: var(--kernel-color-text-muted);
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--kernel-space-4);
+}
+
+.comparison-panel .code-block {
+  margin-block-start: var(--kernel-space-2);
+}
+
+.comparison-panel pre code {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+}
+
+/* The one card every code sample on the site renders inside — living
+   here once instead of duplicated per context (it used to be repeated,
+   nearly verbatim, across .docs-prose pre / .feature-featured pre /
+   .comparison-panel pre). Radius is --kernel-radius-md specifically,
+   not one of the concentric container/sheet tiers: code is dense,
+   rectangular content, not a card, so it stays modest regardless of
+   how round this site makes its pill controls elsewhere. */
+.code-block {
+  position: relative;
+  background-color: var(--kernel-color-canvas);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+}
+
+/* Every code block has a copy button floating over its top-right
+   corner. `padding-inline-end` alone can't keep text clear of it: pre
+   text is `white-space: pre`, so it never wraps, and padding on a
+   scrollable box only adds blank space *after* an already-overflowing
+   line — it doesn't change what's already visible before any
+   scrolling happens. Only actually narrowing the box does that: pre
+   itself carries no border or background of its own now (that moved
+   to .code-block above), so the reserved strip on the right just
+   shows the card's own plain background instead of a text-free gap
+   cut out of a separately-bordered box. This is what actually nests a
+   short one-liner "nicely" and a long line doesn't: the short one
+   never reached the button's column in the first place, not a
+   difference in how the button itself is placed. */
+.code-block pre {
+  margin: 0;
+  padding: var(--kernel-space-4);
+  overflow-x: auto;
+  max-inline-size: calc(100% - 3.75rem);
+}
+
+.code-block-copy {
+  position: absolute;
+  /* Inset matches the code block's own text padding (space-4) rather
+     than a smaller, arbitrary gap: at space-2 the button sat closer to
+     the corner than the corner's own radius, so the curve visibly cut
+     into it instead of framing it. */
+  inset-block-start: var(--kernel-space-3);
+  inset-inline-end: var(--kernel-space-3);
+  opacity: 0;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.code-block:hover .code-block-copy,
+.code-block:focus-within .code-block-copy,
+.code-block-copy:focus-visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-block-copy {
+    transition: none;
+  }
+}
+
+.comparison-label {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text-muted);
+}
+
+@media (width < 700px) {
+  .comparison-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.closing h2 {
+  max-inline-size: 32rem;
+  font-size: var(--kernel-font-size-xl);
+  line-height: var(--kernel-line-height-display);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--kernel-space-3);
+}
+
+.closing-intro {
+  max-inline-size: 32rem;
+  color: var(--kernel-color-text-muted);
+  margin: 0;
+}
+
+.closing .hero-ctas {
+  margin-block-start: var(--kernel-space-6);
+}
+
+/* Homepage section reveals: scroll-linked, not a fixed-time stagger —
+   each section's own scroll position drives its entrance, so sections
+   already in view on load render at full opacity immediately (no
+   pointless replay) while further-down sections reveal in sequence as
+   you scroll to them. `@supports`-gated the same way `contrast-color()`
+   is elsewhere in this codebase: unsupported browsers just see the
+   content, fully visible, with no animation at all — never stuck
+   invisible. */
+@supports (animation-timeline: view()) {
+  @keyframes kernel-reveal {
+    from {
+      opacity: 0;
+      translate: 0 16px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  .feature-featured,
+  .feature-card,
+  .principles,
+  .comparison,
+  .platforms,
+  .playground-section,
+  .closing {
+    animation: kernel-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
+  }
+
+  /* A slight per-card offset inside the same viewport entrance reads
+     as a considered sequence rather than three identical cards
+     popping in at once — the "follow-through" principle applied with
+     pure CSS. */
+  .feature-card:nth-of-type(2) {
+    animation-delay: 80ms;
+  }
+
+  .feature-card:nth-of-type(3) {
+    animation-delay: 160ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-featured,
+  .feature-card,
+  .principles,
+  .comparison,
+  .platforms,
+  .playground-section,
+  .closing {
+    animation: none;
+  }
+}

@@ -1,0 +1,85 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  cursor: pointer;
+  font-family: var(--kernel-font-sans);
+  color: var(--kernel-color-text);
+}
+
+.root[data-disabled] {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+.control {
+  --kernel-switch-block: calc(var(--kernel-space-unit) * 6);
+  --kernel-switch-inline: calc(var(--kernel-space-unit) * 11);
+
+  position: relative;
+  flex-shrink: 0;
+  inline-size: var(--kernel-switch-inline);
+  block-size: var(--kernel-switch-block);
+  border-radius: var(--kernel-radius-full);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface-raised);
+  cursor: inherit;
+  padding: 0;
+  transition: background-color var(--kernel-duration-base) var(--kernel-ease-out),
+    border-color var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.control:hover:not(:disabled):not([data-state="checked"]) {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.control[data-state="checked"] {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+}
+
+.control:disabled {
+  opacity: 0.6;
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.thumb {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-start: 1px;
+  inline-size: calc(var(--kernel-switch-block) - 4px);
+  block-size: calc(var(--kernel-switch-block) - 4px);
+  border-radius: var(--kernel-radius-full);
+  /* Deliberately not --kernel-color-on-accent: the thumb sits on a
+     neutral track when off and an accent-coloured one when on, so
+     tying its colour to whatever gives the best contrast against the
+     accent specifically breaks the *off* state (e.g. amber's on-accent
+     is near-black, which nearly disappears against dark mode's equally
+     dark neutral track). Every native switch (iOS, Radix, Material)
+     uses a fixed light thumb regardless of on/off state or theme,
+     separated from the track by shadow rather than colour contrast. */
+  --kernel-switch-thumb: oklch(99% 0 0);
+  background-color: var(--kernel-switch-thumb);
+  box-shadow: var(--kernel-shadow-sm);
+  translate: 0 0;
+  transition: translate var(--kernel-duration-base) var(--kernel-ease-spring);
+}
+
+.control[data-state="checked"] .thumb {
+  translate: calc(var(--kernel-switch-inline) - var(--kernel-switch-block)) 0;
+}
+
+.label {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    transition: translate var(--kernel-duration-fast) linear;
+  }
+}

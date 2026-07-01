@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import AvatarDemo from "../../components/demos/AvatarDemo";
+---
+
+<BaseLayout title="Avatar" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Avatar</h1>
+    <p>
+      A real <code>&lt;img&gt;</code> when there's a picture. Broken or
+      missing images can't be detected in CSS alone, so the fallback swap
+      to initials is the one deliberate piece of JavaScript here, an
+      <code>onError</code> handler, everything else is native image
+      handling.
+    </p>
+
+    <div class="docs-example">
+      <AvatarDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>fallback</code></td><td>string (required)</td><td>—</td></tr>
+        <tr><td><code>src</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>alt</code></td><td>string</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

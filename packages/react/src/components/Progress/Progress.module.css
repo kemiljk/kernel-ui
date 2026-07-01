@@ -1,0 +1,59 @@
+.root {
+  appearance: none;
+  inline-size: 100%;
+  block-size: var(--kernel-space-2);
+  border-radius: var(--kernel-radius-full);
+  border: none;
+  overflow: hidden;
+  background-color: var(--kernel-gray-4);
+}
+
+.root::-webkit-progress-bar {
+  background-color: transparent;
+}
+
+.root::-webkit-progress-value {
+  background-color: var(--kernel-color-accent);
+  border-radius: var(--kernel-radius-full);
+  transition: inline-size var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.root::-moz-progress-bar {
+  background-color: var(--kernel-color-accent);
+  border-radius: var(--kernel-radius-full);
+}
+
+/* Indeterminate (no `value`): a soft looping sweep instead of a fixed fill. */
+.root:indeterminate {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--kernel-color-accent),
+    transparent
+  );
+  background-size: 50% 100%;
+  animation: kernel-progress-sweep 1.4s var(--kernel-ease-out) infinite;
+}
+
+.root:indeterminate::-moz-progress-bar {
+  background-color: transparent;
+}
+
+@keyframes kernel-progress-sweep {
+  from {
+    background-position: -50% 0;
+  }
+  to {
+    background-position: 150% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root::-webkit-progress-value {
+    transition: none;
+  }
+
+  .root:indeterminate {
+    animation-duration: 2.4s;
+  }
+}

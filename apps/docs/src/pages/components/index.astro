@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import { components } from "../../data/components";
+
+const available = components.filter((c) => c.status === "available").length;
+const planned = components.length - available;
+---
+
+<BaseLayout title="Components" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Components</h1>
+    <p>
+      {available} components are built today — every one on real semantic
+      HTML or a WAI-ARIA pattern, not a <code>&lt;div&gt;</code> standing in
+      for one. Pick one from the sidebar to see its props, accessibility
+      notes, and a live demo. {planned} more are planned.
+    </p>
+    <p>
+      New here? Start with <a href="/installation/">installation</a> to get
+      a package running, then <a href="/theming/">theming</a> for the token
+      reference behind every colour and radius on this site.
+    </p>
+  </div>
+</BaseLayout>

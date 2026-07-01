@@ -1,0 +1,107 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  cursor: pointer;
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-base);
+  color: var(--kernel-color-text);
+}
+
+.root[data-disabled] {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+/* The real input sits invisibly on top of the decorative control, so the
+   hit target, focus ring, and accessibility tree all come from the
+   actual form element rather than being reconstructed with JS. */
+.input {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.control {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  border-radius: var(--kernel-radius-sm);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: transparent;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.input:hover:not(:disabled) + .control {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.input:checked + .control,
+.input:indeterminate + .control {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+.input:focus-visible + .control {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.input:disabled + .control {
+  opacity: 0.6;
+}
+
+.icon {
+  inline-size: 0.85em;
+  block-size: 0.85em;
+  overflow: visible;
+}
+
+.checkmark {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  transition:
+    stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-spring),
+    opacity var(--kernel-duration-fast) linear;
+}
+
+.input:checked + .control .checkmark {
+  stroke-dashoffset: 0;
+  opacity: 1;
+}
+
+.dash {
+  opacity: 0;
+  transition: opacity var(--kernel-duration-fast) linear;
+}
+
+.input:indeterminate + .control .dash {
+  opacity: 1;
+}
+
+.input:indeterminate + .control .checkmark {
+  opacity: 0;
+}
+
+.label {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkmark {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

@@ -1,0 +1,90 @@
+/* `display` is deliberately not set here: doing so unconditionally
+   (as this rule used to) beats the browser's own
+   `[popover]:not(:popover-open) { display: none }` default, since
+   author styles always win over UA styles — the menu would stay laid
+   out and hit-testable at all times, just invisible via opacity: 0.
+   `display: flex` only applies under :popover-open below; it stays in
+   the transition list with `allow-discrete` purely so the close
+   animation gets a frame to play before display flips back to none. */
+.content {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 12rem;
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-space-1);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.content:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  text-align: start;
+  border: none;
+  border-radius: var(--kernel-radius-sm);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  cursor: default;
+}
+
+.item:hover:not(:disabled),
+.item:focus-visible {
+  background-color: var(--kernel-color-accent-subtle);
+  outline: none;
+}
+
+.item:disabled {
+  color: var(--kernel-color-text-muted);
+  cursor: not-allowed;
+}
+
+.item[data-destructive] {
+  color: var(--kernel-color-danger-text);
+}
+
+.item[data-destructive]:hover:not(:disabled) {
+  background-color: var(--kernel-color-danger-subtle);
+}
+
+.separator {
+  block-size: var(--kernel-border-width);
+  margin-block: var(--kernel-space-1);
+  background-color: var(--kernel-color-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

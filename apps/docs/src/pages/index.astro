@@ -1,0 +1,187 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ThemePlayground from "../components/ThemePlayground";
+import HeroCtas from "../components/HeroCtas";
+import CodeBlock from "../components/CodeBlock.astro";
+import PhyllotaxisSpiral from "../components/PhyllotaxisSpiral.astro";
+
+const cascadeSnippet = `--kernel-hue-accent: 70;       /* → every accent shade re-hues */
+--kernel-radius-base: 1.25rem; /* → every corner re-rounds */
+--kernel-space-unit: 0.25rem;  /* → every gap and padding rescales */`;
+
+const kernelSnippet = `<button
+  type="button"
+  onClick={save}
+>
+  Save changes
+</button>`;
+
+const divSoupSnippet = `<div
+  role="button"
+  tabIndex={0}
+  aria-disabled="false"
+  onClick={save}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      save(e);
+    }
+  }}
+>
+  Save changes
+</div>`;
+
+const reactPlatformSnippet = `import { Button } from "@kernelui/react";
+
+<Button variant="primary">Save changes</Button>`;
+
+const elementsPlatformSnippet = `<script type="module">
+  import "@kernelui/elements";
+</script>
+
+<kernel-button variant="primary">Save changes</kernel-button>`;
+---
+
+<BaseLayout title="Kernel">
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>The kernel of the web, componentised.</h1>
+      <p>
+        A component library built on real semantic HTML instead of div
+        soup, themeable from a handful of CSS variables.
+      </p>
+      <div class="hero-ctas">
+        <HeroCtas />
+      </div>
+    </div>
+    <div class="hero-visual">
+      <PhyllotaxisSpiral />
+    </div>
+  </section>
+
+  <section class="feature-section" aria-labelledby="why-kernel-heading">
+    <p class="section-eyebrow" id="why-kernel-heading">Why Kernel</p>
+    <div class="feature-grid">
+      <div class="feature-featured">
+        <h2>One value, one cascade</h2>
+        <p>
+          Every colour, radius, and duration is a CSS custom property.
+          Change one token and every component updates, live, everywhere
+          it's used, try it below.
+        </p>
+        <CodeBlock code={cascadeSnippet} lang="css" />
+      </div>
+      <div class="feature-card">
+        <h3>Real elements</h3>
+        <p>
+          button, dialog, details, fieldset. The behaviour, keyboard
+          support, and accessibility the browser already gives you,
+          instead of rebuilding it in a div.
+        </p>
+      </div>
+      <div class="feature-card">
+        <h3>Styling, your way</h3>
+        <p>
+          Plain CSS, CSS Modules, or Tailwind. The components don't care,
+          they only ever read from the token layer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="principles" aria-labelledby="principles-heading">
+    <p class="section-eyebrow">Principles</p>
+    <h2 id="principles-heading">How it's built</h2>
+    <p class="principles-intro">
+      Four decisions that shape every component, not just the ones on this page.
+    </p>
+    <dl class="principles-list">
+      <div class="principle">
+        <dt>Composition</dt>
+        <dd>
+          An explicit <code>render</code> prop, not <code>asChild</code> magic.
+          What actually renders is always visible at the call site.
+        </dd>
+      </div>
+      <div class="principle">
+        <dt>State</dt>
+        <dd>
+          Real pseudo-classes — <code>:checked</code>, <code>:disabled</code>,
+          <code>:user-invalid</code> — wherever the browser already gives you
+          one. <code>data-*</code> everywhere else.
+        </dd>
+      </div>
+      <div class="principle">
+        <dt>Distribution</dt>
+        <dd>
+          A versioned, tree-shakeable npm package, not a copy-paste registry.
+          Import what you use.
+        </dd>
+      </div>
+      <div class="principle">
+        <dt>Naming</dt>
+        <dd>
+          The actual kernel of the web: the elements and behaviour
+          browsers already ship.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="comparison" aria-labelledby="comparison-heading">
+    <p class="section-eyebrow">Comparison</p>
+    <h2 id="comparison-heading">What a real element buys you</h2>
+    <p class="comparison-intro">
+      Same button, same look. One gets focus, keyboard activation, and
+      disabled state from the browser for free. The other has to catch up
+      by hand, and still won't get form submission or <code>:focus-visible</code> right
+      without more code.
+    </p>
+    <div class="comparison-grid">
+      <div class="comparison-panel">
+        <p class="comparison-label">Kernel</p>
+        <CodeBlock code={kernelSnippet} lang="tsx" />
+      </div>
+      <div class="comparison-panel">
+        <p class="comparison-label">Div soup</p>
+        <CodeBlock code={divSoupSnippet} lang="tsx" />
+      </div>
+    </div>
+  </section>
+
+  <section class="platforms" aria-labelledby="platforms-heading">
+    <p class="section-eyebrow">Platforms</p>
+    <h2 id="platforms-heading">Everywhere you already build</h2>
+    <p class="comparison-intro">
+      <code>@kernelui/react</code> is the flagship. <code>@kernelui/elements</code>{" "}
+      is the same design system as native Custom Elements — Vue, Svelte, Astro,
+      or plain HTML, no wrapper required, same tokens either way.
+    </p>
+    <div class="comparison-grid">
+      <div class="comparison-panel">
+        <p class="comparison-label">React</p>
+        <CodeBlock code={reactPlatformSnippet} lang="tsx" />
+      </div>
+      <div class="comparison-panel">
+        <p class="comparison-label">Anywhere else</p>
+        <CodeBlock code={elementsPlatformSnippet} lang="html" />
+      </div>
+    </div>
+    <p class="platforms-cta"><a href="/platforms/">More on platforms &amp; headless usage →</a></p>
+  </section>
+
+  <section class="playground-section" aria-labelledby="playground-heading">
+    <p class="section-eyebrow">Playground</p>
+    <h2 id="playground-heading">Try the cascade</h2>
+    <ThemePlayground client:load />
+  </section>
+
+  <section class="closing">
+    <p class="section-eyebrow">Get started</p>
+    <h2>Built on the parts of the web that already work.</h2>
+    <p class="closing-intro">Six components and four landmark primitives are ready today, with the full set on the way.</p>
+    <div class="hero-ctas">
+      <HeroCtas />
+    </div>
+  </section>
+</BaseLayout>

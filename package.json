@@ -1,0 +1,21 @@
+{
+  "name": "kernel-ui-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "bun run --filter '@kernelui/*' build",
+    "dev": "bun run --cwd packages/react build && bun scripts/dev.mjs",
+    "dev:react": "bun run --cwd packages/react dev",
+    "docs:build": "bun run --cwd packages/react build && bun run --cwd apps/docs build",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --cwd packages/react test"
+  }
+}

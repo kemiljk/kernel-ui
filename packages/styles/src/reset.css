@@ -1,0 +1,108 @@
+/**
+ * Kernel reset.
+ *
+ * Intentionally small. The whole premise of this library is that native
+ * elements already carry the right behaviour, so this only smooths over
+ * genuine cross-browser inconsistencies. It does not strip focus outlines,
+ * list markers, or button appearance wholesale; components opt into
+ * removing user-agent styling themselves, deliberately, where it helps.
+ */
+
+@layer kernel.base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    tab-size: 4;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-family: var(--kernel-font-sans);
+    font-size: var(--kernel-font-size-base);
+    line-height: var(--kernel-line-height);
+    color: var(--kernel-color-text);
+    background-color: var(--kernel-color-canvas);
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  button {
+    accent-color: var(--kernel-color-accent);
+  }
+
+  input,
+  select,
+  textarea {
+    accent-color: var(--kernel-color-accent);
+  }
+
+  /* Every component already ships its own :hover/:active/:focus-visible
+     styling, so the browser's default tap flash and double-tap-to-zoom
+     delay only get in the way on touch devices. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [role="menuitem"],
+  [role="tab"],
+  [role="switch"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    line-height: var(--kernel-line-height-tight);
+  }
+
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  /* A single, consistent, accessible focus style for every interactive
+     element in the library. Never removed, only ever restyled. */
+  :focus-visible {
+    outline: 2px solid var(--kernel-color-focus-ring);
+    outline-offset: 2px;
+  }
+}

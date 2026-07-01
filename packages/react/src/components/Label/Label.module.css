@@ -1,0 +1,12 @@
+.root {
+  display: inline-flex;
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.required {
+  color: var(--kernel-color-danger);
+  margin-inline-start: var(--kernel-space-1);
+}

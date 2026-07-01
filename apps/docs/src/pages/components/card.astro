@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import CardDemo from "../../components/demos/CardDemo";
+---
+
+<BaseLayout title="Card" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Card</h1>
+    <p>
+      Defaults to a plain <code>&lt;div&gt;</code>, a card is usually just a
+      visual grouping. Set <code>as="article"</code> when the content is
+      genuinely self-contained and could be syndicated on its own (a blog
+      post preview, a product card), that's what <code>&lt;article&gt;</code>
+      actually means. This is the one component in Kernel without a single
+      obvious native anchor.
+    </p>
+
+    <div class="docs-example">
+      <CardDemo client:load />
+    </div>
+
+    <h2>Parts</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>Card</code></td><td><code>as</code>: "div" | "article" | "section", defaults to "div"</td></tr>
+        <tr><td><code>CardHeader</code></td><td>—</td></tr>
+        <tr><td><code>CardTitle</code></td><td><code>level</code>: 2–6, defaults to 3 (an <code>&lt;h3&gt;</code>)</td></tr>
+        <tr><td><code>CardDescription</code></td><td>Renders a <code>&lt;p&gt;</code></td></tr>
+        <tr><td><code>CardContent</code></td><td>—</td></tr>
+        <tr><td><code>CardFooter</code></td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

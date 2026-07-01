@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TabsDemo from "../../components/demos/TabsDemo";
+---
+
+<BaseLayout title="Tabs" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Tabs</h1>
+    <p>
+      There's no native tabs element yet, this is the WAI-ARIA
+      <code>tablist</code> pattern: real <code>&lt;button&gt;</code> tabs
+      with roving <code>tabIndex</code> and arrow-key navigation, and real
+      panels hidden with the native <code>hidden</code> attribute, not just
+      visually, but genuinely removed from layout and the accessibility
+      tree.
+    </p>
+
+    <div class="docs-example">
+      <TabsDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>Tabs</code></td><td><code>defaultValue</code></td><td>string (required)</td></tr>
+        <tr><td><code>Tabs</code></td><td><code>value</code> / <code>onValueChange</code></td><td>string / (value) =&gt; void</td></tr>
+        <tr><td><code>Tab</code></td><td><code>value</code></td><td>string (required)</td></tr>
+        <tr><td><code>TabPanel</code></td><td><code>value</code></td><td>string (required)</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Left/Right, Home, and End move focus and activate the corresponding tab (automatic activation).</li>
+      <li>Each panel is <code>tabIndex={0}</code>, so keyboard users can move directly from the tab into the panel's content.</li>
+    </ul>
+  </div>
+</BaseLayout>

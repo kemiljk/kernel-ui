@@ -1,0 +1,105 @@
+.viewport {
+  position: fixed;
+  inset-block-end: var(--kernel-space-6);
+  inset-inline-end: var(--kernel-space-6);
+  z-index: var(--kernel-z-overlay);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  inline-size: min(24rem, calc(100vw - var(--kernel-space-8)));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-padding-container);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-lg);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  pointer-events: auto;
+
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    translate var(--kernel-duration-base) var(--kernel-ease-spring),
+    scale var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+@starting-style {
+  .toast {
+    opacity: 0;
+    translate: 0 8px;
+    scale: 0.96;
+  }
+}
+
+.toast[data-closing] {
+  opacity: 0;
+  scale: 0.96;
+}
+
+.toast[data-variant="success"] {
+  border-inline-start: 3px solid var(--kernel-color-success);
+}
+
+.toast[data-variant="warning"] {
+  border-inline-start: 3px solid var(--kernel-color-warning);
+}
+
+.toast[data-variant="danger"] {
+  border-inline-start: 3px solid var(--kernel-color-danger);
+}
+
+.content {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  color: var(--kernel-color-text);
+}
+
+.description {
+  margin: var(--kernel-space-1) 0 0;
+  color: var(--kernel-color-text-muted);
+}
+
+.close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border: none;
+  border-radius: var(--kernel-radius-sm);
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: default;
+}
+
+.close:hover {
+  background-color: var(--kernel-gray-4);
+  color: var(--kernel-color-text);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

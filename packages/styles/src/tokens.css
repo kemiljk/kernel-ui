@@ -1,0 +1,327 @@
+/**
+ * Kernel design tokens.
+ *
+ * One value in, one cascade out. Change `--kernel-hue-accent` and every
+ * accent shade updates. Change `--kernel-radius-base` and every radius
+ * updates. Nothing below this file hardcodes a colour, a radius, or a
+ * duration; everything reads from here.
+ *
+ * Consumers can override any token by re-declaring it on `:root` (or on any
+ * container, for scoped theming) in a later `@layer`.
+ */
+
+@layer kernel.tokens, kernel.base;
+
+@layer kernel.tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* ---------------------------------------------------------------- */
+    /* Colour: 12-step scales, one hue + one chroma per role             */
+    /* ---------------------------------------------------------------- */
+    /*
+     * This is Radix Colors' scale model (see "Understanding the scale"
+     * in the Radix Colors docs), reimplemented as a generated OKLCH
+     * ramp instead of hand-tuned swatches: every role gets the same 12
+     * steps, and every step has one fixed job, so you never have to
+     * decide which shade of a colour to use.
+     *
+     *  1-2   backgrounds        (app bg, subtle bg)
+     *  3-5   component bg       (resting, hover, pressed/selected)
+     *  6-8   borders            (non-interactive, interactive, hover)
+     *  9-10  solid              (normal, hover)
+     *  11-12 text               (low-contrast, high-contrast)
+     *
+     * Change `--kernel-hue-accent` and all 12 accent steps rotate hue
+     * together. Change `--kernel-chroma-accent` and the whole ramp gets
+     * more or less saturated at once. Unlike Radix's hand-picked
+     * swatches, this curve isn't individually calibrated per hue for
+     * guaranteed APCA contrast, it's one lightness/chroma curve shared
+     * by every hue, which is close but not identical in perceived
+     * contrast across very different hues (yellow vs. blue, say). See
+     * ROADMAP.md for per-hue calibration as a future refinement.
+     */
+    /* 70 is gold (verified against #F59E0B converted to OKLCH, not
+       eyeballed): the Kernel brand accent, a "popcorn kernel" nod that
+       plays off the library's name. Set this to any hue to reshade the
+       whole accent ramp live; for a curated, gamut-checked starting
+       point instead, use one of the named presets in
+       @kernelui/styles/themes/ (amber, blue, green, red, violet,
+       orange, teal) via data-kernel-accent="name" instead of
+       hand-picking a hue here, amber especially: warm hues peak in
+       chroma at a much lighter lightness than this flat curve assumes,
+       see amber.css's own comment. */
+    --kernel-hue-accent: 70;
+    --kernel-hue-danger: 25;
+    --kernel-hue-success: 145;
+    /* Kept a clear 25° away from --kernel-hue-accent so warning alerts
+       never read as brand-coloured UI. */
+    --kernel-hue-warning: 45;
+    /* References --kernel-hue-accent, not a duplicated literal, so
+       neutrals actually follow the accent hue as this scale's job
+       description promises above: a whisper of the brand's warmth,
+       not a leftover tint from whatever the accent used to be. */
+    --kernel-hue-neutral: var(--kernel-hue-accent);
+
+    --kernel-chroma-accent: 0.16;
+    --kernel-chroma-neutral: 0.015;
+    --kernel-chroma-danger: 0.19;
+    --kernel-chroma-success: 0.14;
+    --kernel-chroma-warning: 0.16;
+
+    /* Neutral (gray) scale. Chroma stays low throughout, it's a tint,
+       not a colour, but it still follows the accent hue by default so a
+       warmer or cooler brand only changes one number. */
+    --kernel-gray-1: light-dark(oklch(99% calc(var(--kernel-chroma-neutral) * 0.2) var(--kernel-hue-neutral)), oklch(14% calc(var(--kernel-chroma-neutral) * 0.6) var(--kernel-hue-neutral)));
+    --kernel-gray-2: light-dark(oklch(97% calc(var(--kernel-chroma-neutral) * 0.4) var(--kernel-hue-neutral)), oklch(18% calc(var(--kernel-chroma-neutral) * 0.7) var(--kernel-hue-neutral)));
+    --kernel-gray-3: light-dark(oklch(95% calc(var(--kernel-chroma-neutral) * 0.6) var(--kernel-hue-neutral)), oklch(23% calc(var(--kernel-chroma-neutral) * 0.8) var(--kernel-hue-neutral)));
+    --kernel-gray-4: light-dark(oklch(92% var(--kernel-chroma-neutral) var(--kernel-hue-neutral)), oklch(27% calc(var(--kernel-chroma-neutral) * 0.9) var(--kernel-hue-neutral)));
+    --kernel-gray-5: light-dark(oklch(89% var(--kernel-chroma-neutral) var(--kernel-hue-neutral)), oklch(31% var(--kernel-chroma-neutral) var(--kernel-hue-neutral)));
+    --kernel-gray-6: light-dark(oklch(86% var(--kernel-chroma-neutral) var(--kernel-hue-neutral)), oklch(36% var(--kernel-chroma-neutral) var(--kernel-hue-neutral)));
+    --kernel-gray-7: light-dark(oklch(81% calc(var(--kernel-chroma-neutral) * 1.2) var(--kernel-hue-neutral)), oklch(42% calc(var(--kernel-chroma-neutral) * 1.2) var(--kernel-hue-neutral)));
+    --kernel-gray-8: light-dark(oklch(73% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)), oklch(50% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)));
+    --kernel-gray-9: light-dark(oklch(59% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)), oklch(58% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)));
+    --kernel-gray-10: light-dark(oklch(54% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)), oklch(64% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)));
+    --kernel-gray-11: light-dark(oklch(46% calc(var(--kernel-chroma-neutral) * 2) var(--kernel-hue-neutral)), oklch(72% calc(var(--kernel-chroma-neutral) * 1.8) var(--kernel-hue-neutral)));
+    --kernel-gray-12: light-dark(oklch(22% calc(var(--kernel-chroma-neutral) * 2.4) var(--kernel-hue-neutral)), oklch(94% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)));
+
+    /* Accent scale. Chroma peaks at step 9, "the purest step", per the
+       Radix model, and tapers off towards the background and text
+       ends of the ramp. */
+    --kernel-accent-1: light-dark(oklch(99% calc(var(--kernel-chroma-accent) * 0.04) var(--kernel-hue-accent)), oklch(15% calc(var(--kernel-chroma-accent) * 0.3) var(--kernel-hue-accent)));
+    --kernel-accent-2: light-dark(oklch(97% calc(var(--kernel-chroma-accent) * 0.08) var(--kernel-hue-accent)), oklch(19% calc(var(--kernel-chroma-accent) * 0.4) var(--kernel-hue-accent)));
+    --kernel-accent-3: light-dark(oklch(94% calc(var(--kernel-chroma-accent) * 0.18) var(--kernel-hue-accent)), oklch(24% calc(var(--kernel-chroma-accent) * 0.55) var(--kernel-hue-accent)));
+    --kernel-accent-4: light-dark(oklch(90% calc(var(--kernel-chroma-accent) * 0.3) var(--kernel-hue-accent)), oklch(28% calc(var(--kernel-chroma-accent) * 0.7) var(--kernel-hue-accent)));
+    --kernel-accent-5: light-dark(oklch(86% calc(var(--kernel-chroma-accent) * 0.4) var(--kernel-hue-accent)), oklch(32% calc(var(--kernel-chroma-accent) * 0.8) var(--kernel-hue-accent)));
+    --kernel-accent-6: light-dark(oklch(81% calc(var(--kernel-chroma-accent) * 0.5) var(--kernel-hue-accent)), oklch(37% calc(var(--kernel-chroma-accent) * 0.85) var(--kernel-hue-accent)));
+    --kernel-accent-7: light-dark(oklch(74% calc(var(--kernel-chroma-accent) * 0.6) var(--kernel-hue-accent)), oklch(43% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)));
+    --kernel-accent-8: light-dark(oklch(65% calc(var(--kernel-chroma-accent) * 0.75) var(--kernel-hue-accent)), oklch(50% calc(var(--kernel-chroma-accent) * 0.95) var(--kernel-hue-accent)));
+    --kernel-accent-9: light-dark(oklch(56% var(--kernel-chroma-accent) var(--kernel-hue-accent)), oklch(58% var(--kernel-chroma-accent) var(--kernel-hue-accent)));
+    --kernel-accent-10: light-dark(oklch(50% calc(var(--kernel-chroma-accent) * 0.95) var(--kernel-hue-accent)), oklch(64% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)));
+    --kernel-accent-11: light-dark(oklch(46% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)), oklch(76% calc(var(--kernel-chroma-accent) * 0.75) var(--kernel-hue-accent)));
+    --kernel-accent-12: light-dark(oklch(24% calc(var(--kernel-chroma-accent) * 0.6) var(--kernel-hue-accent)), oklch(93% calc(var(--kernel-chroma-accent) * 0.35) var(--kernel-hue-accent)));
+
+    /* Status scales get the same treatment, but only the steps the
+       components actually use today (3 = subtle bg, 9/10 = solid,
+       11 = text). Expanding these to full 12-step scales later is a
+       drop-in change, same formula, same shape as gray/accent above. */
+    --kernel-danger-3: light-dark(oklch(94% calc(var(--kernel-chroma-danger) * 0.18) var(--kernel-hue-danger)), oklch(24% calc(var(--kernel-chroma-danger) * 0.55) var(--kernel-hue-danger)));
+    --kernel-danger-9: light-dark(oklch(54% var(--kernel-chroma-danger) var(--kernel-hue-danger)), oklch(60% var(--kernel-chroma-danger) var(--kernel-hue-danger)));
+    --kernel-danger-10: light-dark(oklch(48% calc(var(--kernel-chroma-danger) * 0.95) var(--kernel-hue-danger)), oklch(66% calc(var(--kernel-chroma-danger) * 0.9) var(--kernel-hue-danger)));
+    --kernel-danger-11: light-dark(oklch(46% calc(var(--kernel-chroma-danger) * 0.9) var(--kernel-hue-danger)), oklch(76% calc(var(--kernel-chroma-danger) * 0.75) var(--kernel-hue-danger)));
+
+    --kernel-success-3: light-dark(oklch(94% calc(var(--kernel-chroma-success) * 0.18) var(--kernel-hue-success)), oklch(24% calc(var(--kernel-chroma-success) * 0.55) var(--kernel-hue-success)));
+    --kernel-success-9: light-dark(oklch(54% var(--kernel-chroma-success) var(--kernel-hue-success)), oklch(60% var(--kernel-chroma-success) var(--kernel-hue-success)));
+    --kernel-success-11: light-dark(oklch(44% calc(var(--kernel-chroma-success) * 0.9) var(--kernel-hue-success)), oklch(74% calc(var(--kernel-chroma-success) * 0.75) var(--kernel-hue-success)));
+
+    --kernel-warning-3: light-dark(oklch(95% calc(var(--kernel-chroma-warning) * 0.2) var(--kernel-hue-warning)), oklch(26% calc(var(--kernel-chroma-warning) * 0.55) var(--kernel-hue-warning)));
+    --kernel-warning-9: light-dark(oklch(68% var(--kernel-chroma-warning) var(--kernel-hue-warning)), oklch(64% var(--kernel-chroma-warning) var(--kernel-hue-warning)));
+    --kernel-warning-11: light-dark(oklch(48% calc(var(--kernel-chroma-warning) * 0.9) var(--kernel-hue-warning)), oklch(78% calc(var(--kernel-chroma-warning) * 0.7) var(--kernel-hue-warning)));
+
+    /* ---------------------------------------------------------------- */
+    /* Semantic aliases: what components actually read                  */
+    /* ---------------------------------------------------------------- */
+    /* These are the only colour tokens component CSS references
+       directly. They're aliases onto specific scale steps above, per
+       Radix's documented use cases, so the mapping is legible: surfaces
+       and text are gray steps, interactive chrome is accent steps. */
+    --kernel-color-canvas: var(--kernel-gray-1);
+    --kernel-color-surface: var(--kernel-gray-2);
+    --kernel-color-surface-raised: var(--kernel-gray-3);
+
+    --kernel-color-border: var(--kernel-gray-6);
+    --kernel-color-border-interactive: var(--kernel-gray-7);
+    --kernel-color-border-hover: var(--kernel-gray-8);
+    /* Kept as an alias so nothing else has to change: "strong" always
+       meant "the more prominent of the two borders in use". */
+    --kernel-color-border-strong: var(--kernel-color-border-hover);
+
+    --kernel-color-text: var(--kernel-gray-12);
+    --kernel-color-text-muted: var(--kernel-gray-11);
+
+    --kernel-color-accent: var(--kernel-accent-9);
+    --kernel-color-accent-hover: var(--kernel-accent-10);
+    --kernel-color-accent-active: color-mix(in oklch, var(--kernel-accent-10) 88%, black);
+    --kernel-color-accent-subtle: var(--kernel-accent-3);
+    /* Step 9 is calibrated as a solid-fill colour paired with
+       --kernel-color-on-accent, not as freestanding text: measured
+       against its own step-3 subtle background, it's only 3.7-3.8:1
+       for green/teal (fails WCAG AA's 4.5:1). Step 11 is the scale's
+       actual text role and measures 5.7-5.8:1 for the same pairs, so
+       anything rendering accent-coloured text on a light surface
+       (Badge, NavLink's current-page state, Toggle's on-state) should
+       read this, never --kernel-color-accent directly. */
+    --kernel-color-accent-text: var(--kernel-accent-11);
+    --kernel-color-on-accent: oklch(99% 0 0);
+
+    /* `contrast-color()` picks white or black to guarantee readable
+       text on whatever `--kernel-hue-accent` resolves to (some hues,
+       yellow and mint for instance, need dark text even at step 9).
+       Limited browser support today, so it only takes over where
+       supported; the fixed white default above covers everything
+       else and, checked numerically (4.79:1), is still correct for
+       the default gold accent (hue 70) even though this flat curve's
+       L56% renders it as a dark amber rather than a bright one; see
+       the note on --kernel-hue-accent above for why the curated
+       "amber" preset exists for a punchier version of this hue.
+
+       This is deliberately scoped to --kernel-color-accent only. A
+       solid-fill's correct foreground depends on *that fill's own*
+       lightness and chroma, not on whatever the accent happens to be:
+       danger/success/warning each get their own --kernel-color-on-*
+       below, computed the same way, rather than every solid surface
+       reusing this one (amber needing dark text doesn't mean the
+       Danger button or Switch's thumb should also go dark, they're
+       not amber-coloured). */
+    @supports (color: contrast-color(white)) {
+      --kernel-color-on-accent: contrast-color(var(--kernel-color-accent));
+    }
+
+    --kernel-color-danger: var(--kernel-danger-9);
+    --kernel-color-danger-subtle: var(--kernel-danger-3);
+    --kernel-color-danger-text: var(--kernel-danger-11);
+    /* Checked numerically against danger-9: white wins in light mode
+       (5.58:1) but flips to black in dark mode (4.85:1 vs white's
+       4.33:1, since dark mode's danger-9 is lighter). */
+    --kernel-color-on-danger: light-dark(oklch(99% 0 0), oklch(15% 0 0));
+    @supports (color: contrast-color(white)) {
+      --kernel-color-on-danger: contrast-color(var(--kernel-color-danger));
+    }
+
+    --kernel-color-success: var(--kernel-success-9);
+    --kernel-color-success-subtle: var(--kernel-success-3);
+    --kernel-color-success-text: var(--kernel-success-11);
+    /* Same light/dark flip as danger, for the same reason (measured:
+       white 4.77:1 light, black 5.64:1 dark). */
+    --kernel-color-on-success: light-dark(oklch(99% 0 0), oklch(15% 0 0));
+    @supports (color: contrast-color(white)) {
+      --kernel-color-on-success: contrast-color(var(--kernel-color-success));
+    }
+
+    --kernel-color-warning: var(--kernel-warning-9);
+    --kernel-color-warning-subtle: var(--kernel-warning-3);
+    --kernel-color-warning-text: var(--kernel-warning-11);
+    /* Warning-9 is light enough in both modes that black wins either
+       way (6.87:1 light, 5.87:1 dark) — no light-dark() split needed. */
+    --kernel-color-on-warning: oklch(15% 0 0);
+    @supports (color: contrast-color(white)) {
+      --kernel-color-on-warning: contrast-color(var(--kernel-color-warning));
+    }
+
+    --kernel-color-focus-ring: var(--kernel-color-accent);
+
+    /* ---------------------------------------------------------------- */
+    /* Shape: one radius, one border width                              */
+    /* ---------------------------------------------------------------- */
+    --kernel-radius-base: 0.5rem;
+    --kernel-radius-sm: calc(var(--kernel-radius-base) * 0.5);
+    --kernel-radius-md: var(--kernel-radius-base);
+    --kernel-radius-lg: calc(var(--kernel-radius-base) * 1.5);
+    --kernel-radius-full: 999px;
+
+    /* Semantic shape roles, same idea as the colour aliases above:
+       components read these, not the raw scale. --kernel-radius-control
+       is what standalone actionable controls (buttons, inputs, toggles)
+       use, swap it for --kernel-radius-full for pill-shaped controls.
+
+       --kernel-radius-container/-sheet are concentric by construction:
+       outer radius = the control radius nested inside them + that
+       container's own padding, so corners share a centre point instead
+       of just looking "rounded" independently. Radius and padding are
+       two properties that describe *one* relationship, so they're
+       generated from the same --kernel-padding-* source instead of
+       each component picking a `padding` value by hand and hoping it
+       matches whichever radius token it also happened to pick: two
+       elements that both read --kernel-radius-sheet are structurally
+       guaranteed to also share the same padding, because there is no
+       other padding value to reach for once you're using that token.
+       (This is what went wrong before this existed: a "shared group"
+       of cards matched on radius but silently drifted on padding,
+       because nothing tied the two together.) They're anchored to the
+       base --kernel-radius-md rather than --kernel-radius-control on
+       purpose, so a consumer making buttons pill-shaped doesn't also
+       turn every dialog into a stadium. Which tier a component reaches
+       for is a function of how much room its content needs: -container
+       is the compact tier (Popover, Toast — brief overlay content),
+       -sheet is the roomier one (Card, Dialog — content that needs
+       more space to breathe). Anything sharing a visual group with one
+       of these (a grid of cards, say) reads the same pair of tokens,
+       not just the radius half of it. */
+    --kernel-padding-container: var(--kernel-space-4);
+    --kernel-padding-sheet: var(--kernel-space-6);
+
+    --kernel-radius-control: var(--kernel-radius-md);
+    --kernel-radius-container: calc(var(--kernel-radius-md) + var(--kernel-padding-container));
+    --kernel-radius-sheet: calc(var(--kernel-radius-md) + var(--kernel-padding-sheet));
+
+    --kernel-border-width: 1px;
+
+    /* ---------------------------------------------------------------- */
+    /* Space: one unit, every gap and pad is a multiple of it           */
+    /* ---------------------------------------------------------------- */
+    --kernel-space-unit: 0.25rem;
+    --kernel-space-1: calc(var(--kernel-space-unit) * 1);
+    --kernel-space-2: calc(var(--kernel-space-unit) * 2);
+    --kernel-space-3: calc(var(--kernel-space-unit) * 3);
+    --kernel-space-4: calc(var(--kernel-space-unit) * 4);
+    --kernel-space-6: calc(var(--kernel-space-unit) * 6);
+    --kernel-space-8: calc(var(--kernel-space-unit) * 8);
+    --kernel-space-12: calc(var(--kernel-space-unit) * 12);
+
+    /* ---------------------------------------------------------------- */
+    /* Type: one base size, one scale ratio                             */
+    /* ---------------------------------------------------------------- */
+    /* The named families only render for consumers who also load the
+       webfont (apps/docs does, via @fontsource-variable); everyone
+       else falls straight through to the system stack, so this package
+       never forces a font download on its own. */
+    --kernel-font-sans: "Inclusive Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --kernel-font-mono: "Lilex Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --kernel-font-size-base: 1rem;
+    --kernel-font-scale: 1.125;
+    --kernel-font-size-sm: calc(var(--kernel-font-size-base) / var(--kernel-font-scale));
+    --kernel-font-size-lg: calc(var(--kernel-font-size-base) * var(--kernel-font-scale));
+    --kernel-font-size-xl: calc(var(--kernel-font-size-base) * var(--kernel-font-scale) * var(--kernel-font-scale));
+
+    --kernel-line-height: 1.5;
+    --kernel-line-height-tight: 1.2;
+    /* For hero/display-scale headlines only, not in-app headings: Apple's
+       own marketing type goes tighter than its Title/Large Title text
+       styles (which sit around 1.2, the same ratio as -tight above). */
+    --kernel-line-height-display: 1.05;
+
+    /* ---------------------------------------------------------------- */
+    /* Motion: physical, interruptible feeling defaults                 */
+    /* ---------------------------------------------------------------- */
+    --kernel-duration-fast: 120ms;
+    --kernel-duration-base: 200ms;
+    --kernel-duration-slow: 320ms;
+
+    /* A gentle spring-like overshoot for entrances, and a plain
+       deceleration curve for exits (exits should never overshoot). */
+    --kernel-ease-spring: linear(
+      0, 0.394 15.9%, 0.888 32.5%, 1.078 46.1%, 1.129 55.5%,
+      1.114 65.7%, 1.05 77.2%, 1.008 87%, 0.995 92.9%, 1
+    );
+    --kernel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --kernel-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+    /* ---------------------------------------------------------------- */
+    /* Elevation                                                        */
+    /* ---------------------------------------------------------------- */
+    --kernel-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.06);
+    --kernel-shadow-md: 0 4px 12px oklch(0% 0 0 / 0.10);
+    --kernel-shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.16);
+
+    --kernel-z-overlay: 100;
+  }
+
+  [data-theme="light"] {
+    color-scheme: light;
+  }
+
+  [data-theme="dark"] {
+    color-scheme: dark;
+  }
+}

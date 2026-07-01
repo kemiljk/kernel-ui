@@ -1,0 +1,13 @@
+/**
+ * All named accent themes in one import. Prefer importing a single
+ * theme file (e.g. "@kernelui/styles/themes/blue.css") in production,
+ * this convenience entry point is for demos and theme switchers that
+ * need every preset available to flip between at runtime.
+ */
+@import "./amber.css";
+@import "./blue.css";
+@import "./green.css";
+@import "./red.css";
+@import "./violet.css";
+@import "./orange.css";
+@import "./teal.css";

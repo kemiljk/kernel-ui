@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TextFieldDemo from "../../components/demos/TextFieldDemo";
+---
+
+<BaseLayout title="Text Field" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Text Field</h1>
+    <p>
+      A real <code>&lt;label&gt;</code> linked to a real <code>&lt;input&gt;</code>,
+      with <code>aria-describedby</code> wired up to hint and error text
+      automatically.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <TextFieldDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>size</code></td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Clicking the label focuses the input, that's a native label/input association, not a click handler.</li>
+      <li><code>:user-invalid</code> handles live validation styling after the user has interacted with the field, with no blur-tracking JavaScript.</li>
+      <li>The <code>invalid</code> prop is for validation you already know about, like a failed server response, before the user has touched anything.</li>
+    </ul>
+  </div>
+</BaseLayout>

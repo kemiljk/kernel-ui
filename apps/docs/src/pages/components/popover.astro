@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import PopoverDemo from "../../components/demos/PopoverDemo";
+---
+
+<BaseLayout title="Popover" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Popover</h1>
+    <p>
+      <code>popover="auto"</code> on the content, and <code>popoverTarget</code>
+      on the trigger, that's it: outside-click dismissal, Escape to close,
+      and top-layer stacking are all native HTML attribute behaviour, not
+      JavaScript click-outside listeners. Positioning is CSS anchor
+      positioning where supported, a computed fallback otherwise.
+    </p>
+
+    <div class="docs-example">
+      <PopoverDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>render</code></td><td>the trigger element (required)</td><td>—</td></tr>
+        <tr><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td><td>"bottom"</td></tr>
+        <tr><td><code>open</code> / <code>onOpenChange</code></td><td>boolean / (open) =&gt; void</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

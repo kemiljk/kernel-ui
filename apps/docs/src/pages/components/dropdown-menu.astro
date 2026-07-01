@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import DropdownMenuDemo from "../../components/demos/DropdownMenuDemo";
+---
+
+<BaseLayout title="Dropdown Menu" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Dropdown Menu</h1>
+    <p>
+      <code>role="menu"</code> on a <code>popover="auto"</code> element.
+      Outside-click and Escape dismissal come free from the popover.
+      Arrow-key roving between items is the one part of the WAI-ARIA menu
+      pattern that has to be wired up by hand, there's no native menu
+      element yet.
+    </p>
+
+    <div class="docs-example">
+      <DropdownMenuDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>DropdownMenu</code></td><td><code>render</code></td><td>the trigger (required)</td></tr>
+        <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
+        <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <p>
+      Opening moves focus to the first item. Arrow Up/Down, Home, and End
+      move between items. Selecting an item, or pressing Escape, closes
+      the menu.
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,42 @@
+---
+import { Sidebar, Nav, NavLink } from "@kernelui/react";
+import { components } from "../data/components";
+
+const path = Astro.url.pathname;
+const available = components.filter((c) => c.status === "available");
+
+const guides = [
+  { href: "/installation/", label: "Installation" },
+  { href: "/theming/", label: "Theming" },
+  { href: "/platforms/", label: "Platforms" },
+];
+---
+
+<Sidebar aria-label="Documentation">
+  <p class="docs-sidebar-eyebrow">Guides</p>
+  <Nav aria-label="Guides">
+    {
+      guides.map((guide) => (
+        <NavLink href={guide.href} aria-current={path === guide.href ? "page" : undefined}>
+          {guide.label}
+        </NavLink>
+      ))
+    }
+  </Nav>
+
+  <hr class="docs-sidebar-divider" />
+
+  <p class="docs-sidebar-eyebrow">Components</p>
+  <Nav aria-label="Components">
+    {
+      available.map((component) => {
+        const href = `/components/${component.slug}/`;
+        return (
+          <NavLink href={href} aria-current={path === href ? "page" : undefined}>
+            {component.name}
+          </NavLink>
+        );
+      })
+    }
+  </Nav>
+</Sidebar>

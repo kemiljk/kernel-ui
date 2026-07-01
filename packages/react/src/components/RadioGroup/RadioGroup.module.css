@@ -1,0 +1,99 @@
+.root {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-block-end: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+}
+
+.root:disabled .legend {
+  color: var(--kernel-color-text-muted);
+}
+
+.item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  cursor: pointer;
+  font-family: var(--kernel-font-sans);
+  color: var(--kernel-color-text);
+}
+
+.item:has(.input:disabled) {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+.input {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.control {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  border-radius: var(--kernel-radius-full);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.control::after {
+  content: "";
+  inline-size: 0.55em;
+  block-size: 0.55em;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-on-accent);
+  scale: 0;
+  transition: scale var(--kernel-duration-fast) var(--kernel-ease-spring);
+}
+
+.input:hover:not(:disabled) + .control {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.input:checked + .control {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+}
+
+.input:checked + .control::after {
+  scale: 1;
+}
+
+.input:focus-visible + .control {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.input:disabled + .control {
+  opacity: 0.6;
+}
+
+.label {
+  user-select: none;
+}

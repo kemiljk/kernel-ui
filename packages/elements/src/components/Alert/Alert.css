@@ -1,0 +1,68 @@
+.kernel-Alert-root {
+  display: flex;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-Alert-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: var(--kernel-radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.kernel-Alert-title {
+  margin: 0 0 var(--kernel-space-1);
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  color: var(--kernel-color-text);
+}
+
+.kernel-Alert-body {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Alert-root[data-variant="info"] {
+  background-color: var(--kernel-color-accent-subtle);
+  border-color: var(--kernel-accent-6);
+}
+.kernel-Alert-root[data-variant="info"] .kernel-Alert-icon {
+  background-color: var(--kernel-accent-9);
+  color: var(--kernel-color-on-accent);
+}
+
+.kernel-Alert-root[data-variant="success"] {
+  background-color: var(--kernel-color-success-subtle);
+  border-color: var(--kernel-color-success);
+}
+.kernel-Alert-root[data-variant="success"] .kernel-Alert-icon {
+  background-color: var(--kernel-color-success);
+  color: var(--kernel-color-on-success);
+}
+
+.kernel-Alert-root[data-variant="warning"] {
+  background-color: var(--kernel-color-warning-subtle);
+  border-color: var(--kernel-color-warning);
+}
+.kernel-Alert-root[data-variant="warning"] .kernel-Alert-icon {
+  background-color: var(--kernel-color-warning);
+  color: var(--kernel-color-on-warning);
+}
+
+.kernel-Alert-root[data-variant="danger"] {
+  background-color: var(--kernel-color-danger-subtle);
+  border-color: var(--kernel-color-danger);
+}
+.kernel-Alert-root[data-variant="danger"] .kernel-Alert-icon {
+  background-color: var(--kernel-color-danger);
+  color: var(--kernel-color-on-danger);
+}

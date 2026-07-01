@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ToggleDemo from "../../components/demos/ToggleDemo";
+---
+
+<BaseLayout title="Toggle" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Toggle</h1>
+    <p>
+      A real <code>&lt;button aria-pressed&gt;</code>, the WAI-ARIA pattern
+      for a two-state toggle that looks and behaves like a button (a
+      toolbar "bold" button, say). Distinct from <a href="/components/switch/">Switch</a>,
+      which is the pattern for an on/off setting.
+    </p>
+
+    <div class="docs-example">
+      <ToggleDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>pressed</code> / <code>defaultPressed</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>onPressedChange</code></td><td>(pressed: boolean) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>size</code></td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

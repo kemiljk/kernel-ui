@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ComboboxDemo from "../../components/demos/ComboboxDemo";
+---
+
+<BaseLayout title="Combobox" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Combobox</h1>
+    <p>
+      The WAI-ARIA 1.2 combobox pattern: a real <code>&lt;input role="combobox"&gt;</code>
+      that keeps DOM focus the whole time you're typing, with
+      <code>aria-activedescendant</code> pointing at whichever option in
+      the <code>role="listbox"</code> popup is highlighted, the highlight
+      moves, focus doesn't. <code>popover="manual"</code> is used
+      deliberately here: a combobox needs its own open/close rules (open
+      on focus or on typing, not just a single click), so outside-click
+      and Escape dismissal are handled by hand rather than relying on
+      <code>popover="auto"</code>.
+    </p>
+
+    <div class="docs-example">
+      <ComboboxDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>options</code></td><td>&#123; value, label &#125;[] (required)</td><td>—</td></tr>
+        <tr><td><code>value</code> / <code>onValueChange</code></td><td>string / (value) =&gt; void</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

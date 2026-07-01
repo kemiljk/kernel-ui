@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import RadioGroupDemo from "../../components/demos/RadioGroupDemo";
+---
+
+<BaseLayout title="Radio Group" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Radio Group</h1>
+    <p>
+      A real <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code>
+      grouping real <code>&lt;input type="radio"&gt;</code> elements that
+      share one <code>name</code>. Arrow-key roving between options and
+      "exactly one selected" are native radio button behaviour.
+    </p>
+
+    <div class="docs-example">
+      <RadioGroupDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>RadioGroup</code></td><td><code>label</code></td><td>ReactNode (required)</td></tr>
+        <tr><td><code>RadioGroup</code></td><td><code>value</code> / <code>defaultValue</code></td><td>string</td></tr>
+        <tr><td><code>RadioGroup</code></td><td><code>onValueChange</code></td><td>(value: string) =&gt; void</td></tr>
+        <tr><td><code>RadioGroupItem</code></td><td><code>value</code></td><td>string (required)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

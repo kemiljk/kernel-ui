@@ -1,0 +1,87 @@
+---
+// Scratch proof-of-concept page, deliberately not linked from nav or
+// components.ts: proves @kernelui/elements works end to end (real
+// Custom Elements, light DOM, token-driven styling) with zero React
+// and zero client-framework hydration, ahead of any docs integration.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "@kernelui/elements/styles.css";
+---
+
+<BaseLayout title="Elements lab">
+  <section style="padding-block: var(--kernel-space-8); display: flex; flex-direction: column; gap: var(--kernel-space-6); max-inline-size: 40rem;">
+    <h1>@kernelui/elements lab</h1>
+    <p>
+      Everything below is a real Custom Element (<code>&lt;kernel-button&gt;</code>,
+      <code>&lt;kernel-card&gt;</code>, ...) — zero React import on this page, zero
+      <code>client:*</code> directive. One <code>&lt;script&gt;</code> registers the
+      tags; the browser does the rest.
+    </p>
+
+    <div style="display: flex; gap: var(--kernel-space-3); flex-wrap: wrap;">
+      <kernel-button variant="primary">Primary</kernel-button>
+      <kernel-button variant="secondary">Secondary</kernel-button>
+      <kernel-button variant="ghost">Ghost</kernel-button>
+      <kernel-button variant="danger">Danger</kernel-button>
+      <kernel-button variant="primary" disabled>Disabled</kernel-button>
+      <kernel-button variant="primary" loading>Loading</kernel-button>
+    </div>
+
+    <div style="display: flex; gap: var(--kernel-space-2); flex-wrap: wrap;">
+      <kernel-badge variant="neutral">Neutral</kernel-badge>
+      <kernel-badge variant="accent">Accent</kernel-badge>
+      <kernel-badge variant="success">Success</kernel-badge>
+      <kernel-badge variant="warning">Warning</kernel-badge>
+      <kernel-badge variant="danger">Danger</kernel-badge>
+    </div>
+
+    <kernel-alert variant="info">
+      <span slot="title">Heads up</span>
+      This alert, its icon, and its colours are all driven by the same tokens
+      <code>@kernelui/react</code> reads.
+    </kernel-alert>
+
+    <kernel-card>
+      <kernel-card-header>
+        <kernel-card-title>A real card</kernel-card-title>
+        <kernel-card-description>Rendered with zero React on the page.</kernel-card-description>
+      </kernel-card-header>
+      <kernel-card-content>
+        <p style="margin: 0;">Card body content goes here.</p>
+      </kernel-card-content>
+      <kernel-card-footer>
+        <kernel-button variant="primary" size="sm">Confirm</kernel-button>
+        <kernel-button variant="ghost" size="sm">Cancel</kernel-button>
+      </kernel-card-footer>
+    </kernel-card>
+
+    <kernel-nav aria-label="Lab nav">
+      <kernel-nav-link href="#" aria-current="page">Overview</kernel-nav-link>
+      <kernel-nav-link href="#">Usage</kernel-nav-link>
+      <kernel-nav-link href="#">Accessibility</kernel-nav-link>
+    </kernel-nav>
+
+    <kernel-breadcrumbs>
+      <kernel-breadcrumb-item href="#">Home</kernel-breadcrumb-item>
+      <kernel-breadcrumb-item href="#">Labs</kernel-breadcrumb-item>
+      <kernel-breadcrumb-item current>Elements</kernel-breadcrumb-item>
+    </kernel-breadcrumbs>
+
+    <kernel-pagination>
+      <kernel-pagination-previous disabled></kernel-pagination-previous>
+      <kernel-pagination-item href="#" current>1</kernel-pagination-item>
+      <kernel-pagination-item href="#">2</kernel-pagination-item>
+      <kernel-pagination-item href="#">3</kernel-pagination-item>
+      <kernel-pagination-ellipsis></kernel-pagination-ellipsis>
+      <kernel-pagination-next></kernel-pagination-next>
+    </kernel-pagination>
+
+    <kernel-progress value="60"></kernel-progress>
+    <kernel-progress></kernel-progress>
+    <kernel-skeleton style="max-inline-size: 20rem;"></kernel-skeleton>
+    <kernel-separator></kernel-separator>
+  </section>
+</BaseLayout>
+
+<script>
+  import "@kernelui/elements";
+</script>

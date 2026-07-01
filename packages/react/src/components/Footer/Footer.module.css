@@ -1,0 +1,11 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-4);
+  padding: var(--kernel-space-6);
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}

@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import LabelDemo from "../../components/demos/LabelDemo";
+---
+
+<BaseLayout title="Label" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Label</h1>
+    <p>
+      A standalone real <code>&lt;label&gt;</code>. <code>TextField</code> and
+      <code>Checkbox</code> render their own internally, correctly linked,
+      reach for this one when composing a custom control that needs a label
+      but isn't one of those.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <LabelDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>htmlFor</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>required</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

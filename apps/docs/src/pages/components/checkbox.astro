@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import CheckboxDemo from "../../components/demos/CheckboxDemo";
+---
+
+<BaseLayout title="Checkbox" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Checkbox</h1>
+    <p>
+      A real <code>&lt;input type="checkbox"&gt;</code>. The visible box is a
+      decorative sibling <code>&lt;span&gt;</code>, styled with{" "}
+      <code>:checked</code> and <code>:indeterminate</code>, the input itself
+      stays exactly where you click, invisibly, so focus, keyboard toggling,
+      and the accessibility tree all come from the real element.
+    </p>
+
+    <div class="docs-example">
+      <CheckboxDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>checked</code> / <code>defaultChecked</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>indeterminate</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>onCheckedChange</code></td><td>(checked: boolean) =&gt; void</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>indeterminate</code> sets the DOM property directly, there's no HTML attribute for it, so <code>:indeterminate</code> in CSS works without any extra data attributes.</li>
+      <li>Space toggles it, clicking the label text toggles it, both for free.</li>
+    </ul>
+  </div>
+</BaseLayout>

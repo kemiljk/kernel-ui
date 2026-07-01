@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import BreadcrumbsDemo from "../../components/demos/BreadcrumbsDemo";
+---
+
+<BaseLayout title="Breadcrumbs" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Breadcrumbs</h1>
+    <p>
+      A real <code>&lt;nav aria-label="Breadcrumb"&gt;</code> wrapping a real
+      <code>&lt;ol&gt;</code>, an ordered trail is exactly what an ordered
+      list is for. The current page is marked
+      <code>aria-current="page"</code> on plain text, not a link, you don't
+      link to where you already are.
+    </p>
+
+    <div class="docs-example">
+      <BreadcrumbsDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>BreadcrumbItem</code></td><td><code>current</code></td><td>boolean</td></tr>
+        <tr><td><code>BreadcrumbItem</code></td><td><code>href</code></td><td>string</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

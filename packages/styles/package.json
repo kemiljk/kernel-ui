@@ -1,0 +1,24 @@
+{
+  "name": "@kernelui/styles",
+  "version": "0.1.0",
+  "description": "Kernel design tokens: CSS custom properties, baseline reset, and an optional Tailwind v4 bridge.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "src"
+  ],
+  "exports": {
+    ".": "./src/index.css",
+    "./tokens.css": "./src/tokens.css",
+    "./reset.css": "./src/reset.css",
+    "./tailwind.css": "./src/tailwind.css",
+    "./themes/*.css": "./src/themes/*.css"
+  },
+  "sideEffects": true,
+  "scripts": {
+    "generate:themes": "node scripts/generate-accent-themes.mjs"
+  },
+  "devDependencies": {
+    "culori": "^4.0.2"
+  }
+}

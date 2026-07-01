@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import SeparatorDemo from "../../components/demos/SeparatorDemo";
+---
+
+<BaseLayout title="Separator" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Separator</h1>
+    <p>
+      A real <code>&lt;hr&gt;</code>. Browsers already expose it to
+      assistive tech as <code>role="separator"</code>, a horizontal rule is
+      exactly what a divider is. <code>orientation="vertical"</code> repaints
+      it without changing what it means.
+    </p>
+
+    <div class="docs-example">
+      <SeparatorDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>orientation</code></td><td>"horizontal" | "vertical"</td><td>"horizontal"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

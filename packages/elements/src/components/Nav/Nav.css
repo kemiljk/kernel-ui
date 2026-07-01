@@ -1,0 +1,58 @@
+.kernel-Nav-root {
+  font-family: var(--kernel-font-sans);
+}
+
+/* The <kernel-nav-link> custom element tag is itself an extra DOM node
+   the React version doesn't have (JSX component composition creates
+   no wrapper element; a custom element tag always does) — display:
+   contents keeps it invisible to the parent <ul>'s flex layout. */
+kernel-nav-link {
+  display: contents;
+}
+
+.kernel-Nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kernel-Nav-root:where([data-orientation="horizontal"]) .kernel-Nav-list {
+  flex-direction: row;
+  align-items: center;
+}
+
+.kernel-Nav-item {
+  display: contents;
+}
+
+.kernel-Nav-link {
+  display: block;
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-control);
+  color: var(--kernel-color-text-muted);
+  text-decoration: none;
+  font-size: var(--kernel-font-size-sm);
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Nav-link:hover {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-text);
+}
+
+.kernel-Nav-link:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Nav-link[aria-current="page"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-accent-text);
+  font-weight: 500;
+}

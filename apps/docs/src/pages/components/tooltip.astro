@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TooltipDemo from "../../components/demos/TooltipDemo";
+---
+
+<BaseLayout title="Tooltip" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Tooltip</h1>
+    <p>
+      Uses the Popover API (<code>popover="manual"</code>) for top-layer
+      stacking, positioned with CSS anchor positioning where it's
+      supported, falling back to a computed position otherwise. Hover and
+      focus show and hide it; <code>interestfor</code> is declared on the
+      trigger too, as a forward-looking, purely additive enhancement for
+      the emerging native hover-intent API.
+    </p>
+
+    <div class="docs-example">
+      <TooltipDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>content</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>render</code></td><td>the trigger element (required)</td><td>—</td></tr>
+        <tr><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td><td>"top"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

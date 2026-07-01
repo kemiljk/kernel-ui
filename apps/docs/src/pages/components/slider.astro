@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import SliderDemo from "../../components/demos/SliderDemo";
+---
+
+<BaseLayout title="Slider" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Slider</h1>
+    <p>
+      A real <code>&lt;input type="range"&gt;</code>. Dragging, arrow-key
+      stepping, Page Up/Down, Home/End, and touch all come from the
+      browser. The filled portion of the track has no standardised
+      styling API yet, so the fill percentage is computed in JavaScript
+      and fed back in as a CSS custom property, that hand-off is the only
+      JavaScript involved.
+    </p>
+
+    <div class="docs-example">
+      <SliderDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>value</code> / <code>defaultValue</code></td><td>number</td><td>0</td></tr>
+        <tr><td><code>min</code> / <code>max</code> / <code>step</code></td><td>number</td><td>0 / 100 / 1</td></tr>
+        <tr><td><code>showValue</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

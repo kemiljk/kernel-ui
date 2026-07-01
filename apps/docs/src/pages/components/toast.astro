@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ToastDemo from "../../components/demos/ToastDemo";
+---
+
+<BaseLayout title="Toast" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Toast</h1>
+    <p>
+      An imperative API, like Sonner: call <code>toast(...)</code> from
+      anywhere in your code, no context provider needed at the call site.
+      Mount <code>&lt;ToastViewport /&gt;</code> once, near the root of
+      your app, to actually render them. Every toast is its own live
+      region, <code>role="alert"</code> for <code>danger</code>/
+      <code>warning</code>, <code>role="status"</code> for
+      <code>default</code>/<code>success</code>, the same reasoning as
+      <a href="/components/alert/">Alert</a>.
+    </p>
+
+    <div class="docs-example">
+      <ToastDemo client:load />
+    </div>
+
+    <h2>API</h2>
+    <table class="docs-table">
+      <thead><tr><th>Call</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>toast(title, options?)</code></td><td>Default variant</td></tr>
+        <tr><td><code>toast.success(title, options?)</code></td><td>—</td></tr>
+        <tr><td><code>toast.warning(title, options?)</code></td><td>—</td></tr>
+        <tr><td><code>toast.danger(title, options?)</code></td><td>—</td></tr>
+        <tr><td><code>toast.dismiss(id)</code></td><td>Dismiss a specific toast early</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <code>options</code>: <code>&#123; description?, duration? &#125;</code>. <code>duration</code> defaults to 4000ms; pass <code>0</code> to require a manual dismiss.
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TextareaDemo from "../../components/demos/TextareaDemo";
+---
+
+<BaseLayout title="Textarea" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Textarea</h1>
+    <p>
+      A real <code>&lt;textarea&gt;</code> that grows with its content via
+      <code>field-sizing: content</code>, instead of a JavaScript
+      <code>scrollHeight</code>-measuring resize handler. Falls back to a
+      manual resize handle in browsers that don't support it yet.
+    </p>
+
+    <div class="docs-example">
+      <TextareaDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

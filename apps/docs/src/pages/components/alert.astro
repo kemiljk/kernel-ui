@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import AlertDemo from "../../components/demos/AlertDemo";
+---
+
+<BaseLayout title="Alert" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Alert</h1>
+    <p>
+      There's no <code>&lt;alert&gt;</code> element, ARIA live-region roles
+      are the correct tool for exactly this gap. <code>danger</code>/
+      <code>warning</code> interrupt (<code>role="alert"</code>, assertive);
+      <code>info</code>/<code>success</code> wait their turn
+      (<code>role="status"</code>, polite).
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <AlertDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>variant</code></td><td>"info" | "success" | "warning" | "danger"</td><td>"info"</td></tr>
+        <tr><td><code>title</code></td><td>ReactNode</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</BaseLayout>

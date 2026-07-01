@@ -1,0 +1,16 @@
+.root {
+  border: none;
+  background-color: var(--kernel-color-border);
+  margin: 0;
+}
+
+.root[data-orientation="horizontal"] {
+  inline-size: 100%;
+  block-size: var(--kernel-border-width);
+}
+
+.root[data-orientation="vertical"] {
+  inline-size: var(--kernel-border-width);
+  block-size: 100%;
+  align-self: stretch;
+}

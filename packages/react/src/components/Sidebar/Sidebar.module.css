@@ -1,0 +1,10 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  padding: var(--kernel-space-6) var(--kernel-space-4);
+  border-inline-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  min-inline-size: 15rem;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}

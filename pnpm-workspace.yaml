@@ -1,0 +1,3 @@
+# This project uses Bun workspaces (see the root package.json
+# "workspaces" field), not pnpm. This file is unused and kept only
+# because it can't be deleted from this location; safe to ignore.

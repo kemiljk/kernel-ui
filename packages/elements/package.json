@@ -1,0 +1,35 @@
+{
+  "name": "@kernelui/elements",
+  "version": "0.1.0",
+  "description": "Kernel's components as native Custom Elements — framework-agnostic, light DOM, zero runtime dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/kernel.css",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/kernel.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": true,
+  "dependencies": {
+    "@kernelui/styles": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vite": "^8.0.0",
+    "vite-plugin-dts": "^4.4.0"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  }
+}

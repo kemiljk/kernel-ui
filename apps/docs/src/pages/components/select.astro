@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import SelectDemo from "../../components/demos/SelectDemo";
+---
+
+<BaseLayout title="Select" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Select</h1>
+    <p>
+      A real <code>&lt;select&gt;</code>. Options, keyboard navigation,
+      typeahead, and the platform's own picker UI (correct for the device
+      it's running on, a wheel on iOS, a native dropdown on desktop) all
+      come from the browser. Only the closed control is restyled.
+    </p>
+
+    <div class="docs-example">
+      <SelectDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+
+    <h2>A note on full customisation</h2>
+    <p>
+      <code>appearance: base-select</code> will eventually allow a fully
+      custom-styled option list on top of the same native element. It's
+      too new to depend on by default today, so the dropdown popup itself
+      still uses the browser's native rendering.
+    </p>
+  </div>
+</BaseLayout>

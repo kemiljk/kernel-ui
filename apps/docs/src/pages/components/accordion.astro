@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import AccordionDemo from "../../components/demos/AccordionDemo";
+---
+
+<BaseLayout title="Accordion" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Accordion</h1>
+    <p>
+      Built on <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>.
+      Expand, collapse, keyboard support, find-in-page, and print all come
+      from the browser.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <AccordionDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Component</th><th>Prop</th><th>Type</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Accordion</code></td><td><code>type</code></td><td>"single" | "multiple"</td></tr>
+        <tr><td><code>AccordionItem</code></td><td><code>title</code></td><td>ReactNode</td></tr>
+        <tr><td><code>AccordionItem</code></td><td><code>defaultOpen</code></td><td>boolean</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>type="single"</code> gives every item the same <code>name</code> attribute, so the browser enforces "only one open at a time" natively, no JS coordination needed.</li>
+      <li>The height transition is progressive enhancement (<code>::details-content</code>). Browsers without it still open and close correctly, just without the animation.</li>
+    </ul>
+  </div>
+</BaseLayout>

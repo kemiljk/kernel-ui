@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import SkeletonDemo from "../../components/demos/SkeletonDemo";
+---
+
+<BaseLayout title="Skeleton" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Skeleton</h1>
+    <p>
+      A loading placeholder, <code>aria-hidden="true"</code> by default:
+      there's no content here yet, so assistive tech should skip it
+      entirely rather than announce an empty, decorative box. Size it to
+      match the real content it stands in for.
+    </p>
+
+    <div class="docs-example">
+      <SkeletonDemo client:load />
+    </div>
+  </div>
+</BaseLayout>

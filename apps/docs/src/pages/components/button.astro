@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ButtonDemo from "../../components/demos/ButtonDemo";
+---
+
+<BaseLayout title="Button" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Button</h1>
+    <p>
+      Renders a real <code>&lt;button type="button"&gt;</code> by default. Use
+      <code>render</code> when the action navigates rather than does
+      something in place, so it renders as an <code>&lt;a&gt;</code> instead.
+    </p>
+
+    <div class="docs-example">
+      <ButtonDemo client:load />
+    </div>
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <caption>Only the props specific to Button. Every native button attribute (onClick, form, name…) also works.</caption>
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>variant</code></td><td>"primary" | "secondary" | "ghost" | "danger"</td><td>"secondary"</td></tr>
+        <tr><td><code>size</code></td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
+        <tr><td><code>loading</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>iconStart</code> / <code>iconEnd</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>render</code></td><td>ReactElement | (props, state) =&gt; ReactElement</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Space and Enter activate it, focus and disabled state are native.</li>
+      <li>
+        When rendered via <code>render</code> as something other than a
+        button (an <code>&lt;a&gt;</code>, say), <code>disabled</code> becomes
+        <code>aria-disabled</code> plus a blocked click handler, since
+        non-form elements have no native disabled behaviour.
+      </li>
+      <li><code>loading</code> sets <code>aria-busy</code> without changing the button's width.</li>
+    </ul>
+  </div>
+</BaseLayout>

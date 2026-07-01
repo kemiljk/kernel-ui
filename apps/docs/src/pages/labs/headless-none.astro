@@ -1,0 +1,23 @@
+---
+// Verification scratch page (not linked from nav): zero CSS imported
+// at all. Confirms both packages render real semantic elements with
+// browser-default styling when no stylesheet is loaded — the "fully
+// headless" case.
+import { Button } from "@kernelui/react";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Headless: no CSS</title>
+  </head>
+  <body>
+    <h1>No CSS imported</h1>
+    <Button client:load variant="primary">React Button</Button>
+    <kernel-button variant="primary">Elements Button</kernel-button>
+  </body>
+</html>
+
+<script>
+  import "@kernelui/elements";
+</script>

@@ -1,0 +1,48 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-2);
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid transparent;
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.root[data-size="sm"] {
+  inline-size: calc(var(--kernel-space-unit) * 8);
+  block-size: calc(var(--kernel-space-unit) * 8);
+}
+
+.root[data-size="md"] {
+  inline-size: calc(var(--kernel-space-unit) * 10);
+  block-size: calc(var(--kernel-space-unit) * 10);
+}
+
+.root[data-size="lg"] {
+  inline-size: calc(var(--kernel-space-unit) * 12);
+  block-size: calc(var(--kernel-space-unit) * 12);
+}
+
+.root:hover:not(:disabled) {
+  background-color: var(--kernel-gray-3);
+}
+
+.root[data-state="on"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-accent-text);
+}
+
+.root:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

@@ -1,0 +1,74 @@
+.kernel-Pagination-root {
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-Pagination-list {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+kernel-pagination-item,
+kernel-pagination-previous,
+kernel-pagination-next,
+kernel-pagination-ellipsis {
+  display: contents;
+}
+
+.kernel-Pagination-item,
+.kernel-Pagination-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: calc(var(--kernel-space-unit) * 8);
+  block-size: calc(var(--kernel-space-unit) * 8);
+  padding-inline: var(--kernel-space-2);
+  border: var(--kernel-border-width) solid transparent;
+  border-radius: var(--kernel-radius-sm);
+  background: none;
+  color: var(--kernel-color-text);
+  text-decoration: none;
+  font: inherit;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Pagination-item {
+  cursor: pointer;
+}
+
+.kernel-Pagination-control {
+  cursor: default;
+}
+
+.kernel-Pagination-item:hover,
+.kernel-Pagination-control:hover:not(:disabled) {
+  background-color: var(--kernel-gray-3);
+}
+
+.kernel-Pagination-item[aria-current="page"] {
+  background-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+.kernel-Pagination-item:focus-visible,
+.kernel-Pagination-control:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Pagination-control:disabled {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: calc(var(--kernel-space-unit) * 8);
+  color: var(--kernel-color-text-muted);
+}
