@@ -4,7 +4,26 @@
   inset-inline-end: var(--kernel-space-6);
   z-index: var(--kernel-z-overlay);
   inline-size: min(24rem, calc(100vw - var(--kernel-space-8)));
-  pointer-events: none;
+  /* `block-size` is set inline from Toast.tsx, sized to the stack's real
+     current extent — the front toast's height while collapsed, the full
+     summed height of every toast once expanded — specifically so this
+     box's own hoverable area never has a gap for the pointer to fall
+     into. `pointer-events: auto` (not `none` with the hover target left
+     to whatever each `.toast` child happens to paint): without a real,
+     correctly-sized box here, expanding spreads toasts apart with a real
+     gap between them, the pointer can end up in that gap mid-expansion,
+     that reads as "left the stack" and collapses it right back — which
+     un-spreads the toasts, puts one back under the pointer, and expands
+     it again. A flicker loop, not a one-off glitch, for as long as the
+     pointer sits in what used to be empty space. */
+  pointer-events: auto;
+  transition: block-size var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    transition: none;
+  }
 }
 
 /* Every toast is `position: absolute`, anchored to the same bottom edge,

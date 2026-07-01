@@ -123,6 +123,17 @@
   block-size: 1em;
 }
 
+/* Whatever `width`/`height` a consumer's own icon element happens to
+   carry (a fixed 14px SVG, say) loses to this: the wrapper above is
+   already sized proportionally to the button's own font-size (1em), so
+   the icon inside it should fill that box exactly, not render at some
+   unrelated fixed size that happens to look right at one specific
+   button `size` and drifts out of proportion at every other one. */
+.icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
 .spinner {
   inline-size: 0.9em;
   block-size: 0.9em;

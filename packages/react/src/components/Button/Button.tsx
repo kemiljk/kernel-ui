@@ -108,7 +108,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 {iconStart}
               </span>
             ) : null}
-            <span className={styles.label}>{children}</span>
+            {children ? <span className={styles.label}>{children}</span> : null}
             {iconEnd ? (
               <span className={styles.icon} aria-hidden="true">
                 {iconEnd}

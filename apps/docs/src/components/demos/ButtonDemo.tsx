@@ -23,13 +23,13 @@ export default function ButtonDemo() {
       </Button>
       <Button disabled>Disabled</Button>
       <Button render={<a href="#rendered-as-link" />}>Rendered as a link</Button>
-      <Button variant="secondary" iconStart={<MagnifyingGlassIcon width="14" height="14" />}>
+      <Button variant="secondary" iconStart={<MagnifyingGlassIcon />}>
         Search
       </Button>
-      <Button variant="primary" iconEnd={<CheckIcon width="14" height="14" />}>
+      <Button variant="primary" iconEnd={<CheckIcon />}>
         Mark as done
       </Button>
-      <Button variant="ghost" aria-label="Copy" iconStart={<CopyIcon width="14" height="14" />} />
+      <Button variant="ghost" aria-label="Copy" iconStart={<CopyIcon />} />
     </>
   );
 }

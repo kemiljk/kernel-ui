@@ -106,7 +106,7 @@ export default function CommandPalette() {
         size="sm"
         className="command-palette-trigger"
         popoverTarget={COMMAND_PALETTE_ID}
-        iconStart={<MagnifyingGlassIcon width="14" height="14" />}
+        iconStart={<MagnifyingGlassIcon />}
       >
         Search
         <kbd className="command-palette-kbd">⌘K</kbd>

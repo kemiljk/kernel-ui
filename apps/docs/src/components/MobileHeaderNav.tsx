@@ -41,7 +41,7 @@ export default function MobileHeaderNav({ items, currentPath }: MobileHeaderNavP
           size="sm"
           className="mobile-header-nav-search"
           popoverTarget={COMMAND_PALETTE_ID}
-          iconStart={<MagnifyingGlassIcon width="14" height="14" />}
+          iconStart={<MagnifyingGlassIcon />}
         >
           Search components
         </Button>

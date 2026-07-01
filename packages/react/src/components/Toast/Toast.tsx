@@ -83,6 +83,23 @@ export function ToastViewport({ className }: ToastViewportProps) {
     }
   }
 
+  // The viewport's own box needs to actually cover the current stack, in
+  // whichever state it's in, or the hover target itself becomes a moving
+  // one: expanding spreads every toast behind the front one out to its
+  // real height + a real gap, and a fixed-size hoverable box that doesn't
+  // grow to match leaves true dead space between them the instant they
+  // spread apart. The pointer falls into that gap mid-expansion, that
+  // reads as "left the stack" and collapses it back, which snaps
+  // something back under the pointer and expands it again — a flicker
+  // loop, not a one-off glitch, for as long as the pointer sits in what
+  // used to be a gap. Sizing this box to the real current extent (front
+  // toast's height while collapsed, the full `cumulative` sum once
+  // expanded) means there is never a gap for the pointer to fall into in
+  // the first place.
+  const frontHeight = heights.get(toasts[toasts.length - 1]?.id ?? "") ?? 60;
+  const collapsedHeight = frontHeight + Math.min(toasts.length - 1, MAX_COLLAPSED_DEPTH) * COLLAPSED_STEP;
+  const stackHeight = expanded ? cumulative : collapsedHeight;
+
   // Expanding the stack and pausing every toast's auto-dismiss are the same
   // gesture, not two separately-wired ones: reading one toast in an expanded
   // stack shouldn't risk another expiring behind it while you're looking,
@@ -101,6 +118,7 @@ export function ToastViewport({ className }: ToastViewportProps) {
     <div
       className={[styles.viewport, resolveClassName(className, {})].filter(Boolean).join(" ")}
       data-expanded={dataAttr(expanded)}
+      style={{ blockSize: `${stackHeight}px` }}
       onMouseEnter={expand}
       onMouseLeave={collapse}
       onFocus={expand}
