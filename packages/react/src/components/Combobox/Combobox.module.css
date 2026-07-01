@@ -35,6 +35,16 @@
 .listbox {
   position: fixed;
   margin: 0;
+  /* Shrink-wraps to its longest option otherwise, reading narrower
+     than the input it's anchored to. `anchor-size()` reads the same
+     anchor `useFloatingPosition` already wires up for positioning;
+     the 16rem literal above it is the fallback for browsers without
+     anchor-size support — an invalid value leaves the previous
+     declaration for the same property standing, same technique as
+     the on-accent contrast-color fallback in tokens.css, just via
+     property repetition instead of @supports. */
+  min-inline-size: 16rem;
+  min-inline-size: anchor-size(width);
   max-block-size: 16rem;
   overflow-y: auto;
   overscroll-behavior: contain;

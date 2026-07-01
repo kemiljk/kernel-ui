@@ -59,7 +59,15 @@
   appearance: none;
   inline-size: 1.1rem;
   block-size: 1.1rem;
-  margin-block-start: -0.55rem;
+  /* WebKit aligns the thumb's own top edge to the track's top edge by
+     default, not its centre — the correct shift to actually centre a
+     thumb taller than its track is half the DIFFERENCE between the
+     two heights, not half the thumb's own height. The previous
+     -0.55rem (half the thumb height) shifted it up twice as far as
+     needed, sitting it above centre. Firefox doesn't need (or want)
+     this: unlike WebKit, ::-moz-range-thumb already centres on the
+     track by default. */
+  margin-block-start: calc((6px - 1.1rem) / 2);
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-surface);
   border: 2px solid var(--kernel-color-accent);

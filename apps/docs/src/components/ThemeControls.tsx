@@ -25,7 +25,11 @@ export default function ThemeControls() {
   useEffect(() => {
     function sync() {
       setAccent(getStoredAccent() ?? "amber");
-      setActiveRadius(getStoredRadiusName());
+      // No stored preference yet means the site's actual default look
+      // is in effect (see BaseLayout's no-FOUC script) — that default
+      // IS the "Round" preset, so it should read as selected here too,
+      // not as if nothing were chosen.
+      setActiveRadius(getStoredRadiusName() ?? "Round");
     }
     sync();
     window.addEventListener(THEME_CHANGE_EVENT, sync);
@@ -66,11 +70,14 @@ export default function ThemeControls() {
               // Each swatch shows its OWN preset radius, not the
               // currently-applied one — otherwise all three collapse
               // to whatever's active and there's nothing left to
-              // compare.
-              style={{ "--kernel-radius-control": radius.value } as CSSProperties}
+              // compare. Falls back to the preset's base value when it
+              // has no `control` override (Sharp/Soft), matching
+              // exactly what selecting it will actually do to every
+              // button/input/toggle on the site.
+              style={{ "--kernel-radius-control": radius.control ?? radius.value } as CSSProperties}
               onClick={() => {
                 setActiveRadius(radius.name);
-                applyRadius(radius.value);
+                applyRadius(radius);
               }}
             >
               {radius.name}

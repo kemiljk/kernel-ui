@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import CheckboxDemo from "../../components/demos/CheckboxDemo";
+
+const usageSnippet = `import { Checkbox } from "@kernelui/react";
+
+<Checkbox defaultChecked>Remember me</Checkbox>`;
 ---
 
 <BaseLayout title="Checkbox" withSidebar>
@@ -19,6 +24,8 @@ import CheckboxDemo from "../../components/demos/CheckboxDemo";
     <div class="docs-example">
       <CheckboxDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

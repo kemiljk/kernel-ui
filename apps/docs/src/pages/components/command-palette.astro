@@ -1,0 +1,86 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import CommandPaletteDemo from "../../components/demos/CommandPaletteDemo";
+
+const usageSnippet = `import { useState } from "react";
+import { Button, CommandPalette } from "@kernelui/react";
+import type { CommandPaletteItem } from "@kernelui/react";
+
+function App() {
+  const [open, setOpen] = useState(false);
+
+  const items: CommandPaletteItem[] = [
+    { id: "new-file", label: "New file", onSelect: () => {} },
+    { id: "save", label: "Save", description: "Save the current file", onSelect: () => {} },
+  ];
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open command palette</Button>
+      <CommandPalette open={open} onOpenChange={setOpen} items={items} />
+    </>
+  );
+}`;
+---
+
+<BaseLayout title="Command Palette" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Command Palette</h1>
+    <p>
+      A real <code>&lt;dialog&gt;</code>, opened with <code>showModal()</code>,
+      the same reasoning as <a href="/components/dialog/">Dialog</a>: a
+      native top-layer stacking context, a native focus trap, and native
+      Escape-to-close, none of it reimplemented in JavaScript. It's
+      controlled, not self-triggering, you decide what opens it, a button,
+      a keyboard shortcut, whatever, and it stays generic: it takes a flat
+      list of <code>items</code>, it doesn't know anything about your app's
+      navigation or commands.
+    </p>
+
+    <div class="docs-example">
+      <CommandPaletteDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>open</code></td><td>boolean</td><td>—</td></tr>
+        <tr><td><code>onOpenChange</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>items</code></td><td>CommandPaletteItem[]</td><td>—</td></tr>
+        <tr><td><code>placeholder</code></td><td>string</td><td>"Filter commands"</td></tr>
+        <tr><td><code>emptyMessage</code></td><td>ReactNode</td><td>"No results"</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <code>CommandPaletteItem</code>: <code>&#123; id, label, description?, onSelect &#125;</code>.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Follows the WAI-ARIA combobox pattern: the filter input is a real{" "}
+        <code>role="combobox"</code>, focus never leaves it, and{" "}
+        <code>aria-activedescendant</code> points at whichever{" "}
+        <code>role="option"</code> is highlighted.
+      </li>
+      <li>
+        Arrow Up/Down move the active option, clamped at the ends. Enter
+        selects it and closes the palette. Escape closes it too, natively,
+        it isn't handled twice.
+      </li>
+      <li>
+        Filtering is a case-insensitive substring match against each
+        item's label, live as you type.
+      </li>
+      <li>Clicking the <code>::backdrop</code> closes the dialog.</li>
+    </ul>
+  </div>
+</BaseLayout>

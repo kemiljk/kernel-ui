@@ -1,0 +1,57 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import ScrollAreaDemo from "../../components/demos/ScrollAreaDemo";
+
+const usageSnippet = `import { ScrollArea } from "@kernelui/react";
+
+const items = ["Item 1", "Item 2", "Item 3"];
+
+function ItemList() {
+  return (
+    <ScrollArea maxBlockSize="12rem">
+      <ul>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </ScrollArea>
+  );
+}`;
+---
+
+<BaseLayout title="Scroll Area" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Scroll Area</h1>
+    <p>
+      A <code>&lt;div&gt;</code> with native <code>overflow-y: auto</code>.
+      <code>scrollbar-gutter: stable</code> reserves the scrollbar's space
+      up front, so content doesn't shift by a few pixels when a scrollbar
+      appears or disappears. The scrollbar's colours are restyled with{" "}
+      <code>scrollbar-color</code>/<code>scrollbar-width</code> and the
+      WebKit scrollbar pseudo-elements, as a cosmetic layer on top of
+      real, native scrolling, never a replacement for it.
+    </p>
+
+    <div class="docs-example">
+      <ScrollAreaDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>A native overflow container is already keyboard-scrollable once focused, nothing extra to wire up.</li>
+    </ul>
+  </div>
+</BaseLayout>

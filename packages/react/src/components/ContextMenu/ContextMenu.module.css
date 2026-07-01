@@ -1,0 +1,57 @@
+/* Mirrors DropdownMenu.module.css's `.content` values so the two menus
+   read as the same visual language, just triggered differently. `top`/
+   `left` come from inline styles instead of CSS anchor positioning,
+   there's no trigger element to anchor to, only a cursor position.
+   `display` is left to the browser's own
+   `[popover]:not(:popover-open) { display: none }` default for the same
+   reason as DropdownMenu: setting it here would beat that UA rule, since
+   author styles always win, and the panel would stay hit-testable even
+   when closed. */
+.content {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 12rem;
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Inline padding is deliberately wider than the block padding (and
+     than DropdownMenu's own matching --kernel-space-1 on both axes):
+     a cursor-positioned menu has no trigger button of its own visually
+     framing it, so the items need a bit more inset to read as
+     comfortably inside the panel rather than pinned to its edges. */
+  padding-block: var(--kernel-space-1);
+  padding-inline: var(--kernel-space-2);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.content:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

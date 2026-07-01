@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import ButtonDemo from "../../components/demos/ButtonDemo";
+
+const usageSnippet = `import { Button } from "@kernelui/react";
+
+<Button variant="primary">Save changes</Button>`;
 ---
 
 <BaseLayout title="Button" withSidebar>
@@ -9,7 +14,7 @@ import ButtonDemo from "../../components/demos/ButtonDemo";
   <div class="docs-prose">
     <h1>Button</h1>
     <p>
-      Renders a real <code>&lt;button type="button"&gt;</code> by default. Use
+      Renders a real <code>&lt;button type="button"&gt;</code> by default. Use{" "}
       <code>render</code> when the action navigates rather than does
       something in place, so it renders as an <code>&lt;a&gt;</code> instead.
     </p>
@@ -17,6 +22,8 @@ import ButtonDemo from "../../components/demos/ButtonDemo";
     <div class="docs-example">
       <ButtonDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">
@@ -38,7 +45,7 @@ import ButtonDemo from "../../components/demos/ButtonDemo";
       <li>Space and Enter activate it, focus and disabled state are native.</li>
       <li>
         When rendered via <code>render</code> as something other than a
-        button (an <code>&lt;a&gt;</code>, say), <code>disabled</code> becomes
+        button (an <code>&lt;a&gt;</code>, say), <code>disabled</code> becomes{" "}
         <code>aria-disabled</code> plus a blocked click handler, since
         non-form elements have no native disabled behaviour.
       </li>

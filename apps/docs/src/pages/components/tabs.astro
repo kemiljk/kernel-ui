@@ -1,7 +1,21 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import TabsDemo from "../../components/demos/TabsDemo";
+
+const tabsSnippet = `import { Tabs, TabsList, Tab, TabPanel } from "@kernelui/react";
+
+<Tabs defaultValue="profile">
+  <TabsList aria-label="Account settings">
+    <Tab value="profile">Profile</Tab>
+    <Tab value="billing">Billing</Tab>
+    <Tab value="security">Security</Tab>
+  </TabsList>
+  <TabPanel value="profile">Update your name, email, and avatar.</TabPanel>
+  <TabPanel value="billing">Manage your plan and payment methods.</TabPanel>
+  <TabPanel value="security">Change your password and enable 2FA.</TabPanel>
+</Tabs>`;
 ---
 
 <BaseLayout title="Tabs" withSidebar>
@@ -20,6 +34,8 @@ import TabsDemo from "../../components/demos/TabsDemo";
     <div class="docs-example">
       <TabsDemo client:load />
     </div>
+
+    <UsageAccordion code={tabsSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

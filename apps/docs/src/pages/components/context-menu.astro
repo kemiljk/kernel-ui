@@ -1,0 +1,77 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import ContextMenuDemo from "../../components/demos/ContextMenuDemo";
+
+const usageSnippet = `import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui/react";
+
+function FileRow() {
+  return (
+    <ContextMenu render={<div>Right-click here</div>}>
+      <MenuItem onSelect={() => {}}>Copy</MenuItem>
+      <MenuItem onSelect={() => {}}>Rename</MenuItem>
+      <MenuSeparator />
+      <MenuItem destructive onSelect={() => {}}>
+        Delete
+      </MenuItem>
+    </ContextMenu>
+  );
+}`;
+---
+
+<BaseLayout title="Context Menu" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Context Menu</h1>
+    <p>
+      The same <code>role="menu"</code> primitives as Dropdown Menu,
+      <code>MenuItem</code> and <code>MenuSeparator</code> are imported
+      straight from there rather than reimplemented, only the trigger and
+      positioning differ. Dropdown Menu opens from a <code>popoverTarget</code>{" "}
+      button anchored with CSS anchor positioning; Context Menu opens on the
+      browser's native <code>contextmenu</code> event (right-click, or
+      long-press on touch), suppresses the OS's own context menu, and places
+      itself at the cursor instead. That cursor position isn't a fixed anchor
+      the platform understands, so this is <code>popover="manual"</code>{" "}
+      instead of <code>popover="auto"</code>: outside-click, scroll, and
+      Escape dismissal are wired up by hand, the same way Combobox handles
+      light-dismiss for its own <code>popover="manual"</code> listbox.
+    </p>
+
+    <div class="docs-example">
+      <ContextMenuDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>ContextMenu</code></td><td><code>render</code></td><td>the trigger area (required)</td></tr>
+        <tr><td><code>ContextMenu</code></td><td><code>children</code></td><td>menu content (required)</td></tr>
+        <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
+        <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <p>
+      Right-click opens the menu at the pointer, clamped so it never renders
+      off-screen. Escape, selecting an item, an outside click, or scrolling
+      the page all close it.
+    </p>
+    <p>
+      Worth being honest about: right-click is not a keyboard-reachable
+      gesture. There's no equivalent of Dropdown Menu's focusable trigger
+      button here, a keyboard-only or switch-control user has no way to open
+      this menu at all. A real application should pair a context menu with a
+      genuinely keyboard-accessible path to the same actions, a visible
+      "more actions" button using Dropdown Menu, or listening for the
+      keyboard's own context-menu key (Shift+F10 on Windows, the Menu key)
+      alongside the <code>contextmenu</code> event, rather than relying on
+      right-click as the only way in.
+    </p>
+  </div>
+</BaseLayout>

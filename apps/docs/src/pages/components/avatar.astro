@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import AvatarDemo from "../../components/demos/AvatarDemo";
+
+const reactSnippet = `import { Avatar } from "@kernelui/react";
+
+<Avatar src="/karl.jpg" alt="Karl Koch" fallback="KK" />`;
 ---
 
 <BaseLayout title="Avatar" withSidebar>
@@ -19,6 +24,8 @@ import AvatarDemo from "../../components/demos/AvatarDemo";
     <div class="docs-example">
       <AvatarDemo client:load />
     </div>
+
+    <UsageAccordion code={reactSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

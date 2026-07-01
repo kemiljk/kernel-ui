@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "bun install",
+  "buildCommand": "bun run --filter '@kernelui/*' build && bun run --cwd apps/docs build",
+  "outputDirectory": "apps/docs/dist"
+}

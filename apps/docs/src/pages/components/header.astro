@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import HeaderDemo from "../../components/demos/HeaderDemo";
+
+const usageSnippet = `import { Header } from "@kernelui/react";
+
+<Header>
+  <strong>Acme</strong>
+</Header>
+
+<Header sticky>
+  <strong>Acme</strong>
+</Header>`;
+---
+
+<BaseLayout title="Header" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Header</h1>
+    <p>
+      A real <code>&lt;header&gt;</code>, the banner landmark. A page can have
+      more than one <code>&lt;header&gt;</code>, only the top-level site one
+      should usually be the banner (nested ones inside <code>&lt;article&gt;</code>
+      or <code>&lt;section&gt;</code> aren't). <code>sticky</code> pins it to
+      the top of its scroll container with a blurred backdrop, it's off by
+      default since not every header needs to follow the page.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <HeaderDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>sticky</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Renders a native <code>&lt;header&gt;</code>, exposed as the
+        <code>banner</code> landmark so assistive tech can jump straight to it.
+      </li>
+      <li>
+        Only one <code>&lt;header&gt;</code> per page should be a top-level
+        banner, headers nested inside <code>&lt;article&gt;</code> or
+        <code>&lt;section&gt;</code> are scoped to that content instead.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

@@ -1,7 +1,44 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import TableDemo from "../../components/demos/TableDemo";
+
+const tableSnippet = `import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@kernelui/react";
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Service</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead>Uptime</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>API</TableCell>
+      <TableCell>Operational</TableCell>
+      <TableCell>99.98%</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>Dashboard</TableCell>
+      <TableCell>Operational</TableCell>
+      <TableCell>99.95%</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>Webhooks</TableCell>
+      <TableCell>Degraded</TableCell>
+      <TableCell>98.71%</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>`;
 ---
 
 <BaseLayout title="Table" withSidebar>
@@ -20,6 +57,8 @@ import TableDemo from "../../components/demos/TableDemo";
     <div class="docs-example" style="flex-direction: column; align-items: stretch;">
       <TableDemo client:load />
     </div>
+
+    <UsageAccordion code={tableSnippet} lang="tsx" />
 
     <h2>Components</h2>
     <table class="docs-table">

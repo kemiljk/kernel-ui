@@ -1,0 +1,70 @@
+.root {
+  --kernel-resizable-split: 50%;
+
+  display: grid;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.root[data-orientation="horizontal"] {
+  grid-template-columns: var(--kernel-resizable-split) var(--kernel-space-1) auto;
+}
+
+.root[data-orientation="vertical"] {
+  grid-template-rows: var(--kernel-resizable-split) var(--kernel-space-1) auto;
+}
+
+.root[data-dragging] {
+  user-select: none;
+}
+
+.pane {
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: auto;
+}
+
+.divider {
+  position: relative;
+  flex-shrink: 0;
+  background-color: var(--kernel-color-border);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.root[data-orientation="horizontal"] .divider {
+  cursor: col-resize;
+}
+
+.root[data-orientation="vertical"] .divider {
+  cursor: row-resize;
+}
+
+/* An invisible, larger hit area layered over the thin visible bar, so the
+   divider is easy to grab without making the bar itself look thick. */
+.divider::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--kernel-space-2) * -1);
+}
+
+.root[data-orientation="vertical"] .divider::before {
+  inset-inline: 0;
+}
+
+.root[data-orientation="horizontal"] .divider::before {
+  inset-block: 0;
+}
+
+.divider:hover,
+.divider[data-dragging] {
+  background-color: var(--kernel-color-border-hover);
+}
+
+.divider[data-dragging] {
+  background-color: var(--kernel-color-accent);
+}
+
+.divider:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}

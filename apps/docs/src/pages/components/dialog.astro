@@ -1,7 +1,25 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import DialogDemo from "../../components/demos/DialogDemo";
+
+const usageSnippet = `import { useState } from "react";
+import { Button, Dialog } from "@kernelui/react";
+
+const [open, setOpen] = useState(false);
+
+<Button onClick={() => setOpen(true)}>Delete account</Button>
+<Dialog
+  open={open}
+  onOpenChange={setOpen}
+  title="Delete account"
+  description="This can't be undone."
+>
+  <Button variant="danger" onClick={() => setOpen(false)}>
+    Confirm
+  </Button>
+</Dialog>`;
 ---
 
 <BaseLayout title="Dialog" withSidebar>
@@ -17,6 +35,8 @@ import DialogDemo from "../../components/demos/DialogDemo";
     <div class="docs-example">
       <DialogDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import DateRangePickerDemo from "../../components/demos/DateRangePickerDemo";
+
+const usageSnippet = `import { useState } from "react";
+import { DateRangePicker } from "@kernelui/react";
+import type { DateRange } from "@kernelui/react";
+
+function Example() {
+  const [range, setRange] = useState<DateRange>({});
+
+  return <DateRangePicker value={range} onValueChange={setRange} />;
+}`;
+---
+
+<BaseLayout title="Date Range Picker" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Date Range Picker</h1>
+    <p>
+      The same calendar month grid as <a href="/components/date-picker">Date Picker</a>,
+      a real <code>&lt;table&gt;</code> of real <code>&lt;button&gt;</code> days,
+      but tracking two endpoints instead of one. The first click starts a
+      range, the second click completes it; clicking again after that
+      starts a new range from scratch.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <DateRangePickerDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>value</code></td><td>DateRange</td><td>—</td></tr>
+        <tr><td><code>defaultValue</code></td><td>DateRange</td><td><code>{"{}"}</code></td></tr>
+        <tr><td><code>onValueChange</code></td><td>(range: DateRange) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>minDate</code></td><td>Date</td><td>—</td></tr>
+        <tr><td><code>maxDate</code></td><td>Date</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Previous/next month controls are real <code>&lt;button&gt;</code>s with <code>aria-label</code>s ("Previous month", "Next month"), since their icons carry no accessible name on their own.</li>
+      <li>Both range endpoints get <code>aria-selected="true"</code>; today's date gets a distinct dot indicator rather than being conflated with a selected state.</li>
+      <li>The in-progress hover preview between the start of a range and the pointer is a purely visual affordance, it never fires <code>onValueChange</code>, so it can't be mistaken for a committed selection by assistive tech following the live value.</li>
+      <li>Days outside <code>minDate</code>/<code>maxDate</code> are real <code>disabled</code> buttons, not just dimmed text.</li>
+      <li>Days outside the displayed month render as non-interactive dimmed text, they aren't selectable without first navigating to that month.</li>
+      <li>Arrow Left/Right/Up/Down, Home, and End move focus between the day buttons currently rendered in the grid; Home/End jump to the start/end of the focused day's week. Crossing into the next or previous month still requires the month navigation buttons, arrow keys don't auto-page the calendar.</li>
+    </ul>
+  </div>
+</BaseLayout>

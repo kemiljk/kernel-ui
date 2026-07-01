@@ -1,0 +1,132 @@
+/* `display` is deliberately NOT set here, only under `.content[open]`
+   below — the same bug fixed earlier for `.command-palette`/DropdownMenu
+   on `[popover]` elements, just on `<dialog>` this time. `<dialog>`'s UA
+   stylesheet has both `dialog:not([open]) { display: none }` AND
+   `dialog { position: absolute; ... }`; setting `display: flex`
+   unconditionally beats the UA's `display: none` (author styles always
+   win), so the closed dialog stays laid out — and since it's still
+   subject to the UA's own `position: absolute`, it renders as a real,
+   invisible (opacity: 0), hit-testable box sitting over whatever's
+   underneath it, silently swallowing the first click meant for the
+   trigger button instead of ever reaching it. */
+.content {
+  margin: auto;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  border: none;
+  border-radius: var(--kernel-radius-sheet);
+  padding: var(--kernel-space-4);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-lg);
+  inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));
+  max-block-size: calc(100dvh - var(--kernel-space-12));
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.content[open] {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .content[open] {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+.content::backdrop {
+  background-color: oklch(0% 0 0 / 0.45);
+  opacity: 0;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.content[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .content[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.input {
+  flex-shrink: 0;
+  inline-size: 100%;
+  block-size: calc(var(--kernel-space-unit) * 12);
+  border: none;
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  padding-inline: var(--kernel-space-3);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-lg);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.listbox {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-block-size: 20rem;
+  padding: var(--kernel-space-1);
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-sm);
+  color: var(--kernel-color-text);
+  font-size: var(--kernel-font-size-sm);
+  cursor: default;
+}
+
+.option[data-active] {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.optionLabel {
+  color: var(--kernel-color-text);
+}
+
+.optionDescription {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.empty {
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content,
+  .content::backdrop {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .content {
+    scale: 1;
+  }
+}

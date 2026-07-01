@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 astro check && astro build && node scripts/generate-markdown.mjs",
     "preview": "astro preview",
-    "typecheck": "astro check"
+    "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 astro check"
   },
   "dependencies": {
     "@kernelui/react": "workspace:*",
@@ -24,6 +24,7 @@
     "@astrojs/check": "^0.9.9",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "node-html-parser": "^8.0.4",
     "typescript": "^5.7.3"
   }
 }

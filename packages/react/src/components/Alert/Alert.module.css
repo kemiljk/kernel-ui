@@ -6,6 +6,9 @@
   border-radius: var(--kernel-radius-md);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .icon {

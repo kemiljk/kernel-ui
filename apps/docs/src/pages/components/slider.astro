@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import SliderDemo from "../../components/demos/SliderDemo";
+
+const usageSnippet = `import { Slider } from "@kernelui/react";
+
+<Slider label="Volume" defaultValue={50} showValue />`;
 ---
 
 <BaseLayout title="Slider" withSidebar>
@@ -20,6 +25,8 @@ import SliderDemo from "../../components/demos/SliderDemo";
     <div class="docs-example">
       <SliderDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

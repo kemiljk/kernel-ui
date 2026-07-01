@@ -23,6 +23,9 @@
   font-weight: 500;
   cursor: default;
   list-style: none;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
@@ -58,6 +61,14 @@
 .content {
   padding: 0 var(--kernel-space-4) var(--kernel-space-4);
   color: var(--kernel-color-text-muted);
+}
+
+/* Selectable once fully open (the default); disabled only while the
+   panel is actively resizing, so the browser isn't fighting a
+   drag-select against a box that's still moving. */
+.item[data-state="opening"] .content,
+.item[data-state="closing"] .content {
+  user-select: none;
 }
 
 /* Progressive enhancement: animate open/close height where the browser

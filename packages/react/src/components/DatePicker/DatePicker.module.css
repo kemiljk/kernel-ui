@@ -1,0 +1,149 @@
+.root {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  padding: var(--kernel-padding-container);
+  background-color: var(--kernel-color-surface);
+  box-shadow: var(--kernel-shadow-sm);
+  font-family: var(--kernel-font-sans);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-2);
+}
+
+.heading {
+  font-size: var(--kernel-font-size-base);
+  font-weight: 600;
+  color: var(--kernel-color-text);
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  cursor: pointer;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.navButton:hover {
+  background-color: var(--kernel-gray-3);
+  border-color: var(--kernel-color-border-hover);
+}
+
+.navButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.navIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--kernel-font-size-sm);
+}
+
+.weekdayHead {
+  padding-block-end: var(--kernel-space-2);
+  font-weight: 500;
+  color: var(--kernel-color-text-muted);
+  text-align: center;
+}
+
+.cell {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.dayButton {
+  position: relative;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  aspect-ratio: 1;
+  border: var(--kernel-border-width) solid transparent;
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.dayButton:hover:not(:disabled) {
+  background-color: var(--kernel-gray-3);
+}
+
+.dayButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dayButton:disabled {
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dayButton[data-today] {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.dayButton[data-selected] {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+.dayButton[data-selected]:hover:not(:disabled) {
+  background-color: var(--kernel-color-accent-hover);
+}
+
+/* A dot under today's number, distinct from the selected state's solid
+   fill: rendered as a pseudo-element rather than adding an extra child
+   node, since it's decorative and shouldn't be part of the button's
+   accessible name. */
+.dayButton[data-today]:not([data-selected])::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: var(--kernel-space-1);
+  translate: -50% 0;
+  inline-size: 0.25rem;
+  block-size: 0.25rem;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-accent);
+}
+
+.outsideDay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  aspect-ratio: 1;
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navButton,
+  .dayButton {
+    transition: none;
+  }
+}

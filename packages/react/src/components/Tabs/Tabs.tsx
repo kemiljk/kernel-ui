@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useRef } from "react";
+import { createContext, useContext, useEffect, useId, useRef } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
@@ -57,6 +57,38 @@ export interface TabsListProps {
 
 export function TabsList({ children, className, ...rest }: TabsListProps) {
   const listRef = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  const previousXRef = useRef<number | null>(null);
+  const { value: activeValue } = useTabsContext("TabsList");
+
+  useEffect(() => {
+    const list = listRef.current;
+    const indicator = indicatorRef.current;
+    if (!list || !indicator) return;
+
+    const activeTab = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+    if (!activeTab) return;
+
+    const nextX = activeTab.offsetLeft;
+    const nextWidth = activeTab.offsetWidth;
+    const previousX = previousXRef.current;
+    const isFirstRender = previousX === null;
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let duration = 0;
+    if (!isFirstRender && !reducedMotion) {
+      const distance = Math.abs(nextX - previousX);
+      duration = Math.min(320, Math.max(120, distance * 0.6));
+    }
+
+    indicator.style.transitionDuration = `${duration}ms`;
+    indicator.style.setProperty("--kernel-tabs-indicator-x", `${nextX}px`);
+    indicator.style.setProperty("--kernel-tabs-indicator-width", `${nextWidth}px`);
+
+    previousXRef.current = nextX;
+  }, [activeValue]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const tabs = Array.from(
@@ -97,6 +129,7 @@ export function TabsList({ children, className, ...rest }: TabsListProps) {
       onKeyDown={handleKeyDown}
       className={[styles.list, resolveClassName(className, {})].filter(Boolean).join(" ")}
     >
+      <span className={styles.indicator} ref={indicatorRef} />
       {children}
     </div>
   );

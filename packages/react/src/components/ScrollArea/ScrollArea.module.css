@@ -1,0 +1,26 @@
+/* Vertical-only by default, the overwhelmingly common case. Horizontal
+   or both-axes scrolling would need a variant class (`overflow: auto`),
+   deliberately not built here. */
+.root {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+
+  /* Firefox's standardized scrollbar properties. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--kernel-color-border-interactive) transparent;
+}
+
+/* WebKit/Blink's equivalent, styled to the same result. */
+.root::-webkit-scrollbar {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+}
+
+.root::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.root::-webkit-scrollbar-thumb {
+  background-color: var(--kernel-color-border-interactive);
+  border-radius: var(--kernel-radius-full);
+}

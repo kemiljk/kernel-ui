@@ -5,15 +5,45 @@
 }
 
 .list {
+  position: relative;
   display: inline-flex;
   gap: var(--kernel-space-1);
   padding: var(--kernel-space-1);
-  border-radius: var(--kernel-radius-md);
+  /* Concentric with .tab below, the same relationship
+     --kernel-radius-container encodes (inner radius + the container's
+     own padding) rather than an unrelated flat token — the tablist's
+     outer corner and each tab's inner corner share a centre point. */
+  border-radius: calc(var(--kernel-radius-sm) + var(--kernel-space-1));
   background-color: var(--kernel-gray-3);
   width: fit-content;
 }
 
+.indicator {
+  position: absolute;
+  inset-block: var(--kernel-space-1);
+  /* Explicit start anchor: without it, the "auto" static position of an
+     absolutely-positioned flex-item child is inconsistent across
+     browsers, so `translateX(offsetLeft)` below ends up offset from the
+     wrong baseline. Pinning to 0 makes the transform an unambiguous
+     offset from `.list`'s own padding edge, the same frame of reference
+     `activeTab.offsetLeft` is measured in. */
+  inset-inline-start: 0;
+  inline-size: var(--kernel-tabs-indicator-width);
+  transform: translateX(var(--kernel-tabs-indicator-x));
+  background-color: var(--kernel-color-surface);
+  border-radius: var(--kernel-radius-sm);
+  box-shadow: var(--kernel-shadow-sm);
+  transition-property: transform;
+  /* Deliberately not the spring curve other components use for a
+     physical slide (e.g. Switch's thumb) — a tab indicator should read
+     as a crisp, deliberate snap to the new selection, not a bouncy
+     settle. Strong ease-out: fast off the mark, gentle landing. */
+  transition-timing-function: var(--kernel-ease-out);
+}
+
 .tab {
+  position: relative;
+  z-index: 1;
   padding-block: var(--kernel-space-2);
   padding-inline: var(--kernel-space-4);
   border: none;
@@ -30,9 +60,7 @@
 }
 
 .tab[aria-selected="true"] {
-  background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
-  box-shadow: var(--kernel-shadow-sm);
 }
 
 .tab:disabled {
@@ -54,4 +82,13 @@
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 2px;
   border-radius: var(--kernel-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt-and-braces: TabsList already sets transition-duration to 0ms
+     inline when this media query matches, since the duration is
+     computed and applied in JS per-move rather than fixed in CSS. */
+  .indicator {
+    transition-duration: 0ms !important;
+  }
 }

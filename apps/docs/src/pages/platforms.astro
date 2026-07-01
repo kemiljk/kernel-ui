@@ -47,7 +47,7 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
       autonomous Custom Element — a genuine <code>&lt;button&gt;</code>,
       <code>&lt;nav&gt;</code>, or <code>&lt;dialog&gt;</code> nested inside
       a tag like <code>&lt;kernel-button&gt;</code>, in light DOM (no shadow
-      root), so the same token cascade and CSS classes
+      root), so the same token cascade and CSS classes{" "}
       <code>@kernelui/react</code> uses apply here untouched.
     </p>
     <CodeBlock code={installSnippet} lang="bash" />
@@ -55,8 +55,8 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
     <p>
       Astro, Vue, and Svelte all consume these tags directly — Astro treats
       them as ordinary HTML with zero hydration cost for the components that
-      need no interactivity; Vue needs
-      <code>app.config.compilerOptions.isCustomElement</code> pointed at the
+      need no interactivity; Vue needs{" "}
+      <code>app.config.compilerOptions.isCustomElement</code> pointed at the{" "}
       <code>kernel-</code> prefix; Svelte needs nothing extra at all.
     </p>
     <p>
@@ -88,7 +88,7 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
     <p>
       Building with React? Use <code>@kernelui/react</code> — it's the
       complete set. Building with something else, or need a component
-      usable from more than one framework on the same page? Reach for
+      usable from more than one framework on the same page? Reach for{" "}
       <code>@kernelui/elements</code> for what's ported so far. Either way,
       the same accent hue, radius, and spacing tokens theme both at once.
     </p>

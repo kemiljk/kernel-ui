@@ -3,8 +3,12 @@ import { Breadcrumbs, BreadcrumbItem } from "@kernelui/react";
 export default function BreadcrumbsDemo() {
   return (
     <Breadcrumbs>
-      <BreadcrumbItem href="/">Home</BreadcrumbItem>
-      <BreadcrumbItem href="/components/">Components</BreadcrumbItem>
+      <BreadcrumbItem href="/" onClick={(event) => event.preventDefault()}>
+        Home
+      </BreadcrumbItem>
+      <BreadcrumbItem href="/components/" onClick={(event) => event.preventDefault()}>
+        Components
+      </BreadcrumbItem>
       <BreadcrumbItem current>Breadcrumbs</BreadcrumbItem>
     </Breadcrumbs>
   );

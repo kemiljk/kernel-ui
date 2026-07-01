@@ -1,7 +1,21 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import AccordionDemo from "../../components/demos/AccordionDemo";
+
+interface Props {}
+
+const usageSnippet = `import { Accordion, AccordionItem } from "@kernelui/react";
+
+<Accordion type="single">
+  <AccordionItem title="What is Kernel?">
+    A component library built on real HTML elements.
+  </AccordionItem>
+  <AccordionItem title="Is it accessible?">
+    Yes, by default, since the browser does most of the work.
+  </AccordionItem>
+</Accordion>`;
 ---
 
 <BaseLayout title="Accordion" withSidebar>
@@ -17,6 +31,8 @@ import AccordionDemo from "../../components/demos/AccordionDemo";
     <div class="docs-example" style="flex-direction: column; align-items: stretch;">
       <AccordionDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

@@ -9,6 +9,9 @@
     var(--kernel-gray-4) 75%
   );
   background-size: 200% 100%;
+  /* Deliberately not the --kernel-duration/--kernel-ease tokens: those are
+     tuned for one-shot settle/entrance transitions, not a looping shimmer,
+     so a hand-picked duration/easing here is intentional, not an oversight. */
   animation: kernel-skeleton-sweep 1.6s ease-in-out infinite;
 }
 

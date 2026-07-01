@@ -49,10 +49,16 @@
 }
 
 .thumb {
+  /* Modern iOS/macOS switches use a distinctly oval thumb (noticeably
+     wider than tall), not a perfect circle — this is the one bit of
+     the "pill track, circular thumb" convention that's actually
+     changed recently. Height stays the same inset from the track;
+     width grows by this extra amount on each side of that. */
+  --kernel-switch-thumb-extra: 6px;
   position: absolute;
   inset-block-start: 1px;
   inset-inline-start: 1px;
-  inline-size: calc(var(--kernel-switch-block) - 4px);
+  inline-size: calc(var(--kernel-switch-block) - 4px + var(--kernel-switch-thumb-extra));
   block-size: calc(var(--kernel-switch-block) - 4px);
   border-radius: var(--kernel-radius-full);
   /* Deliberately not --kernel-color-on-accent: the thumb sits on a
@@ -67,11 +73,17 @@
   background-color: var(--kernel-switch-thumb);
   box-shadow: var(--kernel-shadow-sm);
   translate: 0 0;
-  transition: translate var(--kernel-duration-base) var(--kernel-ease-spring);
+  /* +25% over --kernel-duration-base (200ms -> 250ms): the wider,
+     heavier-looking oval thumb reads better with a slightly more
+     deliberate slide than the old circular one needed. Bezier, not a
+     spring — see the token's own comment in tokens.css for why. */
+  transition: translate calc(var(--kernel-duration-base) * 1.25) var(--kernel-ease-spring);
 }
 
 .control[data-state="checked"] .thumb {
-  translate: calc(var(--kernel-switch-inline) - var(--kernel-switch-block)) 0;
+  translate: calc(
+    var(--kernel-switch-inline) - var(--kernel-switch-block) - var(--kernel-switch-thumb-extra)
+  ) 0;
 }
 
 .label {

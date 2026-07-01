@@ -1,0 +1,126 @@
+.root {
+  font-family: var(--kernel-font-sans);
+}
+
+.list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: contents;
+}
+
+.link,
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border: none;
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text-muted);
+  text-decoration: none;
+  font-family: inherit;
+  font-size: var(--kernel-font-size-sm);
+  cursor: default;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.link:hover,
+.trigger:hover {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-text);
+}
+
+.link:focus-visible,
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.link[aria-current="page"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-accent-text);
+  font-weight: 500;
+}
+
+.trigger[aria-expanded="true"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-text);
+}
+
+.chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.trigger[aria-expanded="true"] .chevron {
+  rotate: 180deg;
+}
+
+/* `display` is deliberately not set here, same reasoning as
+   DropdownMenu's `.content`: the browser's own
+   `[popover]:not(:popover-open) { display: none }` UA default already
+   handles it, and setting `display` unconditionally in author CSS would
+   beat that default and keep the panel laid out and hit-testable while
+   hidden. `display: block` only applies under :popover-open below; it
+   stays in the transition list with `allow-discrete` purely so the close
+   animation gets a frame to play before display flips back to none. */
+.content {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  min-inline-size: 16rem;
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.content:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .chevron {
+    transition: none;
+  }
+}

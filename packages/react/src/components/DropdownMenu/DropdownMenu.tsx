@@ -15,7 +15,9 @@ interface MenuContextValue {
   close: () => void;
 }
 
-const MenuContext = createContext<MenuContextValue | null>(null);
+/** Exported so other menu-shaped triggers (ContextMenu) can share
+ * MenuItem/MenuSeparator without duplicating them. */
+export const MenuContext = createContext<MenuContextValue | null>(null);
 
 export interface DropdownMenuProps {
   render: RenderProp<{ open: boolean }>;

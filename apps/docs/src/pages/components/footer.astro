@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import FooterDemo from "../../components/demos/FooterDemo";
+
+const usageSnippet = `import { Footer } from "@kernelui/react";
+
+<Footer>
+  <span>&copy; 2026 Acme Inc.</span>
+  <a href="/privacy">Privacy</a>
+</Footer>`;
+---
+
+<BaseLayout title="Footer" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Footer</h1>
+    <p>
+      A real <code>&lt;footer&gt;</code>, the contentinfo landmark. No
+      special props beyond standard <code>&lt;footer&gt;</code> attributes,
+      the value is in reaching for a landmark element instead of a{" "}
+      <code>&lt;div&gt;</code> so assistive tech can jump straight to it.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <FooterDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <p>
+      Standard <code>&lt;footer&gt;</code> attributes, no props beyond that.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Renders a native <code>&lt;footer&gt;</code>. When it's a direct
+        child of <code>&lt;body&gt;</code> it's exposed as the
+        <code>contentinfo</code> landmark; nested inside
+        <code>&lt;article&gt;</code> or <code>&lt;section&gt;</code> it's
+        scoped to that content instead.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

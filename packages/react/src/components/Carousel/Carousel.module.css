@@ -1,0 +1,117 @@
+.root {
+  position: relative;
+  font-family: var(--kernel-font-sans);
+}
+
+.track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* The scroll container itself is the thing that should show a focus
+     ring (it's the tabbable element, see the tabIndex note in
+     Carousel.tsx), not any element inside it. */
+  border-radius: var(--kernel-radius-container);
+}
+
+.track:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+/* Prev/Next overlay the track's edges, the same small icon-button shape
+   as Dialog's .closeButton (which reads this off the shared Button
+   component), sized up here since these sit over photographic/card
+   content and need a bigger hit target, given a solid surface
+   background since they float over arbitrary slide content instead of
+   sitting on a flat background. --kernel-radius-control, not a
+   hardcoded pill, so these actually follow the same radius theme every
+   other control on the page does. */
+.prev,
+.next {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: calc(var(--kernel-space-unit) * 8);
+  block-size: calc(var(--kernel-space-unit) * 8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-sm);
+  cursor: default;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.prev {
+  inset-inline-start: var(--kernel-space-3);
+}
+
+.next {
+  inset-inline-end: var(--kernel-space-3);
+}
+
+.prev:hover:not(:disabled),
+.next:hover:not(:disabled) {
+  background-color: var(--kernel-gray-4);
+}
+
+.prev:focus-visible,
+.next:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.prev:disabled,
+.next:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-2);
+  margin-block-start: var(--kernel-space-3);
+}
+
+/* Same small-round-indicator language as Pagination's .item, collapsed
+   to a dot: no label text, so size is fixed rather than min-inline-size
+   driven by content. */
+.dot {
+  inline-size: var(--kernel-space-2);
+  block-size: var(--kernel-space-2);
+  padding: 0;
+  border: none;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-border-interactive);
+  cursor: default;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.dot:hover {
+  background-color: var(--kernel-color-border-hover);
+}
+
+.dot:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dot[data-current] {
+  background-color: var(--kernel-color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
+  }
+}

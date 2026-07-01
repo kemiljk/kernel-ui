@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import BadgeDemo from "../../components/demos/BadgeDemo";
+
+const reactSnippet = `import { Badge } from "@kernelui/react";
+
+<Badge variant="success">Active</Badge>`;
 ---
 
 <BaseLayout title="Badge" withSidebar>
@@ -19,6 +24,8 @@ import BadgeDemo from "../../components/demos/BadgeDemo";
     <div class="docs-example">
       <BadgeDemo client:load />
     </div>
+
+    <UsageAccordion code={reactSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

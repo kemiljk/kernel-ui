@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import SkeletonDemo from "../../components/demos/SkeletonDemo";
+
+const skeletonSnippet = `import { Skeleton } from "@kernelui/react";
+
+<Skeleton style={{ width: 240, height: 16 }} />`;
 ---
 
 <BaseLayout title="Skeleton" withSidebar>
@@ -18,5 +23,7 @@ import SkeletonDemo from "../../components/demos/SkeletonDemo";
     <div class="docs-example">
       <SkeletonDemo client:load />
     </div>
+
+    <UsageAccordion code={skeletonSnippet} lang="tsx" />
   </div>
 </BaseLayout>

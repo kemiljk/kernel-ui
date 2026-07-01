@@ -9,8 +9,20 @@
  * still does, deliberately, since it has to work for a hue nobody's
  * checked yet). Opt in with data-kernel-accent="red" on <html> or
  * any container.
- */
+ *
+ * Also sets --kernel-hue-accent itself (not just the 12 pre-computed
+ * --kernel-accent-* steps above): tokens.css defines
+ * --kernel-hue-neutral as `var(--kernel-hue-accent)`, so the whole
+ * --kernel-gray-* scale — canvas, surface, border, text, everything
+ * neutral — picks up a faint wash of this theme's hue too, at
+ * --kernel-chroma-neutral's very low chroma. Without this line the
+ * 12 accent steps below would re-hue buttons and badges while the
+ * rest of the page stayed on whatever hue --kernel-hue-accent's own
+ * fallback in tokens.css happens to be, which reads as the accent
+ * floating on top of an unrelated page rather than one coherent
+ * theme. */
 [data-kernel-accent="red"] {
+  --kernel-hue-accent: 25;
   --kernel-accent-1: light-dark(oklch(99% 0.004 25), oklch(15% 0.056 25));
   --kernel-accent-2: light-dark(oklch(97% 0.013 25), oklch(19% 0.071 25));
   --kernel-accent-3: light-dark(oklch(94% 0.028 25), oklch(24% 0.090 25));

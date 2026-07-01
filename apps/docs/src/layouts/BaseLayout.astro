@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import "@fontsource-variable/inclusive-sans";
 import "@fontsource-variable/lilex";
 import "../styles/global.css";
@@ -35,14 +36,46 @@ const navItems = components
       so it can't `import` src/lib/theme.ts (a module import is async
       relative to inline script execution). Keep these three storage
       keys in sync with STORAGE_KEYS in that file by hand.
+
+      Also re-run on every `astro:page-load`, not just once: ClientRouter
+      swaps in the new page's server-rendered `<html>` attributes on
+      every soft navigation, which wipes whatever this same script (or
+      ThemeControls) had applied to the *previous* page's `<html>`
+      element — accent, radius, and colour scheme would silently reset
+      to their static defaults the moment you clicked any internal
+      link, even though the values were still sitting in localStorage.
+      Only actually noticeable for radius/accent since colour scheme
+      also happens to be the initial-load default in light mode, but
+      all three share the same bug for the same reason.
     -->
     <script is:inline>
-      (function () {
+      function kernelApplyStoredTheme() {
         try {
           var accent = localStorage.getItem("kernel:accent");
           if (accent) document.documentElement.setAttribute("data-kernel-accent", accent);
           var radius = localStorage.getItem("kernel:radius");
           if (radius) document.documentElement.style.setProperty("--kernel-radius-base", radius);
+          var radiusControl = localStorage.getItem("kernel:radius-control");
+          if (radiusControl) {
+            // An explicit choice, either "Round" re-applying its pill
+            // pairing, or a stale value from before this pairing
+            // existed — either way, honour it.
+            document.documentElement.style.setProperty("--kernel-radius-control", radiusControl);
+          } else if (!radius) {
+            // No stored radius preference at all: a fresh visitor, who
+            // should see this site's actual default look (pill
+            // controls, the same "Round" pairing) — applied here in JS
+            // rather than as an unconditional stylesheet rule, which is
+            // exactly what silently defeated Sharp/Soft before (see the
+            // comment on --kernel-radius-base in global.css).
+            document.documentElement.style.setProperty("--kernel-radius-control", "var(--kernel-radius-full)");
+          } else {
+            // Sharp or Soft explicitly selected: no override, let
+            // --kernel-radius-control fall back to its own
+            // packages/styles default (derived from --kernel-radius-base,
+            // like every other radius tier).
+            document.documentElement.style.removeProperty("--kernel-radius-control");
+          }
           var scheme = localStorage.getItem("kernel:color-scheme");
           if (scheme === "light" || scheme === "dark") {
             document.documentElement.setAttribute("data-theme", scheme);
@@ -51,19 +84,109 @@ const navItems = components
           // Storage can throw (private browsing, disabled storage) —
           // the site still works, just without a remembered theme.
         }
-      })();
+      }
+      kernelApplyStoredTheme();
+      document.addEventListener("astro:after-swap", kernelApplyStoredTheme);
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} · Kernel</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
+    <ClientRouter />
+    <!--
+      The sidebar below is transition:persist'd across navigations —
+      the whole reason ClientRouter is here at all is so switching
+      component pages doesn't reset its scroll position. Two gaps that
+      leaves, both handled here:
+
+      1. A persisted node keeps its OLD server-rendered content, so
+         its baked-in aria-current goes stale after the first soft
+         nav. Recomputed by hand on every astro:page-load (fires on
+         first load and after every soft nav).
+      2. `transition:persist` keeps the same DOM node, but Astro's
+         swap still detaches and reappends it as part of the morph —
+         and detaching a scrollable element from the DOM resets its
+         scrollTop even when it's the same node, so persistence alone
+         doesn't actually keep the scroll position. Saved on
+         astro:before-swap (the last moment before the old DOM goes
+         away) and restored on astro:page-load.
+    -->
+    <script is:inline>
+      var savedSidebarScroll = 0;
+      document.addEventListener("astro:before-swap", function () {
+        var sidebar = document.querySelector(".docs-sidebar-slot");
+        if (sidebar) savedSidebarScroll = sidebar.scrollTop;
+      });
+      document.addEventListener("astro:page-load", function () {
+        var sidebar = document.querySelector(".docs-sidebar-slot");
+        if (sidebar) sidebar.scrollTop = savedSidebarScroll;
+
+        var path = location.pathname;
+        document.querySelectorAll(".docs-sidebar-slot a[href]").forEach(function (a) {
+          if (a.getAttribute("href") === path) {
+            a.setAttribute("aria-current", "page");
+          } else {
+            a.removeAttribute("aria-current");
+          }
+        });
+      });
+    </script>
+    <!--
+      One markdown mirror per component page (generated post-build by
+      scripts/generate-markdown.mjs from the same .docs-prose this page
+      renders), plus a small copyable-URL chip so a reader can hand the
+      link straight to an LLM. Injected here rather than by hand on all
+      39 pages: every component page already shares this exact
+      `/components/<slug>/` URL shape, so the slug — and therefore
+      whether the chip belongs on the page at all — can be derived from
+      `location.pathname` alone. Runs on `astro:page-load` (fires on
+      first load and every soft nav) rather than once at parse time,
+      since ClientRouter swaps `<main>`'s content without a full reload.
+    -->
+    <script is:inline>
+      document.addEventListener("astro:page-load", function () {
+        var existingChip = document.querySelector(".docs-markdown-chip");
+        if (existingChip) existingChip.remove();
+
+        var match = location.pathname.match(/^\/components\/([^/]+)\/$/);
+        if (!match) return;
+
+        var h1 = document.querySelector(".docs-prose h1");
+        if (!h1) return;
+
+        var slug = match[1];
+        var url = location.origin + "/components/" + slug + ".md";
+
+        var chip = document.createElement("div");
+        chip.className = "docs-markdown-chip";
+        chip.innerHTML =
+          '<span class="docs-markdown-chip-text">/components/' + slug + '.md</span>' +
+          '<button type="button" class="docs-markdown-chip-copy" aria-label="Copy markdown URL">' +
+          '<svg class="docs-markdown-chip-icon-copy" aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"></rect><path d="M3.5 10.5V3.5a1 1 0 0 1 1-1h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>' +
+          '<svg class="docs-markdown-chip-icon-check" aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>' +
+          "</button>";
+        h1.insertAdjacentElement("afterend", chip);
+
+        var button = chip.querySelector("button");
+        button.addEventListener("click", function () {
+          navigator.clipboard.writeText(url).then(function () {
+            button.setAttribute("data-copied", "true");
+            button.setAttribute("aria-label", "Copied");
+            setTimeout(function () {
+              button.removeAttribute("data-copied");
+              button.setAttribute("aria-label", "Copy markdown URL");
+            }, 1500);
+          });
+        });
+      });
+    </script>
   </head>
   <body>
     <SiteHeader />
     <div class="docs-shell" data-with-sidebar={withSidebar ? "true" : "false"}>
       {
         withSidebar && (
-          <div class="docs-sidebar-slot">
+          <div class="docs-sidebar-slot" transition:persist="docs-sidebar">
             <slot name="sidebar" />
           </div>
         )

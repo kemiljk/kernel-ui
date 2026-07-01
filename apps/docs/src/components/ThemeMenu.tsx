@@ -42,10 +42,10 @@ export default function ThemeMenu() {
         variant="secondary"
         size="sm"
         className="theme-menu-trigger"
-        aria-label="Customize theme"
         popoverTarget={panelId}
+        iconStart={<span className="theme-menu-swatch" aria-hidden="true" />}
       >
-        <span className="theme-menu-swatch" aria-hidden="true" />
+        Theme
       </Button>
       <div ref={mergeRefs(panelRef, floatingRef)} id={panelId} popover="auto" className="theme-menu-panel">
         <ThemeControls />

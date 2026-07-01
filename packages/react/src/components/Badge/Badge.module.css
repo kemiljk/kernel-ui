@@ -4,12 +4,15 @@
   gap: var(--kernel-space-1);
   padding-block: 0.15em;
   padding-inline: var(--kernel-space-2);
-  border-radius: var(--kernel-radius-full);
+  border-radius: var(--kernel-radius-control);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .root[data-variant="neutral"] {

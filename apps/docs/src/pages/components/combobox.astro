@@ -1,7 +1,31 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import ComboboxDemo from "../../components/demos/ComboboxDemo";
+
+const usageSnippet = `import { useState } from "react";
+import { Combobox } from "@kernelui/react";
+
+const frameworks = [
+  { value: "astro", label: "Astro" },
+  { value: "next", label: "Next.js" },
+  { value: "remix", label: "Remix" },
+];
+
+function FrameworkPicker() {
+  const [value, setValue] = useState("");
+
+  return (
+    <Combobox
+      label="Framework"
+      options={frameworks}
+      value={value}
+      onValueChange={setValue}
+      placeholder="Search frameworks…"
+    />
+  );
+}`;
 ---
 
 <BaseLayout title="Combobox" withSidebar>
@@ -9,20 +33,22 @@ import ComboboxDemo from "../../components/demos/ComboboxDemo";
   <div class="docs-prose">
     <h1>Combobox</h1>
     <p>
-      The WAI-ARIA 1.2 combobox pattern: a real <code>&lt;input role="combobox"&gt;</code>
-      that keeps DOM focus the whole time you're typing, with
+      The WAI-ARIA 1.2 combobox pattern: a real <code>&lt;input role="combobox"&gt;</code>{" "}
+      that keeps DOM focus the whole time you're typing, with{" "}
       <code>aria-activedescendant</code> pointing at whichever option in
       the <code>role="listbox"</code> popup is highlighted, the highlight
       moves, focus doesn't. <code>popover="manual"</code> is used
       deliberately here: a combobox needs its own open/close rules (open
       on focus or on typing, not just a single click), so outside-click
-      and Escape dismissal are handled by hand rather than relying on
+      and Escape dismissal are handled by hand rather than relying on{" "}
       <code>popover="auto"</code>.
     </p>
 
     <div class="docs-example">
       <ComboboxDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

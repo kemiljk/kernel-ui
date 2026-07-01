@@ -1,0 +1,71 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import HoverCardDemo from "../../components/demos/HoverCardDemo";
+
+const usageSnippet = `import { Avatar, HoverCard } from "@kernelui/react";
+
+function AuthorLink() {
+  return (
+    <HoverCard
+      render={<a href="https://github.com/karlkoch">@karlkoch</a>}
+      content={
+        <div style={{ display: "flex", gap: "0.75rem" }}>
+          <Avatar fallback="KK" />
+          <div>
+            <div style={{ fontWeight: 600 }}>Karl Koch</div>
+            <div>Designs and builds Kernel UI.</div>
+          </div>
+        </div>
+      }
+    />
+  );
+}`;
+---
+
+<BaseLayout title="Hover Card" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Hover Card</h1>
+    <p>
+      A heavier Tooltip: the same <code>popover="manual"</code> and{" "}
+      <code>useFloatingPosition</code> mechanism, but for richer, often
+      interactive content, so opening and closing are deliberate rather
+      than instant. A real delay before showing gives a passing pointer
+      room to not trigger it, and a matching delay before hiding gives
+      the pointer time to travel from the trigger into the card itself.
+      Focus shows it immediately, a keyboard user tabbing to the trigger
+      shouldn't have to wait out a mouse-tuned delay.
+      <code>interestfor</code> is declared on the trigger too, as a
+      forward-looking, purely additive enhancement for the emerging
+      native hover-intent API.
+    </p>
+
+    <div class="docs-example">
+      <HoverCardDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>content</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>render</code></td><td>the trigger element (required)</td><td>—</td></tr>
+        <tr><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td><td>"bottom"</td></tr>
+        <tr><td><code>openDelay</code></td><td>number (ms)</td><td>400</td></tr>
+        <tr><td><code>closeDelay</code></td><td>number (ms)</td><td>200</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The trigger gets <code>aria-describedby</code> pointing at the card, same as Tooltip.</li>
+      <li>Focus opens the card without the hover delay, so keyboard users aren't penalized for not having a mouse.</li>
+      <li>The card stays open while the pointer is over it, so its content (a link, say) is actually reachable rather than closing the instant the pointer leaves the trigger.</li>
+      <li><code>popover="manual"</code> keeps native top-layer stacking and doesn't fight the custom hover timing the way <code>popover="auto"</code>'s light-dismiss would.</li>
+    </ul>
+  </div>
+</BaseLayout>

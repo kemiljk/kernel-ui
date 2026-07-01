@@ -162,8 +162,20 @@ for (const { name, hue, lightL: themeLightL, darkL: themeDarkL } of themes) {
     ` * still does, deliberately, since it has to work for a hue nobody's`,
     ` * checked yet). Opt in with data-kernel-accent="${name}" on <html> or`,
     ` * any container.`,
-    ` */`,
+    ` *`,
+    ` * Also sets --kernel-hue-accent itself (not just the 12 pre-computed`,
+    ` * --kernel-accent-* steps above): tokens.css defines`,
+    ` * --kernel-hue-neutral as \`var(--kernel-hue-accent)\`, so the whole`,
+    ` * --kernel-gray-* scale — canvas, surface, border, text, everything`,
+    ` * neutral — picks up a faint wash of this theme's hue too, at`,
+    ` * --kernel-chroma-neutral's very low chroma. Without this line the`,
+    ` * 12 accent steps below would re-hue buttons and badges while the`,
+    ` * rest of the page stayed on whatever hue --kernel-hue-accent's own`,
+    ` * fallback in tokens.css happens to be, which reads as the accent`,
+    ` * floating on top of an unrelated page rather than one coherent`,
+    ` * theme. */`,
     `[data-kernel-accent="${name}"] {`,
+    `  --kernel-hue-accent: ${hue};`,
   ];
 
   let step9Light;

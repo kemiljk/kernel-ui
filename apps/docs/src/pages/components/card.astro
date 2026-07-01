@@ -1,7 +1,17 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import CardDemo from "../../components/demos/CardDemo";
+
+const cardSnippet = `import { Card, CardHeader, CardTitle, CardContent } from "@kernelui/react";
+
+<Card>
+  <CardHeader>
+    <CardTitle>Plan usage</CardTitle>
+  </CardHeader>
+  <CardContent>You've used 8 of 10 projects.</CardContent>
+</Card>`;
 ---
 
 <BaseLayout title="Card" withSidebar>
@@ -20,6 +30,8 @@ import CardDemo from "../../components/demos/CardDemo";
     <div class="docs-example">
       <CardDemo client:load />
     </div>
+
+    <UsageAccordion code={cardSnippet} lang="tsx" />
 
     <h2>Parts</h2>
     <table class="docs-table">

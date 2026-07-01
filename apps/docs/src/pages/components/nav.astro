@@ -1,0 +1,74 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import NavDemo from "../../components/demos/NavDemo";
+
+const usageSnippet = `import { Nav, NavLink } from "@kernelui/react";
+
+<Nav aria-label="Docs">
+  <NavLink href="/">Overview</NavLink>
+  <NavLink href="/components/" aria-current="page">
+    Components
+  </NavLink>
+  <NavLink href="/theming">Theming</NavLink>
+</Nav>`;
+---
+
+<BaseLayout title="Nav" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Nav</h1>
+    <p>
+      A real <code>&lt;nav aria-label&gt;</code> wrapping a real
+      <code>&lt;ul&gt;</code>, a list of links is exactly what a list is for.
+      <code>aria-label</code> is required because a page can have more than
+      one <code>&lt;nav&gt;</code> (primary nav, breadcrumbs, pagination),
+      each needs its own accessible name so a screen reader user can tell
+      them apart. Compose it with <code>NavLink</code>, which renders
+      <code>&lt;li&gt;&lt;a&gt;&lt;/a&gt;&lt;/li&gt;</code>.
+    </p>
+    <p>
+      The active link is marked with <code>aria-current="page"</code>. That's
+      the consumer's job, not the component's — in Astro, compute it at build
+      time from <code>Astro.url.pathname</code> and pass it straight through.
+      The active style is a plain <code>[aria-current="page"]</code>{" "}
+      selector, nothing client-side has to run to know which link is active.
+    </p>
+
+    <div class="docs-example">
+      <NavDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>Nav</code></td><td><code>aria-label</code></td><td>string (required)</td></tr>
+        <tr><td><code>NavLink</code></td><td><code>href</code></td><td>string</td></tr>
+        <tr><td><code>NavLink</code></td><td><code>aria-current</code></td><td>"page" | undefined</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        <code>Nav</code> renders a native <code>&lt;nav&gt;</code>, exposed as
+        a <code>navigation</code> landmark. The required <code>aria-label</code>{" "}
+        gives each one on the page a distinct accessible name.
+      </li>
+      <li>
+        <code>NavLink</code> renders a real <code>&lt;a&gt;</code> inside a
+        real <code>&lt;li&gt;</code>, so it's keyboard-focusable and works
+        with browser link affordances (open in new tab, copy link) for free.
+      </li>
+      <li>
+        Set <code>aria-current="page"</code> on the link matching the current
+        route so assistive tech and the
+        <code>[aria-current="page"]</code> style both know which item is active.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

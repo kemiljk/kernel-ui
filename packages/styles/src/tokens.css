@@ -298,12 +298,20 @@
     --kernel-duration-base: 200ms;
     --kernel-duration-slow: 320ms;
 
-    /* A gentle spring-like overshoot for entrances, and a plain
-       deceleration curve for exits (exits should never overshoot). */
-    --kernel-ease-spring: linear(
-      0, 0.394 15.9%, 0.888 32.5%, 1.078 46.1%, 1.129 55.5%,
-      1.114 65.7%, 1.05 77.2%, 1.008 87%, 0.995 92.9%, 1
-    );
+    /* Was a `linear()`-approximated spring with a genuine overshoot
+       (past 1 and back). Replaced with the same strong deceleration
+       curve as --kernel-ease-out: real spring physics (mass/stiffness/
+       damping, interruptible mid-animation) need a JS-driven animation
+       library to do properly — approximating one with a fixed-duration
+       CSS keyframe curve gets the bounce without the interruptibility,
+       which is the actual point of reaching for a spring. A plain
+       strong-ease-out reads as "snappy and intentional" without
+       promising physics this system doesn't deliver. Kept as its own
+       token (rather than deleting it and repointing every consumer to
+       --kernel-ease-out directly) so a future real spring — or a
+       consumer overriding just this one custom property — has
+       somewhere to land without touching every component that uses it. */
+    --kernel-ease-spring: var(--kernel-ease-out);
     --kernel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --kernel-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
 

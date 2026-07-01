@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import SidebarDemo from "../../components/demos/SidebarDemo";
+
+interface Props {}
+
+const usageSnippet = `import { Sidebar } from "@kernelui/react";
+
+<Sidebar aria-label="Table of contents">
+  <ul>
+    <li>Installation</li>
+    <li>Usage</li>
+  </ul>
+</Sidebar>`;
+---
+
+<BaseLayout title="Sidebar" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Sidebar</h1>
+    <p>
+      A real <code>&lt;aside&gt;</code>, the complementary landmark, for
+      secondary content that still makes sense on its own: docs navigation, a
+      table of contents, filters next to a list. <code>aria-label</code> is
+      required because a page can have more than one <code>&lt;aside&gt;</code>,
+      each needs its own accessible name.
+    </p>
+
+    <div class="docs-example">
+      <SidebarDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>aria-label</code></td><td>string (required)</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Renders a native <code>&lt;aside&gt;</code>, exposed as the
+        <code>complementary</code> landmark so assistive tech can skip to or
+        past it independently of the main content.
+      </li>
+      <li>
+        The required <code>aria-label</code> distinguishes it from any other
+        <code>&lt;aside&gt;</code> on the page.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

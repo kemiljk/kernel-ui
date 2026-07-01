@@ -6,16 +6,25 @@
   --docs-content-width: 44rem;
   --docs-shell-width: 78rem;
 
-  /* Kernel's own brand treatment: pill-shaped controls (the same
-     capsule shape Apple uses for buttons and search fields), and a
-     larger base radius so Card/Dialog/Popover/Toast — which derive
-     their own radius from --kernel-radius-md, not -control, to stay
-     concentric without also turning into stadiums — grow into a
-     softer, more generous curve alongside it. This is a presentation
-     choice for this site; the library's own shipped default is
-     unaffected. */
-  --kernel-radius-control: var(--kernel-radius-full);
-  --kernel-radius-base: 1rem;
+  /* Base radius only, deliberately NOT --kernel-radius-control here —
+     read BaseLayout.astro's no-FOUC script before touching this.
+     Kernel's own brand treatment is pill-shaped controls (the same
+     capsule shape Apple uses for buttons and search fields) paired
+     with this generous base radius, matching the "Round" preset in
+     ThemeControls exactly (same two values, paired) — but that pairing
+     is applied by JS, not pinned here unconditionally. An unconditional
+     `--kernel-radius-control: var(--kernel-radius-full)` rule at :root
+     used to live on this line: it beat --kernel-radius-control's own
+     packages/styles default (which derives from --kernel-radius-base,
+     like every other radius tier) for every button/input/toggle on the
+     site, permanently, with no way for a client-side override to
+     "unset" a stylesheet rule back to that default — so selecting
+     Sharp/Soft in the radius playground changed containers and cards
+     but silently left every control pinned to a full pill. Moving the
+     pairing into JS (applied only for "no stored preference yet" or an
+     explicit "Round" selection) is what actually lets Sharp/Soft reach
+     controls too. */
+  --kernel-radius-base: 1.25rem;
 
   /* Shiki's "css-variables" theme (used by every <Code> block on this
      site) reads these instead of shipping its own fixed palette, so
@@ -100,6 +109,68 @@ body {
 /* Same eyebrow language as .section-eyebrow (Vercel Geist-style group
    label) but sized down for the sidebar's much tighter column — a
    docs-prose-scale label here would outweigh the links it introduces. */
+.docs-markdown-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  margin-block: var(--kernel-space-2) 0;
+  padding: var(--kernel-space-1) var(--kernel-space-1) var(--kernel-space-1) var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  /* --kernel-radius-control, not a hardcoded pill — same fix as Badge
+     and Carousel's prev/next: this is a small control-like chip, and
+     should follow the site's radius theme like every other one. */
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-canvas);
+}
+
+.docs-markdown-chip-text {
+  /* A plain span, not a <code> element: this is a URL, not a code
+     sample, and using <code> collided with .docs-prose code's own
+     background/padding (equal specificity, later in the cascade, so it
+     silently won and re-applied inline-code syntax styling here). */
+  font-family: var(--kernel-font-mono);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.docs-markdown-chip-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: none;
+  border-radius: var(--kernel-radius-full);
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: default;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.docs-markdown-chip-copy:hover {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-text);
+}
+
+.docs-markdown-chip-copy:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.docs-markdown-chip-icon-check {
+  display: none;
+}
+
+.docs-markdown-chip-copy[data-copied] .docs-markdown-chip-icon-copy {
+  display: none;
+}
+
+.docs-markdown-chip-copy[data-copied] .docs-markdown-chip-icon-check {
+  display: inline-flex;
+  color: var(--kernel-color-success-text);
+}
+
 .docs-sidebar-eyebrow {
   margin: var(--kernel-space-4) 0 var(--kernel-space-1);
   padding-inline: var(--kernel-space-3);
@@ -181,6 +252,88 @@ body {
   }
 }
 
+/* `display` is deliberately never set here — same bug class fixed
+   earlier on the popover/dialog-based components in packages/react:
+   `dialog:not([open]) { display: none }` is a UA default, and setting
+   `display` unconditionally in author CSS would beat it, leaving a
+   closed panel still laid out and hit-testable. */
+.mobile-nav-panel {
+  margin: 0;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: min(85vw, 20rem);
+  block-size: 100dvh;
+  max-block-size: 100dvh;
+  border: none;
+  border-inline-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: 0;
+  padding: var(--kernel-space-6) var(--kernel-space-4);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-lg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  transform: translateX(-100%);
+  transition:
+    transform var(--kernel-duration-base) var(--kernel-ease-out),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.mobile-nav-panel[open] {
+  transform: translateX(0);
+}
+
+@starting-style {
+  .mobile-nav-panel[open] {
+    transform: translateX(-100%);
+  }
+}
+
+.mobile-nav-panel::backdrop {
+  background-color: oklch(0% 0 0 / 0.45);
+  opacity: 0;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.mobile-nav-panel[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .mobile-nav-panel[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.mobile-nav-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-4);
+  margin-block-end: var(--kernel-space-4);
+}
+
+.mobile-nav-panel-title {
+  font-weight: 600;
+  font-size: var(--kernel-font-size-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-panel {
+    transition: opacity var(--kernel-duration-fast) linear;
+    transform: translateX(0);
+  }
+
+  .mobile-nav-panel::backdrop {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
 .site-header-toggle-desktop {
   display: flex;
   align-items: center;
@@ -212,12 +365,6 @@ body {
   .theme-toggle-icon {
     transition: none;
   }
-}
-
-.theme-menu-trigger {
-  padding: 0;
-  inline-size: calc(var(--kernel-space-unit) * 8);
-  block-size: calc(var(--kernel-space-unit) * 8);
 }
 
 .theme-menu-swatch {
@@ -495,7 +642,11 @@ body {
 
 .command-palette-list {
   margin: 0;
-  padding: var(--kernel-space-2);
+  /* Doubled to match the same "large radius needs more inset" fix
+     applied to packages/react's CommandPalette .content padding — this
+     panel keeps the input full-bleed with its own border separator, so
+     the list's own padding is the equivalent breathing room here. */
+  padding: var(--kernel-space-4);
   list-style: none;
   overflow-y: auto;
 }
@@ -615,12 +766,23 @@ body {
   gap: var(--kernel-space-4);
   padding: var(--kernel-space-8);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
-  /* Concentric with whatever the demo inside it renders (usually a
-     control at --kernel-radius-md's actual radius, pill-shaped or
-     not): matches the same outer = inner + padding math the shared
-     components use, computed here since this box is docs-only
-     furniture, not a shipped component. */
-  border-radius: calc(var(--kernel-radius-md) + var(--kernel-space-8));
+  /* NOT the outer = inner + padding concentric formula the shipped
+     components use (Card/Dialog/Popover's own --kernel-radius-container/
+     -sheet): that math is only meaningful when "inner" is a single
+     known control sharing that exact padding. This box frames arbitrary
+     demo content, so the honest relationship is "scales with the
+     theme," not "concentric with something." A flat --kernel-space-8
+     addition on top of --kernel-radius-md used to dominate the result
+     (35px at Sharp vs 52px at Round), which didn't read as "reaching"
+     Sharp at all — but scaling --kernel-radius-md by a large enough
+     factor alone (an earlier version of this rule used *3) overshoots
+     the other way at Round, on a box this size ending up close enough
+     to a full stadium that it stops reading as "a sharper/rounder
+     rectangle" and starts reading as "a pill," which is wrong for a
+     content-framing box. The `* 1.6 + space-4` split keeps a real,
+     visible Sharp→Round range (~21px→~48px) without either extreme
+     misreading. */
+  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
   background-color: var(--kernel-color-canvas);
   background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
   background-size: 16px 16px;
@@ -635,7 +797,9 @@ body {
   gap: var(--kernel-space-8);
   padding: var(--kernel-space-8);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: calc(var(--kernel-radius-md) + var(--kernel-space-8));
+  /* Same fix, same reasoning as .docs-example above: scales with the
+     theme instead of being dominated by a flat padding addition. */
+  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
   background-color: var(--kernel-color-surface);
 }
 
@@ -1011,6 +1175,12 @@ body {
   background-color: var(--kernel-color-canvas);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-md);
+  /* Shiki's <pre> carries its own solid background-color as an inline
+     style and sits flush against this box's inner edge (no padding of
+     its own is set here). Without clipping it, that background is a
+     plain rectangle that overhangs past the rounded corners above —
+     it reads as the corner itself being "cut off" square. */
+  overflow: hidden;
 }
 
 /* Every code block has a copy button floating over its top-right
@@ -1053,6 +1223,93 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .code-block-copy {
+    transition: none;
+  }
+}
+
+/* Mirrors packages/react's Accordion component smart defaults (same
+   chevron rotation, ::details-content height animation, select-none
+   summary text) so the docs shell's own disclosure widgets feel like
+   the library practicing what it ships, not a one-off. */
+.usage-accordion {
+  margin-block-start: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface);
+  overflow: hidden;
+}
+
+.usage-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-3) var(--kernel-space-4);
+  font-family: var(--kernel-font-sans);
+  font-weight: 500;
+  cursor: default;
+  list-style: none;
+  user-select: none;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.usage-accordion-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.usage-accordion-trigger::marker {
+  content: "";
+}
+
+.usage-accordion-trigger:hover {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.usage-accordion-trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.usage-accordion-chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.usage-accordion[open] .usage-accordion-chevron {
+  rotate: 180deg;
+}
+
+.usage-accordion-content {
+  padding: 0 var(--kernel-space-4) var(--kernel-space-4);
+}
+
+.usage-accordion-content .code-block {
+  margin: 0;
+}
+
+@supports selector(::details-content) {
+  .usage-accordion::details-content {
+    overflow: hidden;
+    height: 0;
+    transition:
+      height var(--kernel-duration-base) var(--kernel-ease-spring),
+      content-visibility var(--kernel-duration-base) allow-discrete;
+  }
+
+  .usage-accordion[open]::details-content {
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .usage-accordion-chevron {
+    transition: none;
+  }
+
+  .usage-accordion::details-content {
     transition: none;
   }
 }

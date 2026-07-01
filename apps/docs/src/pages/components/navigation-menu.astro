@@ -1,0 +1,72 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import NavigationMenuDemo from "../../components/demos/NavigationMenuDemo";
+
+const usageSnippet = `import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuTrigger,
+} from "@kernelui/react";
+
+function ProductNav() {
+  return (
+    <NavigationMenu aria-label="Product">
+      <NavigationMenuItem>
+        <NavigationMenuLink href="/pricing">Pricing</NavigationMenuLink>
+      </NavigationMenuItem>
+      <NavigationMenuItem>
+        <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
+        <NavigationMenuContent>
+          <NavigationMenuLink href="/solutions/startups">For Startups</NavigationMenuLink>
+          <NavigationMenuLink href="/solutions/enterprise">For Enterprise</NavigationMenuLink>
+        </NavigationMenuContent>
+      </NavigationMenuItem>
+    </NavigationMenu>
+  );
+}`;
+---
+
+<BaseLayout title="Navigation Menu" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Navigation Menu</h1>
+    <p>
+      A real <code>&lt;nav&gt;</code> of top-level items, each either a plain
+      link or a trigger that opens a mega-menu panel. The panel reuses
+      Dropdown Menu's exact mechanism: <code>popover="auto"</code> for
+      outside-click and Escape dismissal, top-layer stacking, and no
+      client-side positioning logic once CSS anchor positioning is
+      available. It opens on click, not hover, so it behaves the same on a
+      touchscreen as it does with a mouse.
+    </p>
+
+    <div class="docs-example">
+      <NavigationMenuDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>NavigationMenu</code></td><td><code>aria-label</code></td><td>string (required)</td></tr>
+        <tr><td><code>NavigationMenuLink</code></td><td><code>href</code></td><td>string (required)</td></tr>
+        <tr><td><code>NavigationMenuTrigger</code></td><td><code>children</code></td><td>ReactNode</td></tr>
+        <tr><td><code>NavigationMenuContent</code></td><td><code>children</code></td><td>ReactNode</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The menu is a labelled <code>&lt;nav&gt;</code> landmark; pass a descriptive <code>aria-label</code>.</li>
+      <li>Items with no submenu are real <code>&lt;a&gt;</code> elements, so browser navigation, find-in-page, and middle-click all work unmodified.</li>
+      <li>Triggers expose <code>aria-haspopup</code> and <code>aria-expanded</code>, kept in sync with the popover's own open state.</li>
+      <li>Escape and clicking outside close an open panel natively, via the popover, no extra JavaScript.</li>
+    </ul>
+  </div>
+</BaseLayout>

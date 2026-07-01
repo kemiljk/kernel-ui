@@ -1,0 +1,72 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import ResizableDemo from "../../components/demos/ResizableDemo";
+
+const usageSnippet = `import { Resizable } from "@kernelui/react";
+
+function SplitView() {
+  return (
+    <Resizable defaultSplit={40} min={20} max={80}>
+      <div>Pane A</div>
+      <div>Pane B</div>
+    </Resizable>
+  );
+}`;
+---
+
+<BaseLayout title="Resizable" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Resizable</h1>
+    <p>
+      Two panes and a divider. The divider is a <code>role="separator"</code>,
+      the same ARIA shape as <a href="/components/slider">Slider</a>'s{" "}
+      <code>aria-valuenow</code>/<code>-min</code>/<code>-max</code> triad, just
+      reporting a split percentage instead of a number. Drag it with a
+      pointer or resize it with the keyboard, the grid template that
+      actually sizes the panes lives entirely in CSS, driven by one custom
+      property.
+    </p>
+
+    <div class="docs-example">
+      <ResizableDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>children</code></td><td>[ReactNode, ReactNode] (required)</td><td>—</td></tr>
+        <tr><td><code>defaultSplit</code></td><td>number</td><td>50</td></tr>
+        <tr><td><code>min</code> / <code>max</code></td><td>number</td><td>20 / 80</td></tr>
+        <tr><td><code>orientation</code></td><td><code>"horizontal"</code> | <code>"vertical"</code></td><td>"horizontal"</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        The divider has <code>role="separator"</code> with{" "}
+        <code>aria-orientation</code>, <code>aria-valuenow</code>,
+        <code>aria-valuemin</code>, and <code>aria-valuemax</code> reflecting
+        the current split as a percentage.
+      </li>
+      <li>The divider is focusable (<code>tabIndex={0}</code>).</li>
+      <li>
+        Arrow Left/Up decreases the split and Arrow Right/Down increases
+        it, in the direction matching the current <code>orientation</code>;
+        hold Shift for a larger step.
+      </li>
+      <li><code>Home</code> and <code>End</code> jump to <code>min</code> and <code>max</code>.</li>
+      <li>
+        While dragging, the document can't accidentally text-select
+        (<code>user-select: none</code> on the root), same fix as
+        Accordion's drag handling elsewhere in this library.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

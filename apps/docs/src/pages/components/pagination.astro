@@ -1,7 +1,18 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import PaginationDemo from "../../components/demos/PaginationDemo";
+
+const usageSnippet = `import { Pagination, PaginationItem, PaginationPrevious, PaginationNext } from "@kernelui/react";
+
+<Pagination>
+  <PaginationPrevious />
+  <PaginationItem href="?page=1">1</PaginationItem>
+  <PaginationItem href="?page=2" current>2</PaginationItem>
+  <PaginationItem href="?page=3">3</PaginationItem>
+  <PaginationNext />
+</Pagination>`;
 ---
 
 <BaseLayout title="Pagination" withSidebar>
@@ -17,6 +28,8 @@ import PaginationDemo from "../../components/demos/PaginationDemo";
     <div class="docs-example">
       <PaginationDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Parts</h2>
     <table class="docs-table">

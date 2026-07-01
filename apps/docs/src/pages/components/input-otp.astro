@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import InputOTPDemo from "../../components/demos/InputOTPDemo";
+
+const usageSnippet = `import { useState } from "react";
+import { InputOTP } from "@kernelui/react";
+
+function VerifyCode() {
+  const [value, setValue] = useState("");
+
+  return (
+    <InputOTP
+      length={6}
+      label="Verification code"
+      value={value}
+      onValueChange={setValue}
+      onComplete={(code) => console.log("submit", code)}
+    />
+  );
+}`;
+---
+
+<BaseLayout title="Input OTP" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Input OTP</h1>
+    <p>
+      A row of real <code>&lt;input&gt;</code> elements sharing one logical
+      value: the concatenated code string. Typing a digit advances focus to
+      the next cell, backspace on an empty cell moves back, and pasting a
+      full code fills every cell at once.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <InputOTPDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead>
+        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>length</code></td><td>number</td><td>6</td></tr>
+        <tr><td><code>value</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>defaultValue</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>onValueChange</code></td><td>(value: string) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>onComplete</code></td><td>(value: string) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>label</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Each cell is a real <code>&lt;input&gt;</code>, grouped in a{" "}
+        <code>&lt;fieldset&gt;</code> with a <code>&lt;legend&gt;</code> when
+        a <code>label</code> is given, the same grouping semantics a screen
+        reader user already expects from a set of related inputs.
+      </li>
+      <li>
+        <code>autoComplete="one-time-code"</code> is a real, standardized
+        autofill hint: browsers and password managers use it specifically
+        to offer one-tap SMS or email code entry, no custom parsing needed.
+      </li>
+      <li>
+        Every cell is visually unlabeled, so each one carries its own{" "}
+        <code>aria-label</code> (for example <code>"Digit 1 of 6"</code>) so
+        assistive technology announces position within the code, not just
+        "edit text" six times in a row.
+      </li>
+      <li>
+        Arrow Left/Right move focus between cells without changing their
+        content, matching expectations from native text fields.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

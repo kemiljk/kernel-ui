@@ -23,12 +23,20 @@ export type AccentName = (typeof ACCENTS)[number];
 export interface RadiusOption {
   name: string;
   value: string;
+  /** Pairs a `--kernel-radius-control` override with this base value —
+   * "Round" is Kernel's own pill-controls brand treatment, which only
+   * makes sense alongside a generous base radius. Sharp/Soft leave
+   * `--kernel-radius-control` unset, so buttons/inputs/toggles fall
+   * back to the natural `--kernel-radius-md` cascade like every other
+   * radius tier — otherwise a site-wide pill override would silently
+   * defeat this exact control for two-thirds of the presets. */
+  control?: string;
 }
 
 export const RADII: RadiusOption[] = [
   { name: "Sharp", value: "0.1875rem" },
   { name: "Soft", value: "0.5rem" },
-  { name: "Round", value: "1.25rem" },
+  { name: "Round", value: "1.25rem", control: "var(--kernel-radius-full)" },
 ];
 
 export type ColorScheme = "light" | "dark";
@@ -36,6 +44,7 @@ export type ColorScheme = "light" | "dark";
 const STORAGE_KEYS = {
   accent: "kernel:accent",
   radius: "kernel:radius",
+  radiusControl: "kernel:radius-control",
   scheme: "kernel:color-scheme",
 } as const;
 
@@ -61,9 +70,16 @@ export function applyAccent(name: AccentName) {
   announce();
 }
 
-export function applyRadius(value: string) {
-  document.documentElement.style.setProperty("--kernel-radius-base", value);
-  localStorage.setItem(STORAGE_KEYS.radius, value);
+export function applyRadius(radius: RadiusOption) {
+  document.documentElement.style.setProperty("--kernel-radius-base", radius.value);
+  localStorage.setItem(STORAGE_KEYS.radius, radius.value);
+  if (radius.control) {
+    document.documentElement.style.setProperty("--kernel-radius-control", radius.control);
+    localStorage.setItem(STORAGE_KEYS.radiusControl, radius.control);
+  } else {
+    document.documentElement.style.removeProperty("--kernel-radius-control");
+    localStorage.removeItem(STORAGE_KEYS.radiusControl);
+  }
   announce();
 }
 
@@ -80,6 +96,13 @@ export function getStoredAccent(): AccentName | null {
 
 export function getStoredRadiusValue(): string | null {
   return localStorage.getItem(STORAGE_KEYS.radius);
+}
+
+/** `null` means "no override" — Sharp/Soft deliberately clear this key
+ * so `--kernel-radius-control` falls back to its natural
+ * `--kernel-radius-md` cascade instead of staying pinned to pill. */
+export function getStoredRadiusControl(): string | null {
+  return localStorage.getItem(STORAGE_KEYS.radiusControl);
 }
 
 /** The radius option name (Sharp/Soft/Round) matching whatever value is

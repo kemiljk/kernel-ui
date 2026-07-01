@@ -45,16 +45,23 @@
   scale: 0.96;
 }
 
+/* Same "tint the whole surface" convention Alert already uses for
+   this exact variant set, rather than a thin border-left accent —
+   Toast and Alert are the same status-communication language, they
+   should read as one. */
 .toast[data-variant="success"] {
-  border-inline-start: 3px solid var(--kernel-color-success);
+  background-color: var(--kernel-color-success-subtle);
+  border-color: var(--kernel-color-success);
 }
 
 .toast[data-variant="warning"] {
-  border-inline-start: 3px solid var(--kernel-color-warning);
+  background-color: var(--kernel-color-warning-subtle);
+  border-color: var(--kernel-color-warning);
 }
 
 .toast[data-variant="danger"] {
-  border-inline-start: 3px solid var(--kernel-color-danger);
+  background-color: var(--kernel-color-danger-subtle);
+  border-color: var(--kernel-color-danger);
 }
 
 .content {

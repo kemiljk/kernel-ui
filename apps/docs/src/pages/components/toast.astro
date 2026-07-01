@@ -1,7 +1,19 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import ToastDemo from "../../components/demos/ToastDemo";
+
+const usageSnippet = `import { Button, ToastViewport, toast } from "@kernelui/react";
+
+function SaveButton() {
+  return (
+    <>
+      <Button onClick={() => toast.success("Changes published")}>Publish</Button>
+      <ToastViewport />
+    </>
+  );
+}`;
 ---
 
 <BaseLayout title="Toast" withSidebar>
@@ -14,14 +26,16 @@ import ToastDemo from "../../components/demos/ToastDemo";
       Mount <code>&lt;ToastViewport /&gt;</code> once, near the root of
       your app, to actually render them. Every toast is its own live
       region, <code>role="alert"</code> for <code>danger</code>/
-      <code>warning</code>, <code>role="status"</code> for
-      <code>default</code>/<code>success</code>, the same reasoning as
+      <code>warning</code>, <code>role="status"</code> for{" "}
+      <code>default</code>/<code>success</code>, the same reasoning as{" "}
       <a href="/components/alert/">Alert</a>.
     </p>
 
     <div class="docs-example">
       <ToastDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>API</h2>
     <table class="docs-table">

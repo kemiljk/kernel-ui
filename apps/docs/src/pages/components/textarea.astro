@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import TextareaDemo from "../../components/demos/TextareaDemo";
+
+const usageSnippet = `import { Textarea } from "@kernelui/react";
+
+<Textarea label="Feedback" description="What went wrong?" />`;
 ---
 
 <BaseLayout title="Textarea" withSidebar>
@@ -9,8 +14,8 @@ import TextareaDemo from "../../components/demos/TextareaDemo";
   <div class="docs-prose">
     <h1>Textarea</h1>
     <p>
-      A real <code>&lt;textarea&gt;</code> that grows with its content via
-      <code>field-sizing: content</code>, instead of a JavaScript
+      A real <code>&lt;textarea&gt;</code> that grows with its content via{" "}
+      <code>field-sizing: content</code>, instead of a JavaScript{" "}
       <code>scrollHeight</code>-measuring resize handler. Falls back to a
       manual resize handle in browsers that don't support it yet.
     </p>
@@ -18,6 +23,8 @@ import TextareaDemo from "../../components/demos/TextareaDemo";
     <div class="docs-example">
       <TextareaDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">

@@ -1,0 +1,90 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import CarouselDemo from "../../components/demos/CarouselDemo";
+
+const usageSnippet = `import { Carousel, CarouselSlide } from "@kernelui/react";
+
+const slides = ["Slide 1", "Slide 2", "Slide 3"];
+
+function ProductGallery() {
+  return (
+    <Carousel aria-label="Product photos">
+      {slides.map((label) => (
+        <CarouselSlide key={label}>{label}</CarouselSlide>
+      ))}
+    </Carousel>
+  );
+}`;
+---
+
+<BaseLayout title="Carousel" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Carousel</h1>
+    <p>
+      <code>scroll-snap-type</code> and <code>scroll-snap-align</code> on a
+      real scrolling container, not a JS carousel engine. Touch dragging,
+      trackpad scrolling, and momentum all come from the browser for free.
+      The only JavaScript is wiring the Prev/Next buttons and dot
+      indicators to <code>scrollIntoView</code>, and an{" "}
+      <code>IntersectionObserver</code> that watches which slide is
+      actually visible so the right control state and dot can be
+      highlighted.
+    </p>
+
+    <div class="docs-example">
+      <CarouselDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>children</code></td><td>ReactNode (required) — each direct child is one slide</td><td>—</td></tr>
+        <tr><td><code>aria-label</code></td><td>string (required)</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Parts</h2>
+    <table class="docs-table">
+      <thead><tr><th>Component</th><th>Renders</th></tr></thead>
+      <tbody>
+        <tr><td><code>Carousel</code></td><td><code>&lt;div role="region"&gt;</code> wrapping the scroll container, Prev/Next buttons, and dots</td></tr>
+        <tr><td><code>CarouselSlide</code></td><td><code>&lt;div role="group" aria-roledescription="slide"&gt;</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        The outer wrapper is <code>role="region"</code> with the{" "}
+        <code>aria-label</code> you pass, plus{" "}
+        <code>aria-roledescription="carousel"</code>, the standard ARIA
+        Authoring Practices pattern for identifying this as a carousel
+        landmark to assistive tech.
+      </li>
+      <li>
+        Each slide is <code>role="group"</code> with{" "}
+        <code>aria-roledescription="slide"</code>.
+      </li>
+      <li>
+        The scroll container has <code>tabIndex={"{0}"}</code> so it's
+        keyboard-focusable at all: a plain <code>&lt;div&gt;</code> with{" "}
+        <code>overflow: auto</code> is not in the tab order by default.
+        Once focused, arrow keys, Page Up/Down, Home, and End scroll it
+        natively, no key handler required.
+      </li>
+      <li>
+        <code>IntersectionObserver</code>-driven "current slide" tracking
+        (for highlighting the active dot and disabling Prev/Next at the
+        ends) is a progressive enhancement layered on top of that native
+        scrolling, not a requirement for basic usability: scrolling,
+        snapping, and keyboard navigation all work without it.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

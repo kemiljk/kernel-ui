@@ -1,0 +1,82 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import DataTableDemo from "../../components/demos/DataTableDemo";
+
+const usageSnippet = `import { DataTable } from "@kernelui/react";
+import type { DataTableColumn } from "@kernelui/react";
+
+interface TeamMember {
+  name: string;
+  role: string;
+}
+
+const members: TeamMember[] = [
+  { name: "Ada Okoye", role: "Engineering" },
+  { name: "Bram Visser", role: "Design" },
+];
+
+const columns: DataTableColumn<TeamMember>[] = [
+  { key: "name", header: "Name", render: (row) => row.name, sortable: true },
+  { key: "role", header: "Role", render: (row) => row.role, sortable: true },
+];
+
+function TeamTable() {
+  return <DataTable columns={columns} data={members} rowKey={(row) => row.name} />;
+}`;
+---
+
+<BaseLayout title="Data Table" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Data Table</h1>
+    <p>
+      <code>Table</code> plus the behaviour layered on top: a{" "}
+      <code>TextField</code> filters rows, sortable columns are real{" "}
+      <code>&lt;button&gt;</code>s in the header, and <code>Pagination</code>{" "}
+      splits the result into pages, all composed from existing primitives,
+      not a new grid widget. Filter, sort, and page state live inside the
+      component, so you hand it columns and data and it does the rest.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <DataTableDemo client:load />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>columns</code></td><td><code>DataTableColumn&lt;T&gt;[]</code> (required)</td><td>—</td></tr>
+        <tr><td><code>data</code></td><td><code>T[]</code> (required)</td><td>—</td></tr>
+        <tr><td><code>rowKey</code></td><td><code>(row: T) =&gt; string</code> (required)</td><td>—</td></tr>
+        <tr><td><code>filterPlaceholder</code></td><td>string</td><td>"Filter"</td></tr>
+        <tr><td><code>pageSize</code></td><td>number</td><td>10</td></tr>
+        <tr><td><code>caption</code></td><td>ReactNode</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Column shape</h2>
+    <table class="docs-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>key</code></td><td>string (required)</td><td>—</td></tr>
+        <tr><td><code>header</code></td><td>string (required)</td><td>—</td></tr>
+        <tr><td><code>render</code></td><td><code>(row: T) =&gt; ReactNode</code> (required)</td><td>—</td></tr>
+        <tr><td><code>sortable</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>sortValue</code></td><td><code>(row: T) =&gt; string | number</code></td><td>falls back to <code>render</code>'s text</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Sortable headers set <code>aria-sort="ascending" | "descending" | "none"</code> directly on the <code>&lt;th&gt;</code>, the standard way to expose sort state, rather than a custom visual-only indicator.</li>
+      <li>The sort control inside each sortable header is a real, focusable <code>&lt;button&gt;</code>, keyboard-activatable with Enter or Space, not a clickable <code>&lt;div&gt;</code>.</li>
+      <li>A <code>role="status"</code> live region reports the filtered result count, so assistive tech hears "3 results" when the filter narrows the table, without needing to re-read the whole table.</li>
+      <li>Pagination reuses <code>Pagination</code>'s own <code>&lt;nav aria-label="Pagination"&gt;</code> and <code>aria-current="page"</code> wiring unchanged.</li>
+    </ul>
+  </div>
+</BaseLayout>

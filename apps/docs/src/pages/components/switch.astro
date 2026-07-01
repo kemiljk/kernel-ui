@@ -1,7 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
 import SwitchDemo from "../../components/demos/SwitchDemo";
+
+const usageSnippet = `import { Switch } from "@kernelui/react";
+
+<Switch defaultChecked>Enable notifications</Switch>`;
 ---
 
 <BaseLayout title="Switch" withSidebar>
@@ -11,7 +16,7 @@ import SwitchDemo from "../../components/demos/SwitchDemo";
     <p>
       There's no native switch element yet, so this follows the WAI-ARIA
       switch pattern: a real <code>&lt;button role="switch"&gt;</code>, which
-      gets click, Space/Enter, and focus for free, with
+      gets click, Space/Enter, and focus for free, with{" "}
       <code>aria-checked</code> telling assistive tech it's a two-state
       toggle rather than a regular button.
     </p>
@@ -19,6 +24,8 @@ import SwitchDemo from "../../components/demos/SwitchDemo";
     <div class="docs-example">
       <SwitchDemo client:load />
     </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <table class="docs-table">
@@ -33,7 +40,7 @@ import SwitchDemo from "../../components/demos/SwitchDemo";
 
     <h2>Accessibility</h2>
     <p>
-      Wrapping it with label text works because <code>&lt;button&gt;</code>
+      Wrapping it with label text works because <code>&lt;button&gt;</code>{" "}
       is a labelable element, exactly like <code>&lt;input&gt;</code>, so
       clicking the text toggles the switch without any extra click handler.
     </p>
