@@ -57,6 +57,18 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Sitewide baseline tracking for every heading (-1.4%, expressed in em
+   since `letter-spacing` has no percentage unit in CSS). Marketing-size
+   type (.hero h1, .closing h2) already sets its own tighter -0.02em
+   and wins on specificity, unaffected by this — this rule exists for
+   every OTHER heading (docs-prose content headings, feature cards,
+   principles, comparison, platforms) that had no tracking at all. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.014em;
+}
+
 .docs-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
