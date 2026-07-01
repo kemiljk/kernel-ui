@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Button, Nav, NavLink } from "@kernelui/react";
+import { CrossIcon, HamburgerMenuIcon } from "./icons";
 
 interface MobileNavProps {
   items: { href: string; label: string }[];
@@ -51,14 +52,7 @@ export default function MobileNav({ items, currentPath }: MobileNavProps) {
         className="mobile-nav-trigger"
         onClick={() => setOpen(true)}
       >
-        <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none">
-          <path
-            d="M2 4h12M2 8h12M2 12h12"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <HamburgerMenuIcon width="16" height="16" />
         Components
       </Button>
       <dialog
@@ -84,14 +78,7 @@ export default function MobileNav({ items, currentPath }: MobileNavProps) {
             aria-label="Close"
             onClick={() => setOpen(false)}
           >
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
-              <path
-                d="M4 4L12 12M12 4L4 12"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <CrossIcon width="16" height="16" />
           </Button>
         </div>
         <Nav aria-label="Components">

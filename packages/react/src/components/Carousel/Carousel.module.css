@@ -58,9 +58,11 @@
   inset-inline-end: var(--kernel-space-3);
 }
 
-.prev:hover:not(:disabled),
-.next:hover:not(:disabled) {
-  background-color: var(--kernel-gray-4);
+@media (hover: hover) and (pointer: fine) {
+  .prev:hover:not(:disabled),
+  .next:hover:not(:disabled) {
+    background-color: var(--kernel-gray-4);
+  }
 }
 
 .prev:focus-visible,
@@ -97,8 +99,10 @@
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.dot:hover {
-  background-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .dot:hover {
+    background-color: var(--kernel-color-border-hover);
+  }
 }
 
 .dot:focus-visible {

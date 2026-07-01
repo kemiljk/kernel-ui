@@ -79,8 +79,13 @@ export function TabsList({ children, className, ...rest }: TabsListProps) {
 
     let duration = 0;
     if (!isFirstRender && !reducedMotion) {
+      // A short hop between adjacent tabs should still feel unmistakably
+      // like travel, not a flicker, and a long hop across a wide tablist
+      // should take noticeably longer to cross — same "magnetic" feel as
+      // macOS's Dock magnification, where distance and duration are
+      // visibly linked rather than every move reading identically fast.
       const distance = Math.abs(nextX - previousX);
-      duration = Math.min(320, Math.max(120, distance * 0.6));
+      duration = Math.min(560, Math.max(220, distance * 1.1));
     }
 
     indicator.style.transitionDuration = `${duration}ms`;

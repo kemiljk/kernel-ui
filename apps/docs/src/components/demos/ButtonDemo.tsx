@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@kernelui/react";
+import { CheckIcon, CopyIcon, MagnifyingGlassIcon } from "../icons";
 
 export default function ButtonDemo() {
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,13 @@ export default function ButtonDemo() {
       </Button>
       <Button disabled>Disabled</Button>
       <Button render={<a href="#rendered-as-link" />}>Rendered as a link</Button>
+      <Button variant="secondary" iconStart={<MagnifyingGlassIcon width="14" height="14" />}>
+        Search
+      </Button>
+      <Button variant="primary" iconEnd={<CheckIcon width="14" height="14" />}>
+        Mark as done
+      </Button>
+      <Button variant="ghost" aria-label="Copy" iconStart={<CopyIcon width="14" height="14" />} />
     </>
   );
 }

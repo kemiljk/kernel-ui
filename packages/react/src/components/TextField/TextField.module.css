@@ -43,8 +43,10 @@
   font-size: var(--kernel-font-size-lg);
 }
 
-.input:hover:not(:disabled) {
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .input:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
 }
 
 .input:focus-visible {

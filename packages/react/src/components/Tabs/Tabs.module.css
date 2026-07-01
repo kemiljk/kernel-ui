@@ -34,11 +34,11 @@
   border-radius: var(--kernel-radius-sm);
   box-shadow: var(--kernel-shadow-sm);
   transition-property: transform;
-  /* Deliberately not the spring curve other components use for a
-     physical slide (e.g. Switch's thumb) — a tab indicator should read
-     as a crisp, deliberate snap to the new selection, not a bouncy
-     settle. Strong ease-out: fast off the mark, gentle landing. */
-  transition-timing-function: var(--kernel-ease-out);
+  /* A slight overshoot-and-settle, not a pure deceleration: paired with
+     the distance-scaled duration in Tabs.tsx, this is what makes the
+     indicator read as magnetically "pulled" toward the newly-selected
+     tab rather than mechanically sliding to a stop at it. */
+  transition-timing-function: var(--kernel-ease-magnetic);
 }
 
 .tab {

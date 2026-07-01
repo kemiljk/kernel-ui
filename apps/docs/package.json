@@ -10,12 +10,13 @@
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 astro check"
   },
   "dependencies": {
-    "@kernelui/react": "workspace:*",
-    "@kernelui/styles": "workspace:*",
-    "@kernelui/elements": "workspace:*",
     "@astrojs/react": "^6.0.0",
+    "@astropub/icons": "^0.2.0",
     "@fontsource-variable/inclusive-sans": "^5.2.8",
     "@fontsource-variable/lilex": "^5.2.1",
+    "@kernelui/elements": "workspace:*",
+    "@kernelui/react": "workspace:*",
+    "@kernelui/styles": "workspace:*",
     "astro": "^7.0.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

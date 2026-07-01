@@ -39,8 +39,10 @@
     box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.cell:hover:not(:disabled) {
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .cell:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
 }
 
 .cell[data-filled] {

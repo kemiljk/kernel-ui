@@ -34,12 +34,19 @@
   background-color: transparent;
   color: var(--kernel-color-text);
   cursor: pointer;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.navButton:hover {
-  background-color: var(--kernel-gray-3);
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .navButton:hover {
+    background-color: var(--kernel-gray-3);
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.navButton:active {
+  scale: 0.94;
 }
 
 .navButton:focus-visible {
@@ -82,11 +89,18 @@
   color: var(--kernel-color-text);
   font: inherit;
   cursor: pointer;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.dayButton:hover:not(:disabled) {
-  background-color: var(--kernel-gray-3);
+@media (hover: hover) and (pointer: fine) {
+  .dayButton:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+  }
+}
+
+.dayButton:active:not(:disabled) {
+  scale: 0.94;
 }
 
 .dayButton:focus-visible {
@@ -110,8 +124,10 @@
   color: var(--kernel-color-on-accent);
 }
 
-.dayButton[data-selected]:hover:not(:disabled) {
-  background-color: var(--kernel-color-accent-hover);
+@media (hover: hover) and (pointer: fine) {
+  .dayButton[data-selected]:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-hover);
+  }
 }
 
 /* A dot under today's number, distinct from the selected state's solid
@@ -145,5 +161,10 @@
   .navButton,
   .dayButton {
     transition: none;
+  }
+
+  .navButton:active,
+  .dayButton:active:not(:disabled) {
+    scale: 1;
   }
 }

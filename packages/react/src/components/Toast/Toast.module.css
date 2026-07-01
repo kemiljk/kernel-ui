@@ -3,14 +3,27 @@
   inset-block-end: var(--kernel-space-6);
   inset-inline-end: var(--kernel-space-6);
   z-index: var(--kernel-z-overlay);
-  display: flex;
-  flex-direction: column;
-  gap: var(--kernel-space-2);
   inline-size: min(24rem, calc(100vw - var(--kernel-space-8)));
   pointer-events: none;
 }
 
+/* Every toast is `position: absolute`, anchored to the same bottom edge,
+   and moved into its stacked position entirely via the `translate`
+   Toast.tsx computes from real measured heights (expanded) or a fixed
+   per-depth step (collapsed) — never by flex layout. A flex column with
+   `gap` was the previous approach, and it's what caused the stack to
+   visibly jump: inserting or removing a flex child changes the
+   container's own implicit height instantly, with no transition, on top
+   of whatever transition each toast's own properties were mid-flight on.
+   Every toast here occupies the exact same box (inset: 0 auto 0 0,
+   `position: absolute`) at all times, so adding or removing one is just
+   another element appearing/disappearing at a `translate` value — nothing
+   about anyone else's box model changes, only the transform each one was
+   already smoothly transitioning towards. */
 .toast {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
   display: flex;
   align-items: flex-start;
   gap: var(--kernel-space-3);
@@ -22,21 +35,71 @@
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   pointer-events: auto;
+  transform-origin: top center;
 
   opacity: 1;
-  translate: 0 0;
   scale: 1;
+  filter: blur(0px);
   transition:
-    opacity var(--kernel-duration-base) var(--kernel-ease-out),
-    translate var(--kernel-duration-base) var(--kernel-ease-spring),
-    scale var(--kernel-duration-base) var(--kernel-ease-out);
+    opacity var(--kernel-duration-slow) var(--kernel-ease-out),
+    translate var(--kernel-duration-slow) var(--kernel-ease-spring),
+    scale var(--kernel-duration-slow) var(--kernel-ease-spring),
+    filter var(--kernel-duration-slow) var(--kernel-ease-out);
 }
 
+/* Depth-based recede: `data-depth` is capped at `MAX_COLLAPSED_DEPTH + 1`
+   in Toast.tsx, so this only needs to style four concrete steps rather
+   than an open-ended count. `[data-expanded]` on the viewport (hover, or
+   focus landing on any toast inside it) drops every one of these back to
+   full scale/opacity — the position itself is already correct at that
+   point too, since Toast.tsx recomputes `translate` from real heights the
+   instant `expanded` flips, using this same transition. */
+.toast[data-depth="1"] {
+  scale: 0.96;
+  opacity: 0.9;
+}
+
+.toast[data-depth="2"] {
+  scale: 0.92;
+  opacity: 0.55;
+  filter: blur(0.5px);
+}
+
+.toast[data-depth="3"] {
+  scale: 0.92;
+  opacity: 0;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+.viewport[data-expanded] .toast {
+  scale: 1;
+  opacity: 1;
+  filter: blur(0px);
+  pointer-events: auto;
+}
+
+/* A new toast starts a full step further down than its own resting
+   `translate` (set inline from Toast.tsx, always `0` for a brand-new
+   arrival) and eases up into place — at the same time, and with the same
+   duration/easing as the demoted toasts' own `translate` transition above
+   settles them backward, so the arrival and the recede read as one
+   connected push, not two coincidentally-simultaneous animations. */
 @starting-style {
   .toast {
     opacity: 0;
-    translate: 0 8px;
-    scale: 0.96;
+    /* `!important`: a brand-new toast's resting position (set inline
+       from Toast.tsx) is always `translate: 0px 0px` — it's always depth
+       0 the instant it's inserted — so this needs to actually beat that
+       inline value for the element's very first painted frame, the one
+       moment `@starting-style` exists to describe, or there'd be nothing
+       to transition FROM. */
+    translate: 0 var(--kernel-space-12) !important;
+    /* A deliberately bigger pop than the depth steps below (0.8, not
+       0.9+): those are a subtle recede for something still fully in view,
+       this is a toast arriving from nothing, and reads better with more
+       room to visibly grow into. */
+    scale: 0.8;
   }
 }
 
@@ -64,6 +127,37 @@
   border-color: var(--kernel-color-danger);
 }
 
+/* Same filled-badge convention as Alert's `.icon` (see the variant-colour
+   comment above) — sized down slightly since Toast's type scale is one
+   step smaller than Alert's. */
+.icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  margin-block-start: 0.0625rem;
+  border-radius: var(--kernel-radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.toast[data-variant="success"] .icon {
+  background-color: var(--kernel-color-success);
+  color: var(--kernel-color-on-success);
+}
+
+.toast[data-variant="warning"] .icon {
+  background-color: var(--kernel-color-warning);
+  color: var(--kernel-color-on-warning);
+}
+
+.toast[data-variant="danger"] .icon {
+  background-color: var(--kernel-color-danger);
+  color: var(--kernel-color-on-danger);
+}
+
 .content {
   flex: 1;
   min-inline-size: 0;
@@ -86,27 +180,74 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  margin: calc(-1 * var(--kernel-space-1));
   border: none;
   border-radius: var(--kernel-radius-sm);
   background: none;
+  /* Reads the same "which status is this" colour as the icon badge and
+     the border tint, not a flat neutral grey regardless of variant —
+     a danger toast's close control should look like it belongs to a
+     danger toast. */
   color: var(--kernel-color-text-muted);
   cursor: default;
+  opacity: 0.7;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.close:hover {
-  background-color: var(--kernel-gray-4);
-  color: var(--kernel-color-text);
+.toast[data-variant="success"] .close {
+  color: var(--kernel-color-success-text);
+}
+
+.toast[data-variant="warning"] .close {
+  color: var(--kernel-color-warning-text);
+}
+
+.toast[data-variant="danger"] .close {
+  color: var(--kernel-color-danger-text);
+}
+
+/* Declutters like Sonner's default (no close button until you're looking
+   at that specific toast) on devices that actually have hover; touch
+   devices keep it dimly visible always, rather than hidden behind a hover
+   state they can't produce — the same fix as the docs' code-copy button,
+   which used to disappear entirely on touch for the same reason. */
+@media (hover: hover) and (pointer: fine) {
+  .close {
+    opacity: 0;
+  }
+
+  .toast:hover .close {
+    opacity: 0.7;
+  }
+
+  .close:hover {
+    background-color: var(--kernel-gray-4);
+    opacity: 1;
+  }
 }
 
 .close:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 2px;
+  opacity: 1;
+}
+
+/* Mid-swipe, the close control is a distraction, not an affordance — you're
+   already interacting with the whole toast via the drag itself. */
+.toast[data-dragging] .close {
+  opacity: 0;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .toast {
+    /* Position, scale, and depth still update instantly (Toast.tsx keeps
+       computing real `translate` values so nothing overlaps) — only the
+       animated glide between values is what reduced motion removes. */
     transition: opacity var(--kernel-duration-fast) linear;
   }
 }

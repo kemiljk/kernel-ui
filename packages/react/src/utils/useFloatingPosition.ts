@@ -13,6 +13,18 @@ const supportsAnchorPositioning =
   typeof CSS !== "undefined" && CSS.supports("anchor-name: --kernel-support-check");
 
 /**
+ * The floating element should grow out of the edge it's anchored to, not
+ * scale symmetrically from its own center — the opposite edge from where
+ * it's positioned relative to the anchor.
+ */
+const TRANSFORM_ORIGIN_BY_PLACEMENT: Record<FloatingPlacement, string> = {
+  top: "bottom center",
+  bottom: "top center",
+  left: "center right",
+  right: "center left",
+};
+
+/**
  * Positions a floating element (a tooltip, popover, or menu) relative to
  * its anchor. CSS anchor positioning (`anchor-name`/`position-anchor`/
  * `position-area`) does the actual work wherever it's supported, no
@@ -46,10 +58,13 @@ export function useFloatingPosition<
       floating.style.setProperty("position-area", placement);
       floating.style.setProperty("position-try-fallbacks", `flip-block, flip-inline`);
       floating.style.setProperty("margin", `${offset}px`);
+      floating.style.transformOrigin = TRANSFORM_ORIGIN_BY_PLACEMENT[placement];
       return;
     }
 
     if (!open) return;
+
+    floating.style.transformOrigin = TRANSFORM_ORIGIN_BY_PLACEMENT[placement];
 
     function reposition() {
       const anchor = anchorRef.current;

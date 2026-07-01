@@ -33,8 +33,10 @@
   block-size: calc(var(--kernel-space-unit) * 12);
 }
 
-.root:hover:not(:disabled) {
-  background-color: var(--kernel-gray-3);
+@media (hover: hover) and (pointer: fine) {
+  .root:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+  }
 }
 
 .root[data-state="on"] {
@@ -50,4 +52,14 @@
 .root:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition: none;
+  }
+
+  .root:active:not(:disabled) {
+    scale: 1;
+  }
 }

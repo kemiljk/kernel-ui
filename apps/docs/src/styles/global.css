@@ -160,9 +160,11 @@ h3 {
     color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.docs-markdown-chip-copy:hover {
-  background-color: var(--kernel-color-accent-subtle);
-  color: var(--kernel-color-text);
+@media (hover: hover) and (pointer: fine) {
+  .docs-markdown-chip-copy:hover {
+    background-color: var(--kernel-color-accent-subtle);
+    color: var(--kernel-color-text);
+  }
 }
 
 .docs-markdown-chip-copy:focus-visible {
@@ -243,8 +245,10 @@ h3 {
   padding-inline-start: var(--kernel-space-6);
 }
 
-.toc-item a:hover {
-  color: var(--kernel-color-text);
+@media (hover: hover) and (pointer: fine) {
+  .toc-item a:hover {
+    color: var(--kernel-color-text);
+  }
 }
 
 .toc-item a[aria-current="true"] {
@@ -255,6 +259,20 @@ h3 {
 
 .mobile-nav-trigger {
   display: none;
+  /* Sticky, not fixed: it stays exactly where it already sits in the
+     content flow (above the page's own h1) until scrolling would carry
+     it past the top of the viewport, at which point it pins there
+     instead of disappearing — the sidebar it stands in for on narrow
+     viewports would otherwise be reachable at any scroll position, so
+     losing this trigger off the top of the screen would be a regression
+     for a long component page. Offset below the sticky Header itself
+     (block-size calc(--kernel-space-unit * 16), its own sticky
+     `inset-block-start: 0`), not to `0`: otherwise this and the header
+     would both pin to the same spot and the header's opaque background
+     would paint over the trigger, since the header's z-index
+     (--kernel-z-overlay) outranks any value reasonable here. */
+  position: sticky;
+  inset-block-start: calc(calc(var(--kernel-space-unit) * 16) + var(--kernel-space-4));
   margin-block-end: var(--kernel-space-6);
 }
 
@@ -463,8 +481,10 @@ h3 {
   text-decoration: none;
 }
 
-.site-footer-nav a:hover {
-  color: var(--kernel-color-text);
+@media (hover: hover) and (pointer: fine) {
+  .site-footer-nav a:hover {
+    color: var(--kernel-color-text);
+  }
 }
 
 .site-footer-nav a:focus-visible {
@@ -678,6 +698,17 @@ h3 {
   background-color: var(--kernel-color-accent-subtle);
 }
 
+/* Mouse hover gets its own purely-visual highlight, separate from
+   `[data-active]` (keyboard/arrow-key selection): CommandPalette.tsx no
+   longer moves the keyboard-selection index on `onMouseEnter`, so
+   scrolling the mouse over the list while navigating with arrow keys
+   can't steal the active item out from under the keyboard. */
+@media (hover: hover) and (pointer: fine) {
+  .command-palette-item:hover {
+    background-color: var(--kernel-color-accent-subtle);
+  }
+}
+
 .command-palette-item-name {
   font-weight: 500;
   flex-shrink: 0;
@@ -864,6 +895,20 @@ h3 {
 }
 
 .hero-copy {
+  /* Positioned + stacked above .hero-visual on purpose: the phyllotaxis
+     canvas is deliberately oversized relative to its own frame (see
+     PhyllotaxisSpiral.astro's OVERFLOW comment) and grid items don't
+     clip overflowing content by default, so it visually spills into
+     this column's space, especially once .hero collapses to one
+     column below 800px and the two stack. Without an explicit z-index,
+     positioned descendants (the canvas's own `position: relative`
+     wrapper) paint above plain static in-flow content regardless of
+     DOM order, which is what let dots render on top of the heading
+     text. This keeps the copy legible on top wherever the two overlap,
+     while still letting the spiral read as bleeding "past" its frame
+     underneath. */
+  position: relative;
+  z-index: 1;
   max-inline-size: 34rem;
 }
 
@@ -925,7 +970,6 @@ h3 {
   inset-block-start: 50%;
   inset-inline-start: 50%;
   translate: -50% -50%;
-  touch-action: none;
   /* The library reset caps every canvas/img/svg at max-width: 100% of
      its container, which is the right default everywhere else but
      silently squashed this one specifically: JS sets an equal
@@ -1149,8 +1193,10 @@ h3 {
   text-decoration: none;
 }
 
-.platforms-cta a:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .platforms-cta a:hover {
+    text-decoration: underline;
+  }
 }
 
 .comparison-intro {
@@ -1227,10 +1273,15 @@ h3 {
   transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.code-block:hover .code-block-copy,
 .code-block:focus-within .code-block-copy,
 .code-block-copy:focus-visible {
   opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .code-block:hover .code-block-copy {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1273,8 +1324,10 @@ h3 {
   content: "";
 }
 
-.usage-accordion-trigger:hover {
-  background-color: var(--kernel-color-accent-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .usage-accordion-trigger:hover {
+    background-color: var(--kernel-color-accent-subtle);
+  }
 }
 
 .usage-accordion-trigger:focus-visible {

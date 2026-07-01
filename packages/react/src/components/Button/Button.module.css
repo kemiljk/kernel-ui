@@ -65,8 +65,10 @@
   color: var(--kernel-color-on-accent);
 }
 
-.root[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) {
-  background-color: var(--kernel-color-accent-hover);
+@media (hover: hover) and (pointer: fine) {
+  .root[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--kernel-color-accent-hover);
+  }
 }
 
 .root[data-variant="primary"]:active:not(:disabled, [aria-disabled="true"]) {
@@ -80,9 +82,11 @@
   color: var(--kernel-color-text);
 }
 
-.root[data-variant="secondary"]:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--kernel-color-border-hover);
-  background-color: var(--kernel-color-surface-raised);
+@media (hover: hover) and (pointer: fine) {
+  .root[data-variant="secondary"]:hover:not(:disabled, [aria-disabled="true"]) {
+    border-color: var(--kernel-color-border-hover);
+    background-color: var(--kernel-color-surface-raised);
+  }
 }
 
 /* Variant: ghost */
@@ -91,8 +95,10 @@
   color: var(--kernel-color-text);
 }
 
-.root[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) {
-  background-color: var(--kernel-color-accent-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .root[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--kernel-color-accent-subtle);
+  }
 }
 
 /* Variant: danger */
@@ -101,8 +107,10 @@
   color: var(--kernel-color-on-danger);
 }
 
-.root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
-  background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+@media (hover: hover) and (pointer: fine) {
+  .root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+  }
 }
 
 .label {

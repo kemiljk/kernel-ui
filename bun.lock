@@ -10,6 +10,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@astrojs/react": "^6.0.0",
+        "@astropub/icons": "^0.2.0",
         "@fontsource-variable/inclusive-sans": "^5.2.8",
         "@fontsource-variable/lilex": "^5.2.1",
         "@kernelui/elements": "workspace:*",
@@ -109,6 +110,8 @@
     "@astrojs/telemetry": ["@astrojs/telemetry@3.3.2", "", { "dependencies": { "ci-info": "^4.4.0", "dset": "^3.1.4", "is-docker": "^4.0.0", "is-wsl": "^3.1.1", "which-pm-runs": "^1.1.0" } }, "sha512-j8DNruA8ors99Al39RYZPJK4DC1bKkoNm93mAMuBhY9TCNC4R8n1q7ovFnJ5qhGh5Lsh7pa1gpQVpYpsJPeTHQ=="],
 
     "@astrojs/yaml2ts": ["@astrojs/yaml2ts@0.2.4", "", { "dependencies": { "yaml": "^2.8.3" } }, "sha512-8oddpOae35pJsXPQXhTkM0ypfKPskVsh2bCxRtbf7e+/Epw2nReakFYpLKjZMEr75CsoF203PMnCocpfz0s69A=="],
+
+    "@astropub/icons": ["@astropub/icons@0.2.0", "", { "peerDependencies": { "astro": "*" } }, "sha512-qM/ldW/9rVHULNOZgz/23Yzgm2r3Iy2JJ1FuvJB6sFU67n61o1ImuXdHiaWSNoEHubD+IUkD9WG0hbhINgszqA=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
 

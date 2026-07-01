@@ -32,9 +32,11 @@
     color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.link:hover {
-  background-color: var(--kernel-color-accent-subtle);
-  color: var(--kernel-color-text);
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    background-color: var(--kernel-color-accent-subtle);
+    color: var(--kernel-color-text);
+  }
 }
 
 .link:focus-visible {

@@ -37,8 +37,10 @@
   content: "";
 }
 
-.trigger:hover {
-  background-color: var(--kernel-color-accent-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .trigger:hover {
+    background-color: var(--kernel-color-accent-subtle);
+  }
 }
 
 .trigger:focus-visible {
@@ -79,7 +81,7 @@
     overflow: hidden;
     height: 0;
     transition:
-      height var(--kernel-duration-base) var(--kernel-ease-spring),
+      height var(--kernel-duration-base) var(--kernel-ease-in-out),
       content-visibility var(--kernel-duration-base) allow-discrete;
   }
 

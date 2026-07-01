@@ -40,11 +40,18 @@
   color: transparent;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.input:hover:not(:disabled) + .control {
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .input:hover:not(:disabled) + .control {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.input:active:not(:disabled) + .control {
+  scale: 0.95;
 }
 
 .input:checked + .control,
@@ -70,16 +77,16 @@
 }
 
 .checkmark {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
   opacity: 0;
+  scale: 0.6;
+  transform-origin: center;
   transition:
-    stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-spring),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
     opacity var(--kernel-duration-fast) linear;
 }
 
 .input:checked + .control .checkmark {
-  stroke-dashoffset: 0;
+  scale: 1;
   opacity: 1;
 }
 
@@ -103,5 +110,9 @@
 @media (prefers-reduced-motion: reduce) {
   .checkmark {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .input:active:not(:disabled) + .control {
+    scale: 1;
   }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import { mergeRefs, renderElement, type RenderProp } from "../../utils/polymorphic";
 import { useFloatingPosition, type FloatingPlacement } from "../../utils/useFloatingPosition";
 import styles from "./HoverCard.module.css";
@@ -70,6 +70,15 @@ export function HoverCard({
     }, delay);
   }
 
+  /** Touch synthesizes pointerenter/pointerleave on tap with no real
+   * "hovering" in between, so a touch tap would otherwise trigger this
+   * mouse-tuned open-delay affordance for an input that has no hover
+   * concept at all; `onFocus` (below) already covers tap-to-reveal. */
+  function showOnHover(event: { pointerType: string }, delay: number) {
+    if (event.pointerType === "touch") return;
+    show(delay);
+  }
+
   function scheduleHide() {
     clearTimeout(openTimeoutRef.current);
     closeTimeoutRef.current = setTimeout(() => {
@@ -89,7 +98,7 @@ export function HoverCard({
       ref: anchorRef,
       "aria-describedby": id,
       interestfor: id,
-      onPointerEnter: () => show(openDelay),
+      onPointerEnter: (event: ReactPointerEvent) => showOnHover(event, openDelay),
       onPointerLeave: scheduleHide,
       onFocus: () => show(0),
       onBlur: scheduleHide,

@@ -61,6 +61,14 @@ export function Resizable({
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
+    // The OS cursor icon is computed from whatever's physically under the
+    // pointer, not the element that captured it, so a fast drag over pane
+    // content would otherwise flicker the resize cursor away even though
+    // pointer capture keeps tracking correct. Locking it on `body` for the
+    // drag's duration, rather than just this element, is what actually
+    // keeps the cursor consistent everywhere the pointer travels.
+    document.body.style.cursor = orientation === "horizontal" ? "col-resize" : "row-resize";
+    document.body.style.userSelect = "none";
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -71,6 +79,8 @@ export function Resizable({
   function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
     event.currentTarget.releasePointerCapture(event.pointerId);
     setDragging(false);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {

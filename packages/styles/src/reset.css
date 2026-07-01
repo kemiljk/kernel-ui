@@ -19,6 +19,15 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     tab-size: 4;
+    /* Inherited, so this one root declaration is what lets a `transition:
+       height` (Accordion's `::details-content`, e.g.) actually animate
+       between `0` and `auto` anywhere in the tree — without it, browsers
+       that support this property still default to `numeric-only`, which
+       treats `auto` as non-interpolatable and just snaps instantly, with
+       no error or warning that the transition silently isn't happening.
+       Inert (not just guarded-and-skipped) in browsers that don't support
+       it yet: same instant-snap fallback as before this existed. */
+    interpolate-size: allow-keywords;
   }
 
   body {

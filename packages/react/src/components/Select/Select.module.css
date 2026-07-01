@@ -32,11 +32,18 @@
   color: var(--kernel-color-text);
   padding-inline: var(--kernel-space-3) var(--kernel-space-8);
   font-size: var(--kernel-font-size-base);
-  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.select:hover:not(:disabled) {
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .select:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.select:active:not(:disabled) {
+  scale: 0.99;
 }
 
 .select:focus-visible {
@@ -74,4 +81,14 @@
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select {
+    transition: border-color var(--kernel-duration-fast) linear;
+  }
+
+  .select:active:not(:disabled) {
+    scale: 1;
+  }
 }

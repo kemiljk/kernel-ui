@@ -59,7 +59,12 @@
   border-radius: var(--kernel-radius-full);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
-  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.input:active:not(:disabled) + .control {
+  scale: 0.94;
 }
 
 .control::after {
@@ -72,8 +77,10 @@
   transition: scale var(--kernel-duration-fast) var(--kernel-ease-spring);
 }
 
-.input:hover:not(:disabled) + .control {
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .input:hover:not(:disabled) + .control {
+    border-color: var(--kernel-color-border-hover);
+  }
 }
 
 .input:checked + .control {
@@ -96,4 +103,14 @@
 
 .label {
   user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control::after {
+    transition: none;
+  }
+
+  .input:active:not(:disabled) + .control {
+    scale: 1;
+  }
 }

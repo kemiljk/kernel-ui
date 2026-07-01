@@ -40,9 +40,11 @@
   cursor: default;
 }
 
-.item:hover,
-.control:hover:not(:disabled) {
-  background-color: var(--kernel-gray-3);
+@media (hover: hover) and (pointer: fine) {
+  .item:hover,
+  .control:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+  }
 }
 
 .item[aria-current="page"] {

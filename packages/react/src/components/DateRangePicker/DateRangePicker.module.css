@@ -34,12 +34,19 @@
   background-color: transparent;
   color: var(--kernel-color-text);
   cursor: pointer;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.navButton:hover {
-  background-color: var(--kernel-gray-3);
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .navButton:hover {
+    background-color: var(--kernel-gray-3);
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.navButton:active {
+  scale: 0.94;
 }
 
 .navButton:focus-visible {
@@ -91,11 +98,25 @@
   color: var(--kernel-color-text);
   font: inherit;
   cursor: pointer;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.dayButton:hover:not(:disabled) {
-  background-color: var(--kernel-gray-3);
+.dayButton:active:not(:disabled) {
+  scale: 0.94;
+}
+
+/* Scoped to :hover itself, not the base rule: range-start/-end reassigns
+   to a new day on every `pointerenter` while previewing a range, and that
+   reassignment needs to land instantly. A transition on the base rule
+   would also apply to that JS-driven attribute flip, not just genuine
+   hover, and the day the range preview just left would keep fading out
+   after the pointer had already moved past it, visibly trailing behind a
+   fast sweep instead of tracking the cursor 1:1. */
+@media (hover: hover) and (pointer: fine) {
+  .dayButton:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+    transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), color var(--kernel-duration-fast) var(--kernel-ease-out);
+  }
 }
 
 .dayButton:focus-visible {
@@ -123,9 +144,11 @@
   color: var(--kernel-color-on-accent);
 }
 
-.dayButton[data-range-start]:hover:not(:disabled),
-.dayButton[data-range-end]:hover:not(:disabled) {
-  background-color: var(--kernel-color-accent-hover);
+@media (hover: hover) and (pointer: fine) {
+  .dayButton[data-range-start]:hover:not(:disabled),
+  .dayButton[data-range-end]:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-hover);
+  }
 }
 
 /* The side of the button facing the rest of the range goes flush/square
@@ -175,7 +198,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .navButton,
-  .dayButton {
+  .dayButton,
+  .dayButton:hover:not(:disabled) {
     transition: none;
+  }
+
+  .navButton:active,
+  .dayButton:active:not(:disabled) {
+    scale: 1;
   }
 }

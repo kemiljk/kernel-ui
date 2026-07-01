@@ -16,8 +16,10 @@
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.row:hover {
-  background-color: var(--kernel-gray-2);
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background-color: var(--kernel-gray-2);
+  }
 }
 
 .head {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@kernelui/react";
 import { components } from "../data/components";
+import { MagnifyingGlassIcon } from "./icons";
 
 /** A fixed, hardcoded id rather than `useId()`: the mobile nav's own
  * search trigger (a plain button in a different island) needs to
@@ -105,12 +106,7 @@ export default function CommandPalette() {
         size="sm"
         className="command-palette-trigger"
         popoverTarget={COMMAND_PALETTE_ID}
-        iconStart={
-          <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none">
-            <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        }
+        iconStart={<MagnifyingGlassIcon width="14" height="14" />}
       >
         Search
         <kbd className="command-palette-kbd">⌘K</kbd>
@@ -137,7 +133,6 @@ export default function CommandPalette() {
                 href={item.href}
                 className="command-palette-item"
                 data-active={index === activeIndex || undefined}
-                onMouseEnter={() => setActiveIndex(index)}
               >
                 <span className="command-palette-item-name">{item.name}</span>
                 <span className="command-palette-item-summary">{item.summary}</span>

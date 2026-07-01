@@ -55,9 +55,14 @@
   inset-block: 0;
 }
 
-.divider:hover,
 .divider[data-dragging] {
   background-color: var(--kernel-color-border-hover);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .divider:hover {
+    background-color: var(--kernel-color-border-hover);
+  }
 }
 
 .divider[data-dragging] {

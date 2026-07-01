@@ -58,7 +58,6 @@
   cursor: default;
 }
 
-.item:hover:not(:disabled),
 .item:focus-visible {
   background-color: var(--kernel-color-accent-subtle);
   outline: none;
@@ -73,8 +72,15 @@
   color: var(--kernel-color-danger-text);
 }
 
-.item[data-destructive]:hover:not(:disabled) {
-  background-color: var(--kernel-color-danger-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .item:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-subtle);
+    outline: none;
+  }
+
+  .item[data-destructive]:hover:not(:disabled) {
+    background-color: var(--kernel-color-danger-subtle);
+  }
 }
 
 .separator {

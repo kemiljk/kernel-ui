@@ -314,6 +314,23 @@
     --kernel-ease-spring: var(--kernel-ease-out);
     --kernel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --kernel-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    /* A longer, more pronounced deceleration than --kernel-ease-out, with
+       no overshoot: it should read as pulled toward its target by an
+       invisible magnet and gliding smoothly to a stop there, not
+       bouncing past it and settling back. Paired with Tabs' own
+       distance-scaled duration, "magnetic" describes the pull getting
+       perceptibly slower to travel the further it has to reach, the same
+       way a real magnetic field weakens with distance — not a spring
+       overshoot. */
+    --kernel-ease-magnetic: cubic-bezier(0.22, 1, 0.36, 1);
+    /* For properties that move or resize *on screen* (height, translate
+       between two visible positions) rather than entering/exiting —
+       accelerates then decelerates, unlike --kernel-ease-out's pure
+       deceleration, which is for things arriving from off-screen or
+       from nothing. Using --kernel-ease-out (or the spring alias) on a
+       resizing element like Accordion's height overshoots visually,
+       which a clipped `height` can't actually do. */
+    --kernel-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
     /* ---------------------------------------------------------------- */
     /* Elevation                                                        */

@@ -1,4 +1,5 @@
 ---
+import { ChevronDown } from "@astropub/icons";
 import CodeBlock from "./CodeBlock.astro";
 
 interface Props {
@@ -12,20 +13,7 @@ const { code, lang } = Astro.props;
 <details class="usage-accordion">
   <summary class="usage-accordion-trigger">
     <span>Usage</span>
-    <svg
-      class="usage-accordion-chevron"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M4 6L8 10L12 6"
-        stroke="currentColor"
-        stroke-width="1.75"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
+    <ChevronDown class="usage-accordion-chevron" aria-hidden="true" />
   </summary>
   <div class="usage-accordion-content">
     <CodeBlock code={code} lang={lang} />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@kernelui/react";
+import { CheckIcon, CopyIcon } from "./icons";
 
 interface CopyButtonProps {
   text: string;
@@ -35,16 +36,7 @@ export default function CopyButton({ text }: CopyButtonProps) {
       aria-label={copied ? "Copied" : "Copy code"}
       onClick={handleCopy}
     >
-      {copied ? (
-        <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none">
-          <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ) : (
-        <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none">
-          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M3.5 10.5V3.5a1 1 0 0 1 1-1h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      )}
+      {copied ? <CheckIcon width="14" height="14" /> : <CopyIcon width="14" height="14" />}
     </Button>
   );
 }

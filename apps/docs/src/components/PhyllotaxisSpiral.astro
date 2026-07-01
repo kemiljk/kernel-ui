@@ -108,7 +108,6 @@
     let spread = 1;
     let lastTime = 0;
     let lastRotation = 0;
-    let dragRotation = 0;
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     // How much bigger the canvas itself is than the box that lays it
@@ -238,8 +237,8 @@
       ctx.clearRect(0, 0, width, height);
       if (reducedMotionQuery.matches) {
         drawGlow(0);
-        drawConnections(dragRotation);
-        drawPoints(0, dragRotation, false);
+        drawConnections(0);
+        drawPoints(0, 0, false);
       } else {
         drawGlow(lastTime);
         drawConnections(lastRotation);
@@ -281,25 +280,6 @@
       }
     }
 
-    // Drag to tilt-rotate the spiral a little further — a light,
-    // discrete, user-initiated gesture, not an ambient effect, so it
-    // stays enabled even under prefers-reduced-motion.
-    let dragging = false;
-    let lastX = 0;
-
-    canvas.addEventListener("pointerdown", (e) => {
-      dragging = true;
-      lastX = e.clientX;
-    });
-    canvas.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      dragRotation += (e.clientX - lastX) * 0.008;
-      lastX = e.clientX;
-    });
-    window.addEventListener("pointerup", () => {
-      dragging = false;
-    });
-
     let rafId = 0;
 
     function renderStatic() {
@@ -318,7 +298,7 @@
 
     function loop(timestamp: number) {
       lastTime = timestamp / 1000;
-      lastRotation = lastTime * 0.015 + dragRotation;
+      lastRotation = lastTime * 0.015;
       globalTime++;
       // Stops for good once the full pattern (MAX_POINTS) exists —
       // this used to keep incrementing pointIndex well past that
@@ -361,7 +341,7 @@
       // Paint the seeded pattern immediately rather than waiting for
       // the first requestAnimationFrame callback, so there's no flash
       // of an empty hero before the loop gets scheduled.
-      renderFrame(0, dragRotation);
+      renderFrame(0, 0);
       rafId = requestAnimationFrame(loop);
     }
 

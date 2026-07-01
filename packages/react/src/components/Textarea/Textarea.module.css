@@ -30,8 +30,10 @@
   transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.input:hover:not(:disabled) {
-  border-color: var(--kernel-color-border-hover);
+@media (hover: hover) and (pointer: fine) {
+  .input:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
 }
 
 .input:focus-visible {

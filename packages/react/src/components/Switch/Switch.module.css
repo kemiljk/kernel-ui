@@ -27,11 +27,18 @@
   cursor: inherit;
   padding: 0;
   transition: background-color var(--kernel-duration-base) var(--kernel-ease-out),
-    border-color var(--kernel-duration-base) var(--kernel-ease-out);
+    border-color var(--kernel-duration-base) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.control:hover:not(:disabled):not([data-state="checked"]) {
-  border-color: var(--kernel-color-border-hover);
+.control:active:not(:disabled) {
+  scale: 0.97;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .control:hover:not(:disabled):not([data-state="checked"]) {
+    border-color: var(--kernel-color-border-hover);
+  }
 }
 
 .control[data-state="checked"] {
@@ -93,5 +100,9 @@
 @media (prefers-reduced-motion: reduce) {
   .thumb {
     transition: translate var(--kernel-duration-fast) linear;
+  }
+
+  .control:active:not(:disabled) {
+    scale: 1;
   }
 }

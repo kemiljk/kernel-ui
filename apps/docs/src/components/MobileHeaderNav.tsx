@@ -3,6 +3,7 @@ import { Button, Nav, NavLink } from "@kernelui/react";
 import ThemeToggle from "./ThemeToggle";
 import ThemeControls from "./ThemeControls";
 import { COMMAND_PALETTE_ID } from "./CommandPalette";
+import { HamburgerMenuIcon, MagnifyingGlassIcon } from "./icons";
 
 interface MobileHeaderNavProps {
   items: { href: string; label: string }[];
@@ -31,14 +32,7 @@ export default function MobileHeaderNav({ items, currentPath }: MobileHeaderNavP
         aria-label="Menu"
         popoverTarget={panelId}
       >
-        <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none">
-          <path
-            d="M2 4h12M2 8h12M2 12h12"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <HamburgerMenuIcon width="16" height="16" />
       </Button>
       <div id={panelId} popover="auto" className="mobile-header-nav-panel">
         <Button
@@ -47,12 +41,7 @@ export default function MobileHeaderNav({ items, currentPath }: MobileHeaderNavP
           size="sm"
           className="mobile-header-nav-search"
           popoverTarget={COMMAND_PALETTE_ID}
-          iconStart={
-            <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none">
-              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          }
+          iconStart={<MagnifyingGlassIcon width="14" height="14" />}
         >
           Search components
         </Button>

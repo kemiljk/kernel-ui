@@ -25,9 +25,11 @@
   border-radius: var(--kernel-radius-sm);
 }
 
-.link:hover {
-  color: var(--kernel-color-text);
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    color: var(--kernel-color-text);
+    text-decoration: underline;
+  }
 }
 
 .link:focus-visible {
