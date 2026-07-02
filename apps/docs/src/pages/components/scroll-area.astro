@@ -32,12 +32,21 @@ import ScrollAreaPlayground from "../../components/demos/ScrollAreaPlayground";
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
       <tbody>
         <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>edgeShadow</code></td><td>boolean</td><td>false</td></tr>
       </tbody>
     </table>
+    <p>
+      <code>edgeShadow</code> shows an inset shadow at whichever edge still
+      has content to scroll toward, top, bottom, or both, and hides it again
+      once you've actually scrolled that edge into view. It tracks scroll
+      position rather than the scroll gesture itself, so it never cuts off
+      mid-scroll the moment your finger or wheel stops.
+    </p>
 
     <h2>Accessibility</h2>
     <ul>
       <li>A native overflow container is already keyboard-scrollable once focused, nothing extra to wire up.</li>
+      <li><code>edgeShadow</code>'s transition respects <code>prefers-reduced-motion</code>.</li>
     </ul>
   </div>
 </BaseLayout>

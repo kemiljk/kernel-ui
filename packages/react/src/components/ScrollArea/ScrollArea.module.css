@@ -24,3 +24,24 @@
   background-color: var(--kernel-color-border-interactive);
   border-radius: var(--kernel-radius-full);
 }
+
+/* Edge shadow: an inset shadow at whichever edge still has content to
+   scroll toward, gone once you've actually scrolled that edge into
+   view. --kernel-scroll-shadow-top/-bottom (0–1, how close the
+   respective edge is) are plain unregistered custom properties set
+   from JS on scroll/resize — no `@property` needed, since `box-shadow`
+   itself is what transitions, not the properties feeding its calc(). */
+.root[data-edge-shadow] {
+  --kernel-scroll-shadow-top: 0;
+  --kernel-scroll-shadow-bottom: 0;
+  box-shadow:
+    inset 0 8px 8px -8px oklch(0% 0 0 / calc(0.16 * var(--kernel-scroll-shadow-top))),
+    inset 0 -8px 8px -8px oklch(0% 0 0 / calc(0.16 * var(--kernel-scroll-shadow-bottom)));
+  transition: box-shadow var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root[data-edge-shadow] {
+    transition: none;
+  }
+}
