@@ -1,9 +1,11 @@
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
@@ -37,14 +39,10 @@ export interface ToastViewportProps {
 }
 
 /** Matches --kernel-space-2, the gap real flex layout used to provide.
- * Kept as a plain number since it feeds a JS sum, not a CSS declaration. */
+ * Kept as a plain number since it feeds a JS sum (the expanded `--offset`),
+ * not a CSS declaration. The collapsed per-depth peek step, by contrast,
+ * lives entirely in CSS (a fixed 10px) — it needs no real heights. */
 const STACK_GAP = 8;
-/** Fixed per-depth peek offset while collapsed — deliberately not derived
- * from real heights like the expanded offsets below: Sonner's own
- * collapsed stack uses fixed steps too, real height differences between
- * toasts would make the peeking slivers behind the front toast visibly
- * uneven, which reads as messier, not more accurate. */
-const COLLAPSED_STEP = 10;
 const MAX_COLLAPSED_DEPTH = 3;
 
 /**
@@ -57,6 +55,9 @@ export function ToastViewport({ className }: ToastViewportProps) {
   const toasts = useSyncExternalStore(subscribeToasts, getToastSnapshot, getToastSnapshot);
   const [expanded, setExpanded] = useState(false);
   const [heights, setHeights] = useState<Map<string, number>>(() => new Map());
+  const collapseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(collapseTimer.current), []);
 
   const reportHeight = useCallback((id: string, height: number) => {
     setHeights((previous) => {
@@ -73,6 +74,16 @@ export function ToastViewport({ className }: ToastViewportProps) {
   // A toast mid-exit no longer counts toward anyone else's offset — the
   // gap it leaves should close immediately behind it while it fades
   // independently in place, not hold its spot until it's actually gone.
+  //
+  // This computes each toast's *expanded* offset (px from the anchor) and
+  // hands it to CSS as the `--offset` custom property. It is NOT turned into
+  // a JS `translate` — the actual transform lives in the stylesheet, keyed
+  // off the viewport's single `data-expanded` attribute (see Toast.module.css).
+  // That's the whole fix: hovering flips one attribute and CSS recomputes
+  // positions; React never writes a per-render transform that a mid-flight
+  // transition could get retargeted to. (The previous model recomputed
+  // `translateY` here every render and wrote it inline, so any height/state
+  // churn during the expand animation restarted the transition — the flicker.)
   let cumulative = 0;
   const expandedOffsetByDepth: number[] = [];
   for (let depth = 0; depth < toasts.length; depth++) {
@@ -83,42 +94,39 @@ export function ToastViewport({ className }: ToastViewportProps) {
     }
   }
 
-  // The viewport's own box needs to actually cover the current stack, in
-  // whichever state it's in, or the hover target itself becomes a moving
-  // one: expanding spreads every toast behind the front one out to its
-  // real height + a real gap, and a fixed-size hoverable box that doesn't
-  // grow to match leaves true dead space between them the instant they
-  // spread apart. The pointer falls into that gap mid-expansion, that
-  // reads as "left the stack" and collapses it back, which snaps
-  // something back under the pointer and expands it again — a flicker
-  // loop, not a one-off glitch, for as long as the pointer sits in what
-  // used to be a gap. Sizing this box to the real current extent (front
-  // toast's height while collapsed, the full `cumulative` sum once
-  // expanded) means there is never a gap for the pointer to fall into in
-  // the first place.
-  const frontHeight = heights.get(toasts[toasts.length - 1]?.id ?? "") ?? 60;
-  const collapsedHeight = frontHeight + Math.min(toasts.length - 1, MAX_COLLAPSED_DEPTH) * COLLAPSED_STEP;
-  const stackHeight = expanded ? cumulative : collapsedHeight;
-
   // Expanding the stack and pausing every toast's auto-dismiss are the same
   // gesture, not two separately-wired ones: reading one toast in an expanded
   // stack shouldn't risk another expiring behind it while you're looking,
   // so the single `expanded` boolean below drives both at once.
   function expand() {
+    // Cancels any pending collapse — this is the other half of the
+    // hysteresis below. A pointer that momentarily crosses a seam and
+    // comes right back never actually collapses, because the re-entry
+    // lands here before the deferred collapse fires.
+    clearTimeout(collapseTimer.current);
     setExpanded(true);
     pauseAllToasts();
   }
 
   function collapse() {
-    setExpanded(false);
-    resumeAllToasts();
+    // Deferred, not immediate. Even with the gap-fillers keeping the
+    // expanded stack contiguous, a real pointer can still register a
+    // single-frame `mouseleave` at a card seam or the stack's outer edge
+    // mid-animation; collapsing instantly on that would snap a toast back
+    // under the cursor and re-expand — the flicker loop. A short delay that
+    // any re-entry cancels means only a genuine, sustained departure
+    // collapses the stack. Same proven pattern as HoverCard's close delay.
+    clearTimeout(collapseTimer.current);
+    collapseTimer.current = setTimeout(() => {
+      setExpanded(false);
+      resumeAllToasts();
+    }, 120);
   }
 
   return (
     <div
       className={[styles.viewport, resolveClassName(className, {})].filter(Boolean).join(" ")}
       data-expanded={dataAttr(expanded)}
-      style={{ blockSize: `${stackHeight}px` }}
       onMouseEnter={expand}
       onMouseLeave={collapse}
       onFocus={expand}
@@ -128,14 +136,13 @@ export function ToastViewport({ className }: ToastViewportProps) {
     >
       {toasts.map((item, index) => {
         const depth = toasts.length - 1 - index;
-        const collapsedY = -Math.min(depth, MAX_COLLAPSED_DEPTH) * COLLAPSED_STEP;
-        const translateY = expanded ? -(expandedOffsetByDepth[depth] ?? 0) : collapsedY;
         return (
           <ToastItem
             key={item.id}
             item={item}
             depth={Math.min(depth, MAX_COLLAPSED_DEPTH)}
-            translateY={translateY}
+            offset={expandedOffsetByDepth[depth] ?? 0}
+            zIndex={toasts.length - depth}
             onHeight={(height) => reportHeight(item.id, height)}
           />
         );
@@ -152,12 +159,14 @@ const DISMISS_VELOCITY = 0.5;
 function ToastItem({
   item,
   depth,
-  translateY,
+  offset,
+  zIndex,
   onHeight,
 }: {
   item: ToastRecord;
   depth: number;
-  translateY: number;
+  offset: number;
+  zIndex: number;
   onHeight: (height: number) => void;
 }) {
   const isUrgent = item.variant === "danger" || item.variant === "warning";
@@ -166,21 +175,20 @@ function ToastItem({
   const elementRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<{ x: number; time: number } | null>(null);
 
-  // Real height, not an assumption: a toast with a two-line description is
-  // taller than a bare title, and the stack's expanded spacing has to
-  // account for that or later toasts would overlap it. ResizeObserver, not
-  // just a mount-time measurement, because content can still reflow (a
-  // long description wrapping differently after a font loads, e.g.).
+  // Measure ONCE per content change, never with a live ResizeObserver. A
+  // toast with a two-line description is taller than a bare title, and the
+  // expanded spacing needs each real height — but re-measuring continuously
+  // is exactly what caused the flicker: an observer attached for the toast's
+  // whole life fires during the expand animation, each callback churns the
+  // viewport's `heights` state, re-renders, and (in the old model) retargeted
+  // the in-flight transition. This runs in `useLayoutEffect` (pre-paint, so
+  // the real height lands on frame 1) and re-runs only when the title or
+  // description actually changes. `offsetHeight` is the layout height,
+  // independent of the depth `scale()` — never `getBoundingClientRect`, which
+  // would fold the transform back in.
   useLayoutEffect(() => {
     const element = elementRef.current;
-    if (!element) return;
-    onHeight(element.offsetHeight);
-    if (typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry) onHeight(entry.target.getBoundingClientRect().height);
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
+    if (element) onHeight(element.offsetHeight);
   }, [onHeight, item.title, item.description]);
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -238,10 +246,17 @@ function ToastItem({
       data-depth={depth}
       data-dragging={dataAttr(dragging)}
       className={styles.toast}
-      style={{
-        translate: `${dragX}px ${translateY}px`,
-        transition: dragging ? "none" : undefined,
-      }}
+      // Custom properties only — the actual `translate`/`scale` live in the
+      // stylesheet and read these. `--offset` is the expanded distance from
+      // the anchor; `--swipe-amount` is the live drag, composed into the same
+      // single CSS `translate` so dragging never needs a JS-written transform.
+      style={
+        {
+          "--offset": `${offset}px`,
+          "--z-index": zIndex,
+          "--swipe-amount": `${dragX}px`,
+        } as CSSProperties
+      }
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

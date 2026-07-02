@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import TooltipDemo from "../../components/demos/TooltipDemo";
+import TooltipPlayground from "../../components/demos/TooltipPlayground";
 
 const usageSnippet = `import { Tooltip, Button } from "@kernelui/react";
 
@@ -25,6 +26,10 @@ const usageSnippet = `import { Tooltip, Button } from "@kernelui/react";
     <div class="docs-example">
       <TooltipDemo client:load />
     </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <TooltipPlayground client:load />
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
 

@@ -865,6 +865,104 @@ h3 {
   gap: var(--kernel-space-2);
 }
 
+/* Per-component prop sandbox (Playground.tsx). Distinct from `.playground`
+   above (the homepage theme editor) — this one pairs a live preview stage
+   with a control-per-prop panel. Stage reuses `.docs-example`'s framed,
+   dotted-canvas look so it reads as "the same kind of surface as the static
+   demo above it, just interactive." */
+.prop-playground {
+  display: grid;
+  gap: var(--kernel-space-4);
+  margin-block-end: var(--kernel-space-6);
+}
+
+.prop-playground-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-4);
+  min-block-size: calc(var(--kernel-space-unit) * 28);
+  padding: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
+  background-color: var(--kernel-color-canvas);
+  background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.prop-playground-panel {
+  display: grid;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-4) var(--kernel-space-6);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
+  background-color: var(--kernel-color-surface);
+}
+
+.prop-playground-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-4);
+  min-block-size: calc(var(--kernel-space-unit) * 9);
+}
+
+.prop-playground-field-label {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+/* Segmented enum control: the library's own Toggle buttons butted together
+   into one seam-sharing strip, so a run of options reads as a single
+   segmented control rather than separate loose buttons. */
+.prop-playground-segments {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--kernel-space-1);
+}
+
+.prop-playground-text {
+  /* TextField brings its own label, so it spans the row rather than sitting
+     in the label/control two-column rhythm the enum and boolean fields use. */
+  inline-size: 100%;
+}
+
+/* A plain number input rather than a library component — there's no
+   NumberField in the set, and a bounded stepper is exactly what value/
+   length/min/max props want. Styled to sit in the same right-aligned slot
+   as the enum segments and boolean switches. */
+.prop-playground-number {
+  inline-size: calc(var(--kernel-space-unit) * 20);
+  padding-block: var(--kernel-space-1);
+  padding-inline: var(--kernel-space-2);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  text-align: end;
+}
+
+.prop-playground-number:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.prop-playground-code {
+  margin: 0;
+  padding: var(--kernel-space-3) var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-canvas);
+  overflow-x: auto;
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text);
+}
+
 .playground-gallery {
   display: flex;
   flex-wrap: wrap;

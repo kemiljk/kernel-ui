@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import RadioGroupDemo from "../../components/demos/RadioGroupDemo";
+import RadioGroupPlayground from "../../components/demos/RadioGroupPlayground";
 
 interface Props {}
 
@@ -28,6 +29,10 @@ const usageSnippet = `import { RadioGroup, RadioGroupItem } from "@kernelui/reac
     <div class="docs-example">
       <RadioGroupDemo client:load />
     </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <RadioGroupPlayground client:load />
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
 

@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import ProgressDemo from "../../components/demos/ProgressDemo";
+import ProgressPlayground from "../../components/demos/ProgressPlayground";
 
 const reactSnippet = `import { Progress } from "@kernelui/react";
 
@@ -23,6 +24,10 @@ const reactSnippet = `import { Progress } from "@kernelui/react";
     <div class="docs-example" style="flex-direction: column; align-items: stretch;">
       <ProgressDemo client:load />
     </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ProgressPlayground client:load />
 
     <UsageAccordion code={reactSnippet} lang="tsx" />
 

@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import SwitchDemo from "../../components/demos/SwitchDemo";
+import SwitchPlayground from "../../components/demos/SwitchPlayground";
 
 const usageSnippet = `import { Switch } from "@kernelui/react";
 
@@ -24,6 +25,10 @@ const usageSnippet = `import { Switch } from "@kernelui/react";
     <div class="docs-example">
       <SwitchDemo client:load />
     </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <SwitchPlayground client:load />
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
 

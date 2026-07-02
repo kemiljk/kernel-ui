@@ -1,0 +1,45 @@
+import { Button } from "@kernelui/react";
+import Playground, { type PlaygroundValues } from "../Playground";
+
+const controls = [
+  {
+    type: "enum" as const,
+    prop: "variant",
+    options: ["primary", "secondary", "ghost", "danger"],
+    default: "primary",
+  },
+  { type: "enum" as const, prop: "size", options: ["sm", "md", "lg"], default: "md" },
+  { type: "text" as const, prop: "children", label: "label", default: "Save changes" },
+  { type: "boolean" as const, prop: "loading", default: false },
+  { type: "boolean" as const, prop: "disabled", default: false },
+];
+
+/** Only serialise props that differ from Button's own defaults, so the
+ * generated snippet reads like something you'd actually write, not every
+ * prop spelled out including the ones you'd leave off. */
+function code(values: PlaygroundValues) {
+  const attrs: string[] = [`variant="${values.variant}"`];
+  if (values.size !== "md") attrs.push(`size="${values.size}"`);
+  if (values.loading) attrs.push("loading");
+  if (values.disabled) attrs.push("disabled");
+  return `<Button ${attrs.join(" ")}>${values.children || "Button"}</Button>`;
+}
+
+export default function ButtonPlayground() {
+  return (
+    <Playground
+      controls={controls}
+      code={code}
+      render={(values) => (
+        <Button
+          variant={values.variant as "primary" | "secondary" | "ghost" | "danger"}
+          size={values.size as "sm" | "md" | "lg"}
+          loading={Boolean(values.loading)}
+          disabled={Boolean(values.disabled)}
+        >
+          {String(values.children) || "Button"}
+        </Button>
+      )}
+    />
+  );
+}

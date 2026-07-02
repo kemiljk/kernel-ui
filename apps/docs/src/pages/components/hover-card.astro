@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import HoverCardDemo from "../../components/demos/HoverCardDemo";
+import HoverCardPlayground from "../../components/demos/HoverCardPlayground";
 
 const usageSnippet = `import { Avatar, HoverCard } from "@kernelui/react";
 
@@ -45,6 +46,10 @@ function AuthorLink() {
     <div class="docs-example">
       <HoverCardDemo client:load />
     </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <HoverCardPlayground client:load />
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
 

@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import ToggleDemo from "../../components/demos/ToggleDemo";
+import TogglePlayground from "../../components/demos/TogglePlayground";
 
 const toggleSnippet = `import { Toggle } from "@kernelui/react";
 
@@ -25,6 +26,10 @@ const toggleSnippet = `import { Toggle } from "@kernelui/react";
     <div class="docs-example">
       <ToggleDemo client:load />
     </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <TogglePlayground client:load />
 
     <UsageAccordion code={toggleSnippet} lang="tsx" />
 

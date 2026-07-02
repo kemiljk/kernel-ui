@@ -4,45 +4,34 @@
   inset-inline-end: var(--kernel-space-6);
   z-index: var(--kernel-z-overlay);
   inline-size: min(24rem, calc(100vw - var(--kernel-space-8)));
-  /* `block-size` is set inline from Toast.tsx, sized to the stack's real
-     current extent — the front toast's height while collapsed, the full
-     summed height of every toast once expanded — specifically so this
-     box's own hoverable area never has a gap for the pointer to fall
-     into. `pointer-events: auto` (not `none` with the hover target left
-     to whatever each `.toast` child happens to paint): without a real,
-     correctly-sized box here, expanding spreads toasts apart with a real
-     gap between them, the pointer can end up in that gap mid-expansion,
-     that reads as "left the stack" and collapses it right back — which
-     un-spreads the toasts, puts one back under the pointer, and expands
-     it again. A flicker loop, not a one-off glitch, for as long as the
-     pointer sits in what used to be empty space. */
+  /* Intentionally no height and `pointer-events: auto` with no fixed box
+     to "cover" the stack: its `position: absolute` toast children collapse
+     it to zero height, and that's fine. mouseenter/leave fire on this
+     element for as long as the pointer is over ANY descendant toast (the
+     events track DOM subtree membership, not whether the pointer is
+     geometrically inside this box), so the expanded toasts overflowing it
+     is a non-issue. The only place the pointer could fall onto bare `body`
+     is the spacing BETWEEN two expanded toasts — and each toast's own
+     `::after` gap-filler closes exactly that. */
   pointer-events: auto;
-  transition: block-size var(--kernel-duration-slow) var(--kernel-ease-in-out);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .viewport {
-    transition: none;
-  }
 }
 
 /* Every toast is `position: absolute`, anchored to the same bottom edge,
-   and moved into its stacked position entirely via the `translate`
-   Toast.tsx computes from real measured heights (expanded) or a fixed
-   per-depth step (collapsed) — never by flex layout. A flex column with
-   `gap` was the previous approach, and it's what caused the stack to
-   visibly jump: inserting or removing a flex child changes the
-   container's own implicit height instantly, with no transition, on top
-   of whatever transition each toast's own properties were mid-flight on.
-   Every toast here occupies the exact same box (inset: 0 auto 0 0,
-   `position: absolute`) at all times, so adding or removing one is just
-   another element appearing/disappearing at a `translate` value — nothing
-   about anyone else's box model changes, only the transform each one was
-   already smoothly transitioning towards. */
+   and moved into its stacked position entirely in CSS via a single composed
+   `translate` — never by flex layout and never by a JS-written inline
+   transform. `--y` is the stack position; `--swipe-amount` is the live drag.
+   Because BOTH the collapsed and expanded positions are computed here (from
+   custom properties React sets once — `--offset`, and the toast's own
+   `data-depth`), hovering only flips the viewport's `data-expanded`
+   attribute and CSS recomputes `--y`. React never writes a per-render
+   `translate` that an in-flight transition could get retargeted to, which
+   is what produced the hover flicker. The transition on `translate` (and
+   scale/opacity/filter) animates smoothly between the two `--y` values. */
 .toast {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
+  z-index: var(--z-index, 1);
   display: flex;
   align-items: flex-start;
   gap: var(--kernel-space-3);
@@ -56,9 +45,14 @@
   pointer-events: auto;
   transform-origin: top center;
 
+  /* Collapsed default (depth 0, the front toast): no peek offset. Deeper
+     toasts set their own `--y` in the `[data-depth="N"]` rules below — a
+     fixed 10px step, no real heights needed (Sonner uses fixed steps too). */
+  --y: 0px;
   opacity: 1;
   scale: 1;
   filter: blur(0px);
+  translate: var(--swipe-amount, 0px) var(--y);
   transition:
     opacity var(--kernel-duration-slow) var(--kernel-ease-out),
     translate var(--kernel-duration-slow) var(--kernel-ease-spring),
@@ -66,53 +60,75 @@
     filter var(--kernel-duration-slow) var(--kernel-ease-out);
 }
 
-/* Depth-based recede: `data-depth` is capped at `MAX_COLLAPSED_DEPTH + 1`
-   in Toast.tsx, so this only needs to style four concrete steps rather
-   than an open-ended count. `[data-expanded]` on the viewport (hover, or
-   focus landing on any toast inside it) drops every one of these back to
-   full scale/opacity — the position itself is already correct at that
-   point too, since Toast.tsx recomputes `translate` from real heights the
-   instant `expanded` flips, using this same transition. */
-.toast[data-depth="1"] {
-  scale: 0.96;
-  opacity: 0.9;
-}
-
-.toast[data-depth="2"] {
-  scale: 0.92;
-  opacity: 0.55;
-  filter: blur(0.5px);
-}
-
-.toast[data-depth="3"] {
-  scale: 0.92;
-  opacity: 0;
-  filter: blur(0.5px);
-  pointer-events: none;
-}
-
+/* Expanded: `--y` becomes the real measured offset React handed us as
+   `--offset`. Only this one variable changes on hover; `translate` above
+   recomputes and transitions to it. */
 .viewport[data-expanded] .toast {
+  --y: calc(-1 * var(--offset, 0px));
   scale: 1;
   opacity: 1;
   filter: blur(0px);
   pointer-events: auto;
 }
 
+/* Depth-based recede while collapsed: `data-depth` is capped at
+   `MAX_COLLAPSED_DEPTH + 1` in Toast.tsx, so this only needs four concrete
+   steps. `[data-expanded]` above resets all of these back to full. */
+.toast[data-depth="1"] {
+  --y: -10px;
+  scale: 0.96;
+  opacity: 0.9;
+}
+
+.toast[data-depth="2"] {
+  --y: -20px;
+  scale: 0.92;
+  opacity: 0.55;
+  filter: blur(0.5px);
+}
+
+.toast[data-depth="3"] {
+  --y: -30px;
+  scale: 0.92;
+  opacity: 0;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+/* Gap-filler (Sonner's technique): an invisible strip bridging the spacing
+   above each expanded toast to the one behind it, so the whole expanded
+   stack is one contiguous hover surface with no `body` peeking through
+   between cards. Without it, the pointer landing in that spacing fires the
+   viewport's mouseleave, collapses the stack, snaps a toast back under the
+   pointer, re-expands — the flicker loop. Because it's part of the toast
+   itself (same element, same transform), it can never fall out of sync
+   with the toast's position the way a separate sizing box did. Only while
+   expanded: collapsed toasts overlap heavily, so there's no gap to fill,
+   and a filler there would just enlarge the collapsed hit area needlessly.
+   `inset-block-end: 100%` seats it directly above the toast; the +1px
+   overlaps the neighbour by a hair so sub-pixel rounding can't reopen a
+   seam. */
+.viewport[data-expanded] .toast::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 100%;
+  block-size: calc(var(--kernel-space-2) + 1px);
+}
+
 /* A new toast starts a full step further down than its own resting
-   `translate` (set inline from Toast.tsx, always `0` for a brand-new
-   arrival) and eases up into place — at the same time, and with the same
-   duration/easing as the demoted toasts' own `translate` transition above
+   position and eases up into place — at the same time, and with the same
+   duration/easing as the demoted toasts' `translate` transition above
    settles them backward, so the arrival and the recede read as one
    connected push, not two coincidentally-simultaneous animations. */
 @starting-style {
   .toast {
     opacity: 0;
-    /* `!important`: a brand-new toast's resting position (set inline
-       from Toast.tsx) is always `translate: 0px 0px` — it's always depth
-       0 the instant it's inserted — so this needs to actually beat that
-       inline value for the element's very first painted frame, the one
-       moment `@starting-style` exists to describe, or there'd be nothing
-       to transition FROM. */
+    /* `!important`: a brand-new toast is always depth 0 the instant it's
+       inserted, so its resting `translate` computes to `0px 0px`. This has
+       to beat that for the element's very first painted frame — the one
+       moment `@starting-style` describes — or there'd be nothing to
+       transition FROM. */
     translate: 0 var(--kernel-space-12) !important;
     /* A deliberately bigger pop than the depth steps below (0.8, not
        0.9+): those are a subtle recede for something still fully in view,
@@ -255,6 +271,14 @@
   opacity: 1;
 }
 
+/* While dragging, kill the transition so `--swipe-amount` tracks the
+   pointer 1:1 instead of lagging behind it through the slow spring. This
+   replaces the old inline `transition: none` — same effect, but the toast's
+   inline style is now custom-properties-only (no per-render transform). */
+.toast[data-dragging] {
+  transition: none;
+}
+
 /* Mid-swipe, the close control is a distraction, not an affordance — you're
    already interacting with the whole toast via the drag itself. */
 .toast[data-dragging] .close {
@@ -264,9 +288,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    /* Position, scale, and depth still update instantly (Toast.tsx keeps
-       computing real `translate` values so nothing overlaps) — only the
-       animated glide between values is what reduced motion removes. */
+    /* Position, scale, and depth still resolve correctly (CSS recomputes
+       `--y` from the same custom properties) — reduced motion only drops
+       the animated glide between the collapsed and expanded values. */
     transition: opacity var(--kernel-duration-fast) linear;
   }
 }
