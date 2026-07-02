@@ -1,0 +1,54 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+}
+
+.dot {
+  inline-size: 0.35em;
+  block-size: 0.35em;
+  border-radius: var(--kernel-radius-full);
+  background-color: currentColor;
+  animation: kernel-thinking-pulse 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* A continuous ambient loop, not a discrete state transition, so it
+   deliberately doesn't draw from the --kernel-duration/--kernel-ease scale
+   (those are tuned for one-shot interaction feedback, not looping
+   animation). */
+@keyframes kernel-thinking-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    scale: 0.8;
+  }
+  40% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+    opacity: 0.7;
+  }
+}

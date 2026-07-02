@@ -1,0 +1,130 @@
+/* Lets ::before's conic-gradient() actually animate on --angle instead of
+   jumping between values — without this, `@property` falls back to a
+   non-animatable custom property and the sweep would just snap. */
+@property --kernel-composer-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  font-family: var(--kernel-font-sans);
+}
+
+/* The border itself: a real 1px inset box-shadow rather than `border`, so
+   the thinking sweep below (also painted via box-shadow, on ::before) can
+   layer without either fighting for the same property. */
+.root {
+  box-shadow: inset 0 0 0 var(--kernel-border-width) var(--kernel-color-border);
+}
+
+.root[data-disabled] {
+  opacity: 0.6;
+}
+
+/* The animated ring below supplies its own border while thinking — the
+   static one would otherwise show through underneath it as a second,
+   static-colored edge. */
+.root[data-thinking] {
+  box-shadow: none;
+}
+
+.input {
+  field-sizing: content;
+  min-block-size: calc(var(--kernel-space-unit) * 6);
+  max-block-size: 16rem;
+  border: none;
+  background: none;
+  color: var(--kernel-color-text);
+  padding: var(--kernel-space-2) var(--kernel-space-2) 0;
+  font: inherit;
+  font-size: var(--kernel-font-size-base);
+  line-height: var(--kernel-line-height);
+  resize: none;
+}
+
+@supports not (field-sizing: content) {
+  .input {
+    resize: vertical;
+  }
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--kernel-color-text-muted);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+}
+
+.actionsLeading,
+.actionsTrailing {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+/* The "actively working" state — the one genuinely useful idea out of a
+   whole catalogue of decorative marketing-site effects (meteors, particles,
+   orbiting circles): an animated gradient sweep around the edge, the same
+   visual language most AI products already use for "generating". A
+   `::before` layer rather than an actual `border` so the box's own content
+   box/padding never shifts when the state toggles. */
+.root[data-thinking]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--kernel-border-width);
+  background: conic-gradient(
+    from var(--kernel-composer-angle),
+    transparent 0deg,
+    var(--kernel-color-accent) 90deg,
+    transparent 180deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: kernel-composer-sweep 2s linear infinite;
+  pointer-events: none;
+}
+
+/* A continuous ambient loop, not a discrete state transition — same
+   reasoning as ThinkingIndicator's dots for not drawing this duration from
+   --kernel-duration-*. */
+@keyframes kernel-composer-sweep {
+  to {
+    --kernel-composer-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root[data-thinking]::before {
+    animation: none;
+    background: var(--kernel-color-accent);
+    opacity: 0.4;
+  }
+}

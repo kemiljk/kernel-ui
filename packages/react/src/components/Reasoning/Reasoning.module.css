@@ -1,0 +1,104 @@
+.root {
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface);
+  font-family: var(--kernel-font-sans);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-3) var(--kernel-space-4);
+  cursor: default;
+  list-style: none;
+  user-select: none;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.trigger::-webkit-details-marker {
+  display: none;
+}
+
+.trigger::marker {
+  content: "";
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trigger:hover {
+    background-color: var(--kernel-color-accent-subtle);
+  }
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.icon {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.root[open] .chevron {
+  rotate: 180deg;
+}
+
+.content {
+  padding: 0 var(--kernel-space-4) var(--kernel-space-4);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height);
+}
+
+.root[data-state="opening"] .content,
+.root[data-state="closing"] .content {
+  user-select: none;
+}
+
+/* Identical technique to Accordion's own ::details-content block — kept as
+   its own six lines here rather than forcing a shared abstraction across
+   two small, independently-evolving components. */
+@supports selector(::details-content) {
+  .root::details-content {
+    overflow: hidden;
+    height: 0;
+    transition:
+      height var(--kernel-duration-base) var(--kernel-ease-in-out),
+      content-visibility var(--kernel-duration-base) allow-discrete;
+  }
+
+  .root[open]::details-content {
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+
+  .root::details-content {
+    transition: none;
+  }
+}

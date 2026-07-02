@@ -57,6 +57,23 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Sitewide default for a plain inline link with no more specific class
+   attached — nav, footer, toc, and CTA links all set their own colour
+   already and win on specificity. Reads --kernel-color-accent-text, the
+   same semantic alias packages/styles documents for any accent-coloured
+   text (Badge, NavLink's current-page state, Toggle's on-state) and the
+   one Shiki's --astro-code-token-link above already reuses, rather than
+   leaving prose links on the browser's unthemed default blue/purple. */
+a {
+  color: var(--kernel-color-accent-text);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
 /* Sitewide baseline tracking for every heading (-1.4%, expressed in em
    since `letter-spacing` has no percentage unit in CSS). Marketing-size
    type (.hero h1, .closing h2) already sets its own tighter -0.02em
@@ -834,20 +851,13 @@ h3 {
 
 /* Multiple titled, individually-documented usage examples (ExampleGrid +
    Example) — distinct from `.docs-example` above, which is one
-   quick-glance demo right under the heading. Two columns so a page with
-   half a dozen examples doesn't turn into a single very long column;
-   collapses to one below the content width where two would get cramped. */
+   quick-glance demo right under the heading. Single column so the Usage
+   code block gets full page width instead of being squeezed to half. */
 .example-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kernel-space-6);
   margin-block-end: var(--kernel-space-6);
-}
-
-@media (width < 700px) {
-  .example-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .example-card {
@@ -1655,6 +1665,19 @@ h3 {
 
 @media (width < 700px) {
   .comparison-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Same card/gap treatment as .comparison-grid, but three panels (React /
+   Elements / Unstyled) instead of two — needs its own column count and an
+   earlier collapse, since three code blocks get cramped sooner than two. */
+.platforms-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (width < 900px) {
+  .platforms-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }

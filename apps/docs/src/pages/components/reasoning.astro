@@ -1,0 +1,91 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import ReasoningDemo from "../../components/demos/ReasoningDemo";
+import ReasoningPlayground from "../../components/demos/ReasoningPlayground";
+import { Reasoning } from "@kernelui/react";
+
+const usageSnippet = `import { Reasoning } from "@kernelui/react";
+
+<Reasoning streaming={isStreaming} durationLabel="Thought for 4s">
+  {reasoningText}
+</Reasoning>`;
+
+const defaultSnippet = `<Reasoning durationLabel="Thought for 3s">
+  Checked the existing API before adding a new prop.
+</Reasoning>`;
+
+const streamingSnippet = `<Reasoning streaming>
+  Still thinking…
+</Reasoning>`;
+
+const openSnippet = `<Reasoning defaultOpen durationLabel="Thought for 6s">
+  Compared two approaches before picking the simpler one.
+</Reasoning>`;
+---
+
+<BaseLayout title="Reasoning" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Reasoning</h1>
+    <p>
+      A collapsible AI reasoning trace, on real <code>&lt;details&gt;</code>/
+      <code>&lt;summary&gt;</code>. Auto-opens while <code>streaming</code> is
+      true and auto-collapses the moment it flips back to false — after
+      that, the user's own manual open/close is left alone, same as a plain{" "}
+      <code>&lt;details&gt;</code>.
+    </p>
+
+    <div class="docs-example">
+      <ReasoningDemo client:load />
+    </div>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Default" description="Collapsed, with a duration label once reasoning has finished." code={defaultSnippet}>
+        <Reasoning durationLabel="Thought for 3s">
+          Checked the existing API before adding a new prop.
+        </Reasoning>
+      </Example>
+      <Example
+        title="Streaming"
+        description="Auto-opens and shows a ThinkingIndicator in place of the static label."
+        code={streamingSnippet}
+      >
+        <Reasoning streaming>Still thinking…</Reasoning>
+      </Example>
+      <Example title="Already open" description="defaultOpen for a trace you want visible immediately." code={openSnippet}>
+        <Reasoning defaultOpen durationLabel="Thought for 6s">
+          Compared two approaches before picking the simpler one.
+        </Reasoning>
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ReasoningPlayground client:load />
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>streaming</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>durationLabel</code></td><td>ReactNode</td><td>"Reasoning"</td></tr>
+        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode (required)</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Expand/collapse, keyboard support, find-in-page, and printability all come from the browser's own <code>&lt;details&gt;</code>.</li>
+      <li>The height transition is progressive enhancement (<code>::details-content</code>) — browsers without it still open and close correctly, just instantly.</li>
+      <li>The <code>streaming</code> state uses <a href="/components/thinking-indicator/">ThinkingIndicator</a>'s own <code>role="status"</code> live region, so assistive tech is told reasoning is in progress without an extra announcement each render.</li>
+    </ul>
+  </div>
+</BaseLayout>

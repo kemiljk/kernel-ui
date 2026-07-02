@@ -55,6 +55,10 @@ const elementsPlatformSnippet = `<script type="module">
 </script>
 
 <kernel-button variant="primary">Save changes</kernel-button>`;
+
+const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
+// No "@kernelui/react/styles.css" import anywhere —
+// <Button> is still a real <button>, just unstyled.`;
 ---
 
 <BaseLayout title="Kernel">
@@ -64,7 +68,8 @@ const elementsPlatformSnippet = `<script type="module">
       <h1>The kernel of the web, componentised.</h1>
       <p>
         A component library built on real semantic HTML instead of div
-        soup, themeable from a handful of CSS variables.
+        soup, themeable from a handful of CSS variables, and usable via
+        React or Web Components, styled or completely unstyled.
       </p>
       <div class="hero-ctas">
         <HeroCtas />
@@ -171,11 +176,14 @@ const elementsPlatformSnippet = `<script type="module">
     <p class="section-eyebrow">Platforms</p>
     <h2 id="platforms-heading">Everywhere you already build</h2>
     <p class="comparison-intro">
-      <code>@kernelui/react</code> is the flagship. <code>@kernelui/elements</code>{" "}
-      is the same design system as native Custom Elements — Vue, Svelte, Astro,
-      or plain HTML, no wrapper required, same tokens either way.
+      Three ways in. <code>@kernelui/react</code> is the flagship.{" "}
+      <code>@kernelui/elements</code> is the same design system as native
+      Custom Elements — Vue, Svelte, Astro, or plain HTML, no wrapper
+      required. Or skip the stylesheet on either one and get real,
+      fully-functional semantic elements with none of Kernel's own look —
+      just the bones, themed however you want.
     </p>
-    <div class="comparison-grid">
+    <div class="comparison-grid platforms-grid">
       <div class="comparison-panel">
         <p class="comparison-label">React</p>
         <CodeBlock code={reactPlatformSnippet} lang="tsx" />
@@ -183,6 +191,10 @@ const elementsPlatformSnippet = `<script type="module">
       <div class="comparison-panel">
         <p class="comparison-label">Anywhere else</p>
         <CodeBlock code={elementsPlatformSnippet} lang="html" />
+      </div>
+      <div class="comparison-panel">
+        <p class="comparison-label">Unstyled</p>
+        <CodeBlock code={headlessPlatformSnippet} lang="tsx" />
       </div>
     </div>
     <p class="platforms-cta"><a href="/platforms/">More on platforms &amp; headless usage →</a></p>

@@ -210,6 +210,15 @@ export type {
 export { ScrollArea } from "./components/ScrollArea/ScrollArea";
 export type { ScrollAreaProps } from "./components/ScrollArea/ScrollArea";
 
+export { Composer } from "./components/Composer/Composer";
+export type { ComposerProps, ComposerState } from "./components/Composer/Composer";
+
+export { Reasoning } from "./components/Reasoning/Reasoning";
+export type { ReasoningProps, ReasoningState } from "./components/Reasoning/Reasoning";
+
+export { ThinkingIndicator } from "./components/ThinkingIndicator/ThinkingIndicator";
+export type { ThinkingIndicatorProps } from "./components/ThinkingIndicator/ThinkingIndicator";
+
 export {
   renderElement,
   resolveClassName,

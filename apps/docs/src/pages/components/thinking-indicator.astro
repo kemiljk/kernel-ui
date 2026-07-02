@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import ThinkingIndicatorDemo from "../../components/demos/ThinkingIndicatorDemo";
+import ThinkingIndicatorPlayground from "../../components/demos/ThinkingIndicatorPlayground";
+import { ThinkingIndicator } from "@kernelui/react";
+
+const usageSnippet = `import { ThinkingIndicator } from "@kernelui/react";
+
+<ThinkingIndicator label="Searching the web" />`;
+
+const defaultSnippet = `<ThinkingIndicator />`;
+const customSnippet = `<ThinkingIndicator label="Generating" />`;
+---
+
+<BaseLayout title="Thinking Indicator" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Thinking Indicator</h1>
+    <p>
+      The universal "typing indicator" — three staggered dots next to real,
+      visible text (not sr-only-only). <code>role="status"</code>, the same
+      polite live-region Toast uses for its non-urgent variants.
+    </p>
+
+    <div class="docs-example">
+      <ThinkingIndicatorDemo client:load />
+    </div>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Default" description="The default label, &quot;Thinking&quot;." code={defaultSnippet}>
+        <ThinkingIndicator />
+      </Example>
+      <Example title="Custom label" description="Any in-progress status — search, generation, tool calls." code={customSnippet}>
+        <ThinkingIndicator label="Generating" />
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ThinkingIndicatorPlayground client:load />
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>string</td><td>"Thinking"</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The label is real visible text, announced via <code>role="status"</code> — screen reader users get the same information as sighted users, not just a decorative animation.</li>
+      <li>The three dots are <code>aria-hidden</code> — purely visual reinforcement of what the text already says.</li>
+      <li><code>prefers-reduced-motion: reduce</code> freezes the dots at a fixed opacity; the visible text keeps communicating the state either way.</li>
+    </ul>
+  </div>
+</BaseLayout>

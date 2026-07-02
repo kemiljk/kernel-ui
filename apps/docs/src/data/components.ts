@@ -88,6 +88,13 @@ export const components: ComponentEntry[] = [
     status: "available",
   },
   {
+    name: "Composer",
+    slug: "composer",
+    element: "<textarea> with field-sizing: content",
+    summary: "A chat message input, with a live \"thinking\" state.",
+    status: "available",
+  },
+  {
     name: "Context Menu",
     slug: "context-menu",
     element: "role=\"menu\" at cursor position",
@@ -207,6 +214,13 @@ export const components: ComponentEntry[] = [
     status: "available",
   },
   {
+    name: "Reasoning",
+    slug: "reasoning",
+    element: "<details> + <summary>",
+    summary: "A collapsible AI reasoning trace that auto-opens while streaming.",
+    status: "available",
+  },
+  {
     name: "Resizable",
     slug: "resizable",
     element: "CSS resize / pointer-driven splitters",
@@ -288,6 +302,13 @@ export const components: ComponentEntry[] = [
     slug: "textarea",
     element: "<textarea>",
     summary: "Auto-growing with field-sizing: content.",
+    status: "available",
+  },
+  {
+    name: "Thinking Indicator",
+    slug: "thinking-indicator",
+    element: "role=\"status\"",
+    summary: "The universal typing-indicator dots, next to real visible text.",
     status: "available",
   },
   {

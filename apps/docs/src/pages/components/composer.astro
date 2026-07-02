@@ -1,0 +1,99 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import ComposerDemo from "../../components/demos/ComposerDemo";
+import ComposerActionsExample from "../../components/demos/ComposerActionsExample";
+import ComposerPlayground from "../../components/demos/ComposerPlayground";
+import { Composer } from "@kernelui/react";
+
+const usageSnippet = `import { Composer } from "@kernelui/react";
+
+<Composer
+  placeholder="Ask anything…"
+  onSubmit={(value) => send(value)}
+/>`;
+
+const basicSnippet = `<Composer placeholder="Ask anything…" />`;
+
+const actionsSnippet = `<Composer
+  placeholder="Ask anything…"
+  actionsLeading={<Button variant="ghost" size="sm">Attach</Button>}
+  actionsTrailing={({ submit }) => (
+    <Button variant="primary" size="sm" onClick={submit}>
+      Send
+    </Button>
+  )}
+/>`;
+
+const thinkingSnippet = `<Composer placeholder="Ask anything…" thinking />`;
+---
+
+<BaseLayout title="Composer" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Composer</h1>
+    <p>
+      A chat message input: a real <code>&lt;textarea&gt;</code> that grows
+      with <code>field-sizing: content</code> (no <code>form</code> — a
+      composer submits on a keystroke or a button, never page navigation),
+      with leading/trailing action slots and a <code>thinking</code> state
+      for when a response is in flight.
+    </p>
+
+    <div class="docs-example">
+      <ComposerDemo client:load />
+    </div>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Basic" description="Just a placeholder — Cmd/Ctrl+Enter submits by default." code={basicSnippet}>
+        <Composer placeholder="Ask anything…" />
+      </Example>
+      <Example
+        title="With actions"
+        description="Leading/trailing slots for attachments, a send button, anything else."
+        code={actionsSnippet}
+      >
+        <ComposerActionsExample client:load />
+      </Example>
+      <Example
+        title="Thinking state"
+        description="An animated border sweep signals an in-flight response and blocks submission."
+        code={thinkingSnippet}
+      >
+        <Composer placeholder="Ask anything…" thinking />
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ComposerPlayground client:load />
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>value</code> / <code>defaultValue</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>onValueChange</code></td><td>(value: string) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>onSubmit</code></td><td>(value: string) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>submitOn</code></td><td>"mod+enter" | "enter"</td><td>"mod+enter"</td></tr>
+        <tr><td><code>placeholder</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>thinking</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>actionsLeading</code> / <code>actionsTrailing</code></td><td>ReactNode | (ctx: {`{ submit: () => void }`}) =&gt; ReactNode</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The textarea gets an <code>aria-label</code> from <code>placeholder</code> when no visible label is present.</li>
+      <li>Growth is pure CSS (<code>field-sizing: content</code>), so there's no layout thrash or focus loss as content grows.</li>
+      <li>The thinking-state border sweep is decorative (<code>aria-hidden</code> via <code>pointer-events: none</code> and no text content) and freezes under <code>prefers-reduced-motion</code>, replaced by a static tinted border — the state is still visible, just not animated.</li>
+    </ul>
+  </div>
+</BaseLayout>
