@@ -92,6 +92,11 @@ const navItems = components
     <title>{title} · Kernel</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
+    <!-- Same mark as SiteHeader's logo, but with a fixed amber fill rather
+         than `var(--kernel-color-accent)`: a favicon loads standalone, with
+         no page CSS context, so a theme-reactive colour would just never
+         resolve and fall back to nothing. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <ClientRouter />
     <!--
       The sidebar below is transition:persist'd across navigations —
