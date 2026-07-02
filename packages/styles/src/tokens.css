@@ -286,7 +286,7 @@
        webfont (apps/docs does, via @fontsource-variable); everyone
        else falls straight through to the system stack, so this package
        never forces a font download on its own. */
-    --kernel-font-sans: "Inclusive Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --kernel-font-sans: "Stack Sans Text Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
     --kernel-font-mono: "Lilex Variable", ui-monospace, "SF Mono", Menlo, monospace;
 
     --kernel-font-size-base: 1rem;

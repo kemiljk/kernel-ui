@@ -31,10 +31,21 @@ export interface RadiusOption {
    * radius tier — otherwise a site-wide pill override would silently
    * defeat this exact control for two-thirds of the presets. */
   control?: string;
+  /** Overrides `--kernel-radius-container`/`--kernel-radius-sheet`
+   * directly, bypassing their normal `--kernel-radius-md + padding`
+   * formula (tokens.css). That formula is concentric by construction —
+   * it always adds a fixed padding term on top of the base radius, so
+   * even a base radius of 0 still leaves a ~1.5rem rounded corner on a
+   * sheet-tier container like Card. "Sharp" means square corners
+   * everywhere, so it opts all the way out of concentricity here
+   * rather than only zeroing the term concentricity doesn't already
+   * dominate. Soft/Round don't set this — they want the normal cascade. */
+  container?: string;
+  sheet?: string;
 }
 
 export const RADII: RadiusOption[] = [
-  { name: "Sharp", value: "0.1875rem" },
+  { name: "Sharp", value: "0px", container: "0px", sheet: "0px" },
   { name: "Soft", value: "0.5rem" },
   { name: "Round", value: "1.25rem", control: "var(--kernel-radius-full)" },
 ];
@@ -45,6 +56,8 @@ const STORAGE_KEYS = {
   accent: "kernel:accent",
   radius: "kernel:radius",
   radiusControl: "kernel:radius-control",
+  radiusContainer: "kernel:radius-container",
+  radiusSheet: "kernel:radius-sheet",
   scheme: "kernel:color-scheme",
 } as const;
 
@@ -79,6 +92,20 @@ export function applyRadius(radius: RadiusOption) {
   } else {
     document.documentElement.style.removeProperty("--kernel-radius-control");
     localStorage.removeItem(STORAGE_KEYS.radiusControl);
+  }
+  if (radius.container) {
+    document.documentElement.style.setProperty("--kernel-radius-container", radius.container);
+    localStorage.setItem(STORAGE_KEYS.radiusContainer, radius.container);
+  } else {
+    document.documentElement.style.removeProperty("--kernel-radius-container");
+    localStorage.removeItem(STORAGE_KEYS.radiusContainer);
+  }
+  if (radius.sheet) {
+    document.documentElement.style.setProperty("--kernel-radius-sheet", radius.sheet);
+    localStorage.setItem(STORAGE_KEYS.radiusSheet, radius.sheet);
+  } else {
+    document.documentElement.style.removeProperty("--kernel-radius-sheet");
+    localStorage.removeItem(STORAGE_KEYS.radiusSheet);
   }
   announce();
 }

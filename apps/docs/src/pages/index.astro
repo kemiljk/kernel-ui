@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import ThemePlayground from "../components/ThemePlayground";
 import HeroCtas from "../components/HeroCtas";
 import CodeBlock from "../components/CodeBlock.astro";
-import PhyllotaxisSpiral from "../components/PhyllotaxisSpiral.astro";
+import KernelMark from "../components/KernelMark.astro";
 import BookDemoCard from "../components/showcase/BookDemoCard";
 import StatusRow from "../components/showcase/StatusRow";
 import EditorSettings from "../components/showcase/EditorSettings";
@@ -59,6 +59,7 @@ const elementsPlatformSnippet = `<script type="module">
 
 <BaseLayout title="Kernel">
   <section class="hero">
+    <KernelMark class="hero-mark" />
     <div class="hero-copy">
       <h1>The kernel of the web, componentised.</h1>
       <p>
@@ -68,9 +69,6 @@ const elementsPlatformSnippet = `<script type="module">
       <div class="hero-ctas">
         <HeroCtas />
       </div>
-    </div>
-    <div class="hero-visual">
-      <PhyllotaxisSpiral />
     </div>
   </section>
 

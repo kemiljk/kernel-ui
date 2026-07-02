@@ -1,0 +1,27 @@
+---
+// One titled, self-contained usage example: a live preview (default
+// slot) plus its own code snippet, collapsed behind the same
+// <UsageAccordion> the page's main install snippet already uses — reused
+// rather than re-implemented so both look and behave identically.
+import UsageAccordion from "./UsageAccordion.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  code: string;
+  lang?: "css" | "tsx" | "html" | "bash";
+}
+
+const { title, description, code, lang = "tsx" } = Astro.props;
+---
+
+<div class="example-card">
+  <div class="example-card-heading">
+    <h3>{title}</h3>
+    {description && <p>{description}</p>}
+  </div>
+  <div class="example-card-preview">
+    <slot />
+  </div>
+  <UsageAccordion code={code} lang={lang} />
+</div>

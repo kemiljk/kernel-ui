@@ -2,8 +2,13 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
 import ButtonDemo from "../../components/demos/ButtonDemo";
 import ButtonPlayground from "../../components/demos/ButtonPlayground";
+import ButtonIconsExample from "../../components/demos/ButtonIconsExample";
+import ButtonAsLinkExample from "../../components/demos/ButtonAsLinkExample";
+import { Button } from "@kernelui/react";
 
 const usageSnippet = `import { Button } from "@kernelui/react";
 
@@ -11,6 +16,27 @@ const usageSnippet = `import { Button } from "@kernelui/react";
 
 <Button variant="secondary" iconStart={<SearchIcon />}>
   Search
+</Button>`;
+
+const variantsSnippet = `<Button variant="primary">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="danger">Danger</Button>`;
+
+const iconsSnippet = `<Button variant="secondary" iconStart={<MagnifyingGlassIcon />}>
+  Search
+</Button>
+<Button variant="primary" iconEnd={<CheckIcon />}>
+  Mark as done
+</Button>
+<Button variant="ghost" aria-label="Copy" iconStart={<CopyIcon />} />`;
+
+const disabledSnippet = `<Button disabled>Disabled</Button>`;
+
+const asLinkSnippet = `// render swaps the underlying element — the action here
+// navigates, so it should be a real <a>, not a <button>.
+<Button render={<a href="/pricing/">See pricing</a>}>
+  See pricing
 </Button>`;
 ---
 
@@ -27,6 +53,39 @@ const usageSnippet = `import { Button } from "@kernelui/react";
     <div class="docs-example">
       <ButtonDemo client:load />
     </div>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example
+        title="Variants"
+        description="Four visual weights, from the primary action to a destructive one."
+        code={variantsSnippet}
+      >
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="danger">Danger</Button>
+      </Example>
+      <Example
+        title="With icons"
+        description="iconStart/iconEnd, or an icon alone with aria-label for an icon-only button."
+        code={iconsSnippet}
+      >
+        <ButtonIconsExample client:load />
+      </Example>
+
+      <Example title="Disabled" description="Native disabled state — no aria-disabled workaround needed." code={disabledSnippet}>
+        <Button disabled>Disabled</Button>
+      </Example>
+
+      <Example
+        title="Rendered as a link"
+        description="render swaps in a real <a> for actions that navigate instead of acting in place."
+        code={asLinkSnippet}
+      >
+        <ButtonAsLinkExample client:load />
+      </Example>
+    </ExampleGrid>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the button — and the code — update live.</p>

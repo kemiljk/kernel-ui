@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import "@fontsource-variable/inclusive-sans";
+import "@fontsource-variable/stack-sans-text";
 import "@fontsource-variable/lilex";
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -34,8 +34,8 @@ const navItems = components
     <!--
       No-FOUC theme init: must run synchronously, before first paint,
       so it can't `import` src/lib/theme.ts (a module import is async
-      relative to inline script execution). Keep these three storage
-      keys in sync with STORAGE_KEYS in that file by hand.
+      relative to inline script execution). Keep these storage keys in
+      sync with STORAGE_KEYS in that file by hand.
 
       Also re-run on every `astro:page-load`, not just once: ClientRouter
       swaps in the new page's server-rendered `<html>` attributes on
@@ -76,6 +76,25 @@ const navItems = components
             // like every other radius tier).
             document.documentElement.style.removeProperty("--kernel-radius-control");
           }
+          // "Sharp" additionally overrides these two directly (see the
+          // `container`/`sheet` comment on RadiusOption in theme.ts) —
+          // without reapplying them here too, a hard reload while Sharp
+          // is active would keep --kernel-radius-base at 0 but let
+          // --kernel-radius-container/-sheet fall back to their normal
+          // formula, silently un-sharpening every Card/Dialog until the
+          // user re-clicked the Sharp swatch.
+          var radiusContainer = localStorage.getItem("kernel:radius-container");
+          if (radiusContainer) {
+            document.documentElement.style.setProperty("--kernel-radius-container", radiusContainer);
+          } else {
+            document.documentElement.style.removeProperty("--kernel-radius-container");
+          }
+          var radiusSheet = localStorage.getItem("kernel:radius-sheet");
+          if (radiusSheet) {
+            document.documentElement.style.setProperty("--kernel-radius-sheet", radiusSheet);
+          } else {
+            document.documentElement.style.removeProperty("--kernel-radius-sheet");
+          }
           var scheme = localStorage.getItem("kernel:color-scheme");
           if (scheme === "light" || scheme === "dark") {
             document.documentElement.setAttribute("data-theme", scheme);
@@ -87,10 +106,47 @@ const navItems = components
       }
       kernelApplyStoredTheme();
       document.addEventListener("astro:after-swap", kernelApplyStoredTheme);
+
+      // The homepage hero's entrance (global.css `.hero`) uses
+      // @starting-style, which only fires on a genuine first paint — it
+      // never replays on a ClientRouter soft-navigation swap, so
+      // navigating home → elsewhere → back to home left the hero just
+      // sitting at its resting state with no animation. `astro:after-swap`
+      // fires synchronously right as the new page's DOM lands, before
+      // it's painted, so setting the same "entering" state here and
+      // clearing it a frame later replays the identical transition.
+      function kernelReplayHeroEntrance() {
+        var hero = document.querySelector(".hero");
+        if (!hero) return;
+        hero.setAttribute("data-enter", "");
+        // Force a layout flush between the two writes below — without
+        // this, both attribute changes can coalesce into a single
+        // style recalculation and the browser never actually commits
+        // the "entering" frame the transition needs to animate from.
+        void hero.offsetWidth;
+        requestAnimationFrame(function () {
+          hero.removeAttribute("data-enter");
+        });
+      }
+      document.addEventListener("astro:after-swap", kernelReplayHeroEntrance);
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} · Kernel</title>
     <meta name="description" content={description} />
+    <!-- Relative, not absolute: no production domain is configured
+         anywhere in the repo (astro.config.mjs has no `site`, vercel.json
+         has no domain). Most crawlers resolve a relative og:image against
+         the page URL, but it's not to spec — once a domain is decided, add
+         `site: "https://..."` to astro.config.mjs and switch this to
+         `new URL("/og.png", Astro.site)` for a proper absolute URL. -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="/og.png" />
     <meta name="color-scheme" content="light dark" />
     <!-- Same mark as SiteHeader's logo, but with a fixed amber fill rather
          than `var(--kernel-color-accent)`: a favicon loads standalone, with

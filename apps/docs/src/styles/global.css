@@ -832,6 +832,103 @@ h3 {
   margin-block-end: var(--kernel-space-6);
 }
 
+/* Multiple titled, individually-documented usage examples (ExampleGrid +
+   Example) — distinct from `.docs-example` above, which is one
+   quick-glance demo right under the heading. Two columns so a page with
+   half a dozen examples doesn't turn into a single very long column;
+   collapses to one below the content width where two would get cramped. */
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--kernel-space-6);
+  margin-block-end: var(--kernel-space-6);
+}
+
+@media (width < 700px) {
+  .example-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.example-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.example-card-heading {
+  margin-block-end: var(--kernel-space-3);
+}
+
+.example-card-heading h3 {
+  margin: 0 0 var(--kernel-space-1);
+  font-size: var(--kernel-font-size-base);
+}
+
+.example-card-heading p {
+  margin: 0;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.example-card-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-6);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  /* A fixed, modest radius — NOT `.docs-example`'s theme-scaled
+     `calc(radius-md * 1.6 + space)` formula — because this box is
+     always immediately followed by a UsageAccordion (below) and the
+     two are meant to read as one connected card split by a divider,
+     not two independent boxes. At "Round" that scaling formula produces
+     a radius large enough to look bulbous/mismatched once a second,
+     differently-sized box (the accordion, no live-preview content
+     driving its height) is joined underneath it — a fixed tier avoids
+     that regardless of which radius preset is active. Only the top
+     corners round; the bottom edge is square and borderless, since the
+     accordion directly below supplies the shared divider and rounds
+     the bottom corners instead. */
+  border-radius: var(--kernel-radius-container) var(--kernel-radius-container) 0 0;
+  border-block-end: none;
+  background-color: var(--kernel-color-canvas);
+  background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* The other half of the "one connected card" treatment above: only
+   applies when a UsageAccordion directly follows an example preview
+   (not its other, standalone use further down a component page, which
+   keeps its own default margin and fully-rounded box). Zero top margin
+   so it sits flush against the preview; square top corners so the
+   preview's rounding is the only rounding at that seam; the accordion's
+   own top border becomes the single divider line between the two. */
+.example-card-preview + .usage-accordion {
+  margin-block-start: 0;
+  border-radius: 0 0 var(--kernel-radius-container) var(--kernel-radius-container);
+}
+
+/* Theme-aware padding, scoped to this connected context only: the
+   standalone UsageAccordion elsewhere on a component page sits in its
+   own small rounded box and its default padding already suits that.
+   Here, though, the accordion's bottom corners ARE the compound card's
+   corners (see --kernel-radius-container above), and that radius grows
+   with --kernel-radius-base same as everywhere else in the theme — at
+   "Round" the default trigger padding reads as cramped against a
+   noticeably bigger curve. Scaling padding off --kernel-radius-base
+   directly (not a hardcoded "Round" check) keeps it correct for
+   whatever radius is active: 0 extra at Sharp (radius-base: 0), a
+   proportional bump at Soft, and +50% specifically at Round's own
+   1.25rem value — the coefficients below are solved for that. */
+.example-card-preview + .usage-accordion .usage-accordion-trigger {
+  padding-block: calc(var(--kernel-space-3) + var(--kernel-radius-base) * 0.3);
+  padding-inline: calc(var(--kernel-space-4) + var(--kernel-radius-base) * 0.4);
+}
+
+.example-card-preview + .usage-accordion .usage-accordion-content {
+  padding-inline: calc(var(--kernel-space-4) + var(--kernel-radius-base) * 0.4);
+}
+
 /* Homepage theme playground: docs-site furniture, deliberately plain
    global CSS, to prove the library works without CSS Modules or
    Tailwind too. */
@@ -973,10 +1070,11 @@ h3 {
 }
 
 .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--kernel-space-12);
+  text-align: center;
   padding-block: var(--kernel-space-12) var(--kernel-space-8);
 
   opacity: 1;
@@ -992,26 +1090,25 @@ h3 {
   }
 }
 
+/* Same visual state as the @starting-style block above, reached a
+   different way: @starting-style only fires on a genuine first paint,
+   so navigating home → elsewhere → back to home never replays it (the
+   ClientRouter swap isn't a first paint for this element). BaseLayout's
+   `astro:after-swap` listener toggles this attribute instead, which
+   *does* retrigger the transition on every soft navigation. */
+.hero[data-enter] {
+  opacity: 0;
+  translate: 0 8px;
+}
+
 .hero-copy {
-  /* Positioned + stacked above .hero-visual on purpose: the phyllotaxis
-     canvas is deliberately oversized relative to its own frame (see
-     PhyllotaxisSpiral.astro's OVERFLOW comment) and grid items don't
-     clip overflowing content by default, so it visually spills into
-     this column's space, especially once .hero collapses to one
-     column below 800px and the two stack. Without an explicit z-index,
-     positioned descendants (the canvas's own `position: relative`
-     wrapper) paint above plain static in-flow content regardless of
-     DOM order, which is what let dots render on top of the heading
-     text. This keeps the copy legible on top wherever the two overlap,
-     while still letting the spiral read as bleeding "past" its frame
-     underneath. */
   position: relative;
   z-index: 1;
-  max-inline-size: 34rem;
+  max-inline-size: 40rem;
 }
 
 .hero h1 {
-  font-size: clamp(2.25rem, 2.4vw + 1.25rem, 2.75rem);
+  font-size: clamp(2.5rem, 3.2vw + 1.5rem, 3.5rem);
   line-height: var(--kernel-line-height-display);
   letter-spacing: -0.02em;
   margin: 0 0 var(--kernel-space-4);
@@ -1026,66 +1123,44 @@ h3 {
 .hero-ctas {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--kernel-space-3);
   margin-block-start: var(--kernel-space-6);
 }
 
-.hero-visual {
-  display: flex;
-  justify-content: center;
-}
-
-/* The hero's visual is this instead of a mocked-up product screenshot
-   on purpose: every other page on this site already shows real
-   Kernel components doing real things, so another one here would just
-   be redundant, not reassuring. This is a genuine demonstration
-   instead — every dot's colour is resolved from --kernel-accent-* at
-   runtime (see PhyllotaxisSpiral.astro), so switching themes in the
-   playground below reshades it live, live proof of the headline claim
-   rather than another screenshot of it.
-
-   A phyllotaxis spiral: the golden-angle (137.508°) pattern seed
-   heads, pinecones, and corn kernels actually grow in, rendered on a
-   canvas (adapted from a reference shader) rather than as static SVG —
-   the growth, glow, and lattice connections it draws only really read
-   as "alive" with a continuous per-frame loop, which SVG/CSS alone
-   couldn't give it. */
-.hero-phyllotaxis {
-  position: relative;
-  display: block;
-  inline-size: min(28rem, 100%);
-  aspect-ratio: 1;
-  margin-inline: auto;
-}
-
-/* Deliberately bigger than its own container and centred over it
-   (sized in PhyllotaxisSpiral.astro's resize()): a <canvas> can't
-   overflow its box the way a DOM element can, so painting it larger
-   than the layout frame is the only way for the pattern to read as
-   extending past that frame instead of getting clipped at its edge. */
-.hero-phyllotaxis canvas {
+/* The old hero visual (a phyllotaxis spiral canvas) is gone — its
+   entrance animation never replayed on a soft-navigation swap back to
+   "/" and wasn't worth carrying the fix for a decorative flourish. This
+   is what replaced it: the same flower mark from the header logo,
+   hugely oversized and faint behind the centred copy, the way a brand
+   mark sits behind a hero on plenty of real marketing sites. Static,
+   themed via `color` (so it re-hues with the accent like everything
+   else), no per-frame JS loop to ever fail to restart. */
+.hero-mark {
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 50%;
   translate: -50% -50%;
-  /* The library reset caps every canvas/img/svg at max-width: 100% of
-     its container, which is the right default everywhere else but
-     silently squashed this one specifically: JS sets an equal
-     width/height bigger than the container on purpose (see
-     PhyllotaxisSpiral.astro), and max-width alone clamped the width
-     back down while height stayed uncapped, stretching an otherwise
-     perfectly circular pattern into a tall oval. */
-  max-inline-size: none;
+  inline-size: 72rem;
+  block-size: 72rem;
+  color: var(--kernel-color-accent);
+  opacity: 0.06;
+  pointer-events: none;
+  /* Deliberately NOT clipped at .hero's own edge — body's own
+     `overflow-x: hidden` (this file, near the top) already prevents any
+     horizontal scrollbar, so letting this bleed past the section
+     vertically too reads as one continuous backdrop behind the hero
+     rather than a graphic trapped inside a box. */
 }
 
 @media (width < 800px) {
   .hero {
-    grid-template-columns: minmax(0, 1fr);
     padding-block-start: var(--kernel-space-8);
   }
 
-  .hero-visual {
-    order: -1;
+  .hero-mark {
+    inline-size: 44rem;
+    block-size: 44rem;
   }
 }
 
