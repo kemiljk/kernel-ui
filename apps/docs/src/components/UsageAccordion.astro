@@ -1,5 +1,4 @@
 ---
-import { ChevronDown } from "@astropub/icons";
 import CodeBlock from "./CodeBlock.astro";
 
 interface Props {
@@ -13,7 +12,26 @@ const { code, lang } = Astro.props;
 <details class="usage-accordion">
   <summary class="usage-accordion-trigger">
     <span>Usage</span>
-    <ChevronDown class="usage-accordion-chevron" aria-hidden="true" />
+    <!-- Radix Icons' ChevronDown path data, inlined rather than imported from
+         @astropub/icons: every icon in that package re-exports the `Props`
+         *type* as a value (`export { Props } from './Props.ts'`), which
+         Vite dev/`astro check` tolerate but the production Rolldown bundler
+         correctly rejects (MISSING_EXPORT) — an upstream bug, not something
+         fixable from this repo. Same path data as icons.tsx's React icons,
+         so it's still visually the same set, just delivered inline here
+         since Astro components can't be patched around a bundler-breaking
+         dependency. -->
+    <svg
+      class="usage-accordion-chevron"
+      viewBox="0 0 15 15"
+      fill="currentColor"
+      fill-rule="evenodd"
+      aria-hidden="true"
+    >
+      <path
+        d="M3.135 6.158a.5.5 0 0 1 .707-.023L7.5 9.565l3.658-3.43a.5.5 0 0 1 .684.73l-4 3.75a.5.5 0 0 1-.684 0l-4-3.75a.5.5 0 0 1-.023-.707Z"
+      />
+    </svg>
   </summary>
   <div class="usage-accordion-content">
     <CodeBlock code={code} lang={lang} />
