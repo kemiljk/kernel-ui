@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import SkeletonDemo from "../../components/demos/SkeletonDemo";
 import SkeletonPlayground from "../../components/demos/SkeletonPlayground";
 
-const skeletonSnippet = `import { Skeleton } from "@kernelui/react";
-
-<Skeleton style={{ width: 240, height: 16 }} />`;
 ---
 
 <BaseLayout title="Skeleton" withSidebar>
@@ -29,6 +25,5 @@ const skeletonSnippet = `import { Skeleton } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <SkeletonPlayground client:load />
 
-    <UsageAccordion code={skeletonSnippet} lang="tsx" />
-  </div>
+      </div>
 </BaseLayout>

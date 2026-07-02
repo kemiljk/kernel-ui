@@ -1,0 +1,94 @@
+.kernel-Select-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+}
+
+.kernel-Select-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.kernel-Select-required {
+  color: var(--kernel-color-danger);
+  margin-inline-start: var(--kernel-space-1);
+}
+
+.kernel-Select-controlWrapper {
+  position: relative;
+  display: grid;
+}
+
+.kernel-Select-select {
+  appearance: none;
+  grid-area: 1 / 1;
+  inline-size: 100%;
+  block-size: calc(var(--kernel-space-unit) * 10);
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  padding-inline: var(--kernel-space-3) var(--kernel-space-8);
+  font-size: var(--kernel-font-size-base);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Select-select:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-Select-select:active:not(:disabled) {
+  scale: 0.99;
+}
+
+.kernel-Select-select:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-Select-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.kernel-Select-root[data-invalid] .kernel-Select-select {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-Select-chevron {
+  grid-area: 1 / 1;
+  justify-self: end;
+  align-self: center;
+  margin-inline-end: var(--kernel-space-3);
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  pointer-events: none;
+}
+
+.kernel-Select-description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Select-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Select-select {
+    transition: border-color var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-Select-select:active:not(:disabled) {
+    scale: 1;
+  }
+}

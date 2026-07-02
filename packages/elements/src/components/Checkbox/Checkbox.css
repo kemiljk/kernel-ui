@@ -1,0 +1,115 @@
+.kernel-Checkbox-root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  cursor: pointer;
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-base);
+  color: var(--kernel-color-text);
+}
+
+.kernel-Checkbox-root[data-disabled] {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Checkbox-input {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.kernel-Checkbox-control {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  border-radius: var(--kernel-radius-sm);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: transparent;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Checkbox-input:hover:not(:disabled) + .kernel-Checkbox-control {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-Checkbox-input:active:not(:disabled) + .kernel-Checkbox-control {
+  scale: 0.95;
+}
+
+.kernel-Checkbox-input:checked + .kernel-Checkbox-control,
+.kernel-Checkbox-input:indeterminate + .kernel-Checkbox-control {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+.kernel-Checkbox-input:focus-visible + .kernel-Checkbox-control {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Checkbox-input:disabled + .kernel-Checkbox-control {
+  opacity: 0.6;
+}
+
+.kernel-Checkbox-icon {
+  inline-size: 0.85em;
+  block-size: 0.85em;
+  overflow: visible;
+}
+
+.kernel-Checkbox-checkmark {
+  opacity: 0;
+  scale: 0.6;
+  transform-origin: center;
+  transition:
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    opacity var(--kernel-duration-fast) linear;
+}
+
+.kernel-Checkbox-input:checked + .kernel-Checkbox-control .kernel-Checkbox-checkmark {
+  scale: 1;
+  opacity: 1;
+}
+
+.kernel-Checkbox-dash {
+  opacity: 0;
+  transition: opacity var(--kernel-duration-fast) linear;
+}
+
+.kernel-Checkbox-input:indeterminate + .kernel-Checkbox-control .kernel-Checkbox-dash {
+  opacity: 1;
+}
+
+.kernel-Checkbox-input:indeterminate + .kernel-Checkbox-control .kernel-Checkbox-checkmark {
+  opacity: 0;
+}
+
+.kernel-Checkbox-label {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Checkbox-checkmark {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-Checkbox-input:active:not(:disabled) + .kernel-Checkbox-control {
+    scale: 1;
+  }
+}

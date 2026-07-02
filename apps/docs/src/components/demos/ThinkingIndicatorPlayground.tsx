@@ -9,11 +9,18 @@ function code(values: PlaygroundValues) {
     : `<ThinkingIndicator />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  return values.label && values.label !== "Thinking"
+    ? `<kernel-thinking-indicator label="${values.label}"></kernel-thinking-indicator>`
+    : `<kernel-thinking-indicator></kernel-thinking-indicator>`;
+}
+
 export default function ThinkingIndicatorPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => <ThinkingIndicator label={String(values.label)} />}
     />
   );

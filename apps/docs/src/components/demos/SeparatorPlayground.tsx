@@ -16,11 +16,18 @@ function code(values: PlaygroundValues) {
     : `<Separator />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  return values.orientation === "vertical"
+    ? `<kernel-separator orientation="vertical"></kernel-separator>`
+    : `<kernel-separator></kernel-separator>`;
+}
+
 export default function SeparatorPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <div
           style={{

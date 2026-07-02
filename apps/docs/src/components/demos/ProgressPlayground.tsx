@@ -14,11 +14,19 @@ function code(values: PlaygroundValues) {
   return `<Progress${attrs.length ? " " + attrs.join(" ") : ""} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (!values.indeterminate) attrs.push(`value="${Number(values.value)}"`);
+  if (values.label) attrs.push(`label="${values.label}"`);
+  return `<kernel-progress${attrs.length ? " " + attrs.join(" ") : ""}></kernel-progress>`;
+}
+
 export default function ProgressPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <div style={{ width: "100%" }}>
           <Progress

@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from "react";
-import { Button, Switch, TextField } from "@kernelui/react";
+import { Button, Switch, Tab, TabPanel, Tabs, TabsList, TextField } from "@kernelui/react";
+import CopyButton from "./CopyButton";
+import { HighlightedCode } from "./HighlightedCode";
 
 /** One adjustable prop. `prop` is the key handed back to `render`/`code`.
  * Kept intentionally small — enum (pick one), boolean (on/off), and text
@@ -44,11 +46,18 @@ export interface PlaygroundProps {
   controls: PlaygroundControl[];
   /** Renders the live component from the current values. */
   render: (values: PlaygroundValues) => ReactNode;
-  /** Optional: the JSX a consumer would write for the current values, shown
-   * live beneath the controls. Kept as a caller-supplied function rather
-   * than derived automatically so each component controls exactly how its
-   * own props serialise (which to omit at default, how children read). */
+  /** The JSX a consumer would write for the current values, kept live in
+   * the Usage section below the controls — this IS the page's usage
+   * example now, not a second, separately-hardcoded one: a static
+   * snippet sitting next to a live one that says the same thing at only
+   * one specific set of values was pure repetition, and the two could
+   * silently drift out of sync with each other. */
   code?: (values: PlaygroundValues) => string;
+  /** Same values, serialised as the @kernelui/elements custom-element
+   * markup instead. Optional — when provided, the Usage section grows a
+   * React/Web Components toggle; when omitted, Usage just shows `code`
+   * on its own, same as before. */
+  elementsCode?: (values: PlaygroundValues) => string;
 }
 
 /**
@@ -59,7 +68,7 @@ export interface PlaygroundProps {
  * TextField — the playground for a design system should itself be evidence
  * the components compose, not a bespoke set of controls that sidesteps them.
  */
-export default function Playground({ controls, render, code }: PlaygroundProps) {
+export default function Playground({ controls, render, code, elementsCode }: PlaygroundProps) {
   const [values, setValues] = useState<PlaygroundValues>(() =>
     Object.fromEntries(controls.map((control) => [control.prop, control.default])),
   );
@@ -67,6 +76,9 @@ export default function Playground({ controls, render, code }: PlaygroundProps) 
   function set(prop: string, value: string | boolean | number) {
     setValues((previous) => ({ ...previous, [prop]: value }));
   }
+
+  const reactCode = code?.(values);
+  const elementsCodeValue = elementsCode?.(values);
 
   return (
     <div className="prop-playground">
@@ -150,10 +162,60 @@ export default function Playground({ controls, render, code }: PlaygroundProps) 
         })}
       </div>
 
-      {code ? (
-        <pre className="prop-playground-code">
-          <code>{code(values)}</code>
-        </pre>
+      {reactCode ? (
+        <details className="usage-accordion">
+          <summary className="usage-accordion-trigger">
+            <span>Usage</span>
+            <svg
+              className="usage-accordion-chevron"
+              viewBox="0 0 15 15"
+              fill="currentColor"
+              fillRule="evenodd"
+              aria-hidden="true"
+            >
+              <path d="M3.135 6.158a.5.5 0 0 1 .707-.023L7.5 9.565l3.658-3.43a.5.5 0 0 1 .684.73l-4 3.75a.5.5 0 0 1-.684 0l-4-3.75a.5.5 0 0 1-.023-.707Z" />
+            </svg>
+          </summary>
+          <div className="usage-accordion-content">
+            {elementsCodeValue ? (
+              <Tabs defaultValue="react" className="prop-playground-format-tabs">
+                <TabsList aria-label="Code format">
+                  <Tab value="react">React</Tab>
+                  <Tab value="elements">Web Components</Tab>
+                </TabsList>
+                <TabPanel value="react" className="prop-playground-format-panel">
+                  <div className="code-block">
+                    <pre>
+                      <code>
+                        <HighlightedCode code={reactCode} />
+                      </code>
+                    </pre>
+                    <CopyButton text={reactCode} />
+                  </div>
+                </TabPanel>
+                <TabPanel value="elements" className="prop-playground-format-panel">
+                  <div className="code-block">
+                    <pre>
+                      <code>
+                        <HighlightedCode code={elementsCodeValue} />
+                      </code>
+                    </pre>
+                    <CopyButton text={elementsCodeValue} />
+                  </div>
+                </TabPanel>
+              </Tabs>
+            ) : (
+              <div className="code-block">
+                <pre>
+                  <code>
+                    <HighlightedCode code={reactCode} />
+                  </code>
+                </pre>
+                <CopyButton text={reactCode} />
+              </div>
+            )}
+          </div>
+        </details>
       ) : null}
     </div>
   );

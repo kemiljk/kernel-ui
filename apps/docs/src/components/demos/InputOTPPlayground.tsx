@@ -14,11 +14,19 @@ function code(values: PlaygroundValues) {
   return `<InputOTP ${attrs.join(" ")} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`length="${Number(values.length)}"`];
+  if (values.label) attrs.push(`label="${values.label}"`);
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-input-otp ${attrs.join(" ")}></kernel-input-otp>`;
+}
+
 export default function InputOTPPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <InputOTP
           length={Number(values.length)}

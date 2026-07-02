@@ -16,11 +16,26 @@ function code(values: PlaygroundValues) {
 </RadioGroup>`;
 }
 
+/** `name` given explicitly here (rather than relying on the
+ * auto-generated fallback) since a real usage example should show how
+ * items actually get grouped, not lean on a detail that only exists to
+ * cover the case where an author forgets it. */
+function elementsCode(values: PlaygroundValues) {
+  const attrs = [`label="${values.label || "Options"}"`, `name="notify"`];
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-radio-group ${attrs.join(" ")}>
+  <kernel-radio-group-item value="all">All new messages</kernel-radio-group-item>
+  <kernel-radio-group-item value="mentions">Mentions only</kernel-radio-group-item>
+  <kernel-radio-group-item value="none">Nothing</kernel-radio-group-item>
+</kernel-radio-group>`;
+}
+
 export default function RadioGroupPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <RadioGroup
           label={String(values.label) || "Options"}

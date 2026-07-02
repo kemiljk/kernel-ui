@@ -18,11 +18,21 @@ function code(values: PlaygroundValues) {
   return `<Slider ${attrs.join(" ")} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`label="${values.label}"`, `value="50"`];
+  if (Number(values.min) !== 0) attrs.push(`min="${Number(values.min)}"`);
+  if (Number(values.max) !== 100) attrs.push(`max="${Number(values.max)}"`);
+  if (Number(values.step) !== 1) attrs.push(`step="${Number(values.step)}"`);
+  if (values.showValue) attrs.push("show-value");
+  return `<kernel-slider ${attrs.join(" ")}></kernel-slider>`;
+}
+
 export default function SliderPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <div style={{ width: "100%" }}>
           <Slider

@@ -12,11 +12,18 @@ function code(values: PlaygroundValues) {
   return `<Label${attrs.join("")}>${values.children || "Label"}</Label>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.required) attrs.push(" required");
+  return `<kernel-label${attrs.join("")}>${values.children || "Label"}</kernel-label>`;
+}
+
 export default function LabelPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Label required={Boolean(values.required)}>
           {String(values.children) || "Label"}

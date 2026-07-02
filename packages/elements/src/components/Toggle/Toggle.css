@@ -1,0 +1,71 @@
+.kernel-Toggle-root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-2);
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid transparent;
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Toggle-root:active:not(:disabled) {
+  scale: 0.97;
+}
+
+/* min-inline-size, not inline-size — see Toggle.module.css (@kernelui/react)
+   for why: a fixed square sized for a single icon clipped/overflowed
+   real text labels, visibly overlapping adjacent toggles. */
+.kernel-Toggle-root[data-size="sm"] {
+  min-inline-size: calc(var(--kernel-space-unit) * 8);
+  block-size: calc(var(--kernel-space-unit) * 8);
+  padding-inline: var(--kernel-space-2);
+}
+
+.kernel-Toggle-root[data-size="md"] {
+  min-inline-size: calc(var(--kernel-space-unit) * 10);
+  block-size: calc(var(--kernel-space-unit) * 10);
+  padding-inline: var(--kernel-space-2);
+}
+
+.kernel-Toggle-root[data-size="lg"] {
+  min-inline-size: calc(var(--kernel-space-unit) * 12);
+  block-size: calc(var(--kernel-space-unit) * 12);
+  padding-inline: var(--kernel-space-3);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Toggle-root:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+  }
+}
+
+.kernel-Toggle-root[data-state="on"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-accent-text);
+}
+
+.kernel-Toggle-root:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Toggle-root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Toggle-root {
+    transition: none;
+  }
+
+  .kernel-Toggle-root:active:not(:disabled) {
+    scale: 1;
+  }
+}

@@ -1,0 +1,92 @@
+kernel-dropdown-menu {
+  display: contents;
+}
+
+.kernel-DropdownMenu-content {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 12rem;
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-space-1);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.kernel-DropdownMenu-content:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .kernel-DropdownMenu-content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+.kernel-DropdownMenu-item {
+  display: flex;
+  align-items: center;
+  text-align: start;
+  border: none;
+  border-radius: var(--kernel-radius-sm);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  cursor: default;
+}
+
+.kernel-DropdownMenu-item:focus-visible {
+  background-color: var(--kernel-color-accent-subtle);
+  outline: none;
+}
+
+.kernel-DropdownMenu-item:disabled {
+  color: var(--kernel-color-text-muted);
+  cursor: not-allowed;
+}
+
+.kernel-DropdownMenu-item[data-destructive] {
+  color: var(--kernel-color-danger-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DropdownMenu-item:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-subtle);
+    outline: none;
+  }
+
+  .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled) {
+    background-color: var(--kernel-color-danger-subtle);
+  }
+}
+
+.kernel-DropdownMenu-separator {
+  block-size: var(--kernel-border-width);
+  margin-block: var(--kernel-space-1);
+  background-color: var(--kernel-color-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-DropdownMenu-content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

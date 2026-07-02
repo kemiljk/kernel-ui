@@ -23,11 +23,17 @@ function code(values: PlaygroundValues) {
   return `<Alert ${attrs.join(" ")}>${values.children || ""}</Alert>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const titleSlot = values.title ? `<span slot="title">${values.title}</span>` : "";
+  return `<kernel-alert variant="${values.variant}">${titleSlot}${values.children || ""}</kernel-alert>`;
+}
+
 export default function AlertPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Alert
           variant={values.variant as "info" | "success" | "warning" | "danger"}

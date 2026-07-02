@@ -20,12 +20,12 @@ export function ThinkingIndicator({ label = "Thinking", className }: ThinkingInd
       role="status"
       className={[styles.root, resolveClassName(className, {})].filter(Boolean).join(" ")}
     >
-      <span className={styles.label}>{label}</span>
       <span className={styles.dots} aria-hidden="true">
         <span className={styles.dot} />
         <span className={styles.dot} />
         <span className={styles.dot} />
       </span>
+      <span className={styles.label}>{label}</span>
     </span>
   );
 }

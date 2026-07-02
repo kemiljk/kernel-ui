@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import ProgressDemo from "../../components/demos/ProgressDemo";
 import ProgressPlayground from "../../components/demos/ProgressPlayground";
 
-const reactSnippet = `import { Progress } from "@kernelui/react";
-
-<Progress value={60} label="Uploading" />`;
 ---
 
 <BaseLayout title="Progress" withSidebar>
@@ -29,8 +25,7 @@ const reactSnippet = `import { Progress } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <ProgressPlayground client:load />
 
-    <UsageAccordion code={reactSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

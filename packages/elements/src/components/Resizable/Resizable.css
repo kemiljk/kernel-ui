@@ -1,0 +1,69 @@
+.kernel-Resizable-root {
+  --kernel-resizable-split: 50%;
+
+  display: grid;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.kernel-Resizable-root[data-orientation="horizontal"] {
+  grid-template-columns: var(--kernel-resizable-split) var(--kernel-space-1) auto;
+}
+
+.kernel-Resizable-root[data-orientation="vertical"] {
+  grid-template-rows: var(--kernel-resizable-split) var(--kernel-space-1) auto;
+}
+
+.kernel-Resizable-root[data-dragging] {
+  user-select: none;
+}
+
+.kernel-Resizable-pane {
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: auto;
+}
+
+.kernel-Resizable-divider {
+  position: relative;
+  flex-shrink: 0;
+  background-color: var(--kernel-color-border);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Resizable-root[data-orientation="horizontal"] .kernel-Resizable-divider {
+  cursor: col-resize;
+}
+
+.kernel-Resizable-root[data-orientation="vertical"] .kernel-Resizable-divider {
+  cursor: row-resize;
+}
+
+.kernel-Resizable-divider::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--kernel-space-2) * -1);
+}
+
+.kernel-Resizable-root[data-orientation="vertical"] .kernel-Resizable-divider::before {
+  inset-inline: 0;
+}
+
+.kernel-Resizable-root[data-orientation="horizontal"] .kernel-Resizable-divider::before {
+  inset-block: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Resizable-divider:hover {
+    background-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-Resizable-divider[data-dragging] {
+  background-color: var(--kernel-color-accent);
+}
+
+.kernel-Resizable-divider:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}

@@ -1,7 +1,12 @@
+/* No border/background/radius: unlike Accordion, this isn't meant to be
+   its own visually distinct box. Reasoning traces live inside a chat
+   message, which already has its own container — giving this one a
+   second border and surface colour would nest a card inside a card, the
+   same anti-pattern this design system has already flagged elsewhere
+   (a bordered box holding another bordered box reads as an accident,
+   not a hierarchy). This composes into whatever container it's placed
+   in instead of asserting its own. */
 .root {
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-md);
-  background-color: var(--kernel-color-surface);
   font-family: var(--kernel-font-sans);
 }
 
@@ -10,11 +15,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--kernel-space-3);
-  padding: var(--kernel-space-3) var(--kernel-space-4);
+  /* No horizontal padding: with the card chrome gone, there's no box
+     edge to pad against — the parent chat-message container owns that
+     inset. Vertical padding stays, purely to keep the click/tap target
+     comfortable. */
+  padding-block: var(--kernel-space-2);
   cursor: default;
   list-style: none;
   user-select: none;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .trigger::-webkit-details-marker {
@@ -23,12 +31,6 @@
 
 .trigger::marker {
   content: "";
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .trigger:hover {
-    background-color: var(--kernel-color-accent-subtle);
-  }
 }
 
 .trigger:focus-visible {
@@ -65,7 +67,10 @@
 }
 
 .content {
-  padding: 0 var(--kernel-space-4) var(--kernel-space-4);
+  /* Same reasoning as .trigger: no horizontal box padding to remove, but
+     a small bottom gap so the trace text doesn't sit flush against
+     whatever follows it in the parent chat message. */
+  padding-block-end: var(--kernel-space-2);
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
   line-height: var(--kernel-line-height);

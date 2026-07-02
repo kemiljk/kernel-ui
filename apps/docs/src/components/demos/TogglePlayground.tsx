@@ -17,11 +17,21 @@ function code(values: PlaygroundValues) {
   return `<Toggle${props}>${values.children || ""}</Toggle>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.size !== "md") attrs.push(`size="${values.size}"`);
+  if (values.pressed) attrs.push("pressed");
+  if (values.disabled) attrs.push("disabled");
+  const props = attrs.length ? ` ${attrs.join(" ")}` : "";
+  return `<kernel-toggle${props}>${values.children || ""}</kernel-toggle>`;
+}
+
 export default function TogglePlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Toggle
           size={values.size as "sm" | "md" | "lg"}

@@ -1,4 +1,5 @@
 import { Button, Composer } from "@kernelui/react";
+import { PaperclipIcon } from "../icons";
 
 // actionsLeading/actionsTrailing take a JSX element (or a function
 // returning one) — writing that directly as a prop value in an .astro
@@ -11,9 +12,7 @@ export default function ComposerActionsExample() {
     <Composer
       placeholder="Ask anything…"
       actionsLeading={
-        <Button variant="ghost" size="sm">
-          Attach
-        </Button>
+        <Button variant="ghost" size="sm" aria-label="Attach" iconStart={<PaperclipIcon width="14" height="14" />} />
       }
       actionsTrailing={({ submit }) => (
         <Button variant="primary" size="sm" onClick={submit}>

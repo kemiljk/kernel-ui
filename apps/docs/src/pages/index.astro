@@ -4,6 +4,7 @@ import ThemePlayground from "../components/ThemePlayground";
 import HeroCtas from "../components/HeroCtas";
 import CodeBlock from "../components/CodeBlock.astro";
 import KernelMark from "../components/KernelMark.astro";
+import { components } from "../data/components";
 import BookDemoCard from "../components/showcase/BookDemoCard";
 import StatusRow from "../components/showcase/StatusRow";
 import EditorSettings from "../components/showcase/EditorSettings";
@@ -19,6 +20,9 @@ import PlatformCards from "../components/showcase/PlatformCards";
 import UpdateBanner from "../components/showcase/UpdateBanner";
 import NotificationToggle from "../components/showcase/NotificationToggle";
 import UnsavedChangesCard from "../components/showcase/UnsavedChangesCard";
+
+const available = components.filter((c) => c.status === "available").length;
+const planned = components.length - available;
 
 const cascadeSnippet = `--kernel-hue-accent: 70;       /* → every accent shade re-hues */
 --kernel-radius-base: 1.25rem; /* → every corner re-rounds */
@@ -68,8 +72,7 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
       <h1>The kernel of the web, componentised.</h1>
       <p>
         A component library built on real semantic HTML instead of div
-        soup, themeable from a handful of CSS variables, and usable via
-        React or Web Components, styled or completely unstyled.
+        soup.
       </p>
       <div class="hero-ctas">
         <HeroCtas />
@@ -81,8 +84,8 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
     <p class="section-eyebrow" id="showcase-heading">Showcase</p>
     <h2>Real components, composed into real screens</h2>
     <p class="principles-intro">
-      Not a component zoo — a scheduling card, a docs nav, an install
-      panel. Everything below is the actual library, not a mockup.
+      A scheduling card. A docs nav. An install panel. Each one is the
+      real library at work, not a screenshot.
     </p>
     <div class="showcase-columns">
       <div class="showcase-card">
@@ -209,7 +212,9 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
   <section class="closing">
     <p class="section-eyebrow">Get started</p>
     <h2>Built on the parts of the web that already work.</h2>
-    <p class="closing-intro">Six components and four landmark primitives are ready today, with the full set on the way.</p>
+    <p class="closing-intro">
+      {available} components are ready today{planned > 0 ? `, with ${planned} more on the way.` : " — the full set is live."}
+    </p>
     <div class="hero-ctas">
       <HeroCtas />
     </div>

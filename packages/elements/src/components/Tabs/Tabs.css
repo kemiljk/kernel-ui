@@ -1,0 +1,81 @@
+kernel-tabs {
+  display: block;
+}
+
+.kernel-Tabs-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+}
+
+.kernel-Tabs-list {
+  position: relative;
+  display: inline-flex;
+  gap: var(--kernel-space-1);
+  padding: var(--kernel-space-1);
+  border-radius: calc(var(--kernel-radius-sm) + var(--kernel-space-1));
+  background-color: var(--kernel-gray-3);
+  width: fit-content;
+}
+
+.kernel-Tabs-indicator {
+  position: absolute;
+  inset-block: var(--kernel-space-1);
+  inset-inline-start: 0;
+  inline-size: var(--kernel-tabs-indicator-width);
+  transform: translateX(var(--kernel-tabs-indicator-x));
+  background-color: var(--kernel-color-surface);
+  border-radius: var(--kernel-radius-sm);
+  box-shadow: var(--kernel-shadow-sm);
+  transition-property: transform;
+  transition-timing-function: var(--kernel-ease-magnetic);
+}
+
+.kernel-Tabs-tab {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-4);
+  border: none;
+  border-radius: var(--kernel-radius-sm);
+  background-color: transparent;
+  color: var(--kernel-color-text-muted);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Tabs-tab[aria-selected="true"] {
+  color: var(--kernel-color-text);
+}
+
+.kernel-Tabs-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.kernel-Tabs-tab:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Tabs-panel {
+  font-family: var(--kernel-font-sans);
+  color: var(--kernel-color-text);
+}
+
+.kernel-Tabs-panel:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Tabs-indicator {
+    transition-duration: 0ms !important;
+  }
+}

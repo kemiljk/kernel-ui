@@ -21,11 +21,20 @@ function code(values: PlaygroundValues) {
   return `<Composer ${attrs.join(" ")} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`placeholder="${values.placeholder}"`];
+  if (values.submitOn !== "mod+enter") attrs.push(`submit-on="${values.submitOn}"`);
+  if (values.thinking) attrs.push("thinking");
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-composer ${attrs.join(" ")}></kernel-composer>`;
+}
+
 export default function ComposerPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Composer
           placeholder={String(values.placeholder)}

@@ -15,11 +15,20 @@ function code(values: PlaygroundValues) {
   return `<Switch${props}>${values.children || ""}</Switch>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.checked) attrs.push("checked");
+  if (values.disabled) attrs.push("disabled");
+  const props = attrs.length ? ` ${attrs.join(" ")}` : "";
+  return `<kernel-switch${props}>${values.children || ""}</kernel-switch>`;
+}
+
 export default function SwitchPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Switch
           checked={Boolean(values.checked)}

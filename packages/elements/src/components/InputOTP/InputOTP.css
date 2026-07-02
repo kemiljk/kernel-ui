@@ -1,0 +1,61 @@
+.kernel-InputOTP-root {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+.kernel-InputOTP-legend {
+  padding: 0;
+  margin-block-end: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.kernel-InputOTP-root:disabled .kernel-InputOTP-legend {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-InputOTP-cells {
+  display: flex;
+  gap: var(--kernel-space-2);
+}
+
+.kernel-InputOTP-cell {
+  inline-size: var(--kernel-space-12);
+  block-size: var(--kernel-space-12);
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-lg);
+  text-align: center;
+  padding: 0;
+  transition:
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-InputOTP-cell:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-InputOTP-cell[data-filled] {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.kernel-InputOTP-cell:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-InputOTP-cell:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--kernel-color-canvas);
+}

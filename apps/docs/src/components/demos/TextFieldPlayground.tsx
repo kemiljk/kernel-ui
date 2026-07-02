@@ -18,11 +18,21 @@ function code(values: PlaygroundValues) {
   return `<TextField ${attrs.join(" ")} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`label="${values.label || "Label"}"`];
+  if (values.placeholder) attrs.push(`placeholder="${values.placeholder}"`);
+  if (values.size !== "md") attrs.push(`size="${values.size}"`);
+  if (values.required) attrs.push("required");
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-text-field ${attrs.join(" ")}></kernel-text-field>`;
+}
+
 export default function TextFieldPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <TextField
           label={String(values.label) || "Label"}

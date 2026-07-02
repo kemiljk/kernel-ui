@@ -1,18 +1,11 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import ExampleGrid from "../../components/ExampleGrid.astro";
 import Example from "../../components/Example.astro";
 import ReasoningDemo from "../../components/demos/ReasoningDemo";
 import ReasoningPlayground from "../../components/demos/ReasoningPlayground";
 import { Reasoning } from "@kernelui/react";
-
-const usageSnippet = `import { Reasoning } from "@kernelui/react";
-
-<Reasoning streaming={isStreaming} durationLabel="Thought for 4s">
-  {reasoningText}
-</Reasoning>`;
 
 const defaultSnippet = `<Reasoning durationLabel="Thought for 3s">
   Checked the existing API before adding a new prop.
@@ -68,8 +61,7 @@ const openSnippet = `<Reasoning defaultOpen durationLabel="Thought for 6s">
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <ReasoningPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

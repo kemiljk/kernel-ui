@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import AvatarDemo from "../../components/demos/AvatarDemo";
 import AvatarPlayground from "../../components/demos/AvatarPlayground";
 
-const reactSnippet = `import { Avatar } from "@kernelui/react";
-
-<Avatar src="/karl.jpg" alt="Karl Koch" fallback="KK" />`;
 ---
 
 <BaseLayout title="Avatar" withSidebar>
@@ -30,8 +26,7 @@ const reactSnippet = `import { Avatar } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <AvatarPlayground client:load />
 
-    <UsageAccordion code={reactSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

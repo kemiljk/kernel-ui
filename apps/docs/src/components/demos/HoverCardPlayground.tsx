@@ -38,7 +38,7 @@ export default function HoverCardPlayground() {
           render={<a href="https://github.com/karlkoch">{String(values.trigger) || "@karlkoch"}</a>}
           content={
             <div style={{ display: "flex", gap: "var(--kernel-space-3)", alignItems: "flex-start" }}>
-              <Avatar fallback="KK" />
+              <Avatar src="/karl-square.png" alt="" fallback="KK" />
               <div>
                 <div style={{ fontWeight: 600 }}>Karl Koch</div>
                 <div style={{ color: "var(--kernel-color-text-muted)" }}>

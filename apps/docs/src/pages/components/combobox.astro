@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import ComboboxDemo from "../../components/demos/ComboboxDemo";
+import ComboboxPlayground from "../../components/demos/ComboboxPlayground";
 
 const usageSnippet = `import { useState } from "react";
 import { Combobox } from "@kernelui/react";
@@ -49,6 +50,10 @@ function FrameworkPicker() {
     </div>
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ComboboxPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

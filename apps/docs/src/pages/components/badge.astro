@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import BadgeDemo from "../../components/demos/BadgeDemo";
 import BadgePlayground from "../../components/demos/BadgePlayground";
 
-const reactSnippet = `import { Badge } from "@kernelui/react";
-
-<Badge variant="success">Active</Badge>`;
 ---
 
 <BaseLayout title="Badge" withSidebar>
@@ -30,8 +26,7 @@ const reactSnippet = `import { Badge } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <BadgePlayground client:load />
 
-    <UsageAccordion code={reactSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

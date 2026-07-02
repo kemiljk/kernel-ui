@@ -1,0 +1,90 @@
+.kernel-Switch-root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  cursor: pointer;
+  font-family: var(--kernel-font-sans);
+  color: var(--kernel-color-text);
+}
+
+.kernel-Switch-root[data-disabled] {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Switch-control {
+  --kernel-switch-block: calc(var(--kernel-space-unit) * 6);
+  --kernel-switch-inline: calc(var(--kernel-space-unit) * 11);
+
+  position: relative;
+  flex-shrink: 0;
+  inline-size: var(--kernel-switch-inline);
+  block-size: var(--kernel-switch-block);
+  border-radius: var(--kernel-radius-full);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface-raised);
+  cursor: inherit;
+  padding: 0;
+  transition: background-color var(--kernel-duration-base) var(--kernel-ease-out),
+    border-color var(--kernel-duration-base) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Switch-control:active:not(:disabled) {
+  scale: 0.97;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Switch-control:hover:not(:disabled):not([data-state="checked"]) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-Switch-control[data-state="checked"] {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+}
+
+.kernel-Switch-control:disabled {
+  opacity: 0.6;
+}
+
+.kernel-Switch-control:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Switch-thumb {
+  --kernel-switch-thumb-extra: 6px;
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-start: 1px;
+  inline-size: calc(var(--kernel-switch-block) - 4px + var(--kernel-switch-thumb-extra));
+  block-size: calc(var(--kernel-switch-block) - 4px);
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-thumb);
+  box-shadow: var(--kernel-shadow-sm);
+  translate: 0 0;
+  transition: translate calc(var(--kernel-duration-base) * 1.25) var(--kernel-ease-spring);
+}
+
+.kernel-Switch-control[data-state="checked"] .kernel-Switch-thumb {
+  translate: calc(
+    var(--kernel-switch-inline) - var(--kernel-switch-block) - var(--kernel-switch-thumb-extra)
+  ) 0;
+}
+
+.kernel-Switch-label {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Switch-thumb {
+    transition: translate var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-Switch-control:active:not(:disabled) {
+    scale: 1;
+  }
+}

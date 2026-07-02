@@ -1,0 +1,218 @@
+.kernel-Toast-viewport {
+  position: fixed;
+  inset-block-end: var(--kernel-space-6);
+  inset-inline-end: var(--kernel-space-6);
+  z-index: var(--kernel-z-overlay);
+  inline-size: min(24rem, calc(100vw - var(--kernel-space-8)));
+  pointer-events: auto;
+}
+
+.kernel-Toast-toast {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-index, 1);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kernel-space-3);
+  /* Same "Round" fix as `@kernelui/react`'s own Toast — see its
+     Toast.module.css for the full rationale. */
+  padding: calc(var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-lg);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  pointer-events: auto;
+  transform-origin: top center;
+
+  --y: 0px;
+  opacity: 1;
+  scale: 1;
+  filter: blur(0px);
+  translate: var(--swipe-amount, 0px) var(--y);
+  transition:
+    opacity var(--kernel-duration-slow) var(--kernel-ease-out),
+    translate var(--kernel-duration-slow) var(--kernel-ease-spring),
+    scale var(--kernel-duration-slow) var(--kernel-ease-spring),
+    filter var(--kernel-duration-slow) var(--kernel-ease-out);
+}
+
+.kernel-Toast-viewport[data-expanded] .kernel-Toast-toast {
+  --y: calc(-1 * var(--offset, 0px));
+  scale: 1;
+  opacity: 1;
+  filter: blur(0px);
+  pointer-events: auto;
+}
+
+.kernel-Toast-toast[data-depth="1"] {
+  --y: -10px;
+  scale: 0.96;
+  opacity: 0.9;
+}
+
+.kernel-Toast-toast[data-depth="2"] {
+  --y: -20px;
+  scale: 0.92;
+  opacity: 0.55;
+  filter: blur(0.5px);
+}
+
+.kernel-Toast-toast[data-depth="3"] {
+  --y: -30px;
+  scale: 0.92;
+  opacity: 0;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+.kernel-Toast-viewport[data-expanded] .kernel-Toast-toast::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 100%;
+  block-size: calc(var(--kernel-space-2) + 1px);
+}
+
+@starting-style {
+  .kernel-Toast-toast {
+    opacity: 0;
+    translate: 0 var(--kernel-space-12) !important;
+    scale: 0.8;
+  }
+}
+
+.kernel-Toast-toast[data-closing] {
+  opacity: 0;
+  scale: 0.96;
+}
+
+.kernel-Toast-toast[data-variant="success"] {
+  background-color: var(--kernel-color-success-subtle);
+  border-color: var(--kernel-color-success);
+}
+
+.kernel-Toast-toast[data-variant="warning"] {
+  background-color: var(--kernel-color-warning-subtle);
+  border-color: var(--kernel-color-warning);
+}
+
+.kernel-Toast-toast[data-variant="danger"] {
+  background-color: var(--kernel-color-danger-subtle);
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-Toast-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  margin-block-start: 0.0625rem;
+  border-radius: var(--kernel-radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.kernel-Toast-toast[data-variant="success"] .kernel-Toast-icon {
+  background-color: var(--kernel-color-success);
+  color: var(--kernel-color-on-success);
+}
+
+.kernel-Toast-toast[data-variant="warning"] .kernel-Toast-icon {
+  background-color: var(--kernel-color-warning);
+  color: var(--kernel-color-on-warning);
+}
+
+.kernel-Toast-toast[data-variant="danger"] .kernel-Toast-icon {
+  background-color: var(--kernel-color-danger);
+  color: var(--kernel-color-on-danger);
+}
+
+.kernel-Toast-content {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.kernel-Toast-title {
+  margin: 0;
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  color: var(--kernel-color-text);
+}
+
+.kernel-Toast-description {
+  margin: var(--kernel-space-1) 0 0;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Toast-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  margin: calc(-1 * var(--kernel-space-1));
+  border: none;
+  border-radius: var(--kernel-radius-sm);
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: default;
+  opacity: 0.7;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Toast-toast[data-variant="success"] .kernel-Toast-close {
+  color: var(--kernel-color-success-text);
+}
+
+.kernel-Toast-toast[data-variant="warning"] .kernel-Toast-close {
+  color: var(--kernel-color-warning-text);
+}
+
+.kernel-Toast-toast[data-variant="danger"] .kernel-Toast-close {
+  color: var(--kernel-color-danger-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Toast-close {
+    opacity: 0;
+  }
+
+  .kernel-Toast-toast:hover .kernel-Toast-close {
+    opacity: 0.7;
+  }
+
+  .kernel-Toast-close:hover {
+    background-color: var(--kernel-gray-4);
+    opacity: 1;
+  }
+}
+
+.kernel-Toast-close:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.kernel-Toast-toast[data-dragging] {
+  transition: none;
+}
+
+.kernel-Toast-toast[data-dragging] .kernel-Toast-close {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Toast-toast {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

@@ -16,11 +16,20 @@ function code(values: PlaygroundValues) {
   return `<Textarea ${attrs.join(" ")} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`label="${values.label || "Label"}"`];
+  if (values.placeholder) attrs.push(`placeholder="${values.placeholder}"`);
+  if (values.required) attrs.push("required");
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-textarea ${attrs.join(" ")}></kernel-textarea>`;
+}
+
 export default function TextareaPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Textarea
           label={String(values.label) || "Label"}

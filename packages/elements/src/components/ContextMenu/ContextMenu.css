@@ -1,0 +1,47 @@
+kernel-context-menu {
+  display: contents;
+}
+
+.kernel-ContextMenu-content {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 12rem;
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: var(--kernel-space-1);
+  padding-inline: var(--kernel-space-2);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.kernel-ContextMenu-content:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .kernel-ContextMenu-content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-ContextMenu-content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

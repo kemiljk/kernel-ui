@@ -1,0 +1,125 @@
+.kernel-NavigationMenu-root {
+  font-family: var(--kernel-font-sans);
+}
+
+.kernel-NavigationMenu-list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+kernel-nav-menu-item {
+  display: contents;
+}
+
+.kernel-NavigationMenu-item {
+  display: contents;
+}
+
+.kernel-NavigationMenu-link,
+.kernel-NavigationMenu-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border: none;
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text-muted);
+  text-decoration: none;
+  font-family: inherit;
+  font-size: var(--kernel-font-size-sm);
+  cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-NavigationMenu-link:hover,
+  .kernel-NavigationMenu-trigger:hover {
+    background-color: var(--kernel-color-accent-subtle);
+    color: var(--kernel-color-text);
+  }
+}
+
+.kernel-NavigationMenu-link:focus-visible,
+.kernel-NavigationMenu-trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-NavigationMenu-link[aria-current="page"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-accent-text);
+  font-weight: 500;
+}
+
+.kernel-NavigationMenu-trigger[aria-expanded="true"] {
+  background-color: var(--kernel-color-accent-subtle);
+  color: var(--kernel-color-text);
+}
+
+.kernel-NavigationMenu-chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-NavigationMenu-trigger[aria-expanded="true"] .kernel-NavigationMenu-chevron {
+  rotate: 180deg;
+}
+
+.kernel-NavigationMenu-content {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  min-inline-size: 16rem;
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.kernel-NavigationMenu-content:popover-open {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .kernel-NavigationMenu-content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-NavigationMenu-content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-NavigationMenu-chevron {
+    transition: none;
+  }
+}

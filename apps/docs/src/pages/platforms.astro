@@ -28,17 +28,18 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
   <div class="docs-prose">
     <h1>Platforms</h1>
     <p>
-      Kernel ships two runtimes today. <code>@kernelui/react</code> is the
-      flagship — the most complete, most polished, and where new components
-      land first. <code>@kernelui/elements</code> is the same design system
-      as native Custom Elements: framework-agnostic, usable from Vue,
-      Svelte, Astro, or plain HTML with no wrapper at all. Both read the
-      exact same tokens from <code>@kernelui/styles</code>, so a theme
-      change (accent hue, radius, dark mode) reshades both identically.
+      Kernel ships two runtimes today, both covering the full component
+      catalog. <code>@kernelui/react</code> is the flagship — the reference
+      implementation, and where new components land first.
+      <code>@kernelui/elements</code> is the same design system as native
+      Custom Elements: framework-agnostic, usable from Vue, Svelte, Astro,
+      or plain HTML with no wrapper at all. Both read the exact same tokens
+      from <code>@kernelui/styles</code>, so a theme change (accent hue,
+      radius, dark mode) reshades both identically.
     </p>
 
     <h2>React</h2>
-    <p>The primary API. Every component in the library is available here first.</p>
+    <p>The reference implementation. Every component in the library lands here first.</p>
     <CodeBlock code={reactSnippet} lang="tsx" />
 
     <h2>Web Components</h2>
@@ -60,11 +61,12 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
       <code>kernel-</code> prefix; Svelte needs nothing extra at all.
     </p>
     <p>
-      This is an early set: the 14 structurally simple components (Button,
-      Badge, Card, Nav, and similar) are ported so far. The behaviorally
-      complex ones — Dialog, Popover, Tooltip, Tabs, DropdownMenu, Combobox,
-      Accordion — are still React-only while their keyboard and focus
-      handling gets ported over.
+      Every component in the catalog has a Custom Element equivalent now —
+      including the behaviorally complex ones, like Dialog, Popover, Tabs,
+      Combobox, and Accordion. They lean on the same native platform
+      primitives <code>@kernelui/react</code> does — <code>&lt;dialog&gt;</code>,
+      popover/anchor positioning, <code>&lt;details&gt;</code> — which is
+      what makes a vanilla-JS port of that behavior tractable at all.
     </p>
 
     <h2>Headless / unstyled</h2>
@@ -87,9 +89,10 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
     <h2>Choosing between them</h2>
     <p>
       Building with React? Use <code>@kernelui/react</code> — it's the
-      complete set. Building with something else, or need a component
-      usable from more than one framework on the same page? Reach for{" "}
-      <code>@kernelui/elements</code> for what's ported so far. Either way,
+      flagship implementation, and where new components land first.
+      Building with something else, or need a component usable from more
+      than one framework on the same page? <code>@kernelui/elements</code>{" "}
+      covers the same full catalog as native Custom Elements. Either way,
       the same accent hue, radius, and spacing tokens theme both at once.
     </p>
   </div>

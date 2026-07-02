@@ -1,25 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import PopoverDemo from "../../components/demos/PopoverDemo";
 import PopoverPlayground from "../../components/demos/PopoverPlayground";
 
-const usageSnippet = `import { useState } from "react";
-import { Button, Popover, RadioGroup, RadioGroupItem } from "@kernelui/react";
-
-function DistanceFilter() {
-  const [distance, setDistance] = useState("5");
-
-  return (
-    <Popover render={<Button variant="secondary">Distance</Button>}>
-      <RadioGroup label="Distance from me" value={distance} onValueChange={setDistance}>
-        <RadioGroupItem value="1">Within 1 mile</RadioGroupItem>
-        <RadioGroupItem value="5">Within 5 miles</RadioGroupItem>
-      </RadioGroup>
-    </Popover>
-  );
-}`;
 ---
 
 <BaseLayout title="Popover" withSidebar>
@@ -42,8 +26,7 @@ function DistanceFilter() {
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <PopoverPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

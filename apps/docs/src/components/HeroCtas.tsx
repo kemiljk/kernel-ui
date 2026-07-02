@@ -13,7 +13,7 @@ export default function HeroCtas() {
         Browse components
       </Button>
       <Button variant="secondary" size="lg" render={<a href="/installation/" />}>
-        Get started
+        Install Kernel
       </Button>
     </>
   );

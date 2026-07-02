@@ -12,8 +12,20 @@
   display: flex;
   flex-direction: column;
   gap: var(--kernel-space-2);
+  /* A chat composer is virtually always meant to fill its container's
+     width (the input row, not a compact inline control) — inline-size:
+     100% is the right default, not something every consumer should have
+     to opt into by hand. */
+  inline-size: 100%;
   padding: var(--kernel-space-3);
-  border-radius: var(--kernel-radius-container);
+  /* --kernel-radius-md, not -container/-sheet: this box is categorically
+     an input control (same tier as Textarea/TextField), not a padded
+     card. The container/sheet tiers add a large fixed padding term on
+     top of the base radius specifically for that reason — used here, it
+     made a modest single/two-line box round enough to look like a full
+     stadium pill at the "Round" preset, which read as a shape bug rather
+     than an intentional design. */
+  border-radius: var(--kernel-radius-md);
   background-color: var(--kernel-color-surface);
   font-family: var(--kernel-font-sans);
 }
@@ -43,7 +55,14 @@
   border: none;
   background: none;
   color: var(--kernel-color-text);
-  padding: var(--kernel-space-2) var(--kernel-space-2) 0;
+  /* Symmetric, not the earlier `8px 8px 0` — that asymmetry was meant to
+     "save" space before the actions row, but `.root`'s own `gap` already
+     provides that spacing. The zeroed bottom padding instead left the
+     placeholder/typed text sitting 8px from the top of the textarea's own
+     box but flush against its bottom — off-centre by exactly that 8px
+     whenever the box's height came out taller than one line, which is
+     always true at the default min-block-size. */
+  padding: var(--kernel-space-2);
   font: inherit;
   font-size: var(--kernel-font-size-base);
   line-height: var(--kernel-line-height);

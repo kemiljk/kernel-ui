@@ -1,0 +1,116 @@
+.kernel-RadioGroup-root {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+.kernel-RadioGroup-legend {
+  padding: 0;
+  margin-block-end: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.kernel-RadioGroup-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+}
+
+.kernel-RadioGroup-root:disabled .kernel-RadioGroup-legend {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-RadioGroup-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  cursor: pointer;
+  font-family: var(--kernel-font-sans);
+  color: var(--kernel-color-text);
+}
+
+.kernel-RadioGroup-item:has(.kernel-RadioGroup-input:disabled) {
+  cursor: not-allowed;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-RadioGroup-input {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.kernel-RadioGroup-control {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  border-radius: var(--kernel-radius-full);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-RadioGroup-input:active:not(:disabled) + .kernel-RadioGroup-control {
+  scale: 0.94;
+}
+
+.kernel-RadioGroup-control::after {
+  content: "";
+  inline-size: 0.55em;
+  block-size: 0.55em;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-on-accent);
+  scale: 0;
+  transition: scale var(--kernel-duration-fast) var(--kernel-ease-spring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-RadioGroup-input:hover:not(:disabled) + .kernel-RadioGroup-control {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-RadioGroup-input:checked + .kernel-RadioGroup-control {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+}
+
+.kernel-RadioGroup-input:checked + .kernel-RadioGroup-control::after {
+  scale: 1;
+}
+
+.kernel-RadioGroup-input:focus-visible + .kernel-RadioGroup-control {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-RadioGroup-input:disabled + .kernel-RadioGroup-control {
+  opacity: 0.6;
+}
+
+.kernel-RadioGroup-label {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-RadioGroup-control::after {
+    transition: none;
+  }
+
+  .kernel-RadioGroup-input:active:not(:disabled) + .kernel-RadioGroup-control {
+    scale: 1;
+  }
+}

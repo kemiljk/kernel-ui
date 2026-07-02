@@ -1,19 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import SidebarDemo from "../../components/demos/SidebarDemo";
+import SidebarPlayground from "../../components/demos/SidebarPlayground";
 
 interface Props {}
-
-const usageSnippet = `import { Sidebar } from "@kernelui/react";
-
-<Sidebar aria-label="Table of contents">
-  <ul>
-    <li>Installation</li>
-    <li>Usage</li>
-  </ul>
-</Sidebar>`;
 ---
 
 <BaseLayout title="Sidebar" withSidebar>
@@ -32,7 +23,9 @@ const usageSnippet = `import { Sidebar } from "@kernelui/react";
       <SidebarDemo client:load />
     </div>
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <SidebarPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

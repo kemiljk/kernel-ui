@@ -18,19 +18,31 @@
   scale: 0.97;
 }
 
+/* min-inline-size, not inline-size: Toggle's own doc comment gives "a
+   toolbar 'bold' button" as the canonical example, but a fixed square
+   sized for a single icon clips or overflows real text content — two
+   text-labelled toggles sitting edge to edge (no gap consumed by the
+   overflow) rendered as literally overlapping words. min-inline-size
+   keeps icon-only toggles exactly as square as before (content is
+   narrower than the minimum, so the minimum wins) while letting a text
+   label push the box wider via its own padding instead of spilling past
+   it. */
 .root[data-size="sm"] {
-  inline-size: calc(var(--kernel-space-unit) * 8);
+  min-inline-size: calc(var(--kernel-space-unit) * 8);
   block-size: calc(var(--kernel-space-unit) * 8);
+  padding-inline: var(--kernel-space-2);
 }
 
 .root[data-size="md"] {
-  inline-size: calc(var(--kernel-space-unit) * 10);
+  min-inline-size: calc(var(--kernel-space-unit) * 10);
   block-size: calc(var(--kernel-space-unit) * 10);
+  padding-inline: var(--kernel-space-2);
 }
 
 .root[data-size="lg"] {
-  inline-size: calc(var(--kernel-space-unit) * 12);
+  min-inline-size: calc(var(--kernel-space-unit) * 12);
   block-size: calc(var(--kernel-space-unit) * 12);
+  padding-inline: var(--kernel-space-3);
 }
 
 @media (hover: hover) and (pointer: fine) {

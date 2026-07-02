@@ -1,5 +1,31 @@
+export type ComponentCategory =
+  | "Primitives"
+  | "Forms"
+  | "Layout"
+  | "Feedback"
+  | "Overlays"
+  | "Navigation"
+  | "Data Display"
+  | "AI";
+
+/** Display order for the sidebar's category groups — by how often each
+ * group actually gets reached for building a typical screen, not
+ * alphabetically. Primitives/Forms/Layout show up on nearly every page;
+ * Data Display and AI are real but more occasional, situational needs. */
+export const CATEGORIES: ComponentCategory[] = [
+  "Primitives",
+  "Forms",
+  "Layout",
+  "Feedback",
+  "Overlays",
+  "Navigation",
+  "Data Display",
+  "AI",
+];
+
 export interface ComponentEntry {
   name: string;
+  category: ComponentCategory;
   slug: string;
   element: string;
   summary: string;
@@ -9,9 +35,14 @@ export interface ComponentEntry {
 // Alphabetical by name — this is what the sidebar, mobile nav, and
 // command palette render in, so it has to read as a lookup list, not a
 // build-order changelog. (Shipping order is in git history, not here.)
+// The sidebar groups these by `category` (see CATEGORIES above for that
+// group ordering) but still sorts alphabetically *within* each group,
+// which falls out for free from this array already being fully
+// alphabetical — filtering by category preserves relative order.
 export const components: ComponentEntry[] = [
   {
     name: "Accordion",
+    category: "Data Display",
     slug: "accordion",
     element: "<details> + <summary>",
     summary: "Native disclosure, exclusive open via a shared name.",
@@ -19,6 +50,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Alert",
+    category: "Feedback",
     slug: "alert",
     element: "role=\"alert\" / role=\"status\"",
     summary: "Live-region feedback that announces itself.",
@@ -26,6 +58,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Avatar",
+    category: "Primitives",
     slug: "avatar",
     element: "<img>",
     summary: "Real image, with an initials fallback.",
@@ -33,6 +66,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Badge",
+    category: "Primitives",
     slug: "badge",
     element: "<span>",
     summary: "A small status chip.",
@@ -40,6 +74,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Breadcrumbs",
+    category: "Navigation",
     slug: "breadcrumbs",
     element: "<nav aria-label=\"breadcrumb\"> + <ol>",
     summary: "Ordered trail, aria-current for the current page.",
@@ -47,6 +82,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Button",
+    category: "Primitives",
     slug: "button",
     element: "<button>",
     summary: "Click, keyboard, and form association, for free.",
@@ -54,6 +90,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Card",
+    category: "Layout",
     slug: "card",
     element: "<article> / <div>",
     summary: "For genuinely self-contained, distributable content.",
@@ -61,6 +98,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Carousel",
+    category: "Data Display",
     slug: "carousel",
     element: "scroll-snap-type / scroll-snap-align",
     summary: "Native scrolling instead of a JS carousel engine.",
@@ -68,6 +106,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Checkbox",
+    category: "Primitives",
     slug: "checkbox",
     element: "<input type=\"checkbox\">",
     summary: "Tri-state, styled with :checked and :indeterminate.",
@@ -75,6 +114,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Combobox",
+    category: "Forms",
     slug: "combobox",
     element: "<input role=\"combobox\"> + popover listbox",
     summary: "Filterable list with aria-activedescendant.",
@@ -82,6 +122,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Command Palette",
+    category: "Overlays",
     slug: "command-palette",
     element: "<dialog> + <input> + role=\"listbox\"",
     summary: "A searchable, keyboard-driven action list.",
@@ -89,6 +130,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Composer",
+    category: "AI",
     slug: "composer",
     element: "<textarea> with field-sizing: content",
     summary: "A chat message input, with a live \"thinking\" state.",
@@ -96,6 +138,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Context Menu",
+    category: "Overlays",
     slug: "context-menu",
     element: "role=\"menu\" at cursor position",
     summary: "Right-click menu, same primitives as Dropdown Menu.",
@@ -103,6 +146,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Data Table",
+    category: "Data Display",
     slug: "data-table",
     element: "<table> + sort/filter/paginate",
     summary: "Table plus the behaviour layered on top.",
@@ -110,6 +154,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Date Picker",
+    category: "Data Display",
     slug: "date-picker",
     element: "<table> grid of <button> day cells",
     summary: "Calendar grid with aria-selected.",
@@ -117,6 +162,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Date Range Picker",
+    category: "Data Display",
     slug: "date-range-picker",
     element: "<table> grid of <button> day cells",
     summary: "Two-click range selection over the same calendar grid.",
@@ -124,6 +170,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Dialog",
+    category: "Overlays",
     slug: "dialog",
     element: "<dialog>",
     summary: "showModal(): focus trap, top layer, and ::backdrop, free.",
@@ -131,6 +178,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Dropdown Menu",
+    category: "Overlays",
     slug: "dropdown-menu",
     element: "popover + role=\"menu\"",
     summary: "Anchor-positioned menu with arrow-key navigation.",
@@ -138,6 +186,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Footer",
+    category: "Layout",
     slug: "footer",
     element: "<footer>",
     summary: "The contentinfo landmark.",
@@ -145,6 +194,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Header",
+    category: "Layout",
     slug: "header",
     element: "<header>",
     summary: "The banner landmark.",
@@ -152,6 +202,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Hover Card",
+    category: "Overlays",
     slug: "hover-card",
     element: "popover=hint / interestfor",
     summary: "Rich hover preview, a heavier Tooltip.",
@@ -159,6 +210,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Input OTP",
+    category: "Forms",
     slug: "input-otp",
     element: "a row of real <input>",
     summary: "One-time-code entry with roving focus.",
@@ -166,6 +218,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Label",
+    category: "Primitives",
     slug: "label",
     element: "<label>",
     summary: "A standalone label for custom composed controls.",
@@ -173,6 +226,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Nav",
+    category: "Layout",
     slug: "nav",
     element: "<nav> + <ul>",
     summary: "Active state via aria-current, no client JS.",
@@ -180,6 +234,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Navigation Menu",
+    category: "Overlays",
     slug: "navigation-menu",
     element: "<nav> + nested disclosure",
     summary: "Multi-level site navigation, mega-menu via popover.",
@@ -187,6 +242,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Pagination",
+    category: "Navigation",
     slug: "pagination",
     element: "<nav aria-label=\"pagination\"> + <ol>",
     summary: "Ordered page links, aria-current for the active one.",
@@ -194,6 +250,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Popover",
+    category: "Overlays",
     slug: "popover",
     element: "popover + anchor positioning",
     summary: "Anchor-positioned floating panel.",
@@ -201,6 +258,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Progress",
+    category: "Feedback",
     slug: "progress",
     element: "<progress>",
     summary: "Reports its own value to assistive tech, natively.",
@@ -208,6 +266,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Radio Group",
+    category: "Primitives",
     slug: "radio-group",
     element: "<fieldset> + <input type=\"radio\">",
     summary: "Grouped choice with native arrow-key roving.",
@@ -215,6 +274,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Reasoning",
+    category: "AI",
     slug: "reasoning",
     element: "<details> + <summary>",
     summary: "A collapsible AI reasoning trace that auto-opens while streaming.",
@@ -222,6 +282,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Resizable",
+    category: "Layout",
     slug: "resizable",
     element: "CSS resize / pointer-driven splitters",
     summary: "Pane-to-pane split layouts.",
@@ -229,6 +290,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Scroll Area",
+    category: "Layout",
     slug: "scroll-area",
     element: "native scroll + scrollbar-gutter",
     summary: "Custom scrollbar styling as enhancement only.",
@@ -236,6 +298,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Select",
+    category: "Forms",
     slug: "select",
     element: "<select>",
     summary: "The platform's own picker UI, on every device.",
@@ -243,6 +306,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Separator",
+    category: "Primitives",
     slug: "separator",
     element: "<hr>",
     summary: "A divider that's already role=\"separator\".",
@@ -250,6 +314,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Sidebar",
+    category: "Layout",
     slug: "sidebar",
     element: "<aside>",
     summary: "The complementary landmark.",
@@ -257,6 +322,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Skeleton",
+    category: "Feedback",
     slug: "skeleton",
     element: "<div aria-hidden=\"true\">",
     summary: "Loading placeholder tied to real content dimensions.",
@@ -264,6 +330,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Slider",
+    category: "Forms",
     slug: "slider",
     element: "<input type=\"range\">",
     summary: "Custom-painted thumb, native drag and keyboard behaviour.",
@@ -271,6 +338,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Switch",
+    category: "Primitives",
     slug: "switch",
     element: "<button role=\"switch\">",
     summary: "The WAI-ARIA switch pattern on a real button.",
@@ -278,6 +346,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Table",
+    category: "Data Display",
     slug: "table",
     element: "<table>",
     summary: "Sortable headers, real <caption>, real <th scope>.",
@@ -285,6 +354,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Tabs",
+    category: "Navigation",
     slug: "tabs",
     element: "role=\"tablist\"",
     summary: "No native element exists yet, ARIA APG pattern.",
@@ -292,6 +362,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Text Field",
+    category: "Forms",
     slug: "text-field",
     element: "<label> + <input>",
     summary: "Correct labelling and live validation styling.",
@@ -299,6 +370,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Textarea",
+    category: "Forms",
     slug: "textarea",
     element: "<textarea>",
     summary: "Auto-growing with field-sizing: content.",
@@ -306,6 +378,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Thinking Indicator",
+    category: "AI",
     slug: "thinking-indicator",
     element: "role=\"status\"",
     summary: "The universal typing-indicator dots, next to real visible text.",
@@ -313,6 +386,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Toast",
+    category: "Feedback",
     slug: "toast",
     element: "role=\"status\" / role=\"alert\" (queued)",
     summary: "A shared, queued live region.",
@@ -320,6 +394,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Toggle",
+    category: "Primitives",
     slug: "toggle",
     element: "<button aria-pressed>",
     summary: "A two-state toggle that looks and acts like a button.",
@@ -327,6 +402,7 @@ export const components: ComponentEntry[] = [
   },
   {
     name: "Tooltip",
+    category: "Overlays",
     slug: "tooltip",
     element: "popover + interestfor",
     summary: "Hover/focus hints via the Popover API.",

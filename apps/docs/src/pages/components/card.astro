@@ -1,17 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import CardDemo from "../../components/demos/CardDemo";
-
-const cardSnippet = `import { Card, CardHeader, CardTitle, CardContent } from "@kernelui/react";
-
-<Card>
-  <CardHeader>
-    <CardTitle>Plan usage</CardTitle>
-  </CardHeader>
-  <CardContent>You've used 8 of 10 projects.</CardContent>
-</Card>`;
+import CardPlayground from "../../components/demos/CardPlayground";
 ---
 
 <BaseLayout title="Card" withSidebar>
@@ -31,7 +22,9 @@ const cardSnippet = `import { Card, CardHeader, CardTitle, CardContent } from "@
       <CardDemo client:load />
     </div>
 
-    <UsageAccordion code={cardSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <CardPlayground client:load />
 
     <h2>Parts</h2>
     <table class="docs-table">

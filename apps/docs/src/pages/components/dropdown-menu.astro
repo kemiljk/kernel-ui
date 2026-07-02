@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import DropdownMenuDemo from "../../components/demos/DropdownMenuDemo";
+import DropdownMenuPlayground from "../../components/demos/DropdownMenuPlayground";
 
 const usageSnippet = `import { Button, DropdownMenu, MenuItem, MenuSeparator } from "@kernelui/react";
 
@@ -37,6 +38,10 @@ function ActionsMenu() {
     </div>
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <DropdownMenuPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

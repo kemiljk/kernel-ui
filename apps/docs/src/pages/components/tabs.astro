@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import TabsDemo from "../../components/demos/TabsDemo";
+import TabsPlayground from "../../components/demos/TabsPlayground";
 
 const tabsSnippet = `import { Tabs, TabsList, Tab, TabPanel } from "@kernelui/react";
 
@@ -36,6 +37,10 @@ const tabsSnippet = `import { Tabs, TabsList, Tab, TabPanel } from "@kernelui/re
     </div>
 
     <UsageAccordion code={tabsSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <TabsPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

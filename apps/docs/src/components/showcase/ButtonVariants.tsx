@@ -11,7 +11,7 @@ export default function ButtonVariants() {
       <div className="showcase-row">
         <Button variant="danger">Delete</Button>
         <Button variant="danger" size="sm">
-          Delete
+          Remove
         </Button>
         <Button variant="ghost" disabled>
           Archive

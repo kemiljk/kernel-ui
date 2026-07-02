@@ -203,7 +203,13 @@ h3 {
 }
 
 .docs-sidebar-eyebrow {
-  margin: var(--kernel-space-4) 0 var(--kernel-space-1);
+  /* 50% more than the base --kernel-space-4 (16px → 24px) — a deliberate
+     multiplier, not a bigger named token, for the same reason the
+     showcase grid's own 50%-more spacing isn't one either: no step in
+     the scale lands on "the current value plus half again". Groups need
+     to read as clearly separate at a glance, not just visually distinct
+     from their own items. */
+  margin: calc(var(--kernel-space-4) * 1.5) 0 var(--kernel-space-1);
   padding-inline: var(--kernel-space-3);
   font-family: var(--kernel-font-mono);
   font-size: 0.6875rem;
@@ -213,8 +219,76 @@ h3 {
   color: var(--kernel-color-text-muted);
 }
 
-.docs-sidebar-eyebrow:first-child {
+/* Only "Guides" (still a plain <p>, the sidebar's actual first eyebrow)
+   should sit flush with no top margin — every category eyebrow below it
+   is a <summary>, now nested one level deeper inside its own <details>
+   (see docs-sidebar-group), which made it the first child of THAT
+   parent too. `:first-child` alone started matching every one of them
+   once they were each "first child" of a separate wrapper, silently
+   zeroing the very group-to-group spacing this rule was never meant to
+   touch. Targeting the tag itself instead of DOM position is immune to
+   that regardless of how the markup nests later. */
+p.docs-sidebar-eyebrow:first-child {
   margin-block-start: 0;
+}
+
+/* Each category eyebrow above is now also a <summary> (see
+   docs-sidebar-group below) — same text styling as before, just made
+   into a real disclosure trigger. No background/border of its own
+   (deliberately, unlike Accordion/Reasoning's boxed triggers): this is
+   a plain sidebar label that happens to be clickable, not a card. */
+.docs-sidebar-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-2);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.docs-sidebar-eyebrow::-webkit-details-marker {
+  display: none;
+}
+
+.docs-sidebar-eyebrow::marker {
+  content: "";
+}
+
+.docs-sidebar-group-chevron {
+  flex-shrink: 0;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.docs-sidebar-group[open] .docs-sidebar-group-chevron {
+  rotate: 180deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-sidebar-group-chevron {
+    transition: none;
+  }
+}
+
+/* One rail per category, wrapping only that group's <Nav> — not a single
+   continuous line down the whole list, and not the eyebrow heading
+   above it either. The heading names the group; the rail marks where
+   its actual links live, so it has to start and stop with them, not run
+   underneath the label too. Half the indent of the first pass (8px, not
+   16px): enough to read as "these are offset from the rail", not enough
+   to eat into the sidebar's already-tight column.
+
+   margin-inline-start matches .docs-sidebar-eyebrow's own padding-inline
+   exactly (space-3, 12px) — without it the rail sat flush at the
+   sidebar's own edge while the heading text above it started 12px in,
+   so the line began to the LEFT of the word it's supposed to group,
+   instead of directly under it. */
+.docs-sidebar-rail {
+  margin-inline-start: var(--kernel-space-3);
+  border-inline-start: var(--kernel-border-width) solid var(--kernel-color-border);
+  padding-inline-start: 0.5rem;
 }
 
 .docs-sidebar-divider {
@@ -772,8 +846,27 @@ h3 {
   margin-inline: auto;
 }
 
-.docs-prose :where(h1, h2, h3) {
-  margin-block: var(--kernel-space-8) var(--kernel-space-3);
+/* `>` (direct child), not a descendant selector: every genuine page
+   heading (the "Card" h1, the "Playground"/"Props"/"Accessibility" h2s)
+   sits directly inside `.docs-prose`, but so does an embedded demo's
+   OWN heading a few levels down — Card's title (an h3 by default),
+   Dialog's title (an h2) — since those live inside `.docs-example`/
+   `.prop-playground-stage` boxes, which are themselves children of
+   `.docs-prose`. A plain descendant selector reached into those and
+   clobbered the component's own scoped margin (both rules have equal
+   specificity — one class each — so source order decided it, and this
+   file loads after the component's own stylesheet), adding 48px of
+   top margin above "Upgrade to Pro" that had nothing to do with page
+   layout. Restricting to direct children only ever matches this
+   page's own section headings. */
+.docs-prose > :where(h1, h2, h3) {
+  /* space-8 → space-12 (32px → 48px): headings kept landing right after a
+     bordered box (a Usage accordion, a connected Playground card, an
+     Example) with just enough gap to look like an oversight, not a
+     section break. A heading following boxed content needs noticeably
+     more air than one following plain text to actually read as "new
+     section starts here". */
+  margin-block: var(--kernel-space-12) var(--kernel-space-3);
 }
 
 .docs-prose :where(p, ul, ol) {
@@ -823,7 +916,15 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: var(--kernel-space-4);
+  /* Same floor as .prop-playground-stage below: without it, a demo
+     whose only content is something small (a Select trigger, a Switch)
+     collapses the box down to barely more than the control's own
+     height, padding included — it reads as a cramped strip, not a
+     framed preview. A fixed minimum gives every demo the same
+     presence regardless of what it's showing. */
+  min-block-size: calc(var(--kernel-space-unit) * 28);
   padding: var(--kernel-space-8);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   /* NOT the outer = inner + padding concentric formula the shipped
@@ -844,7 +945,14 @@ h3 {
      misreading. */
   border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
   background-color: var(--kernel-color-canvas);
-  background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
+  /* 50% of --kernel-color-border via color-mix, not a literal lighter
+     colour: the token already adapts per theme/accent, so fading it
+     toward transparent keeps that adaptability instead of needing a
+     separate light/dark value tuned by hand. At full opacity the dot
+     grid competed with the actual component previews sitting on top of
+     it — it's meant to read as graph-paper texture, not another visible
+     layer of content. */
+  background-image: radial-gradient(color-mix(in oklch, var(--kernel-color-border) 50%, transparent) 1px, transparent 1px);
   background-size: 16px 16px;
   margin-block-end: var(--kernel-space-6);
 }
@@ -902,7 +1010,7 @@ h3 {
   border-radius: var(--kernel-radius-container) var(--kernel-radius-container) 0 0;
   border-block-end: none;
   background-color: var(--kernel-color-canvas);
-  background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in oklch, var(--kernel-color-border) 50%, transparent) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 
@@ -918,10 +1026,11 @@ h3 {
   border-radius: 0 0 var(--kernel-radius-container) var(--kernel-radius-container);
 }
 
-/* Theme-aware padding, scoped to this connected context only: the
-   standalone UsageAccordion elsewhere on a component page sits in its
-   own small rounded box and its default padding already suits that.
-   Here, though, the accordion's bottom corners ARE the compound card's
+/* Theme-aware padding, scoped to connected contexts only: the standalone
+   UsageAccordion elsewhere on a component page sits in its own small
+   rounded box and its default padding already suits that. Here, though —
+   both an Example's preview+accordion and a Playground's own merged
+   Usage — the accordion's corners ARE (or share) the compound card's own
    corners (see --kernel-radius-container above), and that radius grows
    with --kernel-radius-base same as everywhere else in the theme — at
    "Round" the default trigger padding reads as cramped against a
@@ -930,13 +1039,20 @@ h3 {
    whatever radius is active: 0 extra at Sharp (radius-base: 0), a
    proportional bump at Soft, and +50% specifically at Round's own
    1.25rem value — the coefficients below are solved for that. */
-.example-card-preview + .usage-accordion .usage-accordion-trigger {
+.example-card-preview + .usage-accordion .usage-accordion-trigger,
+.prop-playground > .usage-accordion .usage-accordion-trigger {
   padding-block: calc(var(--kernel-space-3) + var(--kernel-radius-base) * 0.3);
   padding-inline: calc(var(--kernel-space-4) + var(--kernel-radius-base) * 0.4);
 }
 
-.example-card-preview + .usage-accordion .usage-accordion-content {
+.example-card-preview + .usage-accordion .usage-accordion-content,
+.prop-playground > .usage-accordion .usage-accordion-content {
+  /* Bottom needs the same scaling as the sides — it was left at the base
+     rule's unscaled space-4 here before, so at Round the block ended up
+     visibly tighter on the bottom than the (correctly scaled) left/right,
+     an asymmetry that read as a mistake rather than a deliberate edge. */
   padding-inline: calc(var(--kernel-space-4) + var(--kernel-radius-base) * 0.4);
+  padding-block-end: calc(var(--kernel-space-4) + var(--kernel-radius-base) * 0.4);
 }
 
 /* Homepage theme playground: docs-site furniture, deliberately plain
@@ -974,13 +1090,44 @@ h3 {
 
 /* Per-component prop sandbox (Playground.tsx). Distinct from `.playground`
    above (the homepage theme editor) — this one pairs a live preview stage
-   with a control-per-prop panel. Stage reuses `.docs-example`'s framed,
-   dotted-canvas look so it reads as "the same kind of surface as the static
-   demo above it, just interactive." */
+   with a control-per-prop panel.
+
+   One connected unit, not three-to-four stacked boxes: the stage, panel,
+   and code snippet used to each carry their own border/radius/background,
+   floating with a gap between them — literal boxes in boxes, and the
+   giant `calc(radius-md * 1.6 + space)` radius on each meant that at the
+   "Round" theme every one of them read as a separate stadium pill. Now
+   there's a single outer border/radius/background on `.prop-playground`
+   itself (a FIXED --kernel-radius-container, same reasoning as the
+   Example/UsageAccordion connected-card treatment: this box is always
+   followed by more sections, so a theme-scaled radius would blow up the
+   same way), and each inner section is just a hairline divider away from
+   the next — one card with seams, not several cards with gaps. */
 .prop-playground {
-  display: grid;
-  gap: var(--kernel-space-4);
+  display: flex;
+  flex-direction: column;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  overflow: hidden;
   margin-block-end: var(--kernel-space-6);
+}
+
+/* Usage now lives INSIDE .prop-playground (Playground.tsx renders it as
+   the last child, after the panel) instead of as a separately-hardcoded
+   <UsageAccordion> sibling after the whole component — see Playground.tsx
+   for why: a static snippet next to a live one that says the same thing
+   at only one specific set of values was pure repetition, and the two
+   could silently drift apart. Its own border/radius/background are
+   stripped here since `.prop-playground` already supplies all three;
+   only a top divider carries over, the same seam every other section of
+   this card (stage/panel/code) already uses. */
+.prop-playground > .usage-accordion {
+  margin-block-start: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
 }
 
 .prop-playground-stage {
@@ -991,10 +1138,9 @@ h3 {
   gap: var(--kernel-space-4);
   min-block-size: calc(var(--kernel-space-unit) * 28);
   padding: var(--kernel-space-8);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
   background-color: var(--kernel-color-canvas);
-  background-image: radial-gradient(var(--kernel-color-border) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in oklch, var(--kernel-color-border) 50%, transparent) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 
@@ -1002,9 +1148,6 @@ h3 {
   display: grid;
   gap: var(--kernel-space-3);
   padding: var(--kernel-space-4) var(--kernel-space-6);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
-  background-color: var(--kernel-color-surface);
 }
 
 .prop-playground-field {
@@ -1029,6 +1172,15 @@ h3 {
   flex-wrap: wrap;
   gap: var(--kernel-space-1);
 }
+
+/* React/Web Components switch inside the merged Usage section — a real
+   `<Tabs>` (the library's own tablist pattern) rather than two plain
+   buttons: it's genuinely two views of the same content switching in
+   place, exactly what tabs are for, and it comes with the library's own
+   keyboard/ARIA handling for free instead of a bespoke `aria-pressed`
+   pair. No extra CSS needed here — Tabs' own `.root` gap separates the
+   tablist from the panel below, and `.usage-accordion-content .code-block`
+   already zeroes the code block's margin. */
 
 .prop-playground-text {
   /* TextField brings its own label, so it spans the row rather than sitting
@@ -1056,18 +1208,6 @@ h3 {
 .prop-playground-number:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 1px;
-}
-
-.prop-playground-code {
-  margin: 0;
-  padding: var(--kernel-space-3) var(--kernel-space-4);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-md);
-  background-color: var(--kernel-color-canvas);
-  overflow-x: auto;
-  font-family: var(--kernel-font-mono);
-  font-size: var(--kernel-font-size-sm);
-  color: var(--kernel-color-text);
 }
 
 .playground-gallery {
@@ -1171,6 +1311,14 @@ h3 {
   .hero-mark {
     inline-size: 44rem;
     block-size: 44rem;
+  }
+
+  /* The desktop clamp's floor (2.5rem) never scales below itself, so on
+     narrow phones the headline sits at a flat 40px and wraps to three
+     lines instead of the two `text-wrap: balance` aims for. Give small
+     viewports their own lower floor so the balance has room to work. */
+  .hero h1 {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
   }
 }
 
@@ -1599,12 +1747,6 @@ h3 {
 
 .usage-accordion-trigger::marker {
   content: "";
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .usage-accordion-trigger:hover {
-    background-color: var(--kernel-color-accent-subtle);
-  }
 }
 
 .usage-accordion-trigger:focus-visible {

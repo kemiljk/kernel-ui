@@ -82,3 +82,32 @@ export function ChevronDownIcon(props: IconProps) {
     </RadixIcon>
   );
 }
+
+/**
+ * Not from Radix Icons — their set has no paperclip. Hand-drawn as a
+ * stroke (not the filled-path convention above), since an outline is what
+ * actually reads as "paperclip" at this size; overrides RadixIcon's
+ * `fill="currentColor"` default on the path itself.
+ *
+ * A custom, tighter viewBox rather than the shared "0 0 15 15": the path's
+ * own bounds only span roughly x:[3.3,12] y:[1.9,10] of that box (~8.5 of
+ * 15 units), so on the standard viewBox it rendered visibly smaller than
+ * every sibling icon at the same 1em size — those are Radix originals,
+ * already drawn edge-to-edge. Cropping to the glyph's actual bounds (with
+ * a small margin) makes it fill its box the same way they do, without
+ * having to redraw the path itself.
+ */
+export function PaperclipIcon(props: IconProps) {
+  return (
+    <RadixIcon viewBox="2.5 1 10 10" {...props}>
+      <path
+        d="M11.5 4.5 6.4 9.6a2 2 0 1 1-2.83-2.83l4.59-4.59a1.25 1.25 0 1 1 1.77 1.77L5.6 8.28"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </RadixIcon>
+  );
+}

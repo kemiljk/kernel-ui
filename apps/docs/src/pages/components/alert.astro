@@ -1,15 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import AlertDemo from "../../components/demos/AlertDemo";
 import AlertPlayground from "../../components/demos/AlertPlayground";
 
-const alertSnippet = `import { Alert } from "@kernelui/react";
-
-<Alert variant="danger" title="Payment failed">
-  Update your card details to keep your subscription active.
-</Alert>`;
 ---
 
 <BaseLayout title="Alert" withSidebar>
@@ -32,8 +26,7 @@ const alertSnippet = `import { Alert } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <AlertPlayground client:load />
 
-    <UsageAccordion code={alertSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

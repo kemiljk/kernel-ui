@@ -1,16 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import BreadcrumbsDemo from "../../components/demos/BreadcrumbsDemo";
-
-const usageSnippet = `import { Breadcrumbs, BreadcrumbItem } from "@kernelui/react";
-
-<Breadcrumbs>
-  <BreadcrumbItem href="/">Home</BreadcrumbItem>
-  <BreadcrumbItem href="/settings">Settings</BreadcrumbItem>
-  <BreadcrumbItem current>Profile</BreadcrumbItem>
-</Breadcrumbs>`;
+import BreadcrumbsPlayground from "../../components/demos/BreadcrumbsPlayground";
 ---
 
 <BaseLayout title="Breadcrumbs" withSidebar>
@@ -29,7 +21,9 @@ const usageSnippet = `import { Breadcrumbs, BreadcrumbItem } from "@kernelui/rea
       <BreadcrumbsDemo client:load />
     </div>
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <BreadcrumbsPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

@@ -1,0 +1,63 @@
+.kernel-DataTable-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  width: 100%;
+}
+
+.kernel-DataTable-filter {
+  max-inline-size: 20rem;
+}
+
+.kernel-DataTable-status {
+  margin: 0;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-DataTable-sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.kernel-DataTable-sortButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-DataTable-sortIcon {
+  flex-shrink: 0;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-DataTable-sortIcon[data-direction] {
+  opacity: 1;
+}
+
+.kernel-DataTable-sortIcon[data-direction="descending"] {
+  rotate: 180deg;
+}
+
+.kernel-DataTable-pagination {
+  align-self: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-DataTable-sortIcon {
+    transition: none;
+  }
+}

@@ -18,11 +18,19 @@ function code(values: PlaygroundValues) {
   return `${open}${values.children || "Badge"}</Badge>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.variant !== "neutral") attrs.push(`variant="${values.variant}"`);
+  const open = attrs.length ? `<kernel-badge ${attrs.join(" ")}>` : "<kernel-badge>";
+  return `${open}${values.children || "Badge"}</kernel-badge>`;
+}
+
 export default function BadgePlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Badge
           variant={

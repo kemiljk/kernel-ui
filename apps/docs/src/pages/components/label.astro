@@ -1,14 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import LabelDemo from "../../components/demos/LabelDemo";
 import LabelPlayground from "../../components/demos/LabelPlayground";
 
-const usageSnippet = `import { Label } from "@kernelui/react";
-
-<Label htmlFor="color" required>Favorite color</Label>
-<input id="color" name="color" />`;
 ---
 
 <BaseLayout title="Label" withSidebar>
@@ -30,8 +25,7 @@ const usageSnippet = `import { Label } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <LabelPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

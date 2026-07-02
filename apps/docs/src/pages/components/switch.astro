@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import SwitchDemo from "../../components/demos/SwitchDemo";
 import SwitchPlayground from "../../components/demos/SwitchPlayground";
 
-const usageSnippet = `import { Switch } from "@kernelui/react";
-
-<Switch defaultChecked>Enable notifications</Switch>`;
 ---
 
 <BaseLayout title="Switch" withSidebar>
@@ -30,8 +26,7 @@ const usageSnippet = `import { Switch } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <SwitchPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead>

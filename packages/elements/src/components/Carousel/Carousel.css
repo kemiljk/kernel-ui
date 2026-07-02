@@ -1,0 +1,111 @@
+.kernel-Carousel-root {
+  position: relative;
+  font-family: var(--kernel-font-sans);
+}
+
+.kernel-Carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  border-radius: var(--kernel-radius-container);
+}
+
+.kernel-Carousel-track:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+kernel-carousel-slide {
+  display: contents;
+}
+
+.kernel-Carousel-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+.kernel-Carousel-prev,
+.kernel-Carousel-next {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: calc(var(--kernel-space-unit) * 8);
+  block-size: calc(var(--kernel-space-unit) * 8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-sm);
+  cursor: default;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Carousel-prev {
+  inset-inline-start: var(--kernel-space-3);
+}
+
+.kernel-Carousel-next {
+  inset-inline-end: var(--kernel-space-3);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Carousel-prev:hover:not(:disabled),
+  .kernel-Carousel-next:hover:not(:disabled) {
+    background-color: var(--kernel-gray-4);
+  }
+}
+
+.kernel-Carousel-prev:focus-visible,
+.kernel-Carousel-next:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Carousel-prev:disabled,
+.kernel-Carousel-next:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.kernel-Carousel-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-2);
+  margin-block-start: var(--kernel-space-3);
+}
+
+.kernel-Carousel-dot {
+  inline-size: var(--kernel-space-2);
+  block-size: var(--kernel-space-2);
+  padding: 0;
+  border: none;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-border-interactive);
+  cursor: default;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Carousel-dot:hover {
+    background-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-Carousel-dot:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Carousel-dot[data-current] {
+  background-color: var(--kernel-color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Carousel-track {
+    scroll-behavior: auto;
+  }
+}

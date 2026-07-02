@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import ExampleGrid from "../../components/ExampleGrid.astro";
 import Example from "../../components/Example.astro";
 import ButtonDemo from "../../components/demos/ButtonDemo";
@@ -9,14 +8,6 @@ import ButtonPlayground from "../../components/demos/ButtonPlayground";
 import ButtonIconsExample from "../../components/demos/ButtonIconsExample";
 import ButtonAsLinkExample from "../../components/demos/ButtonAsLinkExample";
 import { Button } from "@kernelui/react";
-
-const usageSnippet = `import { Button } from "@kernelui/react";
-
-<Button variant="primary">Save changes</Button>
-
-<Button variant="secondary" iconStart={<SearchIcon />}>
-  Search
-</Button>`;
 
 const variantsSnippet = `<Button variant="primary">Primary</Button>
 <Button variant="secondary">Secondary</Button>
@@ -91,8 +82,7 @@ const asLinkSnippet = `// render swaps the underlying element — the action her
     <p>Toggle every adjustable prop and watch the button — and the code — update live.</p>
     <ButtonPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <caption>Only the props specific to Button. Every native button attribute (onClick, form, name…) also works.</caption>

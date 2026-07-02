@@ -1,15 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import FooterDemo from "../../components/demos/FooterDemo";
-
-const usageSnippet = `import { Footer } from "@kernelui/react";
-
-<Footer>
-  <span>&copy; 2026 Acme Inc.</span>
-  <a href="/privacy">Privacy</a>
-</Footer>`;
+import FooterPlayground from "../../components/demos/FooterPlayground";
 ---
 
 <BaseLayout title="Footer" withSidebar>
@@ -27,7 +20,9 @@ const usageSnippet = `import { Footer } from "@kernelui/react";
       <FooterDemo client:load />
     </div>
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <FooterPlayground client:load />
 
     <h2>Props</h2>
     <p>

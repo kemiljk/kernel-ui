@@ -1,0 +1,20 @@
+.kernel-ScrollArea-root {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--kernel-color-border-interactive) transparent;
+}
+
+.kernel-ScrollArea-root::-webkit-scrollbar {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+}
+
+.kernel-ScrollArea-root::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kernel-ScrollArea-root::-webkit-scrollbar-thumb {
+  background-color: var(--kernel-color-border-interactive);
+  border-radius: var(--kernel-radius-full);
+}

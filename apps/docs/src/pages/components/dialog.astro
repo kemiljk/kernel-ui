@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import DialogDemo from "../../components/demos/DialogDemo";
+import DialogPlayground from "../../components/demos/DialogPlayground";
 
 const usageSnippet = `import { useState } from "react";
 import { Button, Dialog } from "@kernelui/react";
@@ -37,6 +38,10 @@ const [open, setOpen] = useState(false);
     </div>
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <DialogPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

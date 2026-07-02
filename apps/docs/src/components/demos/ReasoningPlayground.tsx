@@ -15,11 +15,20 @@ function code(values: PlaygroundValues) {
   return `<Reasoning${attrs.length ? " " + attrs.join(" ") : ""}>\n  …\n</Reasoning>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.streaming) attrs.push("streaming");
+  if (values.durationLabel) attrs.push(`duration-label="${values.durationLabel}"`);
+  if (values.defaultOpen) attrs.push("default-open");
+  return `<kernel-reasoning${attrs.length ? " " + attrs.join(" ") : ""}>\n  …\n</kernel-reasoning>`;
+}
+
 export default function ReasoningPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Reasoning
           streaming={Boolean(values.streaming)}

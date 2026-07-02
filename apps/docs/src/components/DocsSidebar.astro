@@ -1,6 +1,6 @@
 ---
 import { Sidebar, Nav, NavLink } from "@kernelui/react";
-import { components } from "../data/components";
+import { components, CATEGORIES } from "../data/components";
 
 const path = Astro.url.pathname;
 const available = components.filter((c) => c.status === "available");
@@ -10,6 +10,15 @@ const guides = [
   { href: "/theming/", label: "Theming" },
   { href: "/platforms/", label: "Platforms" },
 ];
+
+// CATEGORIES fixes the group order (by how often each group actually gets
+// reached, not alphabetically — see the comment on it in data/components.ts);
+// `available` is already alphabetical by name, so filtering it per category
+// keeps that order within each group for free, no separate sort needed.
+const groups = CATEGORIES.map((category) => ({
+  category,
+  items: available.filter((c) => c.category === category),
+})).filter((group) => group.items.length > 0);
 ---
 
 <Sidebar aria-label="Documentation">
@@ -26,17 +35,72 @@ const guides = [
 
   <hr class="docs-sidebar-divider" />
 
-  <p class="docs-sidebar-eyebrow">Components</p>
-  <Nav aria-label="Components">
-    {
-      available.map((component) => {
-        const href = `/components/${component.slug}/`;
-        return (
-          <NavLink href={href} aria-current={path === href ? "page" : undefined}>
-            {component.name}
-          </NavLink>
-        );
-      })
-    }
-  </Nav>
+  {
+    groups.map((group) => (
+      <details class="docs-sidebar-group" data-category={group.category} open>
+        <summary class="docs-sidebar-eyebrow">
+          {group.category}
+          <svg
+            class="docs-sidebar-group-chevron"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 6L8 10L12 6"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </summary>
+        <div class="docs-sidebar-rail">
+          <Nav aria-label={group.category}>
+            {group.items.map((component) => {
+              const href = `/components/${component.slug}/`;
+              return (
+                <NavLink href={href} aria-current={path === href ? "page" : undefined}>
+                  {component.name}
+                </NavLink>
+              );
+            })}
+          </Nav>
+        </div>
+      </details>
+    ))
+  }
 </Sidebar>
+
+<script is:inline>
+  // Synchronous, right after the sidebar's own markup — same reasoning
+  // as BaseLayout's no-FOUC theme script: runs before the rest of the
+  // page finishes parsing, so a previously-collapsed group closes
+  // almost immediately instead of visibly flashing open first. Every
+  // group renders `open` server-side (so it's fully visible with no JS
+  // at all); this only ever needs to CLOSE ones explicitly stored as
+  // collapsed, never force one open, so there's nothing to do for a
+  // first-time visitor.
+  (function () {
+    var STORAGE_PREFIX = "kernel:sidebar-group:";
+    document.querySelectorAll(".docs-sidebar-group").forEach(function (details) {
+      var category = details.dataset.category;
+      try {
+        if (localStorage.getItem(STORAGE_PREFIX + category) === "closed") {
+          details.removeAttribute("open");
+        }
+      } catch (error) {
+        // Storage can throw (private browsing, disabled storage) — the
+        // group just stays open, same as a first-time visitor.
+      }
+      details.addEventListener("toggle", function () {
+        try {
+          localStorage.setItem(STORAGE_PREFIX + category, details.open ? "open" : "closed");
+        } catch (error) {
+          // Nothing to fall back to — the collapse/expand still works
+          // for this page view, it just won't be remembered.
+        }
+      });
+    });
+  })();
+</script>

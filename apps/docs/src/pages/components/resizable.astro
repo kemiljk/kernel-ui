@@ -1,19 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import ResizableDemo from "../../components/demos/ResizableDemo";
-
-const usageSnippet = `import { Resizable } from "@kernelui/react";
-
-function SplitView() {
-  return (
-    <Resizable defaultSplit={40} min={20} max={80}>
-      <div>Pane A</div>
-      <div>Pane B</div>
-    </Resizable>
-  );
-}`;
+import ResizablePlayground from "../../components/demos/ResizablePlayground";
 ---
 
 <BaseLayout title="Resizable" withSidebar>
@@ -34,7 +23,9 @@ function SplitView() {
       <ResizableDemo client:load />
     </div>
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ResizablePlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

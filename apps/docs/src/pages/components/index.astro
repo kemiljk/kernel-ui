@@ -15,7 +15,8 @@ const planned = components.length - available;
       {available} components are built today — every one on real semantic
       HTML or a WAI-ARIA pattern, not a <code>&lt;div&gt;</code> standing in
       for one. Pick one from the sidebar to see its props, accessibility
-      notes, and a live demo. {planned} more are planned.
+      notes, and a live demo.
+      {planned > 0 ? ` ${planned} more are planned.` : " The full set is live."}
     </p>
     <p>
       New here? Start with <a href="/installation/">installation</a> to get

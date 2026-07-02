@@ -1,44 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import TableDemo from "../../components/demos/TableDemo";
-
-const tableSnippet = `import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@kernelui/react";
-
-<Table>
-  <TableHeader>
-    <TableRow>
-      <TableHead>Service</TableHead>
-      <TableHead>Status</TableHead>
-      <TableHead>Uptime</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    <TableRow>
-      <TableCell>API</TableCell>
-      <TableCell>Operational</TableCell>
-      <TableCell>99.98%</TableCell>
-    </TableRow>
-    <TableRow>
-      <TableCell>Dashboard</TableCell>
-      <TableCell>Operational</TableCell>
-      <TableCell>99.95%</TableCell>
-    </TableRow>
-    <TableRow>
-      <TableCell>Webhooks</TableCell>
-      <TableCell>Degraded</TableCell>
-      <TableCell>98.71%</TableCell>
-    </TableRow>
-  </TableBody>
-</Table>`;
+import TablePlayground from "../../components/demos/TablePlayground";
 ---
 
 <BaseLayout title="Table" withSidebar>
@@ -58,7 +22,9 @@ const tableSnippet = `import {
       <TableDemo client:load />
     </div>
 
-    <UsageAccordion code={tableSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <TablePlayground client:load />
 
     <h2>Components</h2>
     <table class="docs-table">

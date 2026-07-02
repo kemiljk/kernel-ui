@@ -13,11 +13,18 @@ function code(values: PlaygroundValues) {
   )}, borderRadius: ${Number(values.radius)} }} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  return `<kernel-skeleton style="width: ${Number(values.width)}px; height: ${Number(
+    values.height,
+  )}px; border-radius: ${Number(values.radius)}px;"></kernel-skeleton>`;
+}
+
 export default function SkeletonPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Skeleton
           style={{

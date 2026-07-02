@@ -1,0 +1,51 @@
+import { Accordion, AccordionItem } from "@kernelui/react";
+import Playground, { type PlaygroundValues } from "../Playground";
+
+const controls = [
+  { type: "enum" as const, prop: "type", options: ["single", "multiple"], default: "single" },
+  { type: "text" as const, prop: "firstTitle", label: "first item title", default: "What is Kernel?" },
+];
+
+function code(values: PlaygroundValues) {
+  const attrs = values.type !== "single" ? ` type="${values.type}"` : "";
+  return `<Accordion${attrs}>
+  <AccordionItem title="${values.firstTitle}">
+    A component library built on real HTML elements.
+  </AccordionItem>
+  <AccordionItem title="Is it accessible?">
+    Yes, by default, since the browser does most of the work.
+  </AccordionItem>
+</Accordion>`;
+}
+
+function elementsCode(values: PlaygroundValues) {
+  const attrs = values.type !== "single" ? ` type="${values.type}"` : "";
+  return `<kernel-accordion${attrs}>
+  <kernel-accordion-item title="${values.firstTitle}">
+    A component library built on real HTML elements.
+  </kernel-accordion-item>
+  <kernel-accordion-item title="Is it accessible?">
+    Yes, by default, since the browser does most of the work.
+  </kernel-accordion-item>
+</kernel-accordion>`;
+}
+
+export default function AccordionPlayground() {
+  return (
+    <Playground
+      controls={controls}
+      code={code}
+      elementsCode={elementsCode}
+      render={(values) => (
+        <Accordion type={values.type as "single" | "multiple"}>
+          <AccordionItem title={String(values.firstTitle)} defaultOpen>
+            A component library built on real HTML elements.
+          </AccordionItem>
+          <AccordionItem title="Is it accessible?">
+            Yes, by default, since the browser does most of the work.
+          </AccordionItem>
+        </Accordion>
+      )}
+    />
+  );
+}

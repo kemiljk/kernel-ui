@@ -1,0 +1,192 @@
+.kernel-DateRangePicker-root {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  padding: var(--kernel-padding-container);
+  background-color: var(--kernel-color-surface);
+  box-shadow: var(--kernel-shadow-sm);
+  font-family: var(--kernel-font-sans);
+}
+
+.kernel-DateRangePicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-2);
+}
+
+.kernel-DateRangePicker-heading {
+  font-size: var(--kernel-font-size-base);
+  font-weight: 600;
+  color: var(--kernel-color-text);
+}
+
+.kernel-DateRangePicker-navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DateRangePicker-navButton:hover {
+    background-color: var(--kernel-gray-3);
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-DateRangePicker-navButton:active {
+  scale: 0.94;
+}
+
+.kernel-DateRangePicker-navButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-DateRangePicker-navIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.kernel-DateRangePicker-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-DateRangePicker-weekdayHead {
+  padding-block-end: var(--kernel-space-2);
+  font-weight: 500;
+  color: var(--kernel-color-text-muted);
+  text-align: center;
+}
+
+.kernel-DateRangePicker-cell {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.kernel-DateRangePicker-cell[data-in-range] {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.kernel-DateRangePicker-dayButton {
+  position: relative;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  aspect-ratio: 1;
+  border: var(--kernel-border-width) solid transparent;
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  font: inherit;
+  cursor: pointer;
+  transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-DateRangePicker-dayButton:active:not(:disabled) {
+  scale: 0.94;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DateRangePicker-dayButton:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+    transition:
+      background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+      color var(--kernel-duration-fast) var(--kernel-ease-out);
+  }
+}
+
+.kernel-DateRangePicker-dayButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-DateRangePicker-dayButton:disabled {
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kernel-DateRangePicker-dayButton[data-today] {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.kernel-DateRangePicker-dayButton[data-range-start],
+.kernel-DateRangePicker-dayButton[data-range-end] {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DateRangePicker-dayButton[data-range-start]:hover:not(:disabled),
+  .kernel-DateRangePicker-dayButton[data-range-end]:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-hover);
+  }
+}
+
+.kernel-DateRangePicker-dayButton[data-range-start] {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.kernel-DateRangePicker-dayButton[data-range-end] {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.kernel-DateRangePicker-dayButton[data-in-range]:not([data-range-start]):not([data-range-end]) {
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.kernel-DateRangePicker-dayButton[data-today]:not([data-range-start]):not([data-range-end])::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: var(--kernel-space-1);
+  translate: -50% 0;
+  inline-size: 0.25rem;
+  block-size: 0.25rem;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-accent);
+}
+
+.kernel-DateRangePicker-outsideDay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  aspect-ratio: 1;
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-DateRangePicker-navButton,
+  .kernel-DateRangePicker-dayButton,
+  .kernel-DateRangePicker-dayButton:hover:not(:disabled) {
+    transition: none;
+  }
+
+  .kernel-DateRangePicker-navButton:active,
+  .kernel-DateRangePicker-dayButton:active:not(:disabled) {
+    scale: 1;
+  }
+}

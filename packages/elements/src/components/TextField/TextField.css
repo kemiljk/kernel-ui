@@ -1,0 +1,81 @@
+.kernel-TextField-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.kernel-TextField-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.kernel-TextField-required {
+  color: var(--kernel-color-danger);
+  margin-inline-start: var(--kernel-space-1);
+}
+
+.kernel-TextField-input {
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  padding-inline: var(--kernel-space-3);
+  transition:
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-TextField-root[data-size="sm"] .kernel-TextField-input {
+  block-size: calc(var(--kernel-space-unit) * 8);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-TextField-root[data-size="md"] .kernel-TextField-input {
+  block-size: calc(var(--kernel-space-unit) * 10);
+  font-size: var(--kernel-font-size-base);
+}
+
+.kernel-TextField-root[data-size="lg"] .kernel-TextField-input {
+  block-size: calc(var(--kernel-space-unit) * 12);
+  font-size: var(--kernel-font-size-lg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-TextField-input:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-TextField-input:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-TextField-input:user-invalid {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-TextField-root[data-invalid] .kernel-TextField-input {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-TextField-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--kernel-color-canvas);
+}
+
+.kernel-TextField-description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-TextField-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+}

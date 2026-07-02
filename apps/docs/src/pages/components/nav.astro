@@ -1,18 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import NavDemo from "../../components/demos/NavDemo";
-
-const usageSnippet = `import { Nav, NavLink } from "@kernelui/react";
-
-<Nav aria-label="Docs">
-  <NavLink href="/">Overview</NavLink>
-  <NavLink href="/components/" aria-current="page">
-    Components
-  </NavLink>
-  <NavLink href="/theming">Theming</NavLink>
-</Nav>`;
+import NavPlayground from "../../components/demos/NavPlayground";
 ---
 
 <BaseLayout title="Nav" withSidebar>
@@ -40,7 +30,9 @@ const usageSnippet = `import { Nav, NavLink } from "@kernelui/react";
       <NavDemo client:load />
     </div>
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <NavPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

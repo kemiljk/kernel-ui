@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import ContextMenuDemo from "../../components/demos/ContextMenuDemo";
+import ContextMenuPlayground from "../../components/demos/ContextMenuPlayground";
 
 const usageSnippet = `import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui/react";
 
@@ -44,6 +45,10 @@ function FileRow() {
     </div>
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ContextMenuPlayground client:load />
 
     <h2>Props</h2>
     <table class="docs-table">

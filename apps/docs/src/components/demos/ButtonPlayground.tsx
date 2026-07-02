@@ -25,11 +25,23 @@ function code(values: PlaygroundValues) {
   return `<Button ${attrs.join(" ")}>${values.children || "Button"}</Button>`;
 }
 
+/** Same values, as `@kernelui/elements`' `<kernel-button>` — same
+ * attribute names as the React props (see Button.ts's own
+ * `observedAttributes`), just plain HTML rather than JSX. */
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`variant="${values.variant}"`];
+  if (values.size !== "md") attrs.push(`size="${values.size}"`);
+  if (values.loading) attrs.push("loading");
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-button ${attrs.join(" ")}>${values.children || "Button"}</kernel-button>`;
+}
+
 export default function ButtonPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Button
           variant={values.variant as "primary" | "secondary" | "ghost" | "danger"}

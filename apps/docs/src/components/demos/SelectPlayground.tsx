@@ -20,11 +20,27 @@ function code(values: PlaygroundValues) {
 </Select>`;
 }
 
+/** Real <option> children, not a kernel-select-option wrapper — a
+ * native <select> only renders its own picker UI for direct
+ * <option>/<optgroup> children (see KernelSelect's own doc comment). */
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [`label="${values.label || "Label"}"`];
+  if (values.required) attrs.push("required");
+  if (values.invalid) attrs.push("invalid");
+  if (values.disabled) attrs.push("disabled");
+  return `<kernel-select ${attrs.join(" ")}>
+  <option value="uk">United Kingdom</option>
+  <option value="us">United States</option>
+  <option value="de">Germany</option>
+</kernel-select>`;
+}
+
 export default function SelectPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Select
           label={String(values.label) || "Label"}

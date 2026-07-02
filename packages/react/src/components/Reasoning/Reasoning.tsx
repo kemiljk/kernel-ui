@@ -50,11 +50,25 @@ export function Reasoning({
   // Force `open` only on the streaming true→false / false→true edge, not on
   // every render — otherwise a user who manually collapsed a still-streaming
   // trace would have it forced back open on the next re-render.
+  //
+  // The false edge (streaming just finished) gets a brief pause before
+  // collapsing, the true edge doesn't: opening should feel instant and
+  // responsive to "reasoning has started", but auto-collapsing the exact
+  // instant streaming ends reads as the trace being yanked away before
+  // anyone can register it finished. The summary swaps to the static
+  // icon/durationLabel immediately either way (it reads `streaming`
+  // directly, not this delayed `open` state) — so during the pause the
+  // user sees the completed status appear while the trace is still open,
+  // then it settles closed a beat later.
   useEffect(() => {
-    if (wasStreaming.current !== streaming) {
-      wasStreaming.current = streaming;
-      setOpen(streaming);
+    if (wasStreaming.current === streaming) return;
+    wasStreaming.current = streaming;
+    if (streaming) {
+      setOpen(true);
+      return;
     }
+    const timer = window.setTimeout(() => setOpen(false), 600);
+    return () => window.clearTimeout(timer);
   }, [streaming]);
 
   useEffect(() => {

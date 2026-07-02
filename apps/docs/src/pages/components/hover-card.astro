@@ -1,28 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import HoverCardDemo from "../../components/demos/HoverCardDemo";
 import HoverCardPlayground from "../../components/demos/HoverCardPlayground";
 
-const usageSnippet = `import { Avatar, HoverCard } from "@kernelui/react";
-
-function AuthorLink() {
-  return (
-    <HoverCard
-      render={<a href="https://github.com/karlkoch">@karlkoch</a>}
-      content={
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Avatar fallback="KK" />
-          <div>
-            <div style={{ fontWeight: 600 }}>Karl Koch</div>
-            <div>Designs and builds Kernel UI.</div>
-          </div>
-        </div>
-      }
-    />
-  );
-}`;
 ---
 
 <BaseLayout title="Hover Card" withSidebar>
@@ -51,8 +32,7 @@ function AuthorLink() {
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <HoverCardPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

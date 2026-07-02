@@ -1,0 +1,110 @@
+@property --kernel-composer-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.kernel-Composer-root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  inline-size: 100%;
+  padding: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface);
+  font-family: var(--kernel-font-sans);
+  box-shadow: inset 0 0 0 var(--kernel-border-width) var(--kernel-color-border);
+}
+
+.kernel-Composer-root[data-disabled] {
+  opacity: 0.6;
+}
+
+.kernel-Composer-root[data-thinking] {
+  box-shadow: none;
+}
+
+.kernel-Composer-input {
+  field-sizing: content;
+  min-block-size: calc(var(--kernel-space-unit) * 6);
+  max-block-size: 16rem;
+  border: none;
+  background: none;
+  color: var(--kernel-color-text);
+  padding: var(--kernel-space-2);
+  font: inherit;
+  font-size: var(--kernel-font-size-base);
+  line-height: var(--kernel-line-height);
+  resize: none;
+}
+
+@supports not (field-sizing: content) {
+  .kernel-Composer-input {
+    resize: vertical;
+  }
+}
+
+.kernel-Composer-input:focus-visible {
+  outline: none;
+}
+
+.kernel-Composer-input::placeholder {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Composer-input:disabled {
+  cursor: not-allowed;
+}
+
+.kernel-Composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+}
+
+.kernel-Composer-actionsLeading,
+.kernel-Composer-actionsTrailing {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+.kernel-Composer-root[data-thinking]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--kernel-border-width);
+  background: conic-gradient(
+    from var(--kernel-composer-angle),
+    transparent 0deg,
+    var(--kernel-color-accent) 90deg,
+    transparent 180deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: kernel-composer-sweep 2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes kernel-composer-sweep {
+  to {
+    --kernel-composer-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Composer-root[data-thinking]::before {
+    animation: none;
+    background: var(--kernel-color-accent);
+    opacity: 0.4;
+  }
+}

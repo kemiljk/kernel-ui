@@ -1,0 +1,170 @@
+.kernel-DatePicker-root {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  padding: var(--kernel-padding-container);
+  background-color: var(--kernel-color-surface);
+  box-shadow: var(--kernel-shadow-sm);
+  font-family: var(--kernel-font-sans);
+}
+
+.kernel-DatePicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-2);
+}
+
+.kernel-DatePicker-heading {
+  font-size: var(--kernel-font-size-base);
+  font-weight: 600;
+  color: var(--kernel-color-text);
+}
+
+.kernel-DatePicker-navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DatePicker-navButton:hover {
+    background-color: var(--kernel-gray-3);
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-DatePicker-navButton:active {
+  scale: 0.94;
+}
+
+.kernel-DatePicker-navButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-DatePicker-navIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.kernel-DatePicker-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-DatePicker-weekdayHead {
+  padding-block-end: var(--kernel-space-2);
+  font-weight: 500;
+  color: var(--kernel-color-text-muted);
+  text-align: center;
+}
+
+.kernel-DatePicker-cell {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.kernel-DatePicker-dayButton {
+  position: relative;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  aspect-ratio: 1;
+  border: var(--kernel-border-width) solid transparent;
+  border-radius: var(--kernel-radius-control);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DatePicker-dayButton:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+  }
+}
+
+.kernel-DatePicker-dayButton:active:not(:disabled) {
+  scale: 0.94;
+}
+
+.kernel-DatePicker-dayButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-DatePicker-dayButton:disabled {
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kernel-DatePicker-dayButton[data-today] {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.kernel-DatePicker-dayButton[data-selected] {
+  background-color: var(--kernel-color-accent);
+  border-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-DatePicker-dayButton[data-selected]:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-hover);
+  }
+}
+
+.kernel-DatePicker-dayButton[data-today]:not([data-selected])::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: var(--kernel-space-1);
+  translate: -50% 0;
+  inline-size: 0.25rem;
+  block-size: 0.25rem;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-accent);
+}
+
+.kernel-DatePicker-outsideDay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--kernel-space-8);
+  block-size: var(--kernel-space-8);
+  aspect-ratio: 1;
+  color: var(--kernel-color-text-muted);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-DatePicker-navButton,
+  .kernel-DatePicker-dayButton {
+    transition: none;
+  }
+
+  .kernel-DatePicker-navButton:active,
+  .kernel-DatePicker-dayButton:active:not(:disabled) {
+    scale: 1;
+  }
+}

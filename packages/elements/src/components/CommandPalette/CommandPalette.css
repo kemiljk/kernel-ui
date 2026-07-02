@@ -1,0 +1,121 @@
+.kernel-CommandPalette-content {
+  margin: auto;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  border: none;
+  border-radius: var(--kernel-radius-sheet);
+  padding: var(--kernel-space-4);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-lg);
+  inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));
+  max-block-size: calc(100dvh - var(--kernel-space-12));
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.kernel-CommandPalette-content[open] {
+  display: flex;
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .kernel-CommandPalette-content[open] {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+.kernel-CommandPalette-content::backdrop {
+  background-color: oklch(0% 0 0 / 0.45);
+  opacity: 0;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.kernel-CommandPalette-content[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .kernel-CommandPalette-content[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.kernel-CommandPalette-input {
+  flex-shrink: 0;
+  inline-size: 100%;
+  block-size: calc(var(--kernel-space-unit) * 12);
+  border: none;
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  padding-inline: var(--kernel-space-3);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-lg);
+}
+
+.kernel-CommandPalette-input:focus-visible {
+  outline: none;
+}
+
+.kernel-CommandPalette-listbox {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-block-size: 20rem;
+  padding: var(--kernel-space-1);
+}
+
+.kernel-CommandPalette-option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-sm);
+  color: var(--kernel-color-text);
+  font-size: var(--kernel-font-size-sm);
+  cursor: default;
+}
+
+.kernel-CommandPalette-option[data-active] {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.kernel-CommandPalette-optionLabel {
+  color: var(--kernel-color-text);
+}
+
+.kernel-CommandPalette-optionDescription {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-CommandPalette-empty {
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-CommandPalette-content,
+  .kernel-CommandPalette-content::backdrop {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-CommandPalette-content {
+    scale: 1;
+  }
+}

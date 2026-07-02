@@ -1,0 +1,44 @@
+kernel-hover-card {
+  display: contents;
+}
+
+.kernel-HoverCard-content {
+  position: fixed;
+  margin: 0;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  padding: var(--kernel-padding-container);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-md);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  inline-size: max-content;
+  max-inline-size: 20rem;
+
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-base) allow-discrete,
+    display var(--kernel-duration-base) allow-discrete;
+}
+
+.kernel-HoverCard-content:popover-open {
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .kernel-HoverCard-content:popover-open {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-HoverCard-content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}

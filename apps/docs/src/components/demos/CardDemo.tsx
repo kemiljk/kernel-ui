@@ -1,21 +1,28 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button } from "@kernelui/react";
+import { Avatar, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Separator } from "@kernelui/react";
 
 export default function CardDemo() {
   return (
-    <Card style={{ maxInlineSize: "24rem" }}>
-      <CardHeader>
-        <CardTitle>Upgrade to Pro</CardTitle>
-        <CardDescription>Unlock every component, including the ones still on the roadmap.</CardDescription>
+    <Card style={{ maxInlineSize: "22rem", inlineSize: "100%" }}>
+      <CardHeader style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "var(--kernel-space-3)" }}>
+        <Avatar
+          src="https://api.dicebear.com/9.x/avataaars/svg?seed=Kernel"
+          alt=""
+          fallback="🙂"
+        />
+        <div>
+          <CardTitle>Create an account</CardTitle>
+          <CardDescription>Start your free 7-day trial. No credit card required.</CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
-        <p style={{ margin: 0, color: "var(--kernel-color-text-muted)", fontSize: "var(--kernel-font-size-sm)" }}>
-          £9/month, cancel any time.
-        </p>
+      <CardContent style={{ display: "flex", flexDirection: "column", gap: "var(--kernel-space-3)" }}>
+        <Button variant="primary">Get started</Button>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--kernel-space-3)" }}>
+          <Separator style={{ flex: 1 }} />
+          <span style={{ fontSize: "var(--kernel-font-size-sm)", color: "var(--kernel-color-text-muted)" }}>or</span>
+          <Separator style={{ flex: 1 }} />
+        </div>
+        <Button variant="secondary">Continue with email</Button>
       </CardContent>
-      <CardFooter>
-        <Button variant="primary" size="sm">Upgrade</Button>
-        <Button variant="ghost" size="sm">Not now</Button>
-      </CardFooter>
     </Card>
   );
 }

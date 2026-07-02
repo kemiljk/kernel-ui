@@ -1,0 +1,73 @@
+.kernel-Textarea-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+}
+
+.kernel-Textarea-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.kernel-Textarea-required {
+  color: var(--kernel-color-danger);
+  margin-inline-start: var(--kernel-space-1);
+}
+
+.kernel-Textarea-input {
+  field-sizing: content;
+  min-block-size: calc(var(--kernel-space-unit) * 20);
+  max-block-size: 24rem;
+  border-radius: var(--kernel-radius-md);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  padding: var(--kernel-space-3);
+  font-size: var(--kernel-font-size-base);
+  line-height: var(--kernel-line-height);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Textarea-input:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-Textarea-input:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-Textarea-input:user-invalid {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-Textarea-root[data-invalid] .kernel-Textarea-input {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-Textarea-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.kernel-Textarea-description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Textarea-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+}
+
+@supports not (field-sizing: content) {
+  .kernel-Textarea-input {
+    resize: vertical;
+  }
+}

@@ -1,0 +1,91 @@
+.kernel-Accordion-accordion {
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  overflow: hidden;
+  background-color: var(--kernel-color-surface);
+}
+
+kernel-accordion-item {
+  display: block;
+}
+
+.kernel-Accordion-item {
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+kernel-accordion-item:last-of-type .kernel-Accordion-item {
+  border-block-end: none;
+}
+
+.kernel-Accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-4);
+  font-family: var(--kernel-font-sans);
+  font-weight: 500;
+  cursor: default;
+  list-style: none;
+  user-select: none;
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Accordion-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.kernel-Accordion-trigger::marker {
+  content: "";
+}
+
+.kernel-Accordion-trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.kernel-Accordion-chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-Accordion-item[open] .kernel-Accordion-chevron {
+  rotate: 180deg;
+}
+
+.kernel-Accordion-content {
+  padding: 0 var(--kernel-space-4) var(--kernel-space-4);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Accordion-item[data-state="opening"] .kernel-Accordion-content,
+.kernel-Accordion-item[data-state="closing"] .kernel-Accordion-content {
+  user-select: none;
+}
+
+@supports selector(::details-content) {
+  .kernel-Accordion-item::details-content {
+    overflow: hidden;
+    height: 0;
+    transition:
+      height var(--kernel-duration-base) var(--kernel-ease-in-out),
+      content-visibility var(--kernel-duration-base) allow-discrete;
+  }
+
+  .kernel-Accordion-item[open]::details-content {
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Accordion-chevron {
+    transition: none;
+  }
+
+  .kernel-Accordion-item::details-content {
+    transition: none;
+  }
+}

@@ -79,9 +79,247 @@ import "@kernelui/elements/styles.css";
     <kernel-progress></kernel-progress>
     <kernel-skeleton style="max-inline-size: 20rem;"></kernel-skeleton>
     <kernel-separator></kernel-separator>
+
+    <div style="display: flex; gap: var(--kernel-space-3); align-items: center;">
+      <kernel-avatar fallback="KK"></kernel-avatar>
+      <kernel-avatar fallback="??" src="https://broken.example/nope.png"></kernel-avatar>
+    </div>
+
+    <kernel-checkbox id="lab-checkbox">Accept terms</kernel-checkbox>
+    <kernel-checkbox checked disabled>Checked and disabled</kernel-checkbox>
+
+    <kernel-switch checked>Enable notifications</kernel-switch>
+    <kernel-switch></kernel-switch>
+
+    <div style="display: flex; gap: var(--kernel-space-2);">
+      <kernel-toggle pressed>Bold</kernel-toggle>
+      <kernel-toggle>Italic</kernel-toggle>
+      <kernel-toggle disabled>Disabled</kernel-toggle>
+    </div>
+
+    <kernel-radio-group label="Notify me about" name="lab-notify">
+      <kernel-radio-group-item value="all">All new messages</kernel-radio-group-item>
+      <kernel-radio-group-item value="mentions">Mentions only</kernel-radio-group-item>
+      <kernel-radio-group-item value="none">Nothing</kernel-radio-group-item>
+    </kernel-radio-group>
+
+    <kernel-text-field id="lab-text-field" label="Email" placeholder="you@example.com" required></kernel-text-field>
+    <kernel-text-field label="Username" invalid error-message="That username is taken." value="taken-name"></kernel-text-field>
+
+    <kernel-textarea id="lab-textarea" label="Feedback" description="What went wrong?" placeholder="Tell us..."></kernel-textarea>
+
+    <kernel-select id="lab-select" label="Plan">
+      <option value="free">Free</option>
+      <option value="pro">Pro</option>
+      <option value="enterprise">Enterprise</option>
+    </kernel-select>
+
+    <kernel-slider id="lab-slider" label="Volume" show-value value="40"></kernel-slider>
+
+    <kernel-input-otp id="lab-otp" label="Verification code" length="6"></kernel-input-otp>
+
+    <kernel-resizable id="lab-resizable" style="block-size: 8rem; border: 1px solid var(--kernel-color-border);">
+      <div style="padding: var(--kernel-space-3);">Pane A</div>
+      <div style="padding: var(--kernel-space-3);">Pane B</div>
+    </kernel-resizable>
+
+    <kernel-scroll-area id="lab-scroll-area" max-block-size="6rem" style="border: 1px solid var(--kernel-color-border);">
+      <p style="margin: 0; padding: var(--kernel-space-3);">
+        Line one.<br />Line two.<br />Line three.<br />Line four.<br />Line five.<br />Line six.<br />Line seven.<br />Line eight.
+      </p>
+    </kernel-scroll-area>
+
+    <div style="display: flex; gap: var(--kernel-space-2);">
+      <kernel-button id="lab-toast-default" variant="secondary" size="sm">Toast</kernel-button>
+      <kernel-button id="lab-toast-success" variant="secondary" size="sm">Success toast</kernel-button>
+      <kernel-button id="lab-toast-danger" variant="secondary" size="sm">Danger toast</kernel-button>
+    </div>
+    <kernel-toast-viewport></kernel-toast-viewport>
+
+    <kernel-table>
+      <kernel-table-header>
+        <kernel-table-row>
+          <kernel-table-head>Service</kernel-table-head>
+          <kernel-table-head>Status</kernel-table-head>
+        </kernel-table-row>
+      </kernel-table-header>
+      <kernel-table-body>
+        <kernel-table-row>
+          <kernel-table-cell>API</kernel-table-cell>
+          <kernel-table-cell>Operational</kernel-table-cell>
+        </kernel-table-row>
+        <kernel-table-row>
+          <kernel-table-cell>Webhooks</kernel-table-cell>
+          <kernel-table-cell>Degraded</kernel-table-cell>
+        </kernel-table-row>
+      </kernel-table-body>
+    </kernel-table>
+
+    <kernel-thinking-indicator id="lab-thinking"></kernel-thinking-indicator>
+
+    <kernel-composer id="lab-composer" placeholder="Ask anything…">
+      <kernel-button id="lab-composer-send" slot="trailing" variant="primary" size="sm">Send</kernel-button>
+    </kernel-composer>
+    <kernel-button id="lab-composer-thinking-toggle" variant="secondary" size="sm">
+      Toggle composer thinking
+    </kernel-button>
+
+    <kernel-reasoning id="lab-reasoning" duration-label="Thought for 4s">
+      Weighing a few different approaches before picking the simplest one that
+      actually fits the existing conventions.
+    </kernel-reasoning>
+    <kernel-button id="lab-reasoning-streaming-toggle" variant="secondary" size="sm">
+      Toggle reasoning streaming
+    </kernel-button>
+
+    <h2>Phase 3</h2>
+
+    <kernel-accordion id="lab-accordion">
+      <kernel-accordion-item title="First item" default-open>Content A</kernel-accordion-item>
+      <kernel-accordion-item title="Second item">Content B</kernel-accordion-item>
+    </kernel-accordion>
+
+    <kernel-tabs id="lab-tabs" default-value="one">
+      <kernel-tabs-list aria-label="Lab tabs">
+        <kernel-tab value="one">One</kernel-tab>
+        <kernel-tab value="two">Two</kernel-tab>
+        <kernel-tab value="three">Three</kernel-tab>
+      </kernel-tabs-list>
+      <kernel-tab-panel value="one">Panel one</kernel-tab-panel>
+      <kernel-tab-panel value="two">Panel two</kernel-tab-panel>
+      <kernel-tab-panel value="three">Panel three</kernel-tab-panel>
+    </kernel-tabs>
+
+    <kernel-dialog id="lab-dialog" title="Lab dialog" description="A description.">
+      <p style="margin:0;">Dialog body content.</p>
+    </kernel-dialog>
+    <kernel-button id="lab-dialog-open" variant="secondary" size="sm">Open dialog</kernel-button>
+
+    <kernel-popover id="lab-popover" placement="bottom">
+      <kernel-button slot="trigger" variant="secondary" size="sm">Open popover</kernel-button>
+      <p style="margin:0;">Popover content.</p>
+    </kernel-popover>
+
+    <kernel-tooltip id="lab-tooltip" placement="top">
+      <kernel-button slot="trigger" variant="secondary" size="sm">Hover me</kernel-button>
+      Tooltip text
+    </kernel-tooltip>
+
+    <kernel-hover-card id="lab-hover-card" open-delay="0" close-delay="0">
+      <kernel-button slot="trigger" variant="secondary" size="sm">Hover card</kernel-button>
+      <p style="margin:0;">Rich hover card content.</p>
+    </kernel-hover-card>
+
+    <kernel-dropdown-menu id="lab-dropdown">
+      <kernel-button slot="trigger" variant="secondary" size="sm">Menu ▾</kernel-button>
+      <kernel-menu-item id="lab-menu-item-1">Edit</kernel-menu-item>
+      <kernel-menu-item>Duplicate</kernel-menu-item>
+      <kernel-menu-separator></kernel-menu-separator>
+      <kernel-menu-item destructive>Delete</kernel-menu-item>
+    </kernel-dropdown-menu>
+
+    <kernel-context-menu id="lab-context-menu">
+      <div slot="trigger" style="border:1px dashed var(--kernel-color-border-interactive); padding: var(--kernel-space-4); text-align:center;">
+        Right-click here
+      </div>
+      <kernel-menu-item>Copy</kernel-menu-item>
+      <kernel-menu-item>Rename</kernel-menu-item>
+    </kernel-context-menu>
+
+    <kernel-navigation-menu id="lab-nav-menu" aria-label="Lab nav menu">
+      <kernel-nav-menu-item>
+        <kernel-nav-menu-link href="#">Pricing</kernel-nav-menu-link>
+      </kernel-nav-menu-item>
+      <kernel-nav-menu-item>
+        <kernel-nav-menu-trigger>Solutions</kernel-nav-menu-trigger>
+        <kernel-nav-menu-content>
+          <kernel-nav-menu-link href="#">For Startups</kernel-nav-menu-link>
+          <kernel-nav-menu-link href="#">For Enterprise</kernel-nav-menu-link>
+        </kernel-nav-menu-content>
+      </kernel-nav-menu-item>
+    </kernel-navigation-menu>
+
+    <kernel-combobox id="lab-combobox" label="Framework" placeholder="Search…">
+      <option value="astro">Astro</option>
+      <option value="next">Next.js</option>
+      <option value="remix">Remix</option>
+    </kernel-combobox>
+
+    <kernel-command-palette id="lab-command-palette" placeholder="Filter commands"></kernel-command-palette>
+    <kernel-button id="lab-command-palette-open" variant="secondary" size="sm">Open command palette</kernel-button>
+
+    <kernel-carousel id="lab-carousel" aria-label="Lab slides">
+      <kernel-carousel-slide><div style="display:flex;align-items:center;justify-content:center;block-size:8rem;background:var(--kernel-color-accent-subtle);">Slide 1</div></kernel-carousel-slide>
+      <kernel-carousel-slide><div style="display:flex;align-items:center;justify-content:center;block-size:8rem;background:var(--kernel-color-accent-subtle);">Slide 2</div></kernel-carousel-slide>
+      <kernel-carousel-slide><div style="display:flex;align-items:center;justify-content:center;block-size:8rem;background:var(--kernel-color-accent-subtle);">Slide 3</div></kernel-carousel-slide>
+    </kernel-carousel>
+
+    <kernel-date-picker id="lab-date-picker"></kernel-date-picker>
+
+    <kernel-date-range-picker id="lab-date-range-picker"></kernel-date-range-picker>
+
+    <kernel-data-table id="lab-data-table" page-size="2"></kernel-data-table>
   </section>
 </BaseLayout>
 
 <script>
-  import "@kernelui/elements";
+  import { toast } from "@kernelui/elements";
+
+  document.getElementById("lab-toast-default")?.addEventListener("click", () => {
+    toast("Saved", { description: "Your changes have been saved." });
+  });
+  document.getElementById("lab-toast-success")?.addEventListener("click", () => {
+    toast.success("Deployed successfully");
+  });
+  document.getElementById("lab-toast-danger")?.addEventListener("click", () => {
+    toast.danger("Something went wrong", { description: "Please try again." });
+  });
+
+  document.getElementById("lab-composer-thinking-toggle")?.addEventListener("click", () => {
+    document.getElementById("lab-composer")?.toggleAttribute("thinking");
+  });
+  document.getElementById("lab-composer")?.addEventListener("submit", ((event: CustomEvent) => {
+    console.log("composer submit:", event.detail.value);
+  }) as EventListener);
+  document.getElementById("lab-composer-send")?.addEventListener("click", () => {
+    (document.getElementById("lab-composer") as any)?.submit();
+  });
+
+  document.getElementById("lab-reasoning-streaming-toggle")?.addEventListener("click", () => {
+    document.getElementById("lab-reasoning")?.toggleAttribute("streaming");
+  });
+
+  document.getElementById("lab-dialog-open")?.addEventListener("click", () => {
+    document.getElementById("lab-dialog")?.setAttribute("open", "");
+  });
+
+  (document.getElementById("lab-command-palette") as any).items = [
+    { id: "new-file", label: "New file", onSelect: () => console.log("selected: new file") },
+    { id: "save", label: "Save", description: "Save the current file", onSelect: () => console.log("selected: save") },
+  ];
+  document.getElementById("lab-command-palette-open")?.addEventListener("click", () => {
+    document.getElementById("lab-command-palette")?.setAttribute("open", "");
+  });
+
+  const dataTable = document.getElementById("lab-data-table") as any;
+  dataTable.columns = [
+    { key: "name", header: "Name", render: (row: any) => row.name, sortable: true },
+    { key: "role", header: "Role", render: (row: any) => row.role, sortable: true },
+  ];
+  dataTable.rowKey = (row: any) => row.name;
+  dataTable.data = [
+    { name: "Ada Okoye", role: "Engineering" },
+    { name: "Bram Visser", role: "Design" },
+    { name: "Celia Nakamura", role: "Engineering" },
+  ];
+
+  document.getElementById("lab-tabs")?.addEventListener("valuechange", ((event: CustomEvent) => {
+    console.log("tabs valuechange:", event.detail.value);
+  }) as EventListener);
+  document.getElementById("lab-combobox")?.addEventListener("valuechange", ((event: CustomEvent) => {
+    console.log("combobox valuechange:", event.detail.value);
+  }) as EventListener);
+  document.getElementById("lab-date-picker")?.addEventListener("valuechange", ((event: CustomEvent) => {
+    console.log("date-picker valuechange:", event.detail.value);
+  }) as EventListener);
 </script>

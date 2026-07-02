@@ -35,7 +35,17 @@
   display: flex;
   align-items: flex-start;
   gap: var(--kernel-space-3);
-  padding: var(--kernel-padding-container);
+  /* `--kernel-radius-container` is derived FROM `--kernel-padding-container`
+     (`radius-md + padding-container`, see Card's own comment on the same
+     pairing) so the two stay concentric — but that formula means the
+     corner radius itself grows much faster than the padding at "Round"
+     (padding-container is flat; radius-container isn't), and a toast's
+     padding is the one edge of that relationship a user actually looks
+     at up close. Scaling it off `--kernel-radius-base` directly (0 extra
+     at Sharp, +50% at Round's own 1.25rem value) keeps the content from
+     reading as cramped against the now-much-bigger curve, the same fix
+     already applied to the docs site's own Usage/Playground boxes. */
+  padding: calc(var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-container);
   background-color: var(--kernel-color-surface-raised);

@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import TextareaDemo from "../../components/demos/TextareaDemo";
 import TextareaPlayground from "../../components/demos/TextareaPlayground";
 
-const usageSnippet = `import { Textarea } from "@kernelui/react";
-
-<Textarea label="Feedback" description="What went wrong?" />`;
 ---
 
 <BaseLayout title="Textarea" withSidebar>
@@ -29,8 +25,7 @@ const usageSnippet = `import { Textarea } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <TextareaPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

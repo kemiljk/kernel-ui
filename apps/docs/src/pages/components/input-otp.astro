@@ -1,26 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import InputOTPDemo from "../../components/demos/InputOTPDemo";
 import InputOTPPlayground from "../../components/demos/InputOTPPlayground";
 
-const usageSnippet = `import { useState } from "react";
-import { InputOTP } from "@kernelui/react";
-
-function VerifyCode() {
-  const [value, setValue] = useState("");
-
-  return (
-    <InputOTP
-      length={6}
-      label="Verification code"
-      value={value}
-      onValueChange={setValue}
-      onComplete={(code) => console.log("submit", code)}
-    />
-  );
-}`;
 ---
 
 <BaseLayout title="Input OTP" withSidebar>
@@ -42,8 +25,7 @@ function VerifyCode() {
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <InputOTPPlayground client:load />
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead>

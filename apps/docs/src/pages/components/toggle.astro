@@ -1,15 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import UsageAccordion from "../../components/UsageAccordion.astro";
 import ToggleDemo from "../../components/demos/ToggleDemo";
 import TogglePlayground from "../../components/demos/TogglePlayground";
 
-const toggleSnippet = `import { Toggle } from "@kernelui/react";
-
-<Toggle aria-label="Bold" defaultPressed>
-  B
-</Toggle>`;
 ---
 
 <BaseLayout title="Toggle" withSidebar>
@@ -31,8 +25,7 @@ const toggleSnippet = `import { Toggle } from "@kernelui/react";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <TogglePlayground client:load />
 
-    <UsageAccordion code={toggleSnippet} lang="tsx" />
-
+    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

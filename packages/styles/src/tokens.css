@@ -138,6 +138,18 @@
 
     --kernel-color-text: var(--kernel-gray-12);
     --kernel-color-text-muted: var(--kernel-gray-11);
+    /* A highlight, not a text colour — for shimmer/shine sweeps (e.g.
+       ThinkingIndicator's animated label) where the bright point needs to
+       read as light catching an edge, not as emphasised text. Doesn't
+       track --kernel-color-text's own light/dark inversion 1:1:
+       --kernel-color-canvas sits at ~99% lightness in light mode, so a
+       near-white peak there would sit right next to the page background
+       and read as the text fading out rather than a highlight; in dark
+       mode canvas is near-black, so the same near-white peak IS the
+       high-contrast "shine". 0 chroma keeps it neutral (no accent hue) —
+       components wanting a themed shine should composite their own
+       accent colour on top instead of expecting this token to carry one. */
+    --kernel-color-shine: light-dark(oklch(75% 0 0), oklch(97% 0 0));
 
     --kernel-color-accent: var(--kernel-accent-9);
     --kernel-color-accent-hover: var(--kernel-accent-10);
