@@ -4,6 +4,21 @@ import ThemePlayground from "../components/ThemePlayground";
 import HeroCtas from "../components/HeroCtas";
 import CodeBlock from "../components/CodeBlock.astro";
 import PhyllotaxisSpiral from "../components/PhyllotaxisSpiral.astro";
+import BookDemoCard from "../components/showcase/BookDemoCard";
+import StatusRow from "../components/showcase/StatusRow";
+import EditorSettings from "../components/showcase/EditorSettings";
+import DocsNav from "../components/showcase/DocsNav";
+import CodePreviewToggle from "../components/showcase/CodePreviewToggle";
+import CommandShortcuts from "../components/showcase/CommandShortcuts";
+import AvatarGroup from "../components/showcase/AvatarGroup";
+import AccountMenu from "../components/showcase/AccountMenu";
+import ButtonVariants from "../components/showcase/ButtonVariants";
+import InstallCard from "../components/showcase/InstallCard";
+import RepoCard from "../components/showcase/RepoCard";
+import PlatformCards from "../components/showcase/PlatformCards";
+import UpdateBanner from "../components/showcase/UpdateBanner";
+import NotificationToggle from "../components/showcase/NotificationToggle";
+import UnsavedChangesCard from "../components/showcase/UnsavedChangesCard";
 
 const cascadeSnippet = `--kernel-hue-accent: 70;       /* → every accent shade re-hues */
 --kernel-radius-base: 1.25rem; /* → every corner re-rounds */
@@ -59,33 +74,38 @@ const elementsPlatformSnippet = `<script type="module">
     </div>
   </section>
 
-  <section class="feature-section" aria-labelledby="why-kernel-heading">
-    <p class="section-eyebrow" id="why-kernel-heading">Why Kernel</p>
-    <div class="feature-grid">
-      <div class="feature-featured">
-        <h2>One value, one cascade</h2>
+  <section class="feature-section" aria-labelledby="showcase-heading">
+    <p class="section-eyebrow" id="showcase-heading">Showcase</p>
+    <h2>Real components, composed into real screens</h2>
+    <p class="principles-intro">
+      Not a component zoo — a scheduling card, a docs nav, an install
+      panel. Everything below is the actual library, not a mockup.
+    </p>
+    <div class="showcase-columns">
+      <div class="showcase-card">
+        <h3>One value, one cascade</h3>
         <p>
           Every colour, radius, and duration is a CSS custom property.
           Change one token and every component updates, live, everywhere
-          it's used, try it below.
+          it's used — try it further down the page.
         </p>
         <CodeBlock code={cascadeSnippet} lang="css" />
       </div>
-      <div class="feature-card">
-        <h3>Real elements</h3>
-        <p>
-          button, dialog, details, fieldset. The behaviour, keyboard
-          support, and accessibility the browser already gives you,
-          instead of rebuilding it in a div.
-        </p>
-      </div>
-      <div class="feature-card">
-        <h3>Styling, your way</h3>
-        <p>
-          Plain CSS, CSS Modules, or Tailwind. The components don't care,
-          they only ever read from the token layer.
-        </p>
-      </div>
+      <BookDemoCard client:visible />
+      <StatusRow client:visible />
+      <EditorSettings client:visible />
+      <DocsNav client:visible />
+      <CodePreviewToggle client:visible />
+      <CommandShortcuts client:visible />
+      <AvatarGroup client:visible />
+      <AccountMenu client:visible />
+      <ButtonVariants client:visible />
+      <InstallCard client:visible />
+      <RepoCard client:visible />
+      <PlatformCards client:visible />
+      <UpdateBanner client:visible />
+      <NotificationToggle client:visible />
+      <UnsavedChangesCard client:visible />
     </div>
   </section>
 

@@ -210,6 +210,17 @@
 
     --kernel-color-focus-ring: var(--kernel-color-accent);
 
+    /* Shared by Switch's and Slider's thumbs: a fixed light colour
+       regardless of theme or the track's own colour underneath, the same
+       way every native switch/slider thumb (iOS, Radix, Material)
+       separates itself from the track with shadow, not colour contrast.
+       Deliberately not --kernel-color-on-accent or --kernel-color-surface:
+       both are theme/context-reactive, and a thumb that changes colour
+       depending on what's behind it (an accent-coloured "on" track vs. a
+       neutral "off" one, or light vs. dark mode) stops reading as the
+       same physical object as its counterpart control. */
+    --kernel-color-thumb: oklch(99% 0 0);
+
     /* ---------------------------------------------------------------- */
     /* Shape: one radius, one border width                              */
     /* ---------------------------------------------------------------- */
@@ -338,6 +349,16 @@
     --kernel-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.06);
     --kernel-shadow-md: 0 4px 12px oklch(0% 0 0 / 0.10);
     --kernel-shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.16);
+
+    /* A barely-visible edge for a light, floating element that a shadow
+       alone doesn't cleanly separate from what's behind it (Slider's
+       thumb sitting on its own light-grey unfilled track, e.g.) — black
+       in light mode, white in dark mode, so it darkens against a light
+       surface and lightens against a dark one either way, rather than
+       being a fixed colour that only reads correctly in one theme. 10%
+       is still a definition cue, not a heavy border — just a touch more
+       present than the original 5%. */
+    --kernel-stroke-subtle: light-dark(oklch(0% 0 0 / 0.1), oklch(100% 0 0 / 0.1));
 
     --kernel-z-overlay: 100;
   }

@@ -1137,89 +1137,183 @@ h3 {
   margin-block-start: var(--kernel-space-8);
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  grid-template-rows: repeat(2, auto);
-  gap: var(--kernel-space-4);
-  /* No margin-block-start here: the "Why Kernel" eyebrow immediately
-     above sets this section's whole top gap via .section-eyebrow + *,
-     same as every other eyebrow, so this can't drift out of sync with
-     it by accumulating a second margin on top. */
+/* Showcase: real components composed into realistic mini-patterns (a
+   sign-up field, an OTP verification card, a create-account card…)
+   instead of one component in isolation — proof this is a system you
+   build actual screens from, not a component zoo. Native CSS multi-
+   column masonry, not a JS layout library or a manually-tuned CSS Grid
+   with `grid-row: span N` per card: each card's real height decides
+   which column it lands in and how tall it reads, no measurement, no
+   hydration cost, and a card that gets a line of text added to it later
+   doesn't need its span recalculated by hand. */
+.showcase-columns {
+  columns: 3 18rem;
+  /* 50% more than the base --kernel-space-6 (24px → 36px) — a deliberate
+     multiplier, not a bigger named token, since no token in the scale
+     lands on "the current value plus half again". */
+  column-gap: calc(var(--kernel-space-6) * 1.5);
 }
 
-/* .feature-featured and .feature-card are a shared visual group (one
-   bento grid) — they must read as ONE rounding language, not two.
-   Both take --kernel-radius-sheet: the larger of the two paddings in
-   play (this panel's own space-6) decides the radius for the whole
-   group, rather than each card computing its own smaller value from
-   its own smaller padding and visibly clashing with its neighbour. */
-.feature-featured {
-  grid-row: 1 / 3;
-  padding: var(--kernel-padding-sheet);
+@media (width < 800px) {
+  .showcase-columns {
+    columns: 1;
+  }
+}
+
+/* Two ways a showcase piece can sit in the grid, and which one to reach
+   for is a real UI decision, not a default: most real interfaces are
+   controls, rows, and text floating directly on the page — a card is a
+   specific, deliberate container (a modal, a list, a distinct clickable
+   unit), not the default wrapper for "a thing in a grid." Reaching for
+   `.showcase-card` on everything is exactly how you get a card holding
+   a card holding a control: the outer grid item does NOT need its own
+   border/background just because it's sitting in a masonry column —
+   `break-inside: avoid` (needed so column masonry doesn't split an
+   item's content across two columns) and the bottom margin are the only
+   things every grid item actually needs, and `.showcase-item` is that:
+   no visual box, the content supplies its own shape.
+
+   `.showcase-card` is for the minority of pieces that a real interface
+   would ALSO box — a modal, a menu/list, a code sample — and it pairs
+   `--kernel-radius-sheet` with `--kernel-padding-sheet` because those two
+   tokens are concentric by construction (see tokens.css): a bigger
+   radius with small/default padding is the exact bug this fixes,
+   corners crowding the content instead of framing it. Never hand-roll a
+   radius and a padding independently — reach for `.showcase-card`
+   (roomy, sheet tier) or `.showcase-subcard` (compact, container tier)
+   below, whichever tier actually matches the content, rather than
+   picking a radius token and a padding value separately. */
+.showcase-item {
   display: flex;
   flex-direction: column;
-  gap: var(--kernel-space-4);
+  gap: var(--kernel-space-3);
+  /* Same 50%-over-the-token multiplier as .showcase-columns' column-gap —
+     the two together are the grid's row gap and column gap. */
+  margin-block-end: calc(var(--kernel-space-6) * 1.5);
+  break-inside: avoid;
+}
+
+.showcase-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-padding-sheet);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-sheet);
   background-color: var(--kernel-color-surface);
+  margin-block-end: calc(var(--kernel-space-6) * 1.5);
+  break-inside: avoid;
 }
 
-.feature-featured .code-block {
+/* Compact tier: for a card nested inside a showcase item (a community
+   card sitting beside another one, e.g.) — same pairing discipline as
+   `.showcase-card`, just the smaller radius/padding tier so two of these
+   side by side don't read as heavier than the modal-style cards using
+   the sheet tier. */
+.showcase-subcard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  flex: 1;
+  padding: var(--kernel-padding-container);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+}
+
+/* A heading needs more room to the thing it's labelling than two
+   unrelated pieces of content need between each other — the parent's own
+   flex `gap` already provides that base spacing, this margin stacks on
+   top of it specifically after a heading, so "header, then its content"
+   reads as a clearly bigger step than "content, then more content". */
+/* line-height: 1, not the inherited body value (1.5): a heading sitting
+   in a `.showcase-row` next to a Badge (RepoCard, e.g.) centers by box
+   height, and the body line-height pads invisible space above/below the
+   glyph that Badge's own tight box doesn't have — the heading LOOKS
+   off-centre against the badge even though `align-items: center` is
+   doing exactly what it's told, because the two boxes it's centering
+   aren't actually the same height as their visible content. */
+.showcase-item h3,
+.showcase-card h3,
+.showcase-subcard h3 {
+  margin: 0 0 var(--kernel-space-2);
+  font-size: var(--kernel-font-size-base);
+  line-height: 1;
+}
+
+.showcase-item p,
+.showcase-card p,
+.showcase-subcard p {
+  margin: 0;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+/* The one showcase card that isn't a live component — the cascade-token
+   code sample — still needs its own code block sized like the rest of
+   the docs' code samples, not inheriting the muted/small text rule above
+   (code needs its own contrast and a monospace stack). */
+.showcase-card .code-block {
   margin-block-start: var(--kernel-space-2);
 }
 
-.feature-featured pre code {
+.showcase-card pre code {
   font-family: var(--kernel-font-mono);
   font-size: var(--kernel-font-size-sm);
 }
 
-/* Reads --kernel-padding-sheet, the same token .feature-featured pads
-   with, not the smaller --kernel-space-4 it used before: sharing
-   .feature-featured's --kernel-radius-sheet but not its padding was
-   exactly the mismatch that made these read as two different corner
-   languages side by side. */
-.feature-card {
-  padding: var(--kernel-padding-sheet);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-sheet);
-  background-color: var(--kernel-color-surface);
+.showcase-row {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-3);
 }
 
-.feature-featured h2,
-.feature-card h3 {
-  margin-block: 0 var(--kernel-space-2);
+/* `flex-start`, not `center`: this pairs a label (often two lines — a
+   name plus a description) with a control (a Switch, e.g.). Centering
+   vertically centers the control across the WHOLE label stack, landing
+   it between the two lines rather than level with either — flex-start
+   lines the control up with the label's own first line, which is the
+   thing it's actually a control FOR. */
+.showcase-row-between {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--kernel-space-4);
 }
 
-.feature-featured h2 {
-  font-size: var(--kernel-font-size-lg);
+.showcase-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
 }
 
-.feature-card h3 {
-  font-size: var(--kernel-font-size-base);
+/* Overlapping avatar group: each avatar after the first pulls left by a
+   quarter of its own width and stacks on top via source order (later
+   avatars painting over earlier ones needs no explicit z-index — that's
+   just normal DOM paint order), with a shared ring so the overlap reads
+   as intentional stacking rather than avatars randomly overlapping. */
+.showcase-avatar-group {
+  display: flex;
 }
 
-.feature-featured p,
-.feature-card p {
-  margin: 0;
+.showcase-avatar-group > * {
+  margin-inline-start: calc(-1 * var(--kernel-space-2));
+  border: 2px solid var(--kernel-color-surface);
+  border-radius: var(--kernel-radius-full);
+}
+
+.showcase-avatar-group > *:first-child {
+  margin-inline-start: 0;
+}
+
+.showcase-kbd {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-text-muted);
 }
 
-.feature-card p {
-  font-size: var(--kernel-font-size-sm);
-}
-
-@media (width < 800px) {
-  .feature-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .feature-featured {
-    grid-row: auto;
-  }
-}
-
-.principles h2 {
+.principles h2,
+.feature-section h2 {
   margin: 0 0 var(--kernel-space-2);
 }
 
@@ -1515,7 +1609,22 @@ h3 {
    you scroll to them. `@supports`-gated the same way `contrast-color()`
    is elsewhere in this codebase: unsupported browsers just see the
    content, fully visible, with no animation at all — never stuck
-   invisible. */
+   invisible.
+
+   Deliberately NOT applied to `.showcase-card`/`.showcase-item`: this was
+   tried and reverted. It designed and reads correctly for a handful of
+   large, singular per-section blocks, each unambiguously either fully
+   above or fully below the fold at load — but a masonry grid of 15 small
+   items has no such guarantee: `columns` balances items across columns by
+   height, so which items straddle the fold on initial load is
+   unpredictable (viewport-height-dependent, not something a stylesheet
+   can know ahead of time). An item straddling the fold at the exact
+   moment of page load — before any scroll event has ever fired — can get
+   stuck rendering its `from` keyframe (invisible) until the first scroll
+   event forces the browser to recompute the timeline; a real,
+   already-observed effect: a card sitting at the top of its column,
+   already partly on-screen, requiring a scroll nudge to appear at all,
+   even though nothing below it was still off-screen waiting to reveal. */
 @supports (animation-timeline: view()) {
   @keyframes kernel-reveal {
     from {
@@ -1528,8 +1637,6 @@ h3 {
     }
   }
 
-  .feature-featured,
-  .feature-card,
   .principles,
   .comparison,
   .platforms,
@@ -1539,23 +1646,9 @@ h3 {
     animation-timeline: view();
     animation-range: entry 0% cover 25%;
   }
-
-  /* A slight per-card offset inside the same viewport entrance reads
-     as a considered sequence rather than three identical cards
-     popping in at once — the "follow-through" principle applied with
-     pure CSS. */
-  .feature-card:nth-of-type(2) {
-    animation-delay: 80ms;
-  }
-
-  .feature-card:nth-of-type(3) {
-    animation-delay: 160ms;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feature-featured,
-  .feature-card,
   .principles,
   .comparison,
   .platforms,

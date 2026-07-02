@@ -55,33 +55,49 @@
   background: var(--kernel-color-accent);
 }
 
+/* A capsule, not a circle, and no coloured ring — the same shape and
+   depth language as Switch's own thumb (a wider-than-tall oval, filled
+   solid, separated from the track by shadow alone, no border). A
+   bordered circle read as a distinct "outlined" control family of its
+   own; this makes Slider's thumb and Switch's thumb feel like the same
+   physical object. */
 .input::-webkit-slider-thumb {
   appearance: none;
-  inline-size: 1.1rem;
-  block-size: 1.1rem;
+  box-sizing: border-box;
+  inline-size: 1.75rem;
+  block-size: 1.25rem;
   /* WebKit aligns the thumb's own top edge to the track's top edge by
      default, not its centre — the correct shift to actually centre a
      thumb taller than its track is half the DIFFERENCE between the
-     two heights, not half the thumb's own height. The previous
-     -0.55rem (half the thumb height) shifted it up twice as far as
-     needed, sitting it above centre. Firefox doesn't need (or want)
-     this: unlike WebKit, ::-moz-range-thumb already centres on the
-     track by default. */
-  margin-block-start: calc((6px - 1.1rem) / 2);
+     two heights, not half the thumb's own height. Firefox doesn't need
+     (or want) this: unlike WebKit, ::-moz-range-thumb already centres
+     on the track by default. */
+  margin-block-start: calc((6px - 1.25rem) / 2);
   border-radius: var(--kernel-radius-full);
-  background-color: var(--kernel-color-surface);
-  border: 2px solid var(--kernel-color-accent);
-  box-shadow: var(--kernel-shadow-sm);
+  background-color: var(--kernel-color-thumb);
+  /* A ring, not a border: a `border` sits on the thumb's own edge and
+     eats into its box, softening the silhouette against the drop shadow
+     behind it. A 0-blur `box-shadow` ring sits just outside that edge
+     instead, so the thumb reads as one crisp, fully-filled shape with a
+     hairline drawn cleanly around it — the same effect as macOS's own
+     slider knob. Tighter and lighter than the previous shadow tier: a
+     shorter blur and offset read as a crisp "lifted" edge rather than a
+     soft haze, and less opacity keeps it from muddying that crispness. */
+  box-shadow:
+    0 0 0 1px var(--kernel-stroke-subtle),
+    0 2px 4px oklch(0% 0 0 / 0.15);
   transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .input::-moz-range-thumb {
-  inline-size: 1.1rem;
-  block-size: 1.1rem;
+  box-sizing: border-box;
+  inline-size: 1.75rem;
+  block-size: 1.25rem;
   border-radius: var(--kernel-radius-full);
-  background-color: var(--kernel-color-surface);
-  border: 2px solid var(--kernel-color-accent);
-  box-shadow: var(--kernel-shadow-sm);
+  background-color: var(--kernel-color-thumb);
+  box-shadow:
+    0 0 0 1px var(--kernel-stroke-subtle),
+    0 2px 4px oklch(0% 0 0 / 0.15);
 }
 
 .input:active::-webkit-slider-thumb {

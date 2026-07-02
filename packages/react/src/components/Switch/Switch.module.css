@@ -68,16 +68,13 @@
   inline-size: calc(var(--kernel-switch-block) - 4px + var(--kernel-switch-thumb-extra));
   block-size: calc(var(--kernel-switch-block) - 4px);
   border-radius: var(--kernel-radius-full);
-  /* Deliberately not --kernel-color-on-accent: the thumb sits on a
-     neutral track when off and an accent-coloured one when on, so
-     tying its colour to whatever gives the best contrast against the
-     accent specifically breaks the *off* state (e.g. amber's on-accent
-     is near-black, which nearly disappears against dark mode's equally
-     dark neutral track). Every native switch (iOS, Radix, Material)
-     uses a fixed light thumb regardless of on/off state or theme,
-     separated from the track by shadow rather than colour contrast. */
-  --kernel-switch-thumb: oklch(99% 0 0);
-  background-color: var(--kernel-switch-thumb);
+  /* --kernel-color-thumb (see tokens.css): deliberately not
+     --kernel-color-on-accent, since the thumb sits on a neutral track
+     when off and an accent-coloured one when on, and tying its colour to
+     whatever gives the best contrast against the accent specifically
+     breaks the *off* state (e.g. amber's on-accent is near-black, which
+     nearly disappears against dark mode's equally dark neutral track). */
+  background-color: var(--kernel-color-thumb);
   box-shadow: var(--kernel-shadow-sm);
   translate: 0 0;
   /* +25% over --kernel-duration-base (200ms -> 250ms): the wider,
