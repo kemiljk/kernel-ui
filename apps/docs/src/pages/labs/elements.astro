@@ -211,7 +211,10 @@ import "@kernelui/elements/styles.css";
     </kernel-hover-card>
 
     <kernel-dropdown-menu id="lab-dropdown">
-      <kernel-button slot="trigger" variant="secondary" size="sm">Menu ▾</kernel-button>
+      <kernel-button slot="trigger" variant="secondary" size="sm">
+        Menu
+        <svg class="kernel-menu-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </kernel-button>
       <kernel-menu-item id="lab-menu-item-1">Edit</kernel-menu-item>
       <kernel-menu-item>Duplicate</kernel-menu-item>
       <kernel-menu-separator></kernel-menu-separator>

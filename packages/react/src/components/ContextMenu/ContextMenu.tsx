@@ -42,7 +42,12 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
   // The panel is sized by its content, which isn't known until after it
   // has rendered and gained a real box, so the cursor position is
   // clamped against the viewport in a second pass here rather than at
-  // the point the contextmenu event fires.
+  // the point the contextmenu event fires. `rect.left`/`rect.top` at
+  // this point are still the raw, pre-clamp cursor position (the inline
+  // style was set to it directly), so this doubles as the one place
+  // that knows both where the cursor actually clicked and where the
+  // panel ended up — exactly what's needed to scale the panel in from
+  // the cursor even when it's been nudged to stay on-screen.
   useLayoutEffect(() => {
     if (!open) return;
     const node = menuRef.current;
@@ -51,11 +56,15 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
     const rect = node.getBoundingClientRect();
     const maxLeft = window.innerWidth - rect.width - MARGIN;
     const maxTop = window.innerHeight - rect.height - MARGIN;
+    const clampedLeft = Math.max(MARGIN, Math.min(rect.left, maxLeft));
+    const clampedTop = Math.max(MARGIN, Math.min(rect.top, maxTop));
 
-    setPosition((current) => ({
-      left: Math.max(MARGIN, Math.min(current.left, maxLeft)),
-      top: Math.max(MARGIN, Math.min(current.top, maxTop)),
-    }));
+    const clamp = (value: number) => Math.max(0, Math.min(100, value));
+    const originX = rect.width ? clamp(((rect.left - clampedLeft) / rect.width) * 100) : 50;
+    const originY = rect.height ? clamp(((rect.top - clampedTop) / rect.height) * 100) : 50;
+    node.style.setProperty("--kernel-transform-origin", `${originX}% ${originY}%`);
+
+    setPosition({ left: clampedLeft, top: clampedTop });
   }, [open]);
 
   useLayoutEffect(() => {

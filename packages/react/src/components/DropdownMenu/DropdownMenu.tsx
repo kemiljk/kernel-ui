@@ -155,3 +155,27 @@ export function MenuItem({ destructive = false, onSelect, onClick, disabled, chi
 export function MenuSeparator() {
   return <div role="separator" className={styles.separator} />;
 }
+
+/**
+ * The same down chevron `NavigationMenuTrigger` bakes in automatically —
+ * exported here instead, since `DropdownMenu`'s trigger is an arbitrary
+ * `render` element rather than a dedicated trigger component, so there's
+ * no single place to inject it silently (see `RenderProp`'s doc comment:
+ * what renders is always visible at the call site, not implied). Drop it
+ * in as a trigger's `iconEnd` (or any child) — it reads `aria-expanded`
+ * off its nearest ancestor via CSS, so it rotates open/closed on its own
+ * with no extra wiring, the same as `NavigationMenuTrigger`'s.
+ */
+export function MenuChevron() {
+  return (
+    <svg className={styles.chevron} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M4 6L8 10L12 6"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

@@ -21,9 +21,9 @@ function elementsCode(values: PlaygroundValues) {
 function Stage({ values }: { values: PlaygroundValues }) {
   const [date, setDate] = useState<Date>();
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "flex-start" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center" }}>
       <DatePicker value={date} onValueChange={setDate} minDate={values.disablePast ? new Date() : undefined} />
-      <p style={{ margin: 0, fontSize: "0.875rem" }}>Selected: {date ? date.toLocaleDateString() : "none"}</p>
+      <p style={{ margin: 0, fontSize: "0.875rem", textAlign: "center" }}>Selected: {date ? date.toLocaleDateString() : "none"}</p>
     </div>
   );
 }

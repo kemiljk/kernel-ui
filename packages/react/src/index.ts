@@ -138,6 +138,7 @@ export {
   DropdownMenu,
   MenuItem,
   MenuSeparator,
+  MenuChevron,
 } from "./components/DropdownMenu/DropdownMenu";
 export type {
   DropdownMenuProps,

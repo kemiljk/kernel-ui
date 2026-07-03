@@ -109,46 +109,52 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
         aria-roledescription="carousel"
         className={[styles.root, resolveClassName(className, {})].filter(Boolean).join(" ")}
       >
-        <div
-          ref={trackRef}
-          className={styles.track}
-          // A `<div>` with `overflow: auto` isn't in the tab order by
-          // default, so without this, arrow-key/Page-Up-Down scrolling
-          // (which native scroll containers give you for free) would be
-          // unreachable from the keyboard entirely.
-          tabIndex={0}
-        >
-          {children}
-        </div>
+        {/* Its own positioning context, separate from .root — .prev/.next
+            center against this box's own height (the track's), not
+            .root's, which also includes .dots below and would pull the
+            arrows off-center toward the top. */}
+        <div className={styles.viewport}>
+          <div
+            ref={trackRef}
+            className={styles.track}
+            // A `<div>` with `overflow: auto` isn't in the tab order by
+            // default, so without this, arrow-key/Page-Up-Down scrolling
+            // (which native scroll containers give you for free) would be
+            // unreachable from the keyboard entirely.
+            tabIndex={0}
+          >
+            {children}
+          </div>
 
-        <button
-          type="button"
-          aria-label="Previous slide"
-          className={styles.prev}
-          disabled={currentIndex <= 0}
-          onClick={() => {
-            const target = order[currentIndex - 1];
-            if (target) scrollToSlide(target);
-          }}
-        >
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
-            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          aria-label="Next slide"
-          className={styles.next}
-          disabled={currentIndex === -1 || currentIndex >= order.length - 1}
-          onClick={() => {
-            const target = order[currentIndex + 1];
-            if (target) scrollToSlide(target);
-          }}
-        >
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
-            <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            className={styles.prev}
+            disabled={currentIndex <= 0}
+            onClick={() => {
+              const target = order[currentIndex - 1];
+              if (target) scrollToSlide(target);
+            }}
+          >
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            className={styles.next}
+            disabled={currentIndex === -1 || currentIndex >= order.length - 1}
+            onClick={() => {
+              const target = order[currentIndex + 1];
+              if (target) scrollToSlide(target);
+            }}
+          >
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+              <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
 
         {order.length > 1 ? (
           <div className={styles.dots}>

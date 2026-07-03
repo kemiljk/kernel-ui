@@ -18,6 +18,10 @@ kernel-hover-card {
 
   opacity: 0;
   scale: 0.96;
+  /* Set by FloatingPositioner as an anchor-relative percentage — see
+     that class's doc comment — so this scales in from the trigger
+     instead of a fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
   transition:
     opacity var(--kernel-duration-base) var(--kernel-ease-out),
     scale var(--kernel-duration-base) var(--kernel-ease-spring),

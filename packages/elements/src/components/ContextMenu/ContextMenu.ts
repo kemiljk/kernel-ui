@@ -52,8 +52,19 @@ export class KernelContextMenu extends KernelElement {
         const rect = content.getBoundingClientRect();
         const maxLeft = window.innerWidth - rect.width - MARGIN;
         const maxTop = window.innerHeight - rect.height - MARGIN;
-        content.style.left = `${Math.max(MARGIN, Math.min(event.clientX, maxLeft))}px`;
-        content.style.top = `${Math.max(MARGIN, Math.min(event.clientY, maxTop))}px`;
+        const clampedLeft = Math.max(MARGIN, Math.min(event.clientX, maxLeft));
+        const clampedTop = Math.max(MARGIN, Math.min(event.clientY, maxTop));
+        content.style.left = `${clampedLeft}px`;
+        content.style.top = `${clampedTop}px`;
+
+        // Scales the panel in from wherever was actually right-clicked,
+        // not a fixed center — same cursor-relative-percentage approach
+        // as the anchored components' FloatingPositioner, just computed
+        // by hand here since a cursor position isn't an anchor element.
+        const clamp = (value: number) => Math.max(0, Math.min(100, value));
+        const originX = rect.width ? clamp(((event.clientX - clampedLeft) / rect.width) * 100) : 50;
+        const originY = rect.height ? clamp(((event.clientY - clampedTop) / rect.height) * 100) : 50;
+        content.style.setProperty("--kernel-transform-origin", `${originX}% ${originY}%`);
       });
 
       const handlePointerDown = (pointerEvent: PointerEvent) => {

@@ -30,9 +30,16 @@
 
   opacity: 0;
   scale: 0.96;
+  /* Set in ContextMenu.tsx as a cursor-relative percentage, computed
+     from the same rect the panel's viewport-clamped position comes
+     from — so it scales in from wherever was right-clicked, not a
+     fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
+  /* opacity and scale share one duration so the open/close reads as one
+     coordinated motion. */
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    scale var(--kernel-duration-fast) var(--kernel-ease-spring),
     overlay var(--kernel-duration-fast) allow-discrete,
     display var(--kernel-duration-fast) allow-discrete;
 }

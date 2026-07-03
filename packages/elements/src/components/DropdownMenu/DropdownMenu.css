@@ -2,6 +2,19 @@ kernel-dropdown-menu {
   display: contents;
 }
 
+/* Without this, the host stays at its default display: inline (unknown
+   elements aren't blockified just for existing), so its real <button>/
+   <div> child is a normal descendant rather than .content's actual flex
+   item — and a <button>'s width:auto shrink-to-fits its content
+   regardless of its (now full-width) parent, unlike flex's stretch
+   alignment, which does force a direct flex item's cross size. Same bug
+   class @kernelui/react never hits, since MenuItem's <button> renders as
+   .content's direct child with no wrapper in between. */
+kernel-menu-item,
+kernel-menu-separator {
+  display: contents;
+}
+
 .kernel-DropdownMenu-content {
   position: fixed;
   margin: 0;
@@ -19,9 +32,15 @@ kernel-dropdown-menu {
 
   opacity: 0;
   scale: 0.96;
+  /* Set by FloatingPositioner as an anchor-relative percentage — see
+     that class's doc comment — so this scales in from the trigger
+     instead of a fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
+  /* opacity and scale share one duration so the open/close reads as one
+     coordinated motion. */
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    scale var(--kernel-duration-fast) var(--kernel-ease-spring),
     overlay var(--kernel-duration-fast) allow-discrete,
     display var(--kernel-duration-fast) allow-discrete;
 }
@@ -53,11 +72,21 @@ kernel-dropdown-menu {
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-DropdownMenu-item:active:not(:disabled) {
+  scale: 0.98;
 }
 
 .kernel-DropdownMenu-item:focus-visible {
   background-color: var(--kernel-color-accent-subtle);
-  outline: none;
+  /* Inset rather than outset — see the matching comment in
+     @kernelui/react's DropdownMenu.module.css `.item`. */
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
 }
 
 .kernel-DropdownMenu-item:disabled {
@@ -72,7 +101,6 @@ kernel-dropdown-menu {
 @media (hover: hover) and (pointer: fine) {
   .kernel-DropdownMenu-item:hover:not(:disabled) {
     background-color: var(--kernel-color-accent-subtle);
-    outline: none;
   }
 
   .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled) {
@@ -86,7 +114,39 @@ kernel-dropdown-menu {
   background-color: var(--kernel-color-border);
 }
 
+/* Not scoped to kernel-dropdown-menu specifically — there's no dedicated
+   trigger element to attach this to (the trigger is arbitrary light-DOM
+   markup, slotted in as-is), so this is a plain reusable class for
+   authors to drop the same chevron markup `@kernelui/react`'s
+   `<MenuChevron>` renders straight into their own trigger's HTML. It
+   picks up aria-expanded from whichever ancestor element has it (the
+   slotted trigger itself, set by KernelDropdownMenu on toggle) and
+   currentColor so it always matches that trigger's own text color. */
+.kernel-menu-chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: currentColor;
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+[aria-expanded="true"] .kernel-menu-chevron {
+  rotate: 180deg;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .kernel-DropdownMenu-item {
+    transition: background-color var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-DropdownMenu-item:active:not(:disabled) {
+    scale: 1;
+  }
+
+  .kernel-menu-chevron {
+    transition: none;
+  }
+
   .kernel-DropdownMenu-content {
     transition: opacity var(--kernel-duration-fast) linear;
   }

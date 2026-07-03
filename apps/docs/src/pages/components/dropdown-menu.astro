@@ -5,11 +5,11 @@ import UsageAccordion from "../../components/UsageAccordion.astro";
 import DropdownMenuDemo from "../../components/demos/DropdownMenuDemo";
 import DropdownMenuPlayground from "../../components/demos/DropdownMenuPlayground";
 
-const usageSnippet = `import { Button, DropdownMenu, MenuItem, MenuSeparator } from "@kernelui/react";
+const usageSnippet = `import { Button, DropdownMenu, MenuChevron, MenuItem, MenuSeparator } from "@kernelui/react";
 
 function ActionsMenu() {
   return (
-    <DropdownMenu render={<Button variant="secondary">Actions</Button>}>
+    <DropdownMenu render={<Button variant="secondary" iconEnd={<MenuChevron />}>Actions</Button>}>
       <MenuItem onSelect={() => {}}>Edit</MenuItem>
       <MenuItem onSelect={() => {}}>Duplicate</MenuItem>
       <MenuSeparator />
@@ -50,6 +50,7 @@ function ActionsMenu() {
         <tr><td><code>DropdownMenu</code></td><td><code>render</code></td><td>the trigger (required)</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
+        <tr><td><code>MenuChevron</code></td><td>—</td><td>no props — drop into a trigger's <code>iconEnd</code> (or any child); rotates itself via <code>aria-expanded</code> on its nearest ancestor</td></tr>
       </tbody>
     </table>
 

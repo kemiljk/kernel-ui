@@ -108,11 +108,24 @@
   cursor: pointer;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    color var(--kernel-duration-fast) var(--kernel-ease-out);
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-NumberField-stepperButton:active:not(:disabled) {
+  scale: 0.92;
 }
 
 .kernel-NumberField-stepperButton:first-child {
+  /* Matches .kernel-NumberField-stepper's own outer-corner radius
+     exactly — see the matching comment in @kernelui/react's
+     NumberField.module.css. */
+  border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
   border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.kernel-NumberField-stepperButton:last-child {
+  border-end-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
 }
 
 .kernel-NumberField-stepperButton svg {
@@ -149,4 +162,14 @@
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
   padding-inline-start: var(--label-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-NumberField-stepperButton {
+    transition: background-color var(--kernel-duration-fast) linear, color var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-NumberField-stepperButton:active:not(:disabled) {
+    scale: 1;
+  }
 }

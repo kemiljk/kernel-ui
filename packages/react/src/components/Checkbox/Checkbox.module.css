@@ -51,7 +51,7 @@
 }
 
 .input:active:not(:disabled) + .control {
-  scale: 0.95;
+  scale: 0.97;
 }
 
 .input:checked + .control,
@@ -108,8 +108,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
+  }
+
   .checkmark {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .dash {
+    transition: none;
   }
 
   .input:active:not(:disabled) + .control {

@@ -95,6 +95,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
+  }
+
   .thumb {
     transition: translate var(--kernel-duration-fast) linear;
   }

@@ -1,6 +1,9 @@
 .root {
-  position: relative;
   font-family: var(--kernel-font-sans);
+}
+
+.viewport {
+  position: relative;
 }
 
 .track {

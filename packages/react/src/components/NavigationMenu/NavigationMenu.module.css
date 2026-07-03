@@ -97,9 +97,15 @@
 
   opacity: 0;
   scale: 0.96;
+  /* Set by useFloatingPosition as an anchor-relative percentage — see
+     that hook's doc comment — so this scales in from the trigger
+     instead of a fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
+  /* opacity and scale share one duration so the open/close reads as one
+     coordinated motion. */
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    scale var(--kernel-duration-fast) var(--kernel-ease-spring),
     overlay var(--kernel-duration-fast) allow-discrete,
     display var(--kernel-duration-fast) allow-discrete;
 }

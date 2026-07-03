@@ -5,9 +5,9 @@ export default function DatePickerDemo() {
   const [date, setDate] = useState<Date>();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "flex-start" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center" }}>
       <DatePicker value={date} onValueChange={setDate} />
-      <p style={{ margin: 0, fontSize: "0.875rem" }}>
+      <p style={{ margin: 0, fontSize: "0.875rem", textAlign: "center" }}>
         Selected: {date ? date.toLocaleDateString() : "none"}
       </p>
     </div>

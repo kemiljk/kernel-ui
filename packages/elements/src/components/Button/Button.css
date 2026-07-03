@@ -23,6 +23,11 @@
   scale: 0.97;
 }
 
+.kernel-Button-root:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .kernel-Button-root:disabled,
 .kernel-Button-root[aria-disabled="true"] {
   cursor: not-allowed;
@@ -55,8 +60,10 @@
   color: var(--kernel-color-on-accent);
 }
 
-.kernel-Button-root[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) {
-  background-color: var(--kernel-color-accent-hover);
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Button-root[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--kernel-color-accent-hover);
+  }
 }
 
 .kernel-Button-root[data-variant="primary"]:active:not(:disabled, [aria-disabled="true"]) {
@@ -69,9 +76,11 @@
   color: var(--kernel-color-text);
 }
 
-.kernel-Button-root[data-variant="secondary"]:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--kernel-color-border-hover);
-  background-color: var(--kernel-color-surface-raised);
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Button-root[data-variant="secondary"]:hover:not(:disabled, [aria-disabled="true"]) {
+    border-color: var(--kernel-color-border-hover);
+    background-color: var(--kernel-color-surface-raised);
+  }
 }
 
 .kernel-Button-root[data-variant="ghost"] {
@@ -79,8 +88,10 @@
   color: var(--kernel-color-text);
 }
 
-.kernel-Button-root[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) {
-  background-color: var(--kernel-color-accent-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Button-root[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--kernel-color-accent-subtle);
+  }
 }
 
 .kernel-Button-root[data-variant="danger"] {
@@ -88,8 +99,10 @@
   color: var(--kernel-color-on-danger);
 }
 
-.kernel-Button-root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
-  background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Button-root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+  }
 }
 
 .kernel-Button-label {

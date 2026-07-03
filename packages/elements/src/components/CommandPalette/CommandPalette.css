@@ -67,7 +67,10 @@
 }
 
 .kernel-CommandPalette-input:focus-visible {
-  outline: none;
+  /* Inset, not suppressed — see the matching comment in @kernelui/react's
+     CommandPalette.module.css `.input`. */
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
 }
 
 .kernel-CommandPalette-listbox {

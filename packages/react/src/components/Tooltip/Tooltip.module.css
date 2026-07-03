@@ -14,6 +14,10 @@
 
   opacity: 0;
   scale: 0.96;
+  /* Set by useFloatingPosition as an anchor-relative percentage — see
+     that hook's doc comment — so this scales in from the trigger
+     instead of a fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out),

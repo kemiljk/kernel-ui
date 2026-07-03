@@ -119,11 +119,25 @@
   cursor: pointer;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    color var(--kernel-duration-fast) var(--kernel-ease-out);
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.stepperButton:active:not(:disabled) {
+  scale: 0.92;
 }
 
 .stepperButton:first-child {
+  /* Matches .stepper's own outer-corner radius exactly (there's no
+     further inset between the wrapper and this button) — without it,
+     both the hover background and the focus ring below were sharp
+     rectangles sitting inside a rounded clip mask. */
+  border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
   border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.stepperButton:last-child {
+  border-end-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
 }
 
 .stepperButton svg {
@@ -160,4 +174,14 @@
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
   padding-inline-start: var(--label-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepperButton {
+    transition: background-color var(--kernel-duration-fast) linear, color var(--kernel-duration-fast) linear;
+  }
+
+  .stepperButton:active:not(:disabled) {
+    scale: 1;
+  }
 }

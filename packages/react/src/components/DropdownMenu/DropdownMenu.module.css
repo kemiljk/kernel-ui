@@ -23,9 +23,16 @@
 
   opacity: 0;
   scale: 0.96;
+  /* Set by useFloatingPosition as an anchor-relative percentage — see
+     that hook's doc comment — so this scales in from the trigger
+     instead of a fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
+  /* opacity and scale share one duration (rather than opacity finishing
+     80ms before scale, as this used to) so the open/close reads as one
+     coordinated motion instead of two staggered ones. */
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-base) var(--kernel-ease-spring),
+    scale var(--kernel-duration-fast) var(--kernel-ease-spring),
     overlay var(--kernel-duration-fast) allow-discrete,
     display var(--kernel-duration-fast) allow-discrete;
 }
@@ -62,11 +69,24 @@
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.item:active:not(:disabled) {
+  scale: 0.98;
 }
 
 .item:focus-visible {
   background-color: var(--kernel-color-accent-subtle);
-  outline: none;
+  /* Inset rather than outset: the item already sits flush against its
+     neighbors (1px gap) and the panel's own padding, so an outset ring
+     would either collide with the next item or get clipped by the
+     panel edge. Same inset convention Accordion/Reasoning's disclosure
+     triggers already use for the same reason. */
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
 }
 
 .item:disabled {
@@ -81,7 +101,6 @@
 @media (hover: hover) and (pointer: fine) {
   .item:hover:not(:disabled) {
     background-color: var(--kernel-color-accent-subtle);
-    outline: none;
   }
 
   .item[data-destructive]:hover:not(:disabled) {
@@ -95,7 +114,40 @@
   background-color: var(--kernel-color-border);
 }
 
+/* currentColor rather than a fixed muted tone (unlike
+   NavigationMenuTrigger's own chevron, which always sits in the same
+   trigger styling): this one lands inside an arbitrary trigger `render`
+   element — a secondary Button, a ghost one, whatever — so it should
+   read as the same color as that trigger's own label text. */
+.chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: currentColor;
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+/* aria-expanded lands on whatever element DropdownMenu's `render` prop
+   produced (Button, a plain <button>, etc.) via renderElement's prop
+   merge — this chevron is always a descendant of that same element, so
+   no extra wiring is needed to know when to rotate. */
+[aria-expanded="true"] .chevron {
+  rotate: 180deg;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: background-color var(--kernel-duration-fast) linear;
+  }
+
+  .item:active:not(:disabled) {
+    scale: 1;
+  }
+
+  .chevron {
+    transition: none;
+  }
+
   .content {
     transition: opacity var(--kernel-duration-fast) linear;
   }

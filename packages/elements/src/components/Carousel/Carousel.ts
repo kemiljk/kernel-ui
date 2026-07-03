@@ -99,7 +99,14 @@ export class KernelCarousel extends KernelElement {
       if (target) this.scrollToSlide(target);
     });
 
-    root.append(track, this.prevButton, this.nextButton);
+    // Its own positioning context, separate from root — .prev/.next
+    // center against this box's own height (the track's), not root's,
+    // which also includes .dots below and would pull the arrows
+    // off-center toward the top.
+    const viewport = document.createElement("div");
+    viewport.className = kernelClass("Carousel", "viewport");
+    viewport.append(track, this.prevButton, this.nextButton);
+    root.append(viewport);
 
     if (this.order.length > 1) {
       const dots = document.createElement("div");

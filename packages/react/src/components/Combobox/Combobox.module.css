@@ -64,6 +64,10 @@
 
   opacity: 0;
   scale: 0.98;
+  /* Set by useFloatingPosition as an anchor-relative percentage — see
+     that hook's doc comment — so this scales in from the input instead
+     of a fixed center. */
+  transform-origin: var(--kernel-transform-origin, center);
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out),
@@ -105,4 +109,10 @@
   padding-inline: var(--kernel-space-3);
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listbox {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
 }

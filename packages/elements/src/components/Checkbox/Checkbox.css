@@ -48,7 +48,7 @@
 }
 
 .kernel-Checkbox-input:active:not(:disabled) + .kernel-Checkbox-control {
-  scale: 0.95;
+  scale: 0.97;
 }
 
 .kernel-Checkbox-input:checked + .kernel-Checkbox-control,
@@ -105,8 +105,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .kernel-Checkbox-control {
+    transition: none;
+  }
+
   .kernel-Checkbox-checkmark {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-Checkbox-dash {
+    transition: none;
   }
 
   .kernel-Checkbox-input:active:not(:disabled) + .kernel-Checkbox-control {

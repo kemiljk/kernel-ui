@@ -31,6 +31,11 @@
   scale: 0.97;
 }
 
+.root:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .root:disabled,
 .root[aria-disabled="true"] {
   cursor: not-allowed;

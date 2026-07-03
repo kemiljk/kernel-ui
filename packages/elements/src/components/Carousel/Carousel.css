@@ -1,6 +1,9 @@
 .kernel-Carousel-root {
-  position: relative;
   font-family: var(--kernel-font-sans);
+}
+
+.kernel-Carousel-viewport {
+  position: relative;
 }
 
 .kernel-Carousel-track {

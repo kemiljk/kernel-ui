@@ -78,7 +78,12 @@
 }
 
 .input:focus-visible {
-  outline: none;
+  /* Inset, not suppressed: this input has no border box of its own to
+     hang an outset ring off (flush with the dialog's own top edge), so
+     an inset ring is the only shape that doesn't get clipped by or spill
+     past the dialog's rounded corners. */
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
 }
 
 .listbox {

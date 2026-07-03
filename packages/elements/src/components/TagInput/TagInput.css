@@ -91,7 +91,12 @@
   cursor: pointer;
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-TagInput-tagRemove:active {
+  scale: 0.9;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -113,4 +118,14 @@
 
 .kernel-TagInput-input:disabled {
   cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-TagInput-tagRemove {
+    transition: opacity var(--kernel-duration-fast) linear, background-color var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-TagInput-tagRemove:active {
+    scale: 1;
+  }
 }

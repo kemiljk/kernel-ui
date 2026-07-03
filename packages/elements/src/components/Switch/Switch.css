@@ -80,6 +80,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .kernel-Switch-control {
+    transition: none;
+  }
+
   .kernel-Switch-thumb {
     transition: translate var(--kernel-duration-fast) linear;
   }
