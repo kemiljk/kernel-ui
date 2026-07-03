@@ -31,20 +31,28 @@ const columns: DataTableColumn<TeamMember>[] = [
 const controls = [
   { type: "text" as const, prop: "filterPlaceholder", default: "Filter by name, role, or status" },
   { type: "number" as const, prop: "pageSize", default: 3, min: 1, max: 6, step: 1 },
+  { type: "text" as const, prop: "caption", default: "" },
 ];
 
 function code(values: PlaygroundValues) {
-  return `<DataTable
-  columns={columns}
-  data={members}
-  rowKey={(row) => row.name}
-  filterPlaceholder="${values.filterPlaceholder}"
-  pageSize={${Number(values.pageSize)}}
-/>`;
+  const attrs: string[] = [
+    "columns={columns}",
+    "data={members}",
+    "rowKey={(row) => row.name}",
+    `filterPlaceholder="${values.filterPlaceholder}"`,
+    `pageSize={${Number(values.pageSize)}}`,
+  ];
+  if (values.caption) attrs.push(`caption="${values.caption}"`);
+  return `<DataTable\n  ${attrs.join("\n  ")}\n/>`;
 }
 
 function elementsCode(values: PlaygroundValues) {
-  return `<kernel-data-table id="table" filter-placeholder="${values.filterPlaceholder}" page-size="${Number(values.pageSize)}"></kernel-data-table>
+  const attrs: string[] = [
+    `filter-placeholder="${values.filterPlaceholder}"`,
+    `page-size="${Number(values.pageSize)}"`,
+  ];
+  if (values.caption) attrs.push(`caption="${values.caption}"`);
+  return `<kernel-data-table id="table" ${attrs.join(" ")}></kernel-data-table>
 
 <script type="module">
   const table = document.getElementById("table");
@@ -70,6 +78,7 @@ export default function DataTablePlayground() {
           rowKey={(row) => row.name}
           filterPlaceholder={String(values.filterPlaceholder)}
           pageSize={Number(values.pageSize)}
+          caption={String(values.caption) || undefined}
         />
       )}
     />

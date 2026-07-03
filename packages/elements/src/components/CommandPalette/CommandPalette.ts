@@ -36,7 +36,7 @@ export class KernelCommandPalette extends KernelElement {
   private listboxEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["open", "placeholder"];
+    return ["open", "placeholder", "empty-message"];
   }
 
   get items(): KernelCommandPaletteItem[] {
@@ -186,6 +186,9 @@ export class KernelCommandPalette extends KernelElement {
       case "placeholder":
         this.inputEl.placeholder = value || "Filter commands";
         this.inputEl.setAttribute("aria-label", value || "Filter commands");
+        break;
+      case "empty-message":
+        this.renderOptions();
         break;
     }
   }

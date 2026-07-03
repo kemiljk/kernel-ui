@@ -9,6 +9,9 @@
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
+  /* Aligns with where the select's pill curvature stops looking like a
+     straight edge — see --kernel-label-inset-* in tokens.css. */
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .required {
@@ -75,12 +78,14 @@
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .error {
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,74 @@
+# @kernelui/elements — LLM reference
+
+The same design as `@kernelui/react`, shipped as framework-free Custom
+Elements — light DOM (no shadow root, so the page's own Kernel stylesheet
+reaches every component with no per-instance style duplication), zero
+runtime dependencies. Use this package in Vue, Svelte, Astro, or plain
+HTML; use `@kernelui/react` instead in a React app.
+
+## Install
+
+```bash
+npm install @kernelui/elements @kernelui/styles
+```
+
+```html
+<link rel="stylesheet" href="path/to/@kernelui/styles/index.css" />
+<link rel="stylesheet" href="path/to/@kernelui/elements/dist/kernel.css" />
+<script type="module">
+  import "@kernelui/elements"; // registers every <kernel-*> tag below
+</script>
+
+<kernel-button variant="primary">Save changes</kernel-button>
+```
+
+Importing the module registers every custom element via
+`customElements.define` — there is no per-component import path, and no
+separate "install this one component" step.
+
+## Conventions (mirrors @kernelui/react's prop conventions as attributes)
+
+- **Value**: a `value` attribute (or a `values`/`tags`-style JS property
+  where a value can't serialize into a plain string, e.g. `TagInput`'s
+  `.tags`), and a `change` event — `event.detail` carries the parsed
+  value where a `change` event's default (the raw element) isn't enough
+  (e.g. `<kernel-tag-input>` dispatches `{ detail: { tags: string[] } }`).
+- **Form-field scaffold**: `label` (required — still the input's
+  accessible name even when `hide-label` is set), `hide-label` (boolean
+  attribute), `description`, `error-message`, `invalid`, `disabled`,
+  `required` — same names as `@kernelui/react`'s form fields, kebab-case.
+- **Boolean attributes are presence-based**: `<kernel-checkbox disabled>`
+  means disabled; there is no `disabled="false"` — omit the attribute
+  entirely to mean false. (Exception, clearly named to avoid the
+  ambiguity: `<kernel-color-picker no-hex-input>`, an opt-out boolean,
+  since the React version's equivalent prop defaults to `true`.)
+- **Real elements, real events**: every component wraps a genuine native
+  element or ARIA pattern internally and re-dispatches its real DOM
+  events (`input`, `change`, `click`) — listen for those directly, no
+  proprietary event system.
+- **Compose with real children**: components that take structured content
+  use real child elements or attributes on real children, not a JSON
+  prop — e.g. `<kernel-select>` takes real `<option>`/`<optgroup>`
+  children, `<kernel-tabs>` takes `<kernel-tab>`/`<kernel-tab-panel>`.
+
+## Tags (grouped to match @kernelui/react's component groups; composite
+## components' sub-tags are one level deeper, e.g. <kernel-card-header>
+## goes inside <kernel-card>)
+
+- Primitives: `kernel-avatar`, `kernel-badge`, `kernel-button`, `kernel-checkbox`, `kernel-label`, `kernel-radio-group` (+ `kernel-radio-group-item`), `kernel-separator`, `kernel-switch`, `kernel-toggle`
+- Forms: `kernel-color-picker`, `kernel-combobox`, `kernel-file-upload`, `kernel-input-otp`, `kernel-number-field`, `kernel-select`, `kernel-slider`, `kernel-tag-input`, `kernel-text-field`, `kernel-textarea`
+- Layout: `kernel-card` (+ `kernel-card-header`/`-title`/`-description`/`-content`/`-footer`), `kernel-footer`, `kernel-header`, `kernel-nav` (+ `kernel-nav-link`), `kernel-resizable`, `kernel-scroll-area`, `kernel-sidebar`
+- Feedback: `kernel-callout`, `kernel-progress`, `kernel-skeleton`, `kernel-toast-viewport` (then call the exported `toast()` function)
+- Overlays: `kernel-command-palette`, `kernel-context-menu`, `kernel-dialog`, `kernel-dropdown-menu` (+ `kernel-menu-item`/`kernel-menu-separator`), `kernel-hover-card`, `kernel-navigation-menu` (+ `kernel-nav-menu-*`), `kernel-popover`, `kernel-tooltip`
+- Navigation: `kernel-breadcrumbs` (+ `kernel-breadcrumb-item`), `kernel-pagination` (+ `kernel-pagination-item`/`-previous`/`-next`/`-ellipsis`), `kernel-tabs` (+ `kernel-tabs-list`/`kernel-tab`/`kernel-tab-panel`)
+- Data Display: `kernel-accordion` (+ `kernel-accordion-item`), `kernel-carousel` (+ `kernel-carousel-slide`), `kernel-data-table`, `kernel-date-picker`, `kernel-date-range-picker`, `kernel-table` (+ `kernel-table-header`/`-body`/`-row`/`-head`/`-cell`/`-caption`)
+- AI: `kernel-composer`, `kernel-reasoning`, `kernel-thinking-indicator`
+
+## Where to look for exact attributes
+
+This file is a map, not the source of truth. Every component class has a
+JSDoc comment listing its exact observed attributes (search
+`dist/index.d.ts` for the tag's class, e.g. `KernelTextField`, or read
+the source under `src/components/<Name>/<Name>.ts`). If this package was
+installed alongside the project's docs site, `/labs/elements` runs every
+tag live with zero React on the page.

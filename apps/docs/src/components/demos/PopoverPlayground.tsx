@@ -24,6 +24,20 @@ function code(values: PlaygroundValues) {
 </Popover>`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  return `<kernel-popover ${attrs.join(" ")}>
+  <kernel-button slot="trigger" variant="secondary">${values.trigger || "Distance"}</kernel-button>
+  <kernel-radio-group label="Distance from me" value="5">
+    <kernel-radio-group-item value="1">Within 1 mile</kernel-radio-group-item>
+    <kernel-radio-group-item value="5">Within 5 miles</kernel-radio-group-item>
+    <kernel-radio-group-item value="10">Within 10 miles</kernel-radio-group-item>
+    <kernel-radio-group-item value="any">Any distance</kernel-radio-group-item>
+  </kernel-radio-group>
+</kernel-popover>`;
+}
+
 export default function PopoverPlayground() {
   const [distance, setDistance] = useState("5");
 
@@ -31,6 +45,7 @@ export default function PopoverPlayground() {
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Popover
           placement={values.placement as "top" | "bottom" | "left" | "right"}

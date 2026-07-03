@@ -9,13 +9,16 @@ const controls = [
     options: ["overview", "activity", "settings"],
     default: "overview",
   },
+  { type: "boolean" as const, prop: "disabled", label: "disable 'activity' tab", default: false },
 ];
 
 function code(values: PlaygroundValues) {
+  const activityAttrs = [`value="activity"`];
+  if (values.disabled) activityAttrs.push("disabled");
   return `<Tabs defaultValue="${values.defaultValue}">
   <TabsList aria-label="Project sections">
     <Tab value="overview">Overview</Tab>
-    <Tab value="activity">Activity</Tab>
+    <Tab ${activityAttrs.join(" ")}>Activity</Tab>
     <Tab value="settings">Settings</Tab>
   </TabsList>
   <TabPanel value="overview">A summary of the project.</TabPanel>
@@ -25,10 +28,12 @@ function code(values: PlaygroundValues) {
 }
 
 function elementsCode(values: PlaygroundValues) {
+  const activityAttrs = [`value="activity"`];
+  if (values.disabled) activityAttrs.push("disabled");
   return `<kernel-tabs default-value="${values.defaultValue}">
   <kernel-tabs-list aria-label="Project sections">
     <kernel-tab value="overview">Overview</kernel-tab>
-    <kernel-tab value="activity">Activity</kernel-tab>
+    <kernel-tab ${activityAttrs.join(" ")}>Activity</kernel-tab>
     <kernel-tab value="settings">Settings</kernel-tab>
   </kernel-tabs-list>
   <kernel-tab-panel value="overview">A summary of the project.</kernel-tab-panel>
@@ -48,7 +53,9 @@ export default function TabsPlayground() {
           <Tabs defaultValue={String(values.defaultValue)} key={String(values.defaultValue)}>
             <TabsList aria-label="Project sections">
               <Tab value="overview">Overview</Tab>
-              <Tab value="activity">Activity</Tab>
+              <Tab value="activity" disabled={Boolean(values.disabled)}>
+                Activity
+              </Tab>
               <Tab value="settings">Settings</Tab>
             </TabsList>
             <TabPanel value="overview">A summary of the project.</TabPanel>

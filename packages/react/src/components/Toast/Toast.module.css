@@ -153,9 +153,9 @@
   scale: 0.96;
 }
 
-/* Same "tint the whole surface" convention Alert already uses for
+/* Same "tint the whole surface" convention Callout already uses for
    this exact variant set, rather than a thin border-left accent —
-   Toast and Alert are the same status-communication language, they
+   Toast and Callout are the same status-communication language, they
    should read as one. */
 .toast[data-variant="success"] {
   background-color: var(--kernel-color-success-subtle);
@@ -172,9 +172,9 @@
   border-color: var(--kernel-color-danger);
 }
 
-/* Same filled-badge convention as Alert's `.icon` (see the variant-colour
+/* Same filled-badge convention as Callout's `.icon` (see the variant-colour
    comment above) — sized down slightly since Toast's type scale is one
-   step smaller than Alert's. */
+   step smaller than Callout's. */
 .icon {
   flex-shrink: 0;
   display: inline-flex;

@@ -12,21 +12,22 @@ const frameworks = [
 const controls = [
   { type: "text" as const, prop: "label", default: "Framework" },
   { type: "text" as const, prop: "placeholder", default: "Search frameworks…" },
+  { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
 ];
 
 function code(values: PlaygroundValues) {
-  return `<Combobox
-  label="${values.label}"
-  options={frameworks}
-  placeholder="${values.placeholder}"
-/>`;
+  const attrs: string[] = [`label="${values.label}"`, "options={frameworks}", `placeholder="${values.placeholder}"`];
+  if (values.hideLabel) attrs.push("hideLabel");
+  return `<Combobox\n  ${attrs.join("\n  ")}\n/>`;
 }
 
 function elementsCode(values: PlaygroundValues) {
   const options = frameworks
     .map((framework) => `  <option value="${framework.value}">${framework.label}</option>`)
     .join("\n");
-  return `<kernel-combobox label="${values.label}" placeholder="${values.placeholder}">\n${options}\n</kernel-combobox>`;
+  const attrs: string[] = [`label="${values.label}"`, `placeholder="${values.placeholder}"`];
+  if (values.hideLabel) attrs.push("hide-label");
+  return `<kernel-combobox ${attrs.join(" ")}>\n${options}\n</kernel-combobox>`;
 }
 
 export default function ComboboxPlayground() {
@@ -41,6 +42,7 @@ export default function ComboboxPlayground() {
             label={String(values.label)}
             options={frameworks}
             placeholder={String(values.placeholder)}
+            hideLabel={Boolean(values.hideLabel)}
           />
         </div>
       )}

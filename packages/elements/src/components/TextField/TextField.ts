@@ -11,9 +11,11 @@ let textFieldCounter = 0;
  * the user has touched the field. Mirrors `@kernelui/react`'s
  * `<TextField>`.
  *
- * Attributes: `label` (required), `description`, `error-message`,
- * `invalid`, `required`, `disabled`, `size` (sm/md/lg, default md),
- * `type` (default text), `placeholder`, `value`, `name`.
+ * Attributes: `label` (required, still the input's accessible name even
+ * when `hide-label` is set), `hide-label` (boolean — visually hides the
+ * label without removing it from the accessibility tree), `description`,
+ * `error-message`, `invalid`, `required`, `disabled`, `size` (sm/md/lg,
+ * default md), `type` (default text), `placeholder`, `value`, `name`.
  */
 export class KernelTextField extends KernelElement {
   private readonly generatedId = `kernel-text-field-${++textFieldCounter}`;
@@ -21,6 +23,7 @@ export class KernelTextField extends KernelElement {
   static get observedAttributes() {
     return [
       "label",
+      "hide-label",
       "description",
       "error-message",
       "invalid",
@@ -129,6 +132,9 @@ export class KernelTextField extends KernelElement {
       case "required":
         input.required = value !== null;
         this.syncAttr("label", this.getAttribute("label"));
+        break;
+      case "hide-label":
+        label.classList.toggle("kernel-sr-only", value !== null);
         break;
       case "disabled":
         input.disabled = value !== null;

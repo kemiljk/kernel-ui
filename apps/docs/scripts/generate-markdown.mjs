@@ -10,7 +10,9 @@ import { readFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "node-html-parser";
 
-const componentsDir = path.join(import.meta.dirname, "..", "dist", "components");
+const distDir = path.join(import.meta.dirname, "..", "dist");
+const componentsDir = path.join(distDir, "components");
+const guideSlugs = ["installation", "theming", "platforms"];
 
 function inlineToMarkdown(node) {
   let out = "";
@@ -61,12 +63,15 @@ function tableToMarkdown(table) {
   return lines.join("\n");
 }
 
-function usageAccordionToMarkdown(details) {
-  const pre = details.querySelector("pre.astro-code");
-  if (!pre) return "";
+function codeBlockToMarkdown(pre) {
   const lang = pre.getAttribute("data-language") ?? "tsx";
   const code = pre.querySelector("code")?.text ?? "";
-  return `## Usage\n\n\`\`\`${lang}\n${code}\n\`\`\`\n`;
+  return `\`\`\`${lang}\n${code}\n\`\`\`\n`;
+}
+
+function usageAccordionToMarkdown(details) {
+  const pre = details.querySelector("pre.astro-code");
+  return pre ? `## Usage\n\n${codeBlockToMarkdown(pre)}` : "";
 }
 
 function blockToMarkdown(node) {
@@ -93,6 +98,8 @@ function blockToMarkdown(node) {
         .join("\n");
     case "table":
       return tableToMarkdown(node);
+    case "pre":
+      return classList?.contains("astro-code") ? codeBlockToMarkdown(node) : "";
     case "details":
       return classList?.contains("usage-accordion") ? usageAccordionToMarkdown(node) : "";
     case "div":
@@ -111,6 +118,28 @@ function proseToMarkdown(prose) {
   return `${parts.join("\n\n").replace(/\n{3,}/g, "\n\n").trim()}\n`;
 }
 
+/** Scrapes one already-built page's `.docs-prose` subtree into markdown.
+ * `htmlPath` is the built `index.html`; returns `null` if the page
+ * doesn't exist or never rendered a `.docs-prose` (nothing to mirror). */
+async function scrapeProse(htmlPath) {
+  let html;
+  try {
+    html = await readFile(htmlPath, "utf-8");
+  } catch {
+    return null;
+  }
+  // `pre` is one of node-html-parser's default "block text" elements
+  // (raw, unparsed content, like `script`/`style`) — Shiki's syntax
+  // highlighting wraps each token in nested `<span>`s inside `<pre>`,
+  // so the default behaviour leaves `<code>` unparsed and the actual
+  // source text unreachable. Omitting `pre` from this list (not
+  // setting it to `false` — the key's mere presence is what matters,
+  // not its value) is what turns normal element parsing back on.
+  const root = parse(html, { blockTextElements: { script: true, noscript: true, style: true } });
+  const prose = root.querySelector(".docs-prose");
+  return prose ? proseToMarkdown(prose) : null;
+}
+
 async function main() {
   let slugs;
   try {
@@ -121,30 +150,56 @@ async function main() {
     console.warn("[generate-markdown] dist/components not found — skipping");
     return;
   }
+  slugs.sort((a, b) => a.localeCompare(b));
 
-  let written = 0;
+  const components = [];
   for (const slug of slugs) {
-    const htmlPath = path.join(componentsDir, slug, "index.html");
-    let html;
-    try {
-      html = await readFile(htmlPath, "utf-8");
-    } catch {
-      continue;
-    }
-    // `pre` is one of node-html-parser's default "block text" elements
-    // (raw, unparsed content, like `script`/`style`) — Shiki's syntax
-    // highlighting wraps each token in nested `<span>`s inside `<pre>`,
-    // so the default behaviour leaves `<code>` unparsed and the actual
-    // source text unreachable. Omitting `pre` from this list (not
-    // setting it to `false` — the key's mere presence is what matters,
-    // not its value) is what turns normal element parsing back on.
-    const root = parse(html, { blockTextElements: { script: true, noscript: true, style: true } });
-    const prose = root.querySelector(".docs-prose");
-    if (!prose) continue;
-    await writeFile(path.join(componentsDir, `${slug}.md`), proseToMarkdown(prose), "utf-8");
-    written++;
+    const markdown = await scrapeProse(path.join(componentsDir, slug, "index.html"));
+    if (!markdown) continue;
+    await writeFile(path.join(componentsDir, `${slug}.md`), markdown, "utf-8");
+    components.push({ slug, markdown });
   }
-  console.log(`[generate-markdown] wrote ${written} markdown mirror(s) to dist/components/*.md`);
+
+  const guides = [];
+  for (const slug of guideSlugs) {
+    const markdown = await scrapeProse(path.join(distDir, slug, "index.html"));
+    if (!markdown) continue;
+    await writeFile(path.join(distDir, `${slug}.md`), markdown, "utf-8");
+    guides.push({ slug, markdown });
+  }
+
+  // The `llms.txt` convention (llmstxt.org): a short, curated index an
+  // agent can fetch in one request to decide what to read next, rather
+  // than crawling the whole rendered site. Titles come from each page's
+  // own first line (`# Name`, already written by `proseToMarkdown`)
+  // instead of re-deriving them from the slug, so this can never drift
+  // from what the page itself says its name is.
+  const titleOf = (markdown) => markdown.match(/^# (.+)$/m)?.[1]?.trim() ?? "";
+  const indexLines = [
+    "# Kernel UI",
+    "",
+    "> A component library built on real semantic HTML instead of div soup: every component wraps a genuine native element or a documented ARIA pattern, ships as both a React package (`@kernelui/react`) and framework-free Web Components (`@kernelui/elements`), and follows one consistent prop convention throughout (`value`/`defaultValue`/`onValueChange`, `label`/`description`/`errorMessage`/`invalid`, `hideLabel`, `className`/`wrapperClassName`).",
+    "",
+    "## Guides",
+    "",
+    ...guides.map(({ slug, markdown }) => `- [${titleOf(markdown)}](/${slug}.md)`),
+    "",
+    "## Components",
+    "",
+    ...components.map(({ slug, markdown }) => `- [${titleOf(markdown)}](/components/${slug}.md)`),
+    "",
+  ];
+  await writeFile(path.join(distDir, "llms.txt"), indexLines.join("\n"), "utf-8");
+
+  // Same content, concatenated into one file — for an agent that wants
+  // the whole library in a single request instead of one fetch per
+  // component, at the cost of a much larger response.
+  const fullParts = [...guides, ...components].map(({ markdown }) => markdown.trim());
+  await writeFile(path.join(distDir, "llms-full.txt"), `${fullParts.join("\n\n---\n\n")}\n`, "utf-8");
+
+  console.log(
+    `[generate-markdown] wrote ${components.length} component + ${guides.length} guide markdown mirror(s), plus llms.txt and llms-full.txt`,
+  );
 }
 
 await main();

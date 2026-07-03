@@ -1,4 +1,4 @@
-.kernel-Alert-root {
+.kernel-Callout-root {
   display: flex;
   gap: var(--kernel-space-3);
   padding: var(--kernel-space-4);
@@ -8,7 +8,7 @@
   font-size: var(--kernel-font-size-sm);
 }
 
-.kernel-Alert-icon {
+.kernel-Callout-icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -20,49 +20,49 @@
   font-weight: 700;
 }
 
-.kernel-Alert-title {
+.kernel-Callout-title {
   margin: 0 0 var(--kernel-space-1);
   font-weight: 600;
   line-height: var(--kernel-line-height-tight);
   color: var(--kernel-color-text);
 }
 
-.kernel-Alert-body {
+.kernel-Callout-body {
   color: var(--kernel-color-text-muted);
 }
 
-.kernel-Alert-root[data-variant="info"] {
+.kernel-Callout-root[data-variant="info"] {
   background-color: var(--kernel-color-accent-subtle);
   border-color: var(--kernel-accent-6);
 }
-.kernel-Alert-root[data-variant="info"] .kernel-Alert-icon {
+.kernel-Callout-root[data-variant="info"] .kernel-Callout-icon {
   background-color: var(--kernel-accent-9);
   color: var(--kernel-color-on-accent);
 }
 
-.kernel-Alert-root[data-variant="success"] {
+.kernel-Callout-root[data-variant="success"] {
   background-color: var(--kernel-color-success-subtle);
   border-color: var(--kernel-color-success);
 }
-.kernel-Alert-root[data-variant="success"] .kernel-Alert-icon {
+.kernel-Callout-root[data-variant="success"] .kernel-Callout-icon {
   background-color: var(--kernel-color-success);
   color: var(--kernel-color-on-success);
 }
 
-.kernel-Alert-root[data-variant="warning"] {
+.kernel-Callout-root[data-variant="warning"] {
   background-color: var(--kernel-color-warning-subtle);
   border-color: var(--kernel-color-warning);
 }
-.kernel-Alert-root[data-variant="warning"] .kernel-Alert-icon {
+.kernel-Callout-root[data-variant="warning"] .kernel-Callout-icon {
   background-color: var(--kernel-color-warning);
   color: var(--kernel-color-on-warning);
 }
 
-.kernel-Alert-root[data-variant="danger"] {
+.kernel-Callout-root[data-variant="danger"] {
   background-color: var(--kernel-color-danger-subtle);
   border-color: var(--kernel-color-danger);
 }
-.kernel-Alert-root[data-variant="danger"] .kernel-Alert-icon {
+.kernel-Callout-root[data-variant="danger"] .kernel-Callout-icon {
   background-color: var(--kernel-color-danger);
   color: var(--kernel-color-on-danger);
 }

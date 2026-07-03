@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import FileUploadDemo from "../../components/demos/FileUploadDemo";
+import FileUploadPlayground from "../../components/demos/FileUploadPlayground";
+---
+
+<BaseLayout title="File Upload" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>File Upload</h1>
+    <p>
+      A real <code>&lt;input type="file"&gt;</code>, wrapped entirely inside a
+      real <code>&lt;label&gt;</code> that IS the drop zone — the whole
+      padded area is natively clickable, no <code>.click()</code>
+      forwarding needed. Drag-and-drop is a progressive enhancement on top
+      of that: the native element has none, and <code>accept</code> only
+      filters the OS dialog, never a drop, so both are reimplemented once
+      and reused by whichever path a file actually arrives through. The
+      real input stays authoritative either way — dropped files are
+      re-assigned onto its own <code>.files</code> via a fresh{" "}
+      <code>DataTransfer</code>, so it still participates correctly in a
+      plain, non-JS <code>&lt;form&gt;</code> submission.
+    </p>
+
+    <div class="docs-example">
+      <FileUploadDemo client:load />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <FileUploadPlayground client:load />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>hideLabel</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>files</code></td><td>File[]</td><td>—</td></tr>
+        <tr><td><code>defaultFiles</code></td><td>File[]</td><td>[]</td></tr>
+        <tr><td><code>accept</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>multiple</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>maxFiles</code></td><td>number</td><td>—</td></tr>
+        <tr><td><code>maxSize</code></td><td>number (bytes)</td><td>—</td></tr>
+        <tr><td><code>onError</code></td><td>{"(error) => void"}</td><td>—</td></tr>
+        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Rejections (wrong type, over <code>maxSize</code>, or over{" "}
+      <code>maxFiles</code>) reject the whole attempted batch and call{" "}
+      <code>onError</code> rather than silently keeping only some of what
+      was dropped. Dropping accumulates onto the existing selection;
+      re-opening the OS picker still replaces it, the same as the native
+      element's own behaviour — that inconsistency comes from the browser,
+      not from this wrapper.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Drag-and-drop is a progressive enhancement only: Tab to the drop zone, Enter or Space opens the native OS dialog, fully usable with zero pointer/drag involvement.</li>
+      <li>Each file's remove button gets <code>aria-label="Remove {"{filename}"}"</code> since it's otherwise an icon-only control.</li>
+      <li>Rejected files go through the same <code>role="alert"</code> error region as every other Kernel form field's <code>errorMessage</code>.</li>
+    </ul>
+  </div>
+</BaseLayout>

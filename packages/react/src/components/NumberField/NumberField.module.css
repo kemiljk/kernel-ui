@@ -1,0 +1,160 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+  /* Lines up with the input's own text — see --kernel-label-inset in
+     packages/styles/tokens.css. */
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.required {
+  color: var(--kernel-color-danger);
+  margin-inline-start: var(--kernel-space-1);
+}
+
+.controlRow {
+  position: relative;
+  display: flex;
+}
+
+.input {
+  flex: 1;
+  inline-size: 100%;
+  min-inline-size: 0;
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  padding-inline: var(--kernel-space-3) calc(var(--kernel-space-unit) * 7);
+  transition:
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
+
+  /* The custom stepper buttons beside this replace the native spinner
+     arrows, not sit alongside them. */
+  appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.root[data-size="sm"] .input {
+  block-size: calc(var(--kernel-space-unit) * 8);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.root[data-size="md"] .input {
+  block-size: calc(var(--kernel-space-unit) * 10);
+  font-size: var(--kernel-font-size-base);
+}
+
+.root[data-size="lg"] .input {
+  block-size: calc(var(--kernel-space-unit) * 12);
+  font-size: var(--kernel-font-size-lg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .input:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.input:user-invalid {
+  border-color: var(--kernel-color-danger);
+}
+
+.root[data-invalid] .input {
+  border-color: var(--kernel-color-danger);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--kernel-color-canvas);
+}
+
+/* Nested concentrically inside the input's own rounded end corner —
+   inner_radius = outer_radius - border, the same relationship every
+   other nested-radius pair in this codebase uses. */
+.stepper {
+  position: absolute;
+  inset-block: var(--kernel-border-width);
+  inset-inline-end: var(--kernel-border-width);
+  display: flex;
+  flex-direction: column;
+  inline-size: calc(var(--kernel-space-unit) * 6);
+  border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
+  border-end-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
+  overflow: hidden;
+}
+
+.stepperButton {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.stepperButton:first-child {
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.stepperButton svg {
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stepperButton:hover:not(:disabled) {
+    background-color: var(--kernel-color-surface-raised);
+    color: var(--kernel-color-text);
+  }
+}
+
+.stepperButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.stepperButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
+}

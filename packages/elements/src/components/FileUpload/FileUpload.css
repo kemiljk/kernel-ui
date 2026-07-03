@@ -1,0 +1,139 @@
+.kernel-FileUpload-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.kernel-FileUpload-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-6) var(--kernel-space-8);
+  border: var(--kernel-border-width) dashed var(--kernel-color-border-interactive);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-surface);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-FileUpload-dropzone:hover {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-FileUpload-dropzone[data-drag-active] {
+  border-color: var(--kernel-color-accent);
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.kernel-FileUpload-root[data-invalid] .kernel-FileUpload-dropzone {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-FileUpload-dropzone:has(.kernel-FileUpload-input:focus-visible) {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-FileUpload-icon {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-FileUpload-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+}
+
+.kernel-FileUpload-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 600;
+  color: var(--kernel-color-text);
+}
+
+.kernel-FileUpload-hint {
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-FileUpload-input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.kernel-FileUpload-fileList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kernel-FileUpload-fileItem {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-FileUpload-fileName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kernel-color-text);
+}
+
+.kernel-FileUpload-fileSize {
+  flex-shrink: 0;
+  color: var(--kernel-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.kernel-FileUpload-remove {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: none;
+  padding: 0;
+  border-radius: var(--kernel-radius-full);
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-FileUpload-remove:hover {
+    background-color: var(--kernel-color-danger-subtle);
+    color: var(--kernel-color-danger-text);
+  }
+}
+
+.kernel-FileUpload-remove:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}

@@ -11,6 +11,9 @@ export interface SelectState {
 export interface SelectProps
   extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "className"> {
   label: ReactNode;
+  /** Visually hides the label without removing it from the accessibility
+   * tree — see `TextField`'s `hideLabel` for the full rationale. */
+  hideLabel?: boolean;
   description?: ReactNode;
   errorMessage?: ReactNode;
   invalid?: boolean;
@@ -28,6 +31,7 @@ export interface SelectProps
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
   {
     label,
+    hideLabel = false,
     description,
     errorMessage,
     invalid = false,
@@ -55,7 +59,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   return (
     <div className={styles.root} data-invalid={dataAttr(invalid)} data-disabled={dataAttr(disabled)}>
-      <label className={styles.label} htmlFor={selectId}>
+      <label
+        className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+          .filter(Boolean)
+          .join(" ")}
+        htmlFor={selectId}
+      >
         {label}
         {required ? (
           <span className={styles.required} aria-hidden="true">

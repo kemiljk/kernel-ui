@@ -1,0 +1,145 @@
+.kernel-NumberField-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.kernel-NumberField-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.kernel-NumberField-controlRow {
+  position: relative;
+  display: flex;
+}
+
+.kernel-NumberField-input {
+  flex: 1;
+  inline-size: 100%;
+  min-inline-size: 0;
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  padding-inline: var(--kernel-space-3) calc(var(--kernel-space-unit) * 7);
+  transition:
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
+  appearance: textfield;
+}
+
+.kernel-NumberField-root[data-size="sm"] .kernel-NumberField-input {
+  block-size: calc(var(--kernel-space-unit) * 8);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-NumberField-root[data-size="md"] .kernel-NumberField-input {
+  block-size: calc(var(--kernel-space-unit) * 10);
+  font-size: var(--kernel-font-size-base);
+}
+
+.kernel-NumberField-root[data-size="lg"] .kernel-NumberField-input {
+  block-size: calc(var(--kernel-space-unit) * 12);
+  font-size: var(--kernel-font-size-lg);
+}
+
+.kernel-NumberField-input::-webkit-outer-spin-button,
+.kernel-NumberField-input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-NumberField-input:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-NumberField-input:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-NumberField-input:user-invalid {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-NumberField-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--kernel-color-canvas);
+}
+
+.kernel-NumberField-root[data-invalid] .kernel-NumberField-input {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-NumberField-stepper {
+  position: absolute;
+  inset-block: var(--kernel-border-width);
+  inset-inline-end: var(--kernel-border-width);
+  display: flex;
+  flex-direction: column;
+  inline-size: calc(var(--kernel-space-unit) * 6);
+  border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
+  border-end-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
+  overflow: hidden;
+}
+
+.kernel-NumberField-stepperButton {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-NumberField-stepperButton:first-child {
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.kernel-NumberField-stepperButton svg {
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-NumberField-stepperButton:hover:not(:disabled) {
+    background-color: var(--kernel-color-surface-raised);
+    color: var(--kernel-color-text);
+  }
+}
+
+.kernel-NumberField-stepperButton:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.kernel-NumberField-stepperButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.kernel-NumberField-description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-NumberField-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+}

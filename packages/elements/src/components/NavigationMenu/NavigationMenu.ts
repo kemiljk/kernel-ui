@@ -71,9 +71,13 @@ const CHEVRON_PATH = "M4 6L8 10L12 6";
  * submenu. Opens its sibling `<kernel-nav-menu-content>` via
  * `popovertarget`, click-based (not hover-only) so it behaves the same
  * on touch. Must be a child of the same `<kernel-nav-menu-item>` as
- * its content. */
+ * its content. Attributes: `disabled`. */
 export class KernelNavMenuTrigger extends KernelElement {
   private readonly positioner = new FloatingPositioner();
+
+  static get observedAttributes() {
+    return ["disabled"];
+  }
 
   protected createNative(): HTMLElement {
     const button = document.createElement("button");
@@ -125,6 +129,12 @@ export class KernelNavMenuTrigger extends KernelElement {
       button.setAttribute("aria-expanded", String(open));
       this.positioner.setOpen(open);
     });
+  }
+
+  protected syncAttr(name: string, value: string | null) {
+    const button = this.native as HTMLButtonElement | null;
+    if (!button) return;
+    if (name === "disabled") button.disabled = value !== null;
   }
 }
 

@@ -9,6 +9,7 @@
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .kernel-Textarea-required {

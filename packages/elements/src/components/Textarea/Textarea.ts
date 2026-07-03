@@ -10,8 +10,10 @@ let textareaCounter = 0;
  * property isn't supported yet). Mirrors `@kernelui/react`'s
  * `<Textarea>`.
  *
- * Attributes: `label` (required), `description`, `error-message`,
- * `invalid`, `required`, `disabled`, `placeholder`, `value`, `name`.
+ * Attributes: `label` (required, still the accessible name even when
+ * `hide-label` is set), `hide-label` (boolean), `description`,
+ * `error-message`, `invalid`, `required`, `disabled`, `placeholder`,
+ * `value`, `name`.
  */
 export class KernelTextarea extends KernelElement {
   private readonly generatedId = `kernel-textarea-${++textareaCounter}`;
@@ -19,6 +21,7 @@ export class KernelTextarea extends KernelElement {
   static get observedAttributes() {
     return [
       "label",
+      "hide-label",
       "description",
       "error-message",
       "invalid",
@@ -124,6 +127,9 @@ export class KernelTextarea extends KernelElement {
       case "required":
         textarea.required = value !== null;
         this.syncAttr("label", this.getAttribute("label"));
+        break;
+      case "hide-label":
+        label.classList.toggle("kernel-sr-only", value !== null);
         break;
       case "disabled":
         textarea.disabled = value !== null;

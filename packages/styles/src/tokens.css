@@ -277,6 +277,17 @@
     --kernel-radius-container: calc(var(--kernel-radius-md) + var(--kernel-padding-container));
     --kernel-radius-sheet: calc(var(--kernel-radius-md) + var(--kernel-padding-sheet));
 
+    /* Matches the fixed inline padding every text-bearing field already
+       uses for its own value/placeholder text (TextField, Textarea,
+       Select, Combobox, TagInput all pad with --kernel-space-3), so a
+       field's <label> lines up with where its actual text starts
+       instead of the field's literal inline-start edge — true
+       regardless of --kernel-radius-control, since that padding never
+       changes with corner rounding. Not applied to ColorPicker: its
+       label sits above a swatch, not read-as-text field content, so
+       "where the text starts" doesn't apply there. */
+    --kernel-label-inset: var(--kernel-space-3);
+
     --kernel-border-width: 1px;
 
     /* ---------------------------------------------------------------- */

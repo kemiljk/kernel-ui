@@ -16,7 +16,8 @@
     "./styles.css": "./dist/kernel.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "sideEffects": true,
   "dependencies": {

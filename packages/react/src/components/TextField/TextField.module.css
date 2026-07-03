@@ -10,6 +10,10 @@
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
+  /* Lines up with the input's own text — see --kernel-label-inset in
+     packages/styles/tokens.css. Zero in Sharp mode, so this never
+     shifts a square-cornered field's label unnecessarily. */
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .required {
@@ -73,10 +77,12 @@
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .error {
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
 }

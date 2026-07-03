@@ -1,0 +1,57 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TagInputDemo from "../../components/demos/TagInputDemo";
+import TagInputPlayground from "../../components/demos/TagInputPlayground";
+---
+
+<BaseLayout title="Tag Input" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Tag Input</h1>
+    <p>
+      No native element for this — freeform text that commits into discrete
+      tags. <code>role="list"</code> wraps <code>role="listitem"</code> chips
+      plus a trailing <code>listitem</code> text input, deliberately lighter
+      than a full <code>listbox</code>/<code>grid</code>: there's no
+      selection or arrow-key navigation model here, just insertion and
+      removal. Deliberately simpler than <a href="/components/combobox/">Combobox</a> —
+      no autocomplete or suggestion dropdown in this version.
+    </p>
+
+    <div class="docs-example">
+      <TagInputDemo client:load />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <TagInputPlayground client:load />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>hideLabel</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>value</code></td><td>string[]</td><td>—</td></tr>
+        <tr><td><code>defaultValue</code></td><td>string[]</td><td>[]</td></tr>
+        <tr><td><code>delimiters</code></td><td>string[]</td><td>[","]</td></tr>
+        <tr><td><code>max</code></td><td>number</td><td>—</td></tr>
+        <tr><td><code>allowDuplicates</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>onError</code></td><td>{"(error) => void"}</td><td>—</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Each tag's remove button gets <code>aria-label="Remove {"{tag}"}"</code> since it's an icon-only control.</li>
+      <li>Backspace on an empty draft removes the last tag and keeps focus in the text field — a real feature, not self-discoverable from ARIA alone, so it's called out here in prose too.</li>
+      <li>Remove buttons are real <code>&lt;button&gt;</code> elements but excluded from the Tab sequence (<code>tabIndex={"{-1}"}</code>) — an intentional tradeoff so a field with many tags doesn't add one Tab stop per tag; Backspace already covers the fully-keyboard-only removal flow, and mouse/touch users can still click a specific tag's remove button directly.</li>
+      <li>Pasting comma- or newline-separated text splits into multiple tags at once.</li>
+    </ul>
+  </div>
+</BaseLayout>

@@ -11,15 +11,27 @@ let sliderCounter = 0;
  * back in as a CSS custom property (`--percent`), the same hand-off
  * `@kernelui/react`'s `<Slider>` does.
  *
- * Attributes: `label` (required), `value` (default 0), `min` (default
- * 0), `max` (default 100), `step` (default 1), `show-value` (boolean —
- * shows the current number next to the label), `disabled`, `name`.
+ * Attributes: `label` (required, still the accessible name even when
+ * `hide-label` is set), `hide-label` (boolean), `value` (default 0),
+ * `min` (default 0), `max` (default 100), `step` (default 1),
+ * `show-value` (boolean — shows the current number next to the label),
+ * `disabled`, `name`.
  */
 export class KernelSlider extends KernelElement {
   private readonly generatedId = `kernel-slider-${++sliderCounter}`;
 
   static get observedAttributes() {
-    return ["label", "value", "min", "max", "step", "show-value", "disabled", "name"];
+    return [
+      "label",
+      "hide-label",
+      "value",
+      "min",
+      "max",
+      "step",
+      "show-value",
+      "disabled",
+      "name",
+    ];
   }
 
   connectedCallback() {
@@ -92,6 +104,11 @@ export class KernelSlider extends KernelElement {
       case "label": {
         const label = this.native?.querySelector("label");
         if (label) label.textContent = value ?? "";
+        break;
+      }
+      case "hide-label": {
+        const label = this.native?.querySelector("label");
+        label?.classList.toggle("kernel-sr-only", value !== null);
         break;
       }
       case "value":

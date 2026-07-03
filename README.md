@@ -8,17 +8,27 @@ See [`ROADMAP.md`](./ROADMAP.md) for the architecture decisions, the full compon
 
 ## Packages
 
-- `packages/react` — `@kernelui/react`, the component library.
+- `packages/react` — `@kernelui/react`, the component library, for React.
+- `packages/elements` — `@kernelui/elements`, the same design as framework-free Custom Elements (Vue, Svelte, Astro, plain HTML).
 - `packages/styles` — `@kernelui/styles`, the design tokens and baseline theme (CSS variables + Tailwind v4 preset).
 - `apps/docs` — the documentation and playground site, built with Astro.
+
+Both `@kernelui/react` and `@kernelui/elements` ship an `llms.txt` in
+their own package root — a self-contained cheat sheet for an LLM/agent
+working in a project that installed one of them, covering the shared
+prop/attribute conventions and every component with a one-line
+description. The docs site also serves `/llms.txt` (an index) and
+`/llms-full.txt` (every page concatenated), plus a `.md` mirror of every
+individual page (`/components/<slug>.md`), generated from the same
+build that produces the human-facing HTML.
 
 ## Getting started
 
 ```bash
-pnpm install
-pnpm dev        # runs the docs site at localhost:4321
+bun install
+bun run dev     # runs the docs site at localhost:4321
 ```
 
 ## Status
 
-Early days. The core architecture and a first slice of components (Button, Text Field, Checkbox, Switch, Accordion, Dialog) are in place to prove the pattern end to end. See the roadmap for the rest of the day-1 set.
+The core architecture is in place and proven out across 40+ components spanning primitives, forms, layout, feedback, overlays, navigation, data display, and AI-specific components (Reasoning, Composer, ThinkingIndicator). See the roadmap for what's built versus what's next.

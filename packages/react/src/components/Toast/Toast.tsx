@@ -24,7 +24,7 @@ import type { ToastVariant } from "./toastStore";
 export { toast };
 export type { ToastOptions, ToastVariant } from "./toastStore";
 
-/** Same glyph choice as `Alert`, so the two read as one status-communication
+/** Same glyph choice as `Callout`, so the two read as one status-communication
  * language (per Toast.module.css's own variant-colour comment) — `default`
  * gets none, same as Sonner's plain `toast()` having no icon unless a
  * status is actually being reported. */
@@ -49,7 +49,7 @@ const MAX_COLLAPSED_DEPTH = 3;
  * Mount once, anywhere (the end of your root layout is typical). Every
  * toast renders as its own live region: `danger`/`warning` use
  * `role="alert"` (assertive), `default`/`success` use `role="status"`
- * (polite), the same reasoning as `Alert`.
+ * (polite), the same reasoning as `Callout`.
  */
 export function ToastViewport({ className }: ToastViewportProps) {
   const toasts = useSyncExternalStore(subscribeToasts, getToastSnapshot, getToastSnapshot);

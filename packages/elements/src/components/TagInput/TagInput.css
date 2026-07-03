@@ -1,0 +1,111 @@
+.kernel-TagInput-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.kernel-TagInput-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.kernel-TagInput-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  cursor: text;
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-TagInput-field:hover {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-TagInput-field:has(.kernel-TagInput-input:focus-visible) {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-TagInput-root[data-invalid] .kernel-TagInput-field {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-TagInput-description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.kernel-TagInput-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.kernel-TagInput-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  padding-block: 0.15em;
+  padding-inline: var(--kernel-space-2);
+  padding-inline-end: var(--kernel-space-1);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-gray-3);
+  color: var(--kernel-gray-11);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.kernel-TagInput-tagRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1rem;
+  block-size: 1rem;
+  border: none;
+  padding: 0;
+  border-radius: var(--kernel-radius-full);
+  background: none;
+  color: currentColor;
+  opacity: 0.7;
+  cursor: pointer;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-TagInput-tagRemove:hover {
+    opacity: 1;
+    background-color: oklch(0% 0 0 / 0.1);
+  }
+}
+
+.kernel-TagInput-input {
+  flex: 1;
+  min-inline-size: 4rem;
+  border: none;
+  background: none;
+  color: var(--kernel-color-text);
+  font: inherit;
+  padding-block: 0.15em;
+}
+
+.kernel-TagInput-input:disabled {
+  cursor: not-allowed;
+}

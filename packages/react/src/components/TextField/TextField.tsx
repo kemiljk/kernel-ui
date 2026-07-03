@@ -11,9 +11,18 @@ export interface TextFieldState {
 
 export interface TextFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "className" | "size"> {
-  /** Visible label. Always rendered as a real `<label>`, always linked to
-   * the input, never a placeholder standing in for one. */
+  /** Always rendered as a real `<label>`, always linked to the input,
+   * never a placeholder standing in for one — required even when
+   * `hideLabel` is set, since it's still the input's accessible name. */
   label: ReactNode;
+  /** Visually hides the label (a screen-reader-only, `hideLabel`
+   * "removed from the DOM" would produce an unlabeled input, not a
+   * simplified one, so this keeps `label` in the accessibility tree and
+   * only hides its paint. Reach for this when the surrounding UI
+   * already makes the field's purpose obvious (a search bar next to a
+   * magnifying-glass icon, a single-field inline form) — the label
+   * should stay visible by default everywhere else. */
+  hideLabel?: boolean;
   /** Helper text shown below the field when there's no error. */
   description?: ReactNode;
   /** Shown instead of the description, with `role="alert"`, when `invalid`
@@ -36,6 +45,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   function TextField(
     {
       label,
+      hideLabel = false,
       description,
       errorMessage,
       invalid = false,
@@ -72,7 +82,12 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         data-disabled={dataAttr(disabled)}
         data-size={size}
       >
-        <label className={styles.label} htmlFor={inputId}>
+        <label
+          className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+            .filter(Boolean)
+            .join(" ")}
+          htmlFor={inputId}
+        >
           {label}
           {required ? (
             <span className={styles.required} aria-hidden="true">

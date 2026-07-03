@@ -9,6 +9,7 @@
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .required {
@@ -58,12 +59,14 @@
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 .error {
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
 }
 
 @supports not (field-sizing: content) {

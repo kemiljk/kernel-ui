@@ -1,17 +1,16 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import AlertDemo from "../../components/demos/AlertDemo";
-import AlertPlayground from "../../components/demos/AlertPlayground";
-
+import CalloutDemo from "../../components/demos/CalloutDemo";
+import CalloutPlayground from "../../components/demos/CalloutPlayground";
 ---
 
-<BaseLayout title="Alert" withSidebar>
+<BaseLayout title="Callout" withSidebar>
   <DocsSidebar slot="sidebar" />
   <div class="docs-prose">
-    <h1>Alert</h1>
+    <h1>Callout</h1>
     <p>
-      There's no <code>&lt;alert&gt;</code> element, ARIA live-region roles
+      There's no <code>&lt;callout&gt;</code> element, ARIA live-region roles
       are the correct tool for exactly this gap. <code>danger</code>/
       <code>warning</code> interrupt (<code>role="alert"</code>, assertive);
       <code>info</code>/<code>success</code> wait their turn
@@ -19,14 +18,13 @@ import AlertPlayground from "../../components/demos/AlertPlayground";
     </p>
 
     <div class="docs-example" style="flex-direction: column; align-items: stretch;">
-      <AlertDemo client:load />
+      <CalloutDemo client:load />
     </div>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
-    <AlertPlayground client:load />
+    <CalloutPlayground client:load />
 
-    
     <h2>Props</h2>
     <table class="docs-table">
       <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>

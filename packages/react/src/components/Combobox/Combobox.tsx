@@ -12,6 +12,9 @@ export interface ComboboxOption {
 
 export interface ComboboxProps {
   label: ReactNode;
+  /** Visually hides the label without removing it from the accessibility
+   * tree — see `TextField`'s `hideLabel` for the full rationale. */
+  hideLabel?: boolean;
   options: ComboboxOption[];
   value?: string;
   defaultValue?: string;
@@ -32,6 +35,7 @@ export interface ComboboxProps {
  */
 export function Combobox({
   label,
+  hideLabel = false,
   options,
   value,
   defaultValue = "",
@@ -124,7 +128,12 @@ export function Combobox({
 
   return (
     <div className={styles.root} ref={rootRef}>
-      <label htmlFor={id} className={styles.label}>
+      <label
+        htmlFor={id}
+        className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {label}
       </label>
       <input

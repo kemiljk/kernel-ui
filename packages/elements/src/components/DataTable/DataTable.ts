@@ -297,6 +297,20 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     } else if (name === "page-size") {
       this.page = 1;
       this.renderAll();
+    } else if (name === "caption") {
+      const table = this.native.querySelector("table");
+      if (!table) return;
+      let caption = table.querySelector("caption");
+      if (value) {
+        if (!caption) {
+          caption = document.createElement("caption");
+          caption.className = kernelClass("Table", "caption");
+          table.prepend(caption);
+        }
+        caption.textContent = value;
+      } else if (caption) {
+        caption.remove();
+      }
     }
   }
 }

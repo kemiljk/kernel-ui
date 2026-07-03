@@ -1,4 +1,4 @@
-import { Alert } from "@kernelui/react";
+import { Callout } from "@kernelui/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
@@ -20,27 +20,27 @@ const controls = [
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`variant="${values.variant}"`];
   if (values.title) attrs.push(`title="${values.title}"`);
-  return `<Alert ${attrs.join(" ")}>${values.children || ""}</Alert>`;
+  return `<Callout ${attrs.join(" ")}>${values.children || ""}</Callout>`;
 }
 
 function elementsCode(values: PlaygroundValues) {
   const titleSlot = values.title ? `<span slot="title">${values.title}</span>` : "";
-  return `<kernel-alert variant="${values.variant}">${titleSlot}${values.children || ""}</kernel-alert>`;
+  return `<kernel-callout variant="${values.variant}">${titleSlot}${values.children || ""}</kernel-callout>`;
 }
 
-export default function AlertPlayground() {
+export default function CalloutPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
       elementsCode={elementsCode}
       render={(values) => (
-        <Alert
+        <Callout
           variant={values.variant as "info" | "success" | "warning" | "danger"}
           title={String(values.title)}
         >
           {String(values.children)}
-        </Alert>
+        </Callout>
       )}
     />
   );

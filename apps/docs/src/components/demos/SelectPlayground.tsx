@@ -3,16 +3,27 @@ import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
   { type: "text" as const, prop: "label", default: "Country" },
-  { type: "boolean" as const, prop: "required", default: false },
+  { type: "text" as const, prop: "description", default: "Used for shipping estimates." },
   { type: "boolean" as const, prop: "invalid", default: false },
+  {
+    type: "text" as const,
+    prop: "errorMessage",
+    label: "error message",
+    default: "Please choose a country.",
+  },
+  { type: "boolean" as const, prop: "required", default: false },
   { type: "boolean" as const, prop: "disabled", default: false },
+  { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
 ];
 
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label || "Label"}"`];
-  if (values.required) attrs.push("required");
+  if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
+  if (values.errorMessage) attrs.push(`errorMessage="${values.errorMessage}"`);
+  if (values.required) attrs.push("required");
   if (values.disabled) attrs.push("disabled");
+  if (values.hideLabel) attrs.push("hideLabel");
   return `<Select ${attrs.join(" ")}>
   <SelectOption value="uk">United Kingdom</SelectOption>
   <SelectOption value="us">United States</SelectOption>
@@ -25,9 +36,12 @@ function code(values: PlaygroundValues) {
  * <option>/<optgroup> children (see KernelSelect's own doc comment). */
 function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label || "Label"}"`];
-  if (values.required) attrs.push("required");
+  if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
+  if (values.errorMessage) attrs.push(`error-message="${values.errorMessage}"`);
+  if (values.required) attrs.push("required");
   if (values.disabled) attrs.push("disabled");
+  if (values.hideLabel) attrs.push("hide-label");
   return `<kernel-select ${attrs.join(" ")}>
   <option value="uk">United Kingdom</option>
   <option value="us">United States</option>
@@ -44,9 +58,12 @@ export default function SelectPlayground() {
       render={(values) => (
         <Select
           label={String(values.label) || "Label"}
-          required={Boolean(values.required)}
+          description={String(values.description)}
           invalid={Boolean(values.invalid)}
+          errorMessage={String(values.errorMessage)}
+          required={Boolean(values.required)}
           disabled={Boolean(values.disabled)}
+          hideLabel={Boolean(values.hideLabel)}
         >
           <SelectOption value="uk">United Kingdom</SelectOption>
           <SelectOption value="us">United States</SelectOption>

@@ -23,7 +23,7 @@ export { KernelLabel } from "./components/Label/Label";
 export { KernelSeparator } from "./components/Separator/Separator";
 export { KernelProgress } from "./components/Progress/Progress";
 export { KernelSkeleton } from "./components/Skeleton/Skeleton";
-export { KernelAlert } from "./components/Alert/Alert";
+export { KernelCallout } from "./components/Callout/Callout";
 export { KernelBreadcrumbs, KernelBreadcrumbItem } from "./components/Breadcrumbs/Breadcrumbs";
 export {
   KernelPagination,
@@ -103,5 +103,11 @@ export { KernelDataTable } from "./components/DataTable/DataTable";
 export type { KernelDataTableColumn } from "./components/DataTable/DataTable";
 export { KernelDatePicker } from "./components/DatePicker/DatePicker";
 export { KernelDateRangePicker } from "./components/DateRangePicker/DateRangePicker";
+
+// Phase 4 — Forms (new)
+export { KernelColorPicker } from "./components/ColorPicker/ColorPicker";
+export { KernelFileUpload } from "./components/FileUpload/FileUpload";
+export { KernelTagInput } from "./components/TagInput/TagInput";
+export { KernelNumberField } from "./components/NumberField/NumberField";
 
 export { KernelElement, kernelClass, dataAttr } from "./base";

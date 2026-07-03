@@ -3,26 +3,40 @@ import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
   { type: "text" as const, prop: "triggerLabel", label: "trigger text", default: "Actions ▾" },
+  {
+    type: "enum" as const,
+    prop: "placement",
+    options: ["top", "bottom", "left", "right"],
+    default: "bottom",
+  },
+  { type: "boolean" as const, prop: "destructive", label: "delete item destructive", default: true },
+  { type: "boolean" as const, prop: "disabled", label: "duplicate item disabled", default: false },
 ];
 
 function code(values: PlaygroundValues) {
-  return `<DropdownMenu render={<Button variant="secondary">${values.triggerLabel}</Button>}>
+  const attrs: string[] = [];
+  if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  const deleteAttrs: string[] = ["onSelect={() => {}}"];
+  if (values.destructive) deleteAttrs.unshift("destructive");
+  return `<DropdownMenu${attrs.length ? ` ${attrs.join(" ")}` : ""} render={<Button variant="secondary">${values.triggerLabel}</Button>}>
   <MenuItem onSelect={() => {}}>Edit</MenuItem>
-  <MenuItem onSelect={() => {}}>Duplicate</MenuItem>
+  <MenuItem ${values.disabled ? "disabled " : ""}onSelect={() => {}}>Duplicate</MenuItem>
   <MenuSeparator />
-  <MenuItem destructive onSelect={() => {}}>
+  <MenuItem ${deleteAttrs.join(" ")}>
     Delete
   </MenuItem>
 </DropdownMenu>`;
 }
 
 function elementsCode(values: PlaygroundValues) {
-  return `<kernel-dropdown-menu>
+  const attrs: string[] = [];
+  if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  return `<kernel-dropdown-menu${attrs.length ? ` ${attrs.join(" ")}` : ""}>
   <kernel-button slot="trigger" variant="secondary">${values.triggerLabel}</kernel-button>
   <kernel-menu-item>Edit</kernel-menu-item>
-  <kernel-menu-item>Duplicate</kernel-menu-item>
+  <kernel-menu-item${values.disabled ? " disabled" : ""}>Duplicate</kernel-menu-item>
   <kernel-menu-separator></kernel-menu-separator>
-  <kernel-menu-item destructive>Delete</kernel-menu-item>
+  <kernel-menu-item${values.destructive ? " destructive" : ""}>Delete</kernel-menu-item>
 </kernel-dropdown-menu>`;
 }
 
@@ -33,11 +47,16 @@ export default function DropdownMenuPlayground() {
       code={code}
       elementsCode={elementsCode}
       render={(values) => (
-        <DropdownMenu render={<Button variant="secondary">{String(values.triggerLabel)}</Button>}>
+        <DropdownMenu
+          placement={values.placement as "top" | "bottom" | "left" | "right"}
+          render={<Button variant="secondary">{String(values.triggerLabel)}</Button>}
+        >
           <MenuItem onSelect={() => {}}>Edit</MenuItem>
-          <MenuItem onSelect={() => {}}>Duplicate</MenuItem>
+          <MenuItem disabled={Boolean(values.disabled)} onSelect={() => {}}>
+            Duplicate
+          </MenuItem>
           <MenuSeparator />
-          <MenuItem destructive onSelect={() => {}}>
+          <MenuItem destructive={Boolean(values.destructive)} onSelect={() => {}}>
             Delete
           </MenuItem>
         </DropdownMenu>

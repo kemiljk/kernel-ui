@@ -15,8 +15,9 @@ let selectCounter = 0;
  * for arbitrary custom elements, so wrapping them would silently break
  * the one thing this component exists to keep native.
  *
- * Attributes: `label` (required), `description`, `error-message`,
- * `invalid`, `required`, `disabled`, `value`, `name`.
+ * Attributes: `label` (required, still the accessible name even when
+ * `hide-label` is set), `hide-label` (boolean), `description`,
+ * `error-message`, `invalid`, `required`, `disabled`, `value`, `name`.
  */
 export class KernelSelect extends KernelElement {
   private readonly generatedId = `kernel-select-${++selectCounter}`;
@@ -24,6 +25,7 @@ export class KernelSelect extends KernelElement {
   static get observedAttributes() {
     return [
       "label",
+      "hide-label",
       "description",
       "error-message",
       "invalid",
@@ -140,6 +142,9 @@ export class KernelSelect extends KernelElement {
       case "required":
         select.required = value !== null;
         this.syncAttr("label", this.getAttribute("label"));
+        break;
+      case "hide-label":
+        label.classList.toggle("kernel-sr-only", value !== null);
         break;
       case "disabled":
         select.disabled = value !== null;

@@ -114,4 +114,22 @@
     outline: 2px solid var(--kernel-color-focus-ring);
     outline-offset: 2px;
   }
+
+  /* Shared "visually hidden, still in the accessibility tree" utility —
+     every labeled field's `hideLabel`/`hide-label` prop applies this to
+     its own <label> instead of removing it from the DOM. A <label>'s
+     text is still an element's accessible name whether or not it's
+     painted, so hiding it this way (not `display: none`, which strips
+     it from the accessibility tree too) keeps the field correctly
+     labeled for assistive tech while it disappears visually — the
+     same technique @kernelui/react's own FileUpload already uses for
+     its real, unstyled `<input type="file">`. */
+  .kernel-sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }

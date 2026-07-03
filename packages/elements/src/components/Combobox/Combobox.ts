@@ -23,7 +23,8 @@ interface ComboboxOption {
  * as `<kernel-select>`), moved out of the light DOM at connect and
  * rendered as the listbox's own `role="option"` divs.
  *
- * Attributes: `label` (required), `placeholder`, `value`,
+ * Attributes: `label` (required, still the accessible name even when
+ * `hide-label` is set), `hide-label` (boolean), `placeholder`, `value`,
  * `empty-message` (default "No results").
  * Events: `valuechange` (`event.detail.value`).
  */
@@ -41,7 +42,7 @@ export class KernelCombobox extends KernelElement {
   private listboxEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["label", "placeholder", "value"];
+    return ["label", "hide-label", "placeholder", "value"];
   }
 
   connectedCallback() {
@@ -200,6 +201,11 @@ export class KernelCombobox extends KernelElement {
       case "label": {
         const label = this.native.querySelector("label");
         if (label) label.textContent = value ?? "";
+        break;
+      }
+      case "hide-label": {
+        const label = this.native.querySelector("label");
+        label?.classList.toggle("kernel-sr-only", value !== null);
         break;
       }
       case "placeholder":

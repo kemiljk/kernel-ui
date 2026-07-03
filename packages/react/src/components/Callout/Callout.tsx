@@ -1,20 +1,20 @@
 import { forwardRef } from "react";
 import type { HTMLAttributes, ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import styles from "./Alert.module.css";
+import styles from "./Callout.module.css";
 
-export interface AlertState {
+export interface CalloutState {
   variant: "info" | "success" | "warning" | "danger";
 }
 
-export interface AlertProps
+export interface CalloutProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "className" | "title"> {
-  variant?: AlertState["variant"];
+  variant?: CalloutState["variant"];
   title?: ReactNode;
-  className?: ClassNameValue<AlertState>;
+  className?: ClassNameValue<CalloutState>;
 }
 
-const icons: Record<AlertState["variant"], string> = {
+const icons: Record<CalloutState["variant"], string> = {
   info: "ℹ",
   success: "✓",
   warning: "!",
@@ -22,18 +22,18 @@ const icons: Record<AlertState["variant"], string> = {
 };
 
 /**
- * There's no `<alert>` element, ARIA live-region roles are the correct
+ * There's no `<callout>` element, ARIA live-region roles are the correct
  * tool for exactly this gap: content that should be announced to
  * assistive tech as soon as it appears. `danger`/`warning` interrupt
  * (`role="alert"`, assertive); `info`/`success` wait their turn
  * (`role="status"`, polite), matching how urgently each should interrupt
  * someone using a screen reader.
  */
-export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
+export const Callout = forwardRef<HTMLDivElement, CalloutProps>(function Callout(
   { variant = "info", title, children, className, ...rest },
   ref,
 ) {
-  const state: AlertState = { variant };
+  const state: CalloutState = { variant };
   const isUrgent = variant === "danger" || variant === "warning";
 
   return (

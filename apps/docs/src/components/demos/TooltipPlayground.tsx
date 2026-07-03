@@ -19,11 +19,22 @@ function code(values: PlaygroundValues) {
   return `<Tooltip ${attrs.join(" ")} />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.placement !== "top") attrs.push(`placement="${values.placement}"`);
+  const attrString = attrs.length > 0 ? ` ${attrs.join(" ")}` : "";
+  return `<kernel-tooltip${attrString}>
+  <button slot="trigger" type="button">${values.trigger || "Share"}</button>
+  ${values.content}
+</kernel-tooltip>`;
+}
+
 export default function TooltipPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <Tooltip
           content={String(values.content)}

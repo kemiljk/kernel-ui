@@ -6,16 +6,23 @@ import Playground, { type PlaygroundValues } from "../Playground";
 const controls = [
   { type: "text" as const, prop: "triggerLabel", label: "trigger text", default: "Open command palette" },
   { type: "text" as const, prop: "placeholder", default: "Filter commands" },
+  { type: "text" as const, prop: "emptyMessage", label: "empty message", default: "No results" },
 ];
 
 function code(values: PlaygroundValues) {
   return `<Button onClick={() => setOpen(true)}>${values.triggerLabel}</Button>
-<CommandPalette open={open} onOpenChange={setOpen} items={items} placeholder="${values.placeholder}" />`;
+<CommandPalette
+  open={open}
+  onOpenChange={setOpen}
+  items={items}
+  placeholder="${values.placeholder}"
+  emptyMessage="${values.emptyMessage}"
+/>`;
 }
 
 function elementsCode(values: PlaygroundValues) {
   return `<kernel-button id="open-palette">${values.triggerLabel}</kernel-button>
-<kernel-command-palette id="palette" placeholder="${values.placeholder}"></kernel-command-palette>
+<kernel-command-palette id="palette" placeholder="${values.placeholder}" empty-message="${values.emptyMessage}"></kernel-command-palette>
 
 <script type="module">
   const palette = document.getElementById("palette");
@@ -47,6 +54,7 @@ function Stage({ values }: { values: PlaygroundValues }) {
         onOpenChange={setOpen}
         items={items}
         placeholder={String(values.placeholder)}
+        emptyMessage={String(values.emptyMessage)}
       />
     </>
   );

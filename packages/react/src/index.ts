@@ -58,8 +58,8 @@ export type { AvatarProps } from "./components/Avatar/Avatar";
 export { Progress } from "./components/Progress/Progress";
 export type { ProgressProps } from "./components/Progress/Progress";
 
-export { Alert } from "./components/Alert/Alert";
-export type { AlertProps } from "./components/Alert/Alert";
+export { Callout } from "./components/Callout/Callout";
+export type { CalloutProps } from "./components/Callout/Callout";
 
 export { Tabs, TabsList, Tab, TabPanel } from "./components/Tabs/Tabs";
 export type {
@@ -218,6 +218,18 @@ export type { ReasoningProps, ReasoningState } from "./components/Reasoning/Reas
 
 export { ThinkingIndicator } from "./components/ThinkingIndicator/ThinkingIndicator";
 export type { ThinkingIndicatorProps } from "./components/ThinkingIndicator/ThinkingIndicator";
+
+export { ColorPicker } from "./components/ColorPicker/ColorPicker";
+export type { ColorPickerProps, ColorPickerState } from "./components/ColorPicker/ColorPicker";
+
+export { FileUpload } from "./components/FileUpload/FileUpload";
+export type { FileUploadProps, FileUploadState } from "./components/FileUpload/FileUpload";
+
+export { TagInput } from "./components/TagInput/TagInput";
+export type { TagInputProps, TagInputState } from "./components/TagInput/TagInput";
+
+export { NumberField } from "./components/NumberField/NumberField";
+export type { NumberFieldProps, NumberFieldState } from "./components/NumberField/NumberField";
 
 export {
   renderElement,

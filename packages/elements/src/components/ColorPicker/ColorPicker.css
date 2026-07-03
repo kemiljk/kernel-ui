@@ -1,0 +1,128 @@
+.kernel-ColorPicker-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.kernel-ColorPicker-label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.kernel-ColorPicker-controlRow {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+.kernel-ColorPicker-swatchLabel {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: calc(var(--kernel-space-unit) * 10);
+  block-size: calc(var(--kernel-space-unit) * 10);
+  border-radius: var(--kernel-radius-control);
+  cursor: pointer;
+}
+
+.kernel-ColorPicker-root[data-size="sm"] .kernel-ColorPicker-swatchLabel,
+.kernel-ColorPicker-root[data-size="sm"] .kernel-ColorPicker-hexInput {
+  block-size: calc(var(--kernel-space-unit) * 8);
+}
+.kernel-ColorPicker-root[data-size="sm"] .kernel-ColorPicker-swatchLabel {
+  inline-size: calc(var(--kernel-space-unit) * 8);
+}
+
+.kernel-ColorPicker-root[data-size="lg"] .kernel-ColorPicker-swatchLabel,
+.kernel-ColorPicker-root[data-size="lg"] .kernel-ColorPicker-hexInput {
+  block-size: calc(var(--kernel-space-unit) * 12);
+}
+.kernel-ColorPicker-root[data-size="lg"] .kernel-ColorPicker-swatchLabel {
+  inline-size: calc(var(--kernel-space-unit) * 12);
+}
+
+.kernel-ColorPicker-swatch {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--swatch-color, transparent);
+  pointer-events: none;
+}
+
+.kernel-ColorPicker-input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.kernel-ColorPicker-input:disabled {
+  cursor: not-allowed;
+}
+
+.kernel-ColorPicker-swatchLabel:has(.kernel-ColorPicker-input:focus-visible) .kernel-ColorPicker-swatch {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-ColorPicker-hexInput {
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-mono);
+  padding-inline: var(--kernel-space-3);
+  block-size: calc(var(--kernel-space-unit) * 10);
+  inline-size: 8rem;
+  text-transform: lowercase;
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-ColorPicker-root[data-no-hex-input] .kernel-ColorPicker-hexInput {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-ColorPicker-hexInput:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.kernel-ColorPicker-hexInput:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-ColorPicker-hexInput[aria-invalid="true"] {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-ColorPicker-root[data-invalid] .kernel-ColorPicker-swatch {
+  border-color: var(--kernel-color-danger);
+}
+
+.kernel-ColorPicker-description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.kernel-ColorPicker-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.kernel-ColorPicker-hexInput:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--kernel-color-canvas);
+}

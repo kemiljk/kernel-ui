@@ -7,6 +7,7 @@ const controls = [
   { type: "number" as const, prop: "max", default: 100, step: 1 },
   { type: "number" as const, prop: "step", default: 1, min: 1 },
   { type: "boolean" as const, prop: "showValue", default: true },
+  { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
 ];
 
 function code(values: PlaygroundValues) {
@@ -15,6 +16,7 @@ function code(values: PlaygroundValues) {
   if (Number(values.max) !== 100) attrs.push(`max={${Number(values.max)}}`);
   if (Number(values.step) !== 1) attrs.push(`step={${Number(values.step)}}`);
   if (values.showValue) attrs.push("showValue");
+  if (values.hideLabel) attrs.push("hideLabel");
   return `<Slider ${attrs.join(" ")} />`;
 }
 
@@ -24,6 +26,7 @@ function elementsCode(values: PlaygroundValues) {
   if (Number(values.max) !== 100) attrs.push(`max="${Number(values.max)}"`);
   if (Number(values.step) !== 1) attrs.push(`step="${Number(values.step)}"`);
   if (values.showValue) attrs.push("show-value");
+  if (values.hideLabel) attrs.push("hide-label");
   return `<kernel-slider ${attrs.join(" ")}></kernel-slider>`;
 }
 
@@ -42,6 +45,7 @@ export default function SliderPlayground() {
             max={Number(values.max)}
             step={Number(values.step)}
             showValue={Boolean(values.showValue)}
+            hideLabel={Boolean(values.hideLabel)}
           />
         </div>
       )}

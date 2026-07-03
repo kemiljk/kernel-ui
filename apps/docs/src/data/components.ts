@@ -49,14 +49,6 @@ export const components: ComponentEntry[] = [
     status: "available",
   },
   {
-    name: "Alert",
-    category: "Feedback",
-    slug: "alert",
-    element: "role=\"alert\" / role=\"status\"",
-    summary: "Live-region feedback that announces itself.",
-    status: "available",
-  },
-  {
     name: "Avatar",
     category: "Primitives",
     slug: "avatar",
@@ -89,6 +81,14 @@ export const components: ComponentEntry[] = [
     status: "available",
   },
   {
+    name: "Callout",
+    category: "Feedback",
+    slug: "callout",
+    element: "role=\"alert\" / role=\"status\"",
+    summary: "Live-region feedback that announces itself.",
+    status: "available",
+  },
+  {
     name: "Card",
     category: "Layout",
     slug: "card",
@@ -110,6 +110,14 @@ export const components: ComponentEntry[] = [
     slug: "checkbox",
     element: "<input type=\"checkbox\">",
     summary: "Tri-state, styled with :checked and :indeterminate.",
+    status: "available",
+  },
+  {
+    name: "Color Picker",
+    category: "Forms",
+    slug: "color-picker",
+    element: "<input type=\"color\"> + editable hex <input>",
+    summary: "A real colour input, plus a typeable hex field on the same value.",
     status: "available",
   },
   {
@@ -185,6 +193,14 @@ export const components: ComponentEntry[] = [
     status: "available",
   },
   {
+    name: "File Upload",
+    category: "Forms",
+    slug: "file-upload",
+    element: "<label> + <input type=\"file\">",
+    summary: "Drag-and-drop over a real file input, never a replacement for it.",
+    status: "available",
+  },
+  {
     name: "Footer",
     category: "Layout",
     slug: "footer",
@@ -238,6 +254,14 @@ export const components: ComponentEntry[] = [
     slug: "navigation-menu",
     element: "<nav> + nested disclosure",
     summary: "Multi-level site navigation, mega-menu via popover.",
+    status: "available",
+  },
+  {
+    name: "Number Field",
+    category: "Forms",
+    slug: "number-field",
+    element: "<input type=\"number\"> + native stepUp()/stepDown()",
+    summary: "TextField's scaffold, specialised for numbers.",
     status: "available",
   },
   {
@@ -358,6 +382,14 @@ export const components: ComponentEntry[] = [
     slug: "tabs",
     element: "role=\"tablist\"",
     summary: "No native element exists yet, ARIA APG pattern.",
+    status: "available",
+  },
+  {
+    name: "Tag Input",
+    category: "Forms",
+    slug: "tag-input",
+    element: "role=\"list\" of removable tags + trailing <input>",
+    summary: "Freeform text that commits into discrete, removable tags.",
     status: "available",
   },
   {

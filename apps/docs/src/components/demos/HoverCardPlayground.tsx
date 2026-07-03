@@ -25,11 +25,23 @@ function code(values: PlaygroundValues) {
 />`;
 }
 
+function elementsCode(values: PlaygroundValues) {
+  const attrs: string[] = [];
+  if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  if (Number(values.openDelay) !== 400) attrs.push(`open-delay="${Number(values.openDelay)}"`);
+  if (Number(values.closeDelay) !== 200) attrs.push(`close-delay="${Number(values.closeDelay)}"`);
+  return `<kernel-hover-card${attrs.length ? " " + attrs.join(" ") : ""}>
+  <a slot="trigger" href="https://github.com/karlkoch">${values.trigger || "@karlkoch"}</a>
+  <!-- Avatar + name + bio -->
+</kernel-hover-card>`;
+}
+
 export default function HoverCardPlayground() {
   return (
     <Playground
       controls={controls}
       code={code}
+      elementsCode={elementsCode}
       render={(values) => (
         <HoverCard
           placement={values.placement as "top" | "bottom" | "left" | "right"}

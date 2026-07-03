@@ -12,6 +12,9 @@ export interface TextareaState {
 export interface TextareaProps
   extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "className"> {
   label: ReactNode;
+  /** Visually hides the label without removing it from the accessibility
+   * tree — see `TextField`'s `hideLabel` for the full rationale. */
+  hideLabel?: boolean;
   description?: ReactNode;
   errorMessage?: ReactNode;
   invalid?: boolean;
@@ -27,6 +30,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea(
     {
       label,
+      hideLabel = false,
       description,
       errorMessage,
       invalid = false,
@@ -57,7 +61,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
       >
-        <label className={styles.label} htmlFor={textareaId}>
+        <label
+          className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+            .filter(Boolean)
+            .join(" ")}
+          htmlFor={textareaId}
+        >
           {label}
           {required ? (
             <span className={styles.required} aria-hidden="true">

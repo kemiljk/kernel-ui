@@ -1,0 +1,138 @@
+# @kernelui/react — LLM reference
+
+A component library built on real semantic HTML instead of div soup: every
+component wraps a genuine native element (`<button>`, `<dialog>`, `<input
+type="color">`, `<select>`...) or a documented WAI-ARIA pattern where no
+native element exists (Tabs, Accordion's `<details>`, the combobox
+pattern). If you already know HTML and ARIA, you already know most of the
+behavior this library gives you — read this file once, then trust the
+exported TypeScript types (`dist/index.d.ts`) for exact prop names.
+
+## Install
+
+```bash
+npm install @kernelui/react @kernelui/styles
+```
+
+```tsx
+import "@kernelui/styles";        // tokens: color, radius, spacing, type
+import "@kernelui/react/styles.css"; // this package's compiled component CSS
+
+import { Button, TextField } from "@kernelui/react";
+```
+
+Both CSS imports are required for the library's actual visual design.
+Skip `@kernelui/react/styles.css` and every component still renders as its
+real underlying element, fully functional, just unstyled — never broken.
+
+## Conventions (true across nearly every component — learn these once)
+
+- **Controlled/uncontrolled value**: `value`/`defaultValue`/`onValueChange`
+  (not `onChange`, which is reserved for the native DOM event where a
+  component also exposes one). Omit `value` and the component manages its
+  own state; pass `value` + `onValueChange` to fully control it.
+- **Form-field scaffold** (`TextField`, `Textarea`, `Select`, `Combobox`,
+  `TagInput`, `ColorPicker`, `FileUpload`, `NumberField`, `Slider`):
+  `label` (required — the accessible name, always rendered as a real
+  `<label>`), `hideLabel` (boolean — visually hides the label without
+  removing it from the accessibility tree; `label` is still required when
+  this is set), `description` (helper text), `errorMessage` (shown
+  instead of `description`, with `role="alert"`, when `invalid` is true),
+  `invalid` (boolean), `disabled`, `required`.
+- **Styling hooks**: `className` (on the actual interactive element,
+  accepts a string or `(state) => string` for state-driven styling) and
+  `wrapperClassName` (on the outer wrapper, same shape) where a component
+  has both. Every component also forwards a `ref` to its real underlying
+  DOM element via `forwardRef` — never a wrapper div.
+- **Real elements, not ARIA-only**: don't add `role`/`aria-*` props that
+  duplicate what the underlying native element already provides (e.g.
+  don't add `role="button"` to `<Button>` — it's a real `<button>`).
+- **No hidden global config**: every component takes its data via props,
+  not a Provider you have to wrap the app in — the exceptions are
+  `<ToastViewport>` (mount once, then call the imported `toast()`
+  function from anywhere) and `<CommandPalette>` (same idea).
+- **React and Web Components share one design**: `@kernelui/elements`
+  ships every component below as a framework-free Custom Element
+  (`<kernel-button>`, `<kernel-text-field>`, ...) with the same visual
+  design and equivalent kebab-case attributes (`onValueChange` becomes a
+  `change` event with `event.detail`, boolean props become boolean
+  attributes). Reach for it in Vue/Svelte/Astro/plain-HTML projects
+  instead of this package.
+
+## Components
+
+### Primitives
+- **Avatar** — Real image, with an initials fallback.
+- **Badge** — A small status chip.
+- **Button** — Click, keyboard, and form association, for free.
+- **Checkbox** — Tri-state, styled with `:checked` and `:indeterminate`.
+- **Label** — A standalone label for custom composed controls.
+- **RadioGroup** (+ `RadioGroupItem`) — Grouped choice with native arrow-key roving.
+- **Separator** — A divider that's already `role="separator"`.
+- **Switch** — The WAI-ARIA switch pattern on a real button.
+- **Toggle** — A two-state toggle that looks and acts like a button.
+
+### Forms
+- **ColorPicker** — A real colour input, plus a typeable hex field on the same value.
+- **Combobox** — Filterable list with `aria-activedescendant`.
+- **FileUpload** — Drag-and-drop over a real file input, never a replacement for it.
+- **InputOTP** — One-time-code entry with roving focus.
+- **NumberField** — `TextField`'s scaffold, specialised for numbers, with stepper buttons.
+- **Select** (+ `SelectOption`) — The platform's own picker UI, on every device.
+- **Slider** — Custom-painted thumb, native drag and keyboard behaviour.
+- **TagInput** — Freeform text that commits into discrete, removable tags.
+- **TextField** — Correct labelling and live validation styling.
+- **Textarea** — Auto-growing with `field-sizing: content`.
+
+### Layout
+- **Card** (+ `CardHeader`/`CardTitle`/`CardDescription`/`CardContent`/`CardFooter`) — For genuinely self-contained, distributable content.
+- **Footer** — The `contentinfo` landmark.
+- **Header** — The `banner` landmark.
+- **Nav** (+ `NavLink`) — Active state via `aria-current`, no client JS.
+- **Resizable** — Pane-to-pane split layouts.
+- **ScrollArea** — Custom scrollbar styling as enhancement only.
+- **Sidebar** — The complementary landmark.
+
+### Feedback
+- **Callout** — Live-region feedback that announces itself (`role="alert"`/`role="status"`).
+- **Progress** — Reports its own value to assistive tech, natively.
+- **Skeleton** — Loading placeholder tied to real content dimensions.
+- **ToastViewport** + `toast()` — A shared, queued live region; mount once, call `toast()` from anywhere.
+
+### Overlays
+- **CommandPalette** — A searchable, keyboard-driven action list.
+- **ContextMenu** — Right-click menu, same primitives as DropdownMenu.
+- **Dialog** — `showModal()`: focus trap, top layer, and `::backdrop`, free.
+- **DropdownMenu** (+ `MenuItem`/`MenuSeparator`) — Anchor-positioned menu with arrow-key navigation.
+- **HoverCard** — Rich hover preview, a heavier Tooltip.
+- **NavigationMenu** (+ subparts) — Multi-level site navigation, mega-menu via popover.
+- **Popover** — Anchor-positioned floating panel.
+- **Tooltip** — Hover/focus hints via the Popover API.
+
+### Navigation
+- **Breadcrumbs** (+ `BreadcrumbItem`/`BreadcrumbsTrail`) — Ordered trail, `aria-current` for the current page.
+- **Pagination** (+ subparts) — Ordered page links, `aria-current` for the active one.
+- **Tabs** (+ `TabsList`/`Tab`/`TabPanel`) — No native element exists yet, ARIA APG pattern.
+
+### Data Display
+- **Accordion** (+ `AccordionItem`) — Native disclosure, exclusive open via a shared name.
+- **Carousel** (+ `CarouselSlide`) — Native scrolling instead of a JS carousel engine.
+- **DataTable** — Table plus sort/filter/paginate behaviour layered on top.
+- **DatePicker** — Calendar grid with `aria-selected`.
+- **DateRangePicker** — Two-click range selection over the same calendar grid.
+- **Table** (+ `TableCaption`/`TableHeader`/`TableBody`/`TableRow`/`TableHead`/`TableCell`) — Sortable headers, real `<caption>`, real `<th scope>`.
+
+### AI
+- **Composer** — A chat message input, with a live "thinking" state.
+- **Reasoning** — A collapsible AI reasoning trace that auto-opens while streaming.
+- **ThinkingIndicator** — The universal typing-indicator dots, next to real visible text.
+
+## Where to look for exact prop types
+
+This file is a map, not the source of truth. For exact prop names,
+types, and defaults: read `dist/index.d.ts` in this package (every prop
+has a JSDoc comment explaining the *why*, not just the type) — or, if
+this package was installed alongside the project's docs site, every
+component has a live Playground and a machine-readable markdown mirror
+at `/components/<slug>.md` (and one combined `/llms-full.txt` for the
+whole library) generated from the same pages a human would read.

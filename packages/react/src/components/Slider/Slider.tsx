@@ -10,6 +10,9 @@ export interface SliderProps
     "className" | "type" | "value" | "defaultValue" | "onChange"
   > {
   label: ReactNode;
+  /** Visually hides the label without removing it from the accessibility
+   * tree — see `TextField`'s `hideLabel` for the full rationale. */
+  hideLabel?: boolean;
   value?: number;
   defaultValue?: number;
   onValueChange?: (value: number) => void;
@@ -33,6 +36,7 @@ export interface SliderProps
 export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   {
     label,
+    hideLabel = false,
     value,
     defaultValue = 0,
     onValueChange,
@@ -64,7 +68,12 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   return (
     <div className={styles.root}>
       <div className={styles.labelRow}>
-        <label className={styles.label} htmlFor={sliderId}>
+        <label
+          className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+            .filter(Boolean)
+            .join(" ")}
+          htmlFor={sliderId}
+        >
           {label}
         </label>
         {showValue ? <span className={styles.value}>{current}</span> : null}

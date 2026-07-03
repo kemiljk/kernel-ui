@@ -10,11 +10,18 @@ const controls = [
     options: ["Overview", "Components", "Theming"],
     default: "Components",
   },
+  {
+    type: "enum" as const,
+    prop: "orientation",
+    options: ["vertical", "horizontal"],
+    default: "vertical",
+  },
 ];
 
 function code(values: PlaygroundValues) {
   const current = (label: string) => (values.current === label ? ' aria-current="page"' : "");
-  return `<Nav aria-label="${values.ariaLabel}">
+  const orientation = values.orientation !== "vertical" ? ` data-orientation="${values.orientation}"` : "";
+  return `<Nav aria-label="${values.ariaLabel}"${orientation}>
   <NavLink href="/"${current("Overview")}>Overview</NavLink>
   <NavLink href="/components/"${current("Components")}>Components</NavLink>
   <NavLink href="/theming"${current("Theming")}>Theming</NavLink>
@@ -23,7 +30,8 @@ function code(values: PlaygroundValues) {
 
 function elementsCode(values: PlaygroundValues) {
   const current = (label: string) => (values.current === label ? ' aria-current="page"' : "");
-  return `<kernel-nav aria-label="${values.ariaLabel}">
+  const orientation = values.orientation !== "vertical" ? ` data-orientation="${values.orientation}"` : "";
+  return `<kernel-nav aria-label="${values.ariaLabel}"${orientation}>
   <kernel-nav-link href="/"${current("Overview")}>Overview</kernel-nav-link>
   <kernel-nav-link href="/components/"${current("Components")}>Components</kernel-nav-link>
   <kernel-nav-link href="/theming"${current("Theming")}>Theming</kernel-nav-link>
@@ -37,7 +45,10 @@ export default function NavPlayground() {
       code={code}
       elementsCode={elementsCode}
       render={(values) => (
-        <Nav aria-label={String(values.ariaLabel)}>
+        <Nav
+          aria-label={String(values.ariaLabel)}
+          data-orientation={values.orientation !== "vertical" ? String(values.orientation) : undefined}
+        >
           <NavLink href="/" aria-current={values.current === "Overview" ? "page" : undefined}>
             Overview
           </NavLink>

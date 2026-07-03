@@ -1,0 +1,132 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  font-family: var(--kernel-font-sans);
+  max-inline-size: 100%;
+}
+
+.label {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.controlRow {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+}
+
+/* The real, focusable <input type="color"> sits underneath .swatch at
+   opacity: 0 (never display: none — it must stay clickable and keep its
+   place in the tab order). Clicking anywhere in this <label> opens the
+   OS picker natively, no click-forwarding JS required. */
+.swatchLabel {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: calc(var(--kernel-space-unit) * 10);
+  block-size: calc(var(--kernel-space-unit) * 10);
+  border-radius: var(--kernel-radius-control);
+  cursor: pointer;
+}
+
+.swatch {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--swatch-color, transparent);
+  pointer-events: none;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* The real input is invisible, so its own focus ring would never be
+   seen — reproduce it on the visible swatch instead. `:has()` is safe
+   here: `<input type="color">` itself is already a modern-browser-only
+   progressive control. */
+.swatchLabel:has(.input:focus-visible) .swatch {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.hexInput {
+  border-radius: var(--kernel-radius-control);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-mono);
+  padding-inline: var(--kernel-space-3);
+  block-size: calc(var(--kernel-space-unit) * 10);
+  inline-size: 8rem;
+  text-transform: lowercase;
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hexInput:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+  }
+}
+
+.hexInput:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.hexInput[aria-invalid="true"] {
+  border-color: var(--kernel-color-danger);
+}
+
+.hexInput:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: var(--kernel-color-canvas);
+}
+
+.root[data-size="sm"] .swatchLabel,
+.root[data-size="sm"] .hexInput {
+  block-size: calc(var(--kernel-space-unit) * 8);
+}
+.root[data-size="sm"] .swatchLabel {
+  inline-size: calc(var(--kernel-space-unit) * 8);
+}
+
+.root[data-size="lg"] .swatchLabel,
+.root[data-size="lg"] .hexInput {
+  block-size: calc(var(--kernel-space-unit) * 12);
+}
+.root[data-size="lg"] .swatchLabel {
+  inline-size: calc(var(--kernel-space-unit) * 12);
+}
+
+.root[data-invalid] .swatch {
+  border-color: var(--kernel-color-danger);
+}
+
+.description {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--kernel-label-inset);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--kernel-label-inset);
+}

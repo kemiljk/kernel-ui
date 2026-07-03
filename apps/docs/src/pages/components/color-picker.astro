@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ColorPickerDemo from "../../components/demos/ColorPickerDemo";
+import ColorPickerPlayground from "../../components/demos/ColorPickerPlayground";
+---
+
+<BaseLayout title="Color Picker" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Color Picker</h1>
+    <p>
+      A real <code>&lt;input type="color"&gt;</code>. Its native swatch can't
+      be restyled consistently across browsers, so a decorative swatch sits
+      visually on top while the real, focusable input stays underneath at
+      <code>opacity: 0</code>, never hidden. Both live inside one real
+      <code>&lt;label&gt;</code>, so clicking anywhere opens the OS picker
+      with no click-forwarding JavaScript. The hex field beside it is a
+      second view onto the same value, not a second source of truth — it
+      only ever commits back through the color input's own value. Alpha
+      isn't supported, the same as the underlying native element.
+    </p>
+
+    <div class="docs-example">
+      <ColorPickerDemo client:load />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ColorPickerPlayground client:load />
+
+    <h2>Props</h2>
+    <table class="docs-table">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>hideLabel</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>value</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>defaultValue</code></td><td>string</td><td>"#000000"</td></tr>
+        <tr><td><code>showHexInput</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>size</code></td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The decorative swatch is <code>aria-hidden</code> and <code>pointer-events: none</code> — it never intercepts a click or duplicates the accessible name.</li>
+      <li>The hex field has its own <code>aria-label</code> since it's a secondary control for the same value; the visible label points at the color input.</li>
+      <li>Invalid hex entry is communicated via <code>aria-invalid</code> on the hex field alone — it's a self-correcting draft, not a submitted validation error.</li>
+    </ul>
+  </div>
+</BaseLayout>

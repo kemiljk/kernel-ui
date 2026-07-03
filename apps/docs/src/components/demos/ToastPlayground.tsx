@@ -10,18 +10,34 @@ const controls = [
   },
   { type: "text" as const, prop: "title", default: "Changes published" },
   { type: "text" as const, prop: "description", default: "" },
+  { type: "number" as const, prop: "duration", default: 4000, min: 0, max: 10000, step: 500 },
 ];
 
+function buildOptions(values: PlaygroundValues) {
+  const options: { description?: string; duration?: number } = {};
+  if (values.description) options.description = String(values.description);
+  if (Number(values.duration) !== 4000) options.duration = Number(values.duration);
+  return Object.keys(options).length > 0 ? options : undefined;
+}
+
 function fire(values: PlaygroundValues) {
-  const options = values.description ? { description: String(values.description) } : undefined;
+  const options = buildOptions(values);
   if (values.variant === "default") toast(String(values.title), options);
   else toast[values.variant as "success" | "warning" | "danger"](String(values.title), options);
+}
+
+function optionsLiteral(values: PlaygroundValues) {
+  const fields: string[] = [];
+  if (values.description) fields.push(`description: "${values.description}"`);
+  if (Number(values.duration) !== 4000) fields.push(`duration: ${Number(values.duration)}`);
+  return fields.length > 0 ? `{ ${fields.join(", ")} }` : undefined;
 }
 
 function code(values: PlaygroundValues) {
   const call = values.variant === "default" ? "toast" : `toast.${values.variant}`;
   const args = [`"${values.title}"`];
-  if (values.description) args.push(`{ description: "${values.description}" }`);
+  const options = optionsLiteral(values);
+  if (options) args.push(options);
   return `<Button onClick={() => ${call}(${args.join(", ")})}>Publish</Button>
 <ToastViewport />`;
 }
@@ -29,7 +45,8 @@ function code(values: PlaygroundValues) {
 function elementsCode(values: PlaygroundValues) {
   const call = values.variant === "default" ? "toast" : `toast.${values.variant}`;
   const args = [`"${values.title}"`];
-  if (values.description) args.push(`{ description: "${values.description}" }`);
+  const options = optionsLiteral(values);
+  if (options) args.push(options);
   return `<kernel-button id="publish">Publish</kernel-button>
 <kernel-toast-viewport></kernel-toast-viewport>
 

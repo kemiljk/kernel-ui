@@ -6,16 +6,16 @@ import "./Checkbox.css";
  * `<label>`, so clicking the text toggles the box for free. Mirrors
  * `@kernelui/react`'s `<Checkbox>`.
  *
- * Attributes: `checked`, `disabled` (both boolean), `name`, `value`.
- * `indeterminate` has no HTML attribute on the platform's own checkbox
- * either — set it as a live property (`el.indeterminate = true`) same as
- * any native one. The real inner `<input>` fires real, bubbling `change`
- * events; listen on it directly or on this element, no synthetic event
- * needed.
+ * Attributes: `checked`, `disabled`, `required` (all boolean), `name`,
+ * `value`. `indeterminate` has no HTML attribute on the platform's own
+ * checkbox either — set it as a live property (`el.indeterminate =
+ * true`) same as any native one. The real inner `<input>` fires real,
+ * bubbling `change` events; listen on it directly or on this element,
+ * no synthetic event needed.
  */
 export class KernelCheckbox extends KernelElement {
   static get observedAttributes() {
-    return ["checked", "disabled", "name", "value"];
+    return ["checked", "disabled", "required", "name", "value"];
   }
 
   protected createNative(): HTMLElement {
@@ -61,6 +61,9 @@ export class KernelCheckbox extends KernelElement {
         input.disabled = value !== null;
         if (value !== null) label.setAttribute("data-disabled", "");
         else label.removeAttribute("data-disabled");
+        break;
+      case "required":
+        input.required = value !== null;
         break;
       case "name":
         if (value === null) input.removeAttribute("name");
