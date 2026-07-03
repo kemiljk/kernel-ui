@@ -1096,6 +1096,16 @@ p.docs-sidebar-eyebrow:first-child {
   border-radius: 0 0 var(--kernel-radius-container) var(--kernel-radius-container);
 }
 
+/* Matches the radius override above — square top (flush with the
+   preview), rounded bottom concentric with the container's own bottom
+   corners — so the trigger's shape (and its focus ring) still traces
+   the parent exactly in this connected-card context, not the standalone
+   one's --kernel-radius-md. */
+.example-card-preview + .usage-accordion .usage-accordion-trigger {
+  border-radius: 0 0 calc(var(--kernel-radius-container) - var(--kernel-border-width))
+    calc(var(--kernel-radius-container) - var(--kernel-border-width));
+}
+
 /* Theme-aware padding, scoped to connected contexts only: the standalone
    UsageAccordion elsewhere on a component page sits in its own small
    rounded box and its default padding already suits that. Here, though —
@@ -1198,6 +1208,13 @@ p.docs-sidebar-eyebrow:first-child {
   border-radius: 0;
   background-color: transparent;
   border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+/* This context is fully square (see above), so the trigger's own
+   concentric radius needs to drop to 0 here too, instead of the
+   standalone-context default. */
+.prop-playground > .usage-accordion .usage-accordion-trigger {
+  border-radius: 0;
 }
 
 .prop-playground-stage {
@@ -1792,7 +1809,13 @@ p.docs-sidebar-eyebrow:first-child {
 .usage-accordion {
   margin-block-start: var(--kernel-space-4);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-md);
+  /* --kernel-radius-container, not -md: this standalone accordion
+     houses a .code-block that has its own --kernel-radius-md rounding,
+     so it needs to be the bigger "container houses a control" radius
+     tier (same relationship .prop-playground's own shell already has
+     with the code block nested inside IT) — at equal radii the two
+     boxes just look flat against each other instead of nesting. */
+  border-radius: var(--kernel-radius-container);
   background-color: var(--kernel-color-surface);
   overflow: hidden;
 }
@@ -1802,7 +1825,20 @@ p.docs-sidebar-eyebrow:first-child {
   align-items: center;
   justify-content: space-between;
   gap: var(--kernel-space-3);
-  padding: var(--kernel-space-3) var(--kernel-space-4);
+  /* Inline padding matches .usage-accordion-content's own (now
+     --kernel-padding-sheet), so "Usage" and the code block below it
+     share a left edge instead of the content reading as more indented
+     than its own header. */
+  padding: var(--kernel-space-3) var(--kernel-padding-sheet);
+  /* Concentric with .usage-accordion's own (now container-tier)
+     rounding — outer radius minus the gap between this and the
+     container edge, which here is just the border width, same
+     relationship --kernel-radius-container itself uses for a card and
+     its nested button. Without this the trigger was a plain rectangle,
+     so its own focus ring traced a sharp-cornered box sitting inside a
+     rounded, overflow: hidden container instead of following the
+     container's actual shape. */
+  border-radius: calc(var(--kernel-radius-container) - var(--kernel-border-width));
   font-family: var(--kernel-font-sans);
   font-weight: 500;
   cursor: default;
@@ -1837,7 +1873,13 @@ p.docs-sidebar-eyebrow:first-child {
 }
 
 .usage-accordion-content {
-  padding: 0 var(--kernel-space-4) var(--kernel-space-4);
+  /* --kernel-padding-sheet, not -container: the standalone accordion
+     just picked up the bigger --kernel-radius-container tier (see the
+     comment on .usage-accordion), and the open content area reads as
+     cramped against that larger curve at the smaller container-tier
+     padding — the roomier sheet tier matches the scale of the box it's
+     now sitting inside. */
+  padding: 0 var(--kernel-padding-sheet) var(--kernel-padding-sheet);
 }
 
 .usage-accordion-content .code-block {

@@ -31,6 +31,19 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item {
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
+/* See the matching comment in @kernelui/react's Accordion.module.css —
+   the first/last item's outer corners trace .accordion's own rounding
+   concentrically; middle items stay square. */
+kernel-accordion-item:first-of-type .kernel-Accordion-trigger {
+  border-start-start-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  border-start-end-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+}
+
+kernel-accordion-item:last-of-type .kernel-Accordion-item:not([open]) .kernel-Accordion-trigger {
+  border-end-start-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  border-end-end-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+}
+
 .kernel-Accordion-trigger::-webkit-details-marker {
   display: none;
 }
@@ -59,6 +72,13 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item {
 .kernel-Accordion-content {
   padding: 0 var(--kernel-space-4) var(--kernel-space-4);
   color: var(--kernel-color-text-muted);
+}
+
+/* Picks up the bottom rounding the trigger drops once open — see the
+   matching comment on .kernel-Accordion-trigger above. */
+kernel-accordion-item:last-of-type .kernel-Accordion-item[open] .kernel-Accordion-content {
+  border-end-start-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  border-end-end-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
 }
 
 .kernel-Accordion-item[data-state="opening"] .kernel-Accordion-content,

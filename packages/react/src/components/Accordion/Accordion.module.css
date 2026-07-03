@@ -29,6 +29,29 @@
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
+/* Middle items stay square (correct — they're not against an edge of
+   .accordion's own rounding), but the first/last item's OUTER corners
+   should trace .accordion's own radius, concentric the usual
+   outer-radius-minus-border-width way. Without this, .accordion's
+   overflow: hidden still visually clips the trigger into that rounded
+   shape, but the trigger's own focus ring (which follows its own
+   border-radius, not the ancestor's clip mask) drew as a plain
+   rectangle regardless of position — this both fixes that and gives the
+   background/hover state itself a matching rounded corner instead of
+   relying on the clip alone. */
+.item:first-of-type .trigger {
+  border-start-start-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  border-start-end-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+}
+
+/* Only while closed: once open, the trigger's bottom edge is no longer
+   .accordion's own visual bottom — the content panel below it is — so
+   the rounding moves there instead (see .content below). */
+.item:last-of-type:not([open]) .trigger {
+  border-end-start-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  border-end-end-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+}
+
 .trigger::-webkit-details-marker {
   display: none;
 }
@@ -57,6 +80,13 @@
 .content {
   padding: 0 var(--kernel-space-4) var(--kernel-space-4);
   color: var(--kernel-color-text-muted);
+}
+
+/* Picks up the bottom rounding .trigger drops once open — see the
+   matching comment there. */
+.item:last-of-type[open] .content {
+  border-end-start-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  border-end-end-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
 }
 
 /* Selectable once fully open (the default); disabled only while the
