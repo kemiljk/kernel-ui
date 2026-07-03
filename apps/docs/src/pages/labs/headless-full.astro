@@ -1,7 +1,7 @@
 ---
 // Verification scratch page (not linked from nav): both stylesheets
 // imported, for comparison against headless-none.astro.
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 ---
 
 <html lang="en">
@@ -9,9 +9,9 @@ import { Button } from "@kernelui/react";
     <meta charset="utf-8" />
     <title>Headless: full styles</title>
     <style is:global>
-      @import "@kernelui/styles";
-      @import "@kernelui/react/styles.css";
-      @import "@kernelui/elements/styles.css";
+      @import "@kernelui-lib/styles";
+      @import "@kernelui-lib/react/styles.css";
+      @import "@kernelui-lib/elements/styles.css";
     </style>
   </head>
   <body style="padding: 2rem; display: flex; gap: 1rem;">
@@ -22,5 +22,5 @@ import { Button } from "@kernelui/react";
 </html>
 
 <script>
-  import "@kernelui/elements";
+  import "@kernelui-lib/elements";
 </script>

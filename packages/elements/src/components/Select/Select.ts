@@ -7,7 +7,7 @@ let selectCounter = 0;
  * `<kernel-select>` — a real `<select>`. Options, keyboard navigation,
  * typeahead, and the native picker UI (the platform's own, correct-for-
  * the-device picker on mobile) all come from the browser. Mirrors
- * `@kernelui/react`'s `<Select>`.
+ * `@kernelui-lib/react`'s `<Select>`.
  *
  * Write real `<option>`/`<optgroup>` elements as children — not a
  * `kernel-select-option` wrapper: a native `<select>` only renders its

@@ -1,6 +1,6 @@
-@import "@kernelui/styles";
-@import "@kernelui/styles/themes/index.css";
-@import "@kernelui/react/styles.css";
+@import "@kernelui-lib/styles";
+@import "@kernelui-lib/styles/themes/index.css";
+@import "@kernelui-lib/react/styles.css";
 
 :root {
   --docs-content-width: 44rem;
@@ -490,6 +490,118 @@ p.docs-sidebar-eyebrow:first-child {
   gap: var(--kernel-space-3);
 }
 
+.site-header-github {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-header-github svg {
+  flex-shrink: 0;
+}
+
+.site-header-github-stars {
+  font-variant-numeric: tabular-nums;
+  color: var(--kernel-color-text-muted);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-header-github:hover {
+    color: var(--kernel-color-text);
+  }
+}
+
+.site-header-github:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
+body[data-with-sidebar="true"] .mobile-header-nav-trigger {
+  display: none;
+}
+
+.mobile-header-nav-github {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  text-decoration: none;
+  font-size: var(--kernel-font-size-sm);
+}
+
+.components-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--kernel-space-3);
+  list-style: none;
+  padding: 0;
+  margin: var(--kernel-space-4) 0 var(--kernel-space-8);
+}
+
+.components-catalog-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  padding: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background: var(--kernel-color-surface);
+  text-decoration: none;
+  color: inherit;
+  block-size: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .components-catalog-card:hover {
+    border-color: var(--kernel-color-border-strong);
+    background: var(--kernel-color-surface-raised);
+  }
+}
+
+.components-catalog-name {
+  font-weight: var(--kernel-font-weight-semibold);
+}
+
+.components-catalog-summary {
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.components-catalog-element {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-xs);
+  color: var(--kernel-color-text-muted);
+}
+
+.components-catalog-group h2 {
+  margin-block-start: var(--kernel-space-8);
+}
+
+.docs-table-scroll {
+  overflow-x: auto;
+  margin-block: var(--kernel-space-4);
+}
+
+.docs-prose .docs-table caption {
+  caption-side: top;
+  text-align: start;
+  padding-block-end: var(--kernel-space-2);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+@media (hover: none) {
+  .code-block-copy {
+    opacity: 1;
+  }
+}
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -812,6 +924,18 @@ p.docs-sidebar-eyebrow:first-child {
   background-color: oklch(0% 0 0 / 0.32);
 }
 
+.command-palette-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .command-palette-input {
   flex-shrink: 0;
   border: none;
@@ -914,6 +1038,17 @@ p.docs-sidebar-eyebrow:first-child {
      left over, which is why the reading column sat pinned to the left
      edge on wide viewports instead of centred in the page. */
   margin-inline: auto;
+}
+
+/* Homepage sections share the docs reading column. Only the showcase
+   masonry (.showcase-bleed) breaks out to the viewport edges. */
+.home {
+  max-inline-size: var(--docs-content-width);
+  margin-inline: auto;
+}
+
+.home .feature-section {
+  max-inline-size: 100%;
 }
 
 /* `>` (direct child), not a descendant selector: every genuine page
@@ -1474,6 +1609,18 @@ p.docs-sidebar-eyebrow:first-child {
   column-gap: calc(var(--kernel-space-6) * 1.5);
 }
 
+/* Homepage showcase only: pull the masonry grid out to the viewport
+   edges so the live component demos get more horizontal room. The
+   eyebrow, heading, and intro above stay in .home's centred column —
+   only this wrapper breaks out. */
+.feature-section .showcase-bleed {
+  box-sizing: border-box;
+  inline-size: 100vw;
+  max-inline-size: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: max(var(--kernel-space-6), calc(50vw - 50%));
+}
+
 @media (width < 800px) {
   .showcase-columns {
     columns: 1;
@@ -1511,6 +1658,8 @@ p.docs-sidebar-eyebrow:first-child {
      the two together are the grid's row gap and column gap. */
   margin-block-end: calc(var(--kernel-space-6) * 1.5);
   break-inside: avoid;
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .showcase-card {
@@ -1523,6 +1672,11 @@ p.docs-sidebar-eyebrow:first-child {
   background-color: var(--kernel-color-surface);
   margin-block-end: calc(var(--kernel-space-6) * 1.5);
   break-inside: avoid;
+  /* Column masonry gives each item a fixed column width; long
+     `white-space: pre` lines otherwise set a wider min-content width
+     and the card (and its full-width buttons) spill past the column. */
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 /* Compact tier: for a card nested inside a showcase item (a community
@@ -1577,7 +1731,18 @@ p.docs-sidebar-eyebrow:first-child {
   margin-block-start: var(--kernel-space-2);
 }
 
+.showcase-card pre {
+  margin: 0;
+  overflow-x: auto;
+  max-inline-size: 100%;
+  background-color: var(--kernel-color-canvas);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border-radius: var(--kernel-radius-sm);
+}
+
 .showcase-card pre code {
+  display: block;
+  white-space: pre;
   font-family: var(--kernel-font-mono);
   font-size: var(--kernel-font-size-sm);
 }
@@ -1605,6 +1770,16 @@ p.docs-sidebar-eyebrow:first-child {
   display: flex;
   flex-direction: column;
   gap: var(--kernel-space-2);
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+
+/* `width: 100%` on Kernel's inline-flex Button doesn't reliably fill a
+   masonry column when a sibling <pre> has a long min-content width —
+   stretch the flex item instead. */
+.showcase-stack > [data-variant] {
+  align-self: stretch;
+  justify-content: center;
 }
 
 /* Overlapping avatar group: each avatar after the first pulls left by a
@@ -1923,17 +2098,10 @@ p.docs-sidebar-eyebrow:first-child {
   }
 }
 
-/* Same card/gap treatment as .comparison-grid, but three panels (React /
-   Elements / Unstyled) instead of two — needs its own column count and an
-   earlier collapse, since three code blocks get cramped sooner than two. */
+/* Platforms stacks three code samples in one column — each block is wide
+   enough that a side-by-side grid just truncates the snippets. */
 .platforms-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-@media (width < 900px) {
-  .platforms-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .closing h2 {
@@ -1948,6 +2116,18 @@ p.docs-sidebar-eyebrow:first-child {
   max-inline-size: 32rem;
   color: var(--kernel-color-text-muted);
   margin: 0;
+}
+
+.closing-callout {
+  max-inline-size: 40rem;
+  margin-block-start: var(--kernel-space-6);
+}
+
+.closing-links {
+  max-inline-size: 40rem;
+  margin: var(--kernel-space-4) 0 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
 }
 
 .closing .hero-ctas {

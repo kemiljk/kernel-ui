@@ -28,7 +28,7 @@ function arrowIcon(path: string): SVGSVGElement {
  * The only JS here is wiring Prev/Next/dots to `scrollIntoView` and an
  * `IntersectionObserver` that watches which slide is actually visible.
  *
- * Unlike `@kernelui/react`'s version (which supports slides mounting
+ * Unlike `@kernelui-lib/react`'s version (which supports slides mounting
  * and unmounting dynamically via a register/unregister callback), this
  * reads its `<kernel-carousel-slide>` children once at connect — the
  * common case for a declarative-markup custom element. A future pass

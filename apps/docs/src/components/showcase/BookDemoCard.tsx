@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, DatePicker } from "@kernelui/react";
+import { Button, DatePicker } from "@kernelui-lib/react";
 
 export default function BookDemoCard() {
   const [date, setDate] = useState<Date>();

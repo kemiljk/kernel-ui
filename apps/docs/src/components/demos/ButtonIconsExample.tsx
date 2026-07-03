@@ -1,4 +1,4 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 import { CheckIcon, CopyIcon, MagnifyingGlassIcon } from "../icons";
 
 // A JSX element used as a prop value (iconStart={<Icon />}) breaks when

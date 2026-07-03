@@ -21,7 +21,7 @@ const TRANSFORM_ORIGIN_BY_PLACEMENT: Record<FloatingPlacement, string> = {
   right: "center left",
 };
 
-/** See the matching function in `@kernelui/react`'s `useFloatingPosition`
+/** See the matching function in `@kernelui-lib/react`'s `useFloatingPosition`
  * for the full rationale — same anchor-relative percentage approach
  * Radix/Base UI use for their own `transform-origin` CSS variables. */
 function computeTransformOrigin(anchorRect: DOMRect, floatingRect: DOMRect): string {
@@ -33,7 +33,7 @@ function computeTransformOrigin(anchorRect: DOMRect, floatingRect: DOMRect): str
 }
 
 /**
- * Vanilla-JS port of `@kernelui/react`'s `useFloatingPosition` hook —
+ * Vanilla-JS port of `@kernelui-lib/react`'s `useFloatingPosition` hook —
  * same CSS-anchor-positioning-first, `getBoundingClientRect`-fallback
  * strategy, just driven imperatively (`attach()`/`setOpen()`/
  * `destroy()`) instead of as a React hook. See the React version's own

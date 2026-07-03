@@ -6,7 +6,7 @@ import ComboboxDemo from "../../components/demos/ComboboxDemo";
 import ComboboxPlayground from "../../components/demos/ComboboxPlayground";
 
 const usageSnippet = `import { useState } from "react";
-import { Combobox } from "@kernelui/react";
+import { Combobox } from "@kernelui-lib/react";
 
 const frameworks = [
   { value: "astro", label: "Astro" },
@@ -56,14 +56,15 @@ function FrameworkPicker() {
     <ComboboxPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Combobox.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
         <tr><td><code>hideLabel</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>options</code></td><td>&#123; value, label &#125;[] (required)</td><td>—</td></tr>
         <tr><td><code>value</code> / <code>onValueChange</code></td><td>string / (value) =&gt; void</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </BaseLayout>

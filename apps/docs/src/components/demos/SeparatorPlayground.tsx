@@ -1,4 +1,4 @@
-import { Separator } from "@kernelui/react";
+import { Separator } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

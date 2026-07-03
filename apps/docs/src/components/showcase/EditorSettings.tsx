@@ -1,4 +1,4 @@
-import { Slider, Switch } from "@kernelui/react";
+import { Slider, Switch } from "@kernelui-lib/react";
 
 export default function EditorSettings() {
   return (

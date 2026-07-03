@@ -1,4 +1,4 @@
-import { Accordion, AccordionItem } from "@kernelui/react";
+import { Accordion, AccordionItem } from "@kernelui-lib/react";
 
 export default function AccordionDemo() {
   return (

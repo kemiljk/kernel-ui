@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, CommandPalette } from "@kernelui/react";
-import type { CommandPaletteItem } from "@kernelui/react";
+import { Button, CommandPalette } from "@kernelui-lib/react";
+import type { CommandPaletteItem } from "@kernelui-lib/react";
 
 export default function CommandPaletteDemo() {
   const [open, setOpen] = useState(false);

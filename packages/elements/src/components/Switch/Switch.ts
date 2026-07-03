@@ -6,7 +6,7 @@ import "./Switch.css";
  * the WAI-ARIA switch pattern: a real `<button role="switch">` (click,
  * Space/Enter, and focus all free) with `aria-checked` telling assistive
  * tech it's a two-state toggle, not a regular button. Mirrors
- * `@kernelui/react`'s `<Switch>`.
+ * `@kernelui-lib/react`'s `<Switch>`.
  *
  * Attributes: `checked`, `disabled` (both boolean). Text content, if
  * any, becomes a real `<label>` wrapping the button — omit it for a

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Popover, RadioGroup, RadioGroupItem } from "@kernelui/react";
+import { Button, Popover, RadioGroup, RadioGroupItem } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

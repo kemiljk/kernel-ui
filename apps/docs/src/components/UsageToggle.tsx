@@ -1,4 +1,4 @@
-import { Tab, TabPanel, Tabs, TabsList } from "@kernelui/react";
+import { Tab, TabPanel, Tabs, TabsList } from "@kernelui-lib/react";
 import CopyButton from "./CopyButton";
 import { HighlightedCode } from "./HighlightedCode";
 
@@ -12,7 +12,7 @@ export interface UsageToggleProps {
  * pages, extracted for pages that only have a single static usage
  * snippet (no controls to drive a live `Playground`) — `Toast`,
  * `Resizable`, `ScrollArea`, and any static-example page whose
- * component also has an `@kernelui/elements` equivalent. Same
+ * component also has an `@kernelui-lib/elements` equivalent. Same
  * markup/classes as `Playground`'s own Usage section, so the two read
  * as one component.
  */

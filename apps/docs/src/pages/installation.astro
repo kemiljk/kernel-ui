@@ -3,31 +3,31 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import DocsSidebar from "../components/DocsSidebar.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 
-const reactInstallSnippet = `npm install @kernelui/react @kernelui/styles`;
+const reactInstallSnippet = `npm install @kernelui-lib/react @kernelui-lib/styles`;
 
-const reactImportSnippet = `import "@kernelui/styles";
-import "@kernelui/react/styles.css";
+const reactImportSnippet = `import "@kernelui-lib/styles";
+import "@kernelui-lib/react/styles.css";
 
-import { Button } from "@kernelui/react";`;
+import { Button } from "@kernelui-lib/react";`;
 
-const elementsInstallSnippet = `npm install @kernelui/elements @kernelui/styles`;
+const elementsInstallSnippet = `npm install @kernelui-lib/elements @kernelui-lib/styles`;
 
 const elementsImportSnippet = `<script type="module">
-  import "@kernelui/elements";
+  import "@kernelui-lib/elements";
 </script>
 
 <kernel-button variant="primary">Save changes</kernel-button>`;
 
-const tokensOnlySnippet = `npm install @kernelui/styles`;
+const tokensOnlySnippet = `npm install @kernelui-lib/styles`;
 ---
 
-<BaseLayout title="Installation" withSidebar>
+<BaseLayout title="Installation" description="Install @kernelui-lib/react, @kernelui-lib/elements, or @kernelui-lib/styles and import the token and component stylesheets." withSidebar>
   <DocsSidebar slot="sidebar" />
   <div class="docs-prose">
     <h1>Installation</h1>
     <p>
       Every package reads its colours, radius, spacing, and type from{" "}
-      <code>@kernelui/styles</code> — install it alongside whichever
+      <code>@kernelui-lib/styles</code> — install it alongside whichever
       component package you're using, it's a dependency either way, listing
       it explicitly just keeps its version visible in your own{" "}
       <code>package.json</code>.
@@ -43,7 +43,7 @@ const tokensOnlySnippet = `npm install @kernelui/styles`;
     <p>Import the tokens once, then the component stylesheet, then start using components:</p>
     <CodeBlock code={reactImportSnippet} lang="tsx" />
     <p>
-      Skip the <code>@kernelui/react/styles.css</code> import and every
+      Skip the <code>@kernelui-lib/react/styles.css</code> import and every
       component still renders as its real underlying element, fully
       functional, just with no Kernel-specific look — see{" "}
       <a href="/platforms/">platforms</a> for more on headless usage.
@@ -51,14 +51,14 @@ const tokensOnlySnippet = `npm install @kernelui/styles`;
 
     <h2>Web Components</h2>
     <p>
-      <code>@kernelui/elements</code> ships the same design system as
+      <code>@kernelui-lib/elements</code> ships the same design system as
       framework-agnostic Custom Elements, for Vue, Svelte, Astro, or plain
       HTML.
     </p>
     <CodeBlock code={elementsInstallSnippet} lang="bash" />
     <p>Import the tokens and the elements' own stylesheet in your CSS, then the elements module in a script tag:</p>
-    <CodeBlock code={`@import "@kernelui/styles";
-@import "@kernelui/elements/styles.css";`} lang="css" />
+    <CodeBlock code={`@import "@kernelui-lib/styles";
+@import "@kernelui-lib/elements/styles.css";`} lang="css" />
     <CodeBlock code={elementsImportSnippet} lang="html" />
     <p>
       See <a href="/platforms/">platforms</a> for framework-specific notes —

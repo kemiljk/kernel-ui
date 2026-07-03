@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DatePicker } from "@kernelui/react";
+import { DatePicker } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

@@ -1,4 +1,4 @@
-import { Badge } from "@kernelui/react";
+import { Badge } from "@kernelui-lib/react";
 
 export default function BadgeDemo() {
   return (

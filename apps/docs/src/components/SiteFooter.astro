@@ -1,5 +1,7 @@
 ---
-import { Footer } from "@kernelui/react";
+import { Footer } from "@kernelui-lib/react";
+import { GITHUB_URL, NPM_REACT_URL } from "../lib/site";
+
 const year = new Date().getFullYear();
 ---
 
@@ -11,6 +13,11 @@ const year = new Date().getFullYear();
   <nav aria-label="Footer" class="site-footer-nav">
     <a href="/">Home</a>
     <a href="/components/">Components</a>
+    <a href="/installation/">Installation</a>
+    <a href="/theming/">Theming</a>
     <a href="/platforms/">Platforms</a>
+    <a href="/llms.txt">llms.txt</a>
+    <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href={NPM_REACT_URL} target="_blank" rel="noopener noreferrer">npm</a>
   </nav>
 </Footer>

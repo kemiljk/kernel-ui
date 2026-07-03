@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Composer } from "@kernelui/react";
+import { Button, Composer } from "@kernelui-lib/react";
 
 export default function ComposerDemo() {
   const [thinking, setThinking] = useState(false);

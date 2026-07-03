@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Checkbox } from "@kernelui/react";
+import { Checkbox } from "@kernelui-lib/react";
 
 export default function CheckboxDemo() {
   const [values, setValues] = useState([true, false, false]);

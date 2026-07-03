@@ -24,14 +24,15 @@ import PaginationPlayground from "../../components/demos/PaginationPlayground";
     <PaginationPlayground client:load />
 
     <h2>Parts</h2>
-    <table class="docs-table">
-      <thead><tr><th>Component</th><th>Renders</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Pagination.</caption>
+      <thead><tr><th scope="col">Component</th><th scope="col">Renders</th></tr></thead>
       <tbody>
         <tr><td><code>Pagination</code></td><td><code>&lt;nav&gt;</code> + <code>&lt;ol&gt;</code></td></tr>
         <tr><td><code>PaginationItem</code></td><td><code>&lt;li&gt;&lt;a&gt;</code>, accepts <code>current</code></td></tr>
         <tr><td><code>PaginationPrevious</code> / <code>PaginationNext</code></td><td><code>&lt;li&gt;&lt;button&gt;</code></td></tr>
         <tr><td><code>PaginationEllipsis</code></td><td><code>&lt;li aria-hidden&gt;</code></td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </BaseLayout>

@@ -5,8 +5,8 @@ import UsageAccordion from "../../components/UsageAccordion.astro";
 import DataTableDemo from "../../components/demos/DataTableDemo";
 import DataTablePlayground from "../../components/demos/DataTablePlayground";
 
-const usageSnippet = `import { DataTable } from "@kernelui/react";
-import type { DataTableColumn } from "@kernelui/react";
+const usageSnippet = `import { DataTable } from "@kernelui-lib/react";
+import type { DataTableColumn } from "@kernelui-lib/react";
 
 interface TeamMember {
   name: string;
@@ -52,8 +52,9 @@ function TeamTable() {
     <DataTablePlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Data Table.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>columns</code></td><td><code>DataTableColumn&lt;T&gt;[]</code> (required)</td><td>—</td></tr>
         <tr><td><code>data</code></td><td><code>T[]</code> (required)</td><td>—</td></tr>
@@ -62,11 +63,11 @@ function TeamTable() {
         <tr><td><code>pageSize</code></td><td>number</td><td>10</td></tr>
         <tr><td><code>caption</code></td><td>ReactNode</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Column shape</h2>
-    <table class="docs-table">
-      <thead><tr><th>Field</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <thead><tr><th scope="col">Field</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>key</code></td><td>string (required)</td><td>—</td></tr>
         <tr><td><code>header</code></td><td>string (required)</td><td>—</td></tr>
@@ -74,7 +75,7 @@ function TeamTable() {
         <tr><td><code>sortable</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>sortValue</code></td><td><code>(row: T) =&gt; string | number</code></td><td>falls back to <code>render</code>'s text</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

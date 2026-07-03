@@ -6,7 +6,7 @@ import DialogDemo from "../../components/demos/DialogDemo";
 import DialogPlayground from "../../components/demos/DialogPlayground";
 
 const usageSnippet = `import { useState } from "react";
-import { Button, Dialog } from "@kernelui/react";
+import { Button, Dialog } from "@kernelui-lib/react";
 
 const [open, setOpen] = useState(false);
 
@@ -44,9 +44,10 @@ const [open, setOpen] = useState(false);
     <DialogPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Dialog.</caption>
       <thead>
-        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
       </thead>
       <tbody>
         <tr><td><code>open</code></td><td>boolean (required)</td><td>—</td></tr>
@@ -55,7 +56,7 @@ const [open, setOpen] = useState(false);
         <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
         <tr><td><code>closeOnBackdropClick</code></td><td>boolean</td><td>true</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

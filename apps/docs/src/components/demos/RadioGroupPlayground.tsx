@@ -1,4 +1,4 @@
-import { RadioGroup, RadioGroupItem } from "@kernelui/react";
+import { RadioGroup, RadioGroupItem } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

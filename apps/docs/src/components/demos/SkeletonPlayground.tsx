@@ -1,4 +1,4 @@
-import { Skeleton } from "@kernelui/react";
+import { Skeleton } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

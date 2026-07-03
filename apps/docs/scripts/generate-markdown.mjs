@@ -178,7 +178,7 @@ async function main() {
   const indexLines = [
     "# Kernel UI",
     "",
-    "> A component library built on real semantic HTML instead of div soup: every component wraps a genuine native element or a documented ARIA pattern, ships as both a React package (`@kernelui/react`) and framework-free Web Components (`@kernelui/elements`), and follows one consistent prop convention throughout (`value`/`defaultValue`/`onValueChange`, `label`/`description`/`errorMessage`/`invalid`, `hideLabel`, `className`/`wrapperClassName`).",
+    "> A component library built on real semantic HTML instead of div soup: every component wraps a genuine native element or a documented ARIA pattern, ships as both a React package (`@kernelui-lib/react`) and framework-free Web Components (`@kernelui-lib/elements`), and follows one consistent prop convention throughout (`value`/`defaultValue`/`onValueChange`, `label`/`description`/`errorMessage`/`invalid`, `hideLabel`, `className`/`wrapperClassName`).",
     "",
     "## Guides",
     "",

@@ -1,4 +1,4 @@
-import { Label } from "@kernelui/react";
+import { Label } from "@kernelui-lib/react";
 
 export default function LabelDemo() {
   return (

@@ -1,4 +1,4 @@
-import { Checkbox, Switch } from "@kernelui/react";
+import { Checkbox, Switch } from "@kernelui-lib/react";
 
 /**
  * Two distinct, individually-labelled settings rows, not a single row

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar, Badge, Button, Card, CardContent, Checkbox, Switch, TextField } from "@kernelui/react";
+import { Avatar, Badge, Button, Card, CardContent, Checkbox, Switch, TextField } from "@kernelui-lib/react";
 import { THEME_CHANGE_EVENT, applyColorScheme, getStoredColorScheme } from "../lib/theme";
 import ThemeControls from "./ThemeControls";
 

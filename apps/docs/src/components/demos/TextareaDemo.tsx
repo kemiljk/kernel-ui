@@ -1,4 +1,4 @@
-import { Textarea } from "@kernelui/react";
+import { Textarea } from "@kernelui-lib/react";
 
 export default function TextareaDemo() {
   return (

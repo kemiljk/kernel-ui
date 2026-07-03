@@ -1,4 +1,4 @@
-import { FileUpload } from "@kernelui/react";
+import { FileUpload } from "@kernelui-lib/react";
 
 export default function FileUploadDemo() {
   return (

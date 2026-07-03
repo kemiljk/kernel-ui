@@ -1,4 +1,4 @@
-import { Slider } from "@kernelui/react";
+import { Slider } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

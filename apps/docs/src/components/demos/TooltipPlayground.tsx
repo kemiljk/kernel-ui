@@ -1,4 +1,4 @@
-import { Button, Tooltip } from "@kernelui/react";
+import { Button, Tooltip } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

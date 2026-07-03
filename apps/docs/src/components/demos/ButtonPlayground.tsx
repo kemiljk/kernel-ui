@@ -1,4 +1,4 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
@@ -32,7 +32,7 @@ function code(values: PlaygroundValues) {
   return `<Button ${attrs.join(" ")}>${values.children || "Button"}</Button>`;
 }
 
-/** Same values, as `@kernelui/elements`' `<kernel-button>` — same
+/** Same values, as `@kernelui-lib/elements`' `<kernel-button>` — same
  * attribute names as the React props (see Button.ts's own
  * `observedAttributes`), just plain HTML rather than JSX. */
 function elementsCode(values: PlaygroundValues) {

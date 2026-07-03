@@ -1,4 +1,4 @@
-import { ScrollArea } from "@kernelui/react";
+import { ScrollArea } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const items = Array.from({ length: 18 }, (_, i) => `Item ${i + 1}`);

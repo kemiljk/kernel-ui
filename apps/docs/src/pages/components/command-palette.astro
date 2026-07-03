@@ -6,8 +6,8 @@ import CommandPaletteDemo from "../../components/demos/CommandPaletteDemo";
 import CommandPalettePlayground from "../../components/demos/CommandPalettePlayground";
 
 const usageSnippet = `import { useState } from "react";
-import { Button, CommandPalette } from "@kernelui/react";
-import type { CommandPaletteItem } from "@kernelui/react";
+import { Button, CommandPalette } from "@kernelui-lib/react";
+import type { CommandPaletteItem } from "@kernelui-lib/react";
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -52,9 +52,10 @@ function App() {
     <CommandPalettePlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Command Palette.</caption>
       <thead>
-        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
       </thead>
       <tbody>
         <tr><td><code>open</code></td><td>boolean</td><td>—</td></tr>
@@ -63,7 +64,7 @@ function App() {
         <tr><td><code>placeholder</code></td><td>string</td><td>"Filter commands"</td></tr>
         <tr><td><code>emptyMessage</code></td><td>ReactNode</td><td>"No results"</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <p>
       <code>CommandPaletteItem</code>: <code>&#123; id, label, description?, onSelect &#125;</code>.
     </p>

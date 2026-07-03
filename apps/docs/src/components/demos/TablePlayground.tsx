@@ -1,4 +1,4 @@
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@kernelui/react";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

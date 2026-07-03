@@ -9,7 +9,7 @@ let radioGroupCounter = 0;
  * that share one `name`. Arrow-key roving between options, "exactly one
  * selected", and disabling every option at once (a real `<fieldset
  * disabled>` cascades to every form control inside it, no JS needed)
- * are all native radio/fieldset behaviour. Mirrors `@kernelui/react`'s
+ * are all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s
  * `<RadioGroup>` + `<RadioGroupItem>`.
  *
  * Attributes: `label` (required — a `<fieldset>` needs a `<legend>` the

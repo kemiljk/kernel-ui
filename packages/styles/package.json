@@ -1,11 +1,28 @@
 {
-  "name": "@kernelui/styles",
-  "version": "0.1.0",
+  "name": "@kernelui-lib/styles",
+  "version": "1.0.0",
   "description": "Kernel design tokens: CSS custom properties, baseline reset, and an optional Tailwind v4 bridge.",
   "license": "MIT",
+  "author": "Karl Koch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiljk/kernel-ui.git",
+    "directory": "packages/styles"
+  },
+  "homepage": "https://www.kernelui.com",
+  "bugs": "https://github.com/kemiljk/kernel-ui/issues",
+  "keywords": [
+    "css",
+    "design-tokens",
+    "design-system",
+    "tailwind",
+    "oklch"
+  ],
   "type": "module",
   "files": [
-    "src"
+    "src",
+    "LICENSE",
+    "README.md"
   ],
   "exports": {
     ".": "./src/index.css",
@@ -15,8 +32,12 @@
     "./themes/*.css": "./src/themes/*.css"
   },
   "sideEffects": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "generate:themes": "node scripts/generate-accent-themes.mjs"
+    "generate:themes": "node scripts/generate-accent-themes.mjs",
+    "typecheck": "node -e \"console.log('no types to check')\""
   },
   "devDependencies": {
     "culori": "^4.0.2"

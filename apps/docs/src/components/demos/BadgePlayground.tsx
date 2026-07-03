@@ -1,4 +1,4 @@
-import { Badge } from "@kernelui/react";
+import { Badge } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

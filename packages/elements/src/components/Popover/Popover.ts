@@ -12,7 +12,7 @@ let popoverCounter = 0;
  * attribute, so open/close/toggle all work with zero JavaScript beyond
  * positioning. The one bit of JS here is mirroring the native `toggle`
  * event into an `open` attribute/event, the same as
- * `@kernelui/react`'s own `<Popover>`.
+ * `@kernelui-lib/react`'s own `<Popover>`.
  *
  * Children: one element tagged `slot="trigger"` (a `<kernel-button>`
  * or plain `<button>`/`<a>`), everything else becomes the popover's

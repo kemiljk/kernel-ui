@@ -1,4 +1,4 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 
 // Same reason this lives in a real .tsx file as ButtonIconsExample:
 // render={<a ... />} is a JSX-element-valued prop, which breaks when

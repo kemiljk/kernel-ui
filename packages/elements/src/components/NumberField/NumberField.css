@@ -118,7 +118,7 @@
 
 .kernel-NumberField-stepperButton:first-child {
   /* Matches .kernel-NumberField-stepper's own outer-corner radius
-     exactly — see the matching comment in @kernelui/react's
+     exactly — see the matching comment in @kernelui-lib/react's
      NumberField.module.css. */
   border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
   border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);

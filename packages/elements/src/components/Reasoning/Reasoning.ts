@@ -32,7 +32,7 @@ function svg(paths: string[], className: string): SVGSVGElement {
 /**
  * `<kernel-reasoning>` — a collapsible AI reasoning/thinking trace,
  * its own `<details>`/`<summary>` (not a wrapped Accordion item — see
- * `@kernelui/react`'s own `<Reasoning>` for why). Attributes:
+ * `@kernelui-lib/react`'s own `<Reasoning>` for why). Attributes:
  * `streaming` (auto-opens while present; auto-closes ~600ms after it's
  * removed, unless the user has manually interacted with the summary
  * since), `duration-label` (text shown once streaming ends, default

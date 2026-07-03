@@ -1,4 +1,4 @@
-import { Carousel, CarouselSlide } from "@kernelui/react";
+import { Carousel, CarouselSlide } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

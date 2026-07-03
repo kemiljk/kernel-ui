@@ -1,4 +1,4 @@
-import { NumberField } from "@kernelui/react";
+import { NumberField } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

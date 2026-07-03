@@ -1,4 +1,4 @@
-import { FileUpload } from "@kernelui/react";
+import { FileUpload } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

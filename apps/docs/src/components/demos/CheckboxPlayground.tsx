@@ -1,4 +1,4 @@
-import { Checkbox } from "@kernelui/react";
+import { Checkbox } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

@@ -9,7 +9,7 @@ let sliderCounter = 0;
  * The filled portion of the track has no standardised styling API yet,
  * so this computes the percentage on every `input` event and feeds it
  * back in as a CSS custom property (`--percent`), the same hand-off
- * `@kernelui/react`'s `<Slider>` does.
+ * `@kernelui-lib/react`'s `<Slider>` does.
  *
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value` (default 0),

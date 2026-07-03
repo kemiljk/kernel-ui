@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Popover, RadioGroup, RadioGroupItem } from "@kernelui/react";
+import { Button, Popover, RadioGroup, RadioGroupItem } from "@kernelui-lib/react";
 
 /**
  * Distance-from-me is a genuine filter over a list of items — the

@@ -1,4 +1,4 @@
-import { Toggle } from "@kernelui/react";
+import { Toggle } from "@kernelui-lib/react";
 
 export default function ToggleDemo() {
   return (

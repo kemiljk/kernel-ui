@@ -1,8 +1,23 @@
 {
-  "name": "@kernelui/elements",
-  "version": "0.1.0",
+  "name": "@kernelui-lib/elements",
+  "version": "1.0.0",
   "description": "Kernel's components as native Custom Elements — framework-agnostic, light DOM, zero runtime dependencies.",
   "license": "MIT",
+  "author": "Karl Koch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiljk/kernel-ui.git",
+    "directory": "packages/elements"
+  },
+  "homepage": "https://www.kernelui.com",
+  "bugs": "https://github.com/kemiljk/kernel-ui/issues",
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "components",
+    "accessibility",
+    "design-system"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -17,11 +32,16 @@
   },
   "files": [
     "dist",
-    "llms.txt"
+    "llms.txt",
+    "LICENSE",
+    "README.md"
   ],
   "sideEffects": true,
   "dependencies": {
-    "@kernelui/styles": "workspace:*"
+    "@kernelui-lib/styles": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
@@ -31,6 +51,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   }
 }

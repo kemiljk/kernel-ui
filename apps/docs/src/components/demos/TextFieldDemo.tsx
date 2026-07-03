@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextField } from "@kernelui/react";
+import { TextField } from "@kernelui-lib/react";
 
 export default function TextFieldDemo() {
   const [email, setEmail] = useState("not-an-email");

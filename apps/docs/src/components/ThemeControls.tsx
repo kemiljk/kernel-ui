@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 import {
   ACCENTS,
   RADII,

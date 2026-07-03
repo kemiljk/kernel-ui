@@ -1,4 +1,4 @@
-import { Textarea } from "@kernelui/react";
+import { Textarea } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

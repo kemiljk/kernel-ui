@@ -4,7 +4,7 @@ import "./Checkbox.css";
 /**
  * `<kernel-checkbox>` — a real `<input type="checkbox">` inside a real
  * `<label>`, so clicking the text toggles the box for free. Mirrors
- * `@kernelui/react`'s `<Checkbox>`.
+ * `@kernelui-lib/react`'s `<Checkbox>`.
  *
  * Attributes: `checked`, `disabled`, `required` (all boolean), `name`,
  * `value`. `indeterminate` has no HTML attribute on the platform's own

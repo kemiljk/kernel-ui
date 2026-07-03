@@ -22,7 +22,7 @@ function normalizeHex(raw: string): string | null {
 /**
  * `<kernel-color-picker>` — a real `<input type="color">`, same
  * invisible-real-input-under-a-decorative-swatch approach as
- * `@kernelui/react`'s `<ColorPicker>` (see that file for the full
+ * `@kernelui-lib/react`'s `<ColorPicker>` (see that file for the full
  * rationale). A real `<label>` wraps both the swatch and the input, so
  * clicking anywhere opens the OS picker natively.
  *

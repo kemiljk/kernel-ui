@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Progress } from "@kernelui/react";
+import { Progress } from "@kernelui-lib/react";
 
 export default function ProgressDemo() {
   const [value, setValue] = useState(20);

@@ -1,4 +1,4 @@
-import { Button, DropdownMenu, MenuChevron, MenuItem, MenuSeparator } from "@kernelui/react";
+import { Button, DropdownMenu, MenuChevron, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 
 export default function DropdownMenuDemo() {
   return (

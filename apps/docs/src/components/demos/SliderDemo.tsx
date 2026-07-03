@@ -1,4 +1,4 @@
-import { Slider } from "@kernelui/react";
+import { Slider } from "@kernelui-lib/react";
 
 export default function SliderDemo() {
   return (

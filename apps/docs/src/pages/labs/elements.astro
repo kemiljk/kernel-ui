@@ -1,15 +1,15 @@
 ---
 // Scratch proof-of-concept page, deliberately not linked from nav or
-// components.ts: proves @kernelui/elements works end to end (real
+// components.ts: proves @kernelui-lib/elements works end to end (real
 // Custom Elements, light DOM, token-driven styling) with zero React
 // and zero client-framework hydration, ahead of any docs integration.
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import "@kernelui/elements/styles.css";
+import "@kernelui-lib/elements/styles.css";
 ---
 
 <BaseLayout title="Elements lab">
   <section style="padding-block: var(--kernel-space-8); display: flex; flex-direction: column; gap: var(--kernel-space-6); max-inline-size: 40rem;">
-    <h1>@kernelui/elements lab</h1>
+    <h1>@kernelui-lib/elements lab</h1>
     <p>
       Everything below is a real Custom Element (<code>&lt;kernel-button&gt;</code>,
       <code>&lt;kernel-card&gt;</code>, ...) — zero React import on this page, zero{" "}
@@ -37,7 +37,7 @@ import "@kernelui/elements/styles.css";
     <kernel-callout variant="info">
       <span slot="title">Heads up</span>
       This callout, its icon, and its colours are all driven by the same tokens{" "}
-      <code>@kernelui/react</code> reads.
+      <code>@kernelui-lib/react</code> reads.
     </kernel-callout>
 
     <kernel-card>
@@ -266,7 +266,7 @@ import "@kernelui/elements/styles.css";
 </BaseLayout>
 
 <script>
-  import { toast } from "@kernelui/elements";
+  import { toast } from "@kernelui-lib/elements";
 
   document.getElementById("lab-toast-default")?.addEventListener("click", () => {
     toast("Saved", { description: "Your changes have been saved." });

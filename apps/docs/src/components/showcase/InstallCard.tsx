@@ -1,4 +1,5 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
+import { GITHUB_URL } from "../../lib/site";
 
 export default function InstallCard() {
   return (
@@ -6,24 +7,16 @@ export default function InstallCard() {
       <h3>Get started</h3>
       <p>One package, every platform.</p>
       <div className="showcase-stack">
-        <pre style={{ margin: 0 }}>
-          <code
-            style={{
-              display: "block",
-              fontFamily: "var(--kernel-font-mono)",
-              fontSize: "var(--kernel-font-size-sm)",
-              backgroundColor: "var(--kernel-color-canvas)",
-              padding: "var(--kernel-space-2) var(--kernel-space-3)",
-              borderRadius: "var(--kernel-radius-sm)",
-            }}
-          >
-            npm install @kernelui/react
-          </code>
+        <pre>
+          <code>npm install @kernelui-lib/react @kernelui-lib/styles</code>
         </pre>
-        <Button variant="primary" style={{ width: "100%" }}>
+        <Button variant="primary" render={<a href="/installation/" />}>
           Read the docs
         </Button>
-        <Button variant="secondary" style={{ width: "100%" }}>
+        <Button
+          variant="secondary"
+          render={<a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" />}
+        >
           View on GitHub
         </Button>
       </div>

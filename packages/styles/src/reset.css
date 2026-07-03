@@ -122,7 +122,7 @@
      painted, so hiding it this way (not `display: none`, which strips
      it from the accessibility tree too) keeps the field correctly
      labeled for assistive tech while it disappears visually — the
-     same technique @kernelui/react's own FileUpload already uses for
+     same technique @kernelui-lib/react's own FileUpload already uses for
      its real, unstyled `<input type="file">`. */
   .kernel-sr-only {
     position: absolute;

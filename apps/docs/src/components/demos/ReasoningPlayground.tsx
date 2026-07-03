@@ -1,4 +1,4 @@
-import { Reasoning } from "@kernelui/react";
+import { Reasoning } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

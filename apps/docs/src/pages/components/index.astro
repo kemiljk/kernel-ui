@@ -1,21 +1,29 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
-import { components } from "../../data/components";
+import { components, CATEGORIES } from "../../data/components";
 
-const available = components.filter((c) => c.status === "available").length;
-const planned = components.length - available;
+const available = components.filter((c) => c.status === "available");
+const planned = components.length - available.length;
+
+const byCategory = CATEGORIES.map((category) => ({
+  category,
+  items: available.filter((c) => c.category === category),
+})).filter((group) => group.items.length > 0);
 ---
 
-<BaseLayout title="Components" withSidebar>
+<BaseLayout
+  title="Components"
+  description="Browse every Kernel component — props, accessibility notes, live demos, and Web Components equivalents."
+  withSidebar
+>
   <DocsSidebar slot="sidebar" />
   <div class="docs-prose">
     <h1>Components</h1>
     <p>
-      {available} components are built today — every one on real semantic
+      {available.length} components are built today — every one on real semantic
       HTML or a WAI-ARIA pattern, not a <code>&lt;div&gt;</code> standing in
-      for one. Pick one from the sidebar to see its props, accessibility
-      notes, and a live demo.
+      for one.
       {planned > 0 ? ` ${planned} more are planned.` : " The full set is live."}
     </p>
     <p>
@@ -23,5 +31,24 @@ const planned = components.length - available;
       a package running, then <a href="/theming/">theming</a> for the token
       reference behind every colour and radius on this site.
     </p>
+
+    {
+      byCategory.map(({ category, items }) => (
+        <section class="components-catalog-group" aria-labelledby={`catalog-${category.toLowerCase().replace(/\s+/g, "-")}`}>
+          <h2 id={`catalog-${category.toLowerCase().replace(/\s+/g, "-")}`}>{category}</h2>
+          <ul class="components-catalog">
+            {items.map((component) => (
+              <li>
+                <a href={`/components/${component.slug}/`} class="components-catalog-card">
+                  <span class="components-catalog-name">{component.name}</span>
+                  <span class="components-catalog-summary">{component.summary}</span>
+                  <span class="components-catalog-element">{component.element}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
   </div>
 </BaseLayout>

@@ -1,4 +1,4 @@
-import { Tabs, TabsList, Tab, TabPanel } from "@kernelui/react";
+import { Tabs, TabsList, Tab, TabPanel } from "@kernelui-lib/react";
 
 export default function TabsDemo() {
   return (

@@ -1,4 +1,4 @@
-import { Progress } from "@kernelui/react";
+import { Progress } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

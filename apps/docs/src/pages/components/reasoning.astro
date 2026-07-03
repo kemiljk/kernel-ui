@@ -5,7 +5,7 @@ import ExampleGrid from "../../components/ExampleGrid.astro";
 import Example from "../../components/Example.astro";
 import ReasoningDemo from "../../components/demos/ReasoningDemo";
 import ReasoningPlayground from "../../components/demos/ReasoningPlayground";
-import { Reasoning } from "@kernelui/react";
+import { Reasoning } from "@kernelui-lib/react";
 
 const defaultSnippet = `<Reasoning durationLabel="Thought for 3s">
   Checked the existing API before adding a new prop.
@@ -63,15 +63,16 @@ const openSnippet = `<Reasoning defaultOpen durationLabel="Thought for 6s">
 
     
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Reasoning.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>streaming</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>durationLabel</code></td><td>ReactNode</td><td>"Reasoning"</td></tr>
         <tr><td><code>defaultOpen</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>children</code></td><td>ReactNode (required)</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

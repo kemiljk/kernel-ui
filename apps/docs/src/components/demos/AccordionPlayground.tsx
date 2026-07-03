@@ -1,4 +1,4 @@
-import { Accordion, AccordionItem } from "@kernelui/react";
+import { Accordion, AccordionItem } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

@@ -1,4 +1,7 @@
-import { Badge } from "@kernelui/react";
+import { Badge } from "@kernelui-lib/react";
+import { components } from "../../data/components";
+
+const available = components.filter((c) => c.status === "available").length;
 
 export default function RepoCard() {
   return (
@@ -10,13 +13,13 @@ export default function RepoCard() {
       <p>The actual kernel of the web, componentised.</p>
       <div className="showcase-row">
         <p>
-          <strong>2.1K</strong> Stars
+          <strong>Open source</strong>
         </p>
         <p>
-          <strong>43</strong> Components
+          <strong>{available}</strong> Components
         </p>
         <p>
-          <strong>0</strong> Dependencies
+          <strong>0</strong> Runtime deps
         </p>
       </div>
     </div>

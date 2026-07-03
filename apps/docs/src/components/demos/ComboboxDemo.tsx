@@ -1,4 +1,4 @@
-import { Combobox } from "@kernelui/react";
+import { Combobox } from "@kernelui-lib/react";
 
 const frameworks = [
   { value: "astro", label: "Astro" },

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Reasoning } from "@kernelui/react";
+import { Reasoning } from "@kernelui-lib/react";
 
 export default function ReasoningDemo() {
   const [streaming, setStreaming] = useState(true);

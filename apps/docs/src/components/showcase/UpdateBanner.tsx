@@ -1,4 +1,5 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
+import { PACKAGE_VERSION } from "../../lib/site";
 
 export default function UpdateBanner() {
   return (
@@ -6,12 +7,12 @@ export default function UpdateBanner() {
       <div className="showcase-row-between">
         <div className="showcase-stack">
           <p>
-            <strong>v2.4 is out</strong>
+            <strong>v{PACKAGE_VERSION}</strong>
           </p>
-          <p>New Combobox and DateRangePicker components.</p>
+          <p>React and Web Components packages, shared design tokens.</p>
         </div>
-        <Button variant="secondary" size="sm">
-          Update
+        <Button variant="secondary" size="sm" render={<a href="/installation/" />}>
+          Install
         </Button>
       </div>
     </div>

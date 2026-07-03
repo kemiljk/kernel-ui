@@ -46,7 +46,7 @@
        plays off the library's name. Set this to any hue to reshade the
        whole accent ramp live; for a curated, gamut-checked starting
        point instead, use one of the named presets in
-       @kernelui/styles/themes/ (amber, blue, green, red, violet,
+       @kernelui-lib/styles/themes/ (amber, blue, green, red, violet,
        orange, teal) via data-kernel-accent="name" instead of
        hand-picking a hue here, amber especially: warm hues peak in
        chroma at a much lighter lightness than this flat curve assumes,

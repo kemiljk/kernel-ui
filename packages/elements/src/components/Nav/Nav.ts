@@ -46,7 +46,7 @@ export class KernelNav extends KernelElement {
  * `[aria-current="page"]` selector; nothing client-side has to run to
  * know which link is active.
  *
- * Renders as `<li><a></a></li>`, matching `@kernelui/react`'s
+ * Renders as `<li><a></a></li>`, matching `@kernelui-lib/react`'s
  * `<NavLink>`. The outer `<kernel-nav-link>` tag itself is
  * `display: contents` (see Nav.css) so it doesn't disrupt the parent
  * `<ul>`'s flex layout — the one unavoidable structural difference

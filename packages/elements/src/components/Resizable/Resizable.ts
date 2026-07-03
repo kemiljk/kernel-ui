@@ -11,7 +11,7 @@ function clamp(value: number, min: number, max: number): number {
 /**
  * `<kernel-resizable>` — a two-pane splitter. Exactly two element
  * children are expected (the two panes); everything else about the
- * drag/keyboard behaviour mirrors `@kernelui/react`'s `<Resizable>`
+ * drag/keyboard behaviour mirrors `@kernelui-lib/react`'s `<Resizable>`
  * exactly (same `role="separator"` divider, same arrow-key stepping,
  * same pointer-capture drag).
  *

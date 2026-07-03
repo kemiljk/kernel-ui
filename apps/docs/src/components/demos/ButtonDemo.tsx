@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 import { CheckIcon, CopyIcon, MagnifyingGlassIcon } from "../icons";
 
 export default function ButtonDemo() {

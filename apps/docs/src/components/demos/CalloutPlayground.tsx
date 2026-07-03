@@ -1,4 +1,4 @@
-import { Callout } from "@kernelui/react";
+import { Callout } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

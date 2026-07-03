@@ -8,7 +8,7 @@ kernel-dropdown-menu {
    item — and a <button>'s width:auto shrink-to-fits its content
    regardless of its (now full-width) parent, unlike flex's stretch
    alignment, which does force a direct flex item's cross size. Same bug
-   class @kernelui/react never hits, since MenuItem's <button> renders as
+   class @kernelui-lib/react never hits, since MenuItem's <button> renders as
    .content's direct child with no wrapper in between. */
 kernel-menu-item,
 kernel-menu-separator {
@@ -64,7 +64,7 @@ kernel-menu-separator {
   text-align: start;
   border: none;
   /* Concentric with .content's own rounding — see the matching comment
-     in @kernelui/react's DropdownMenu.module.css `.item`. */
+     in @kernelui-lib/react's DropdownMenu.module.css `.item`. */
   border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
   padding: var(--kernel-space-3);
   background-color: transparent;
@@ -84,7 +84,7 @@ kernel-menu-separator {
 .kernel-DropdownMenu-item:focus-visible {
   background-color: var(--kernel-color-accent-subtle);
   /* Inset rather than outset — see the matching comment in
-     @kernelui/react's DropdownMenu.module.css `.item`. */
+     @kernelui-lib/react's DropdownMenu.module.css `.item`. */
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: -2px;
 }
@@ -117,7 +117,7 @@ kernel-menu-separator {
 /* Not scoped to kernel-dropdown-menu specifically — there's no dedicated
    trigger element to attach this to (the trigger is arbitrary light-DOM
    markup, slotted in as-is), so this is a plain reusable class for
-   authors to drop the same chevron markup `@kernelui/react`'s
+   authors to drop the same chevron markup `@kernelui-lib/react`'s
    `<MenuChevron>` renders straight into their own trigger's HTML. It
    picks up aria-expanded from whichever ancestor element has it (the
    slotted trigger itself, set by KernelDropdownMenu on toggle) and

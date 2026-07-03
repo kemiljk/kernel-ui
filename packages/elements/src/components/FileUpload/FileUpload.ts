@@ -65,7 +65,7 @@ function syncNativeFiles(input: HTMLInputElement, files: File[]) {
 /**
  * `<kernel-file-upload>` — a real `<input type="file">` wrapped entirely
  * inside a real `<label>` that IS the drop zone, same approach as
- * `@kernelui/react`'s `<FileUpload>` (see that file for the full
+ * `@kernelui-lib/react`'s `<FileUpload>` (see that file for the full
  * rationale). No `files` attribute: a `FileList` can't serialize into a
  * string, and the real input's own `.files` is already the correct
  * source of truth, so this element reads it directly after every

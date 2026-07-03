@@ -1,4 +1,5 @@
-import { Avatar, HoverCard } from "@kernelui/react";
+import { Avatar, HoverCard } from "@kernelui-lib/react";
+import { GITHUB_URL } from "../../lib/site";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
@@ -10,7 +11,7 @@ const controls = [
   },
   { type: "number" as const, prop: "openDelay", label: "openDelay (ms)", default: 400, min: 0, max: 1000, step: 50 },
   { type: "number" as const, prop: "closeDelay", label: "closeDelay (ms)", default: 200, min: 0, max: 1000, step: 50 },
-  { type: "text" as const, prop: "trigger", label: "trigger label", default: "@karlkoch" },
+  { type: "text" as const, prop: "trigger", label: "trigger label", default: "kernel-ui" },
 ];
 
 function code(values: PlaygroundValues) {
@@ -18,7 +19,7 @@ function code(values: PlaygroundValues) {
   if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
   if (Number(values.openDelay) !== 400) attrs.push(`openDelay={${Number(values.openDelay)}}`);
   if (Number(values.closeDelay) !== 200) attrs.push(`closeDelay={${Number(values.closeDelay)}}`);
-  attrs.push(`render={<a href="https://github.com/karlkoch">${values.trigger || "@karlkoch"}</a>}`);
+  attrs.push(`render={<a href="${GITHUB_URL}">${values.trigger || "kernel-ui"}</a>}`);
   return `<HoverCard
   ${attrs.join("\n  ")}
   content={/* Avatar + name + bio */}
@@ -31,7 +32,7 @@ function elementsCode(values: PlaygroundValues) {
   if (Number(values.openDelay) !== 400) attrs.push(`open-delay="${Number(values.openDelay)}"`);
   if (Number(values.closeDelay) !== 200) attrs.push(`close-delay="${Number(values.closeDelay)}"`);
   return `<kernel-hover-card${attrs.length ? " " + attrs.join(" ") : ""}>
-  <a slot="trigger" href="https://github.com/karlkoch">${values.trigger || "@karlkoch"}</a>
+  <a slot="trigger" href="${GITHUB_URL}">${values.trigger || "kernel-ui"}</a>
   <!-- Avatar + name + bio -->
 </kernel-hover-card>`;
 }
@@ -47,7 +48,7 @@ export default function HoverCardPlayground() {
           placement={values.placement as "top" | "bottom" | "left" | "right"}
           openDelay={Number(values.openDelay)}
           closeDelay={Number(values.closeDelay)}
-          render={<a href="https://github.com/karlkoch">{String(values.trigger) || "@karlkoch"}</a>}
+          render={<a href={GITHUB_URL}>{String(values.trigger) || "kernel-ui"}</a>}
           content={
             <div style={{ display: "flex", gap: "var(--kernel-space-3)", alignItems: "flex-start" }}>
               <Avatar src="/karl-square.png" alt="" fallback="KK" />

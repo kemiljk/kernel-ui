@@ -5,7 +5,7 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuTrigger,
-} from "@kernelui/react";
+} from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 function preventDemoNavigation(event: MouseEvent) {

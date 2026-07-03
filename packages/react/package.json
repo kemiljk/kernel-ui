@@ -1,8 +1,23 @@
 {
-  "name": "@kernelui/react",
-  "version": "0.1.0",
+  "name": "@kernelui-lib/react",
+  "version": "1.0.0",
   "description": "Accessible React components built on real semantic HTML, not div soup.",
   "license": "MIT",
+  "author": "Karl Koch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiljk/kernel-ui.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://www.kernelui.com",
+  "bugs": "https://github.com/kemiljk/kernel-ui/issues",
+  "keywords": [
+    "react",
+    "components",
+    "accessibility",
+    "design-system",
+    "semantic-html"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -18,7 +33,9 @@
   },
   "files": [
     "dist",
-    "llms.txt"
+    "llms.txt",
+    "LICENSE",
+    "README.md"
   ],
   "sideEffects": [
     "*.css"
@@ -28,12 +45,19 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@kernelui/styles": "workspace:*"
+    "@kernelui-lib/styles": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "jsdom": "^26.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "^5.7.3",
@@ -45,6 +69,7 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --config vitest.config.ts",
+    "prepublishOnly": "npm run build"
   }
 }

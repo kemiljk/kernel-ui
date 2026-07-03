@@ -1,4 +1,4 @@
-import { Resizable } from "@kernelui/react";
+import { Resizable } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Button, Switch, Tab, TabPanel, Tabs, TabsList, TextField } from "@kernelui/react";
+import { Button, Switch, Tab, TabPanel, Tabs, TabsList, TextField } from "@kernelui-lib/react";
 import CopyButton from "./CopyButton";
 import { HighlightedCode } from "./HighlightedCode";
 
@@ -53,7 +53,7 @@ export interface PlaygroundProps {
    * one specific set of values was pure repetition, and the two could
    * silently drift out of sync with each other. */
   code?: (values: PlaygroundValues) => string;
-  /** Same values, serialised as the @kernelui/elements custom-element
+  /** Same values, serialised as the @kernelui-lib/elements custom-element
    * markup instead. Optional — when provided, the Usage section grows a
    * React/Web Components toggle; when omitted, Usage just shows `code`
    * on its own, same as before. */

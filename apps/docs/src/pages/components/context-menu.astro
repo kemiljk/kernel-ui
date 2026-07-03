@@ -5,7 +5,7 @@ import UsageAccordion from "../../components/UsageAccordion.astro";
 import ContextMenuDemo from "../../components/demos/ContextMenuDemo";
 import ContextMenuPlayground from "../../components/demos/ContextMenuPlayground";
 
-const usageSnippet = `import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui/react";
+const usageSnippet = `import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 
 function FileRow() {
   return (
@@ -51,15 +51,16 @@ function FileRow() {
     <ContextMenuPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Context Menu.</caption>
+      <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
       <tbody>
         <tr><td><code>ContextMenu</code></td><td><code>render</code></td><td>the trigger area (required)</td></tr>
         <tr><td><code>ContextMenu</code></td><td><code>children</code></td><td>menu content (required)</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <p>

@@ -15,7 +15,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--kernel-space-3);
-  /* Same "Round" fix as `@kernelui/react`'s own Toast — see its
+  /* Same "Round" fix as `@kernelui-lib/react`'s own Toast — see its
      Toast.module.css for the full rationale. */
   padding: calc(var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4);
   border: var(--kernel-border-width) solid var(--kernel-color-border);

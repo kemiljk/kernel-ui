@@ -10,8 +10,8 @@ the API reference. This file is about *building* the library, not using it.
 
 ## The one rule that matters most: build every component twice
 
-Every component ships in **both** `@kernelui/react` (`packages/react/src/components/<Name>/`)
-and `@kernelui/elements` (`packages/elements/src/components/<Name>/`) — a
+Every component ships in **both** `@kernelui-lib/react` (`packages/react/src/components/<Name>/`)
+and `@kernelui-lib/elements` (`packages/elements/src/components/<Name>/`) — a
 React version and a framework-free Custom Element version, with matching
 visual design and equivalent props/attributes. Adding a component to only
 one package is an incomplete PR, not a smaller one. Before considering any
@@ -20,18 +20,18 @@ new component done, grep both `packages/react/src/index.ts` and
 
 ## Repo layout
 
-- `packages/react` — `@kernelui/react`. Each component: `<Name>.tsx` +
+- `packages/react` — `@kernelui-lib/react`. Each component: `<Name>.tsx` +
   `<Name>.module.css`, exported from `src/index.ts` in shipping order
   (not alphabetical — new exports go at the end, before the `polymorphic`
   utils export block).
-- `packages/elements` — `@kernelui/elements`. Each component: `<Name>.ts`
+- `packages/elements` — `@kernelui-lib/elements`. Each component: `<Name>.ts`
   (extends `KernelElement` from `../../base`, registers via
   `customElements.define`) + `<Name>.css`, exported from `src/index.ts`.
   CSS class names use `kernelClass("Name", "part")`, which produces the
   **exact same class names** React's CSS Modules compile to (see
   `packages/react/vite.config.ts`'s `generateScopedName`) — this is
   deliberate, so one set of component styles serves both packages.
-- `packages/styles` — `@kernelui/styles`. Design tokens
+- `packages/styles` — `@kernelui-lib/styles`. Design tokens
   (`tokens.css`) and reset (`reset.css`). Both packages' components read
   tokens from here; never hardcode a color/spacing/radius value in a
   component's own CSS.
@@ -69,7 +69,7 @@ new component done, grep both `packages/react/src/index.ts` and
 - **The docs site consumes `dist/`, not `src/`.** After changing
   `packages/react` or `packages/elements`, run `bun run build` in that
   package *before* checking the docs site in a browser — the Astro dev
-  server resolves `@kernelui/react`/`@kernelui/elements` through their
+  server resolves `@kernelui-lib/react`/`@kernelui-lib/elements` through their
   built output, not live TypeScript source.
 - **Custom props named `onError`/`onChange`/etc. collide with native
   `HTMLAttributes`.** If a component's props extend

@@ -6,7 +6,7 @@ import Example from "../../components/Example.astro";
 import ComposerDemo from "../../components/demos/ComposerDemo";
 import ComposerActionsExample from "../../components/demos/ComposerActionsExample";
 import ComposerPlayground from "../../components/demos/ComposerPlayground";
-import { Composer } from "@kernelui/react";
+import { Composer } from "@kernelui-lib/react";
 
 const basicSnippet = `<Composer placeholder="Ask anything…" />`;
 
@@ -68,8 +68,9 @@ const thinkingSnippet = `<Composer placeholder="Ask anything…" thinking />`;
 
     
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Composer.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>value</code> / <code>defaultValue</code></td><td>string</td><td>—</td></tr>
         <tr><td><code>onValueChange</code></td><td>(value: string) =&gt; void</td><td>—</td></tr>
@@ -80,7 +81,7 @@ const thinkingSnippet = `<Composer placeholder="Ask anything…" thinking />`;
         <tr><td><code>thinking</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>actionsLeading</code> / <code>actionsTrailing</code></td><td>ReactNode | (ctx: {`{ submit: () => void }`}) =&gt; ReactNode</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

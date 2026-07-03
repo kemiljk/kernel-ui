@@ -1,4 +1,4 @@
-import { Button, Composer } from "@kernelui/react";
+import { Button, Composer } from "@kernelui-lib/react";
 import { PaperclipIcon } from "../icons";
 
 // actionsLeading/actionsTrailing take a JSX element (or a function

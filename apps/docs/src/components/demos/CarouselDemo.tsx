@@ -1,4 +1,4 @@
-import { Carousel, CarouselSlide } from "@kernelui/react";
+import { Carousel, CarouselSlide } from "@kernelui-lib/react";
 
 const slides = ["Slide 1", "Slide 2", "Slide 3", "Slide 4"];
 

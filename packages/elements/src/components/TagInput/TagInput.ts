@@ -10,7 +10,7 @@ function escapeRegExp(value: string): string {
 /**
  * `<kernel-tag-input>` — freeform text that commits into discrete tags,
  * same `role="list"` of `role="listitem"` chips + trailing `listitem`
- * input as `@kernelui/react`'s `<TagInput>` (see that file for the full
+ * input as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full
  * interaction rationale: Backspace-removes-last-tag, chip remove buttons
  * excluded from the tab sequence, no autocomplete).
  *

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Switch } from "@kernelui/react";
+import { Switch } from "@kernelui-lib/react";
 import { THEME_CHANGE_EVENT, applyColorScheme, getStoredColorScheme } from "../lib/theme";
 import { MoonIcon as MoonGlyph, SunIcon as SunGlyph } from "./icons";
 

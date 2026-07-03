@@ -6,7 +6,7 @@ import "./Avatar.css";
  * Broken and missing images can't be detected in CSS alone, so the
  * fallback swap is the one piece of unavoidable JavaScript here (an
  * `error` listener), everything else, alt text included, is the
- * browser's native image handling. Mirrors `@kernelui/react`'s
+ * browser's native image handling. Mirrors `@kernelui-lib/react`'s
  * `<Avatar>`.
  *
  * Attributes: `src`, `alt`, `fallback` (shown while there's no `src`, or

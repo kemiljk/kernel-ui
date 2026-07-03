@@ -27,8 +27,9 @@ import TablePlayground from "../../components/demos/TablePlayground";
     <TablePlayground client:load />
 
     <h2>Components</h2>
-    <table class="docs-table">
-      <thead><tr><th>Component</th><th>Renders</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Table.</caption>
+      <thead><tr><th scope="col">Component</th><th scope="col">Renders</th></tr></thead>
       <tbody>
         <tr><td><code>Table</code></td><td><code>&lt;table&gt;</code></td></tr>
         <tr><td><code>TableCaption</code></td><td><code>&lt;caption&gt;</code></td></tr>
@@ -38,6 +39,6 @@ import TablePlayground from "../../components/demos/TablePlayground";
         <tr><td><code>TableHead</code></td><td><code>&lt;th scope="col"&gt;</code> by default</td></tr>
         <tr><td><code>TableCell</code></td><td><code>&lt;td&gt;</code></td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </BaseLayout>

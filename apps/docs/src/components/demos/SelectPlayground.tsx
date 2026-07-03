@@ -1,4 +1,4 @@
-import { Select, SelectOption } from "@kernelui/react";
+import { Select, SelectOption } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

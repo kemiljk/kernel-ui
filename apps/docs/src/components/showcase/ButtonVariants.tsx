@@ -1,4 +1,4 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 
 export default function ButtonVariants() {
   return (

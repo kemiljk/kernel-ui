@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Button, mergeRefs, useFloatingPosition } from "@kernelui/react";
+import { Button, mergeRefs, useFloatingPosition } from "@kernelui-lib/react";
 import ThemeControls from "./ThemeControls";
 
 /**

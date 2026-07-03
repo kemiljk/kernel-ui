@@ -28,15 +28,16 @@ import ResizablePlayground from "../../components/demos/ResizablePlayground";
     <ResizablePlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Resizable.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>children</code></td><td>[ReactNode, ReactNode] (required)</td><td>—</td></tr>
         <tr><td><code>defaultSplit</code></td><td>number</td><td>50</td></tr>
         <tr><td><code>min</code> / <code>max</code></td><td>number</td><td>20 / 80</td></tr>
         <tr><td><code>orientation</code></td><td><code>"horizontal"</code> | <code>"vertical"</code></td><td>"horizontal"</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

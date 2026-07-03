@@ -1,4 +1,4 @@
-# @kernelui/react — LLM reference
+# @kernelui-lib/react — LLM reference
 
 A component library built on real semantic HTML instead of div soup: every
 component wraps a genuine native element (`<button>`, `<dialog>`, `<input
@@ -11,18 +11,18 @@ exported TypeScript types (`dist/index.d.ts`) for exact prop names.
 ## Install
 
 ```bash
-npm install @kernelui/react @kernelui/styles
+npm install @kernelui-lib/react @kernelui-lib/styles
 ```
 
 ```tsx
-import "@kernelui/styles";        // tokens: color, radius, spacing, type
-import "@kernelui/react/styles.css"; // this package's compiled component CSS
+import "@kernelui-lib/styles";        // tokens: color, radius, spacing, type
+import "@kernelui-lib/react/styles.css"; // this package's compiled component CSS
 
-import { Button, TextField } from "@kernelui/react";
+import { Button, TextField } from "@kernelui-lib/react";
 ```
 
 Both CSS imports are required for the library's actual visual design.
-Skip `@kernelui/react/styles.css` and every component still renders as its
+Skip `@kernelui-lib/react/styles.css` and every component still renders as its
 real underlying element, fully functional, just unstyled — never broken.
 
 ## Conventions (true across nearly every component — learn these once)
@@ -51,7 +51,7 @@ real underlying element, fully functional, just unstyled — never broken.
   not a Provider you have to wrap the app in — the exceptions are
   `<ToastViewport>` (mount once, then call the imported `toast()`
   function from anywhere) and `<CommandPalette>` (same idea).
-- **React and Web Components share one design**: `@kernelui/elements`
+- **React and Web Components share one design**: `@kernelui-lib/elements`
   ships every component below as a framework-free Custom Element
   (`<kernel-button>`, `<kernel-text-field>`, ...) with the same visual
   design and equivalent kebab-case attributes (`onValueChange` becomes a

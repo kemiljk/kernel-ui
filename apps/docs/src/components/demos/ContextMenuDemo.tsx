@@ -1,4 +1,4 @@
-import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui/react";
+import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 
 export default function ContextMenuDemo() {
   return (

@@ -5,7 +5,7 @@ import ExampleGrid from "../../components/ExampleGrid.astro";
 import Example from "../../components/Example.astro";
 import ThinkingIndicatorDemo from "../../components/demos/ThinkingIndicatorDemo";
 import ThinkingIndicatorPlayground from "../../components/demos/ThinkingIndicatorPlayground";
-import { ThinkingIndicator } from "@kernelui/react";
+import { ThinkingIndicator } from "@kernelui-lib/react";
 
 const defaultSnippet = `<ThinkingIndicator />`;
 const customSnippet = `<ThinkingIndicator label="Generating" />`;
@@ -41,12 +41,13 @@ const customSnippet = `<ThinkingIndicator label="Generating" />`;
 
     
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Thinking Indicator.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>label</code></td><td>string</td><td>"Thinking"</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

@@ -5,7 +5,7 @@ import "./Button.css";
  * `<kernel-button>` — a real `<button>`. Renders as one by default
  * because that's the only element that gets click, keyboard
  * (Space/Enter), focus, and form association for free from the
- * browser. Mirrors `@kernelui/react`'s `<Button>`.
+ * browser. Mirrors `@kernelui-lib/react`'s `<Button>`.
  *
  * Attributes: `variant` (primary/secondary/ghost/danger, default
  * secondary), `size` (sm/md/lg, default md), `disabled`, `loading`

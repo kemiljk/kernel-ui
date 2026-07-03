@@ -42,7 +42,7 @@ function setContent(target: HTMLElement, content: ToastContent | undefined) {
  * `<kernel-toast-viewport>` — mount once, anywhere (the end of the page
  * body is typical). Toasts are pushed imperatively via the exported
  * `toast()` function (also `toast.success`/`.warning`/`.danger`/
- * `.dismiss`), identical API to `@kernelui/react`'s own `toast()`. Same
+ * `.dismiss`), identical API to `@kernelui-lib/react`'s own `toast()`. Same
  * hover-to-expand stack, swipe-to-dismiss, and pause-on-hover behaviour.
  */
 export class KernelToastViewport extends KernelElement {

@@ -5,7 +5,7 @@ import UsageAccordion from "../../components/UsageAccordion.astro";
 import TabsDemo from "../../components/demos/TabsDemo";
 import TabsPlayground from "../../components/demos/TabsPlayground";
 
-const tabsSnippet = `import { Tabs, TabsList, Tab, TabPanel } from "@kernelui/react";
+const tabsSnippet = `import { Tabs, TabsList, Tab, TabPanel } from "@kernelui-lib/react";
 
 <Tabs defaultValue="profile">
   <TabsList aria-label="Account settings">
@@ -43,15 +43,16 @@ const tabsSnippet = `import { Tabs, TabsList, Tab, TabPanel } from "@kernelui/re
     <TabsPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
-      <thead><tr><th>Component</th><th>Prop</th><th>Type</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Tabs.</caption>
+      <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
       <tbody>
         <tr><td><code>Tabs</code></td><td><code>defaultValue</code></td><td>string (required)</td></tr>
         <tr><td><code>Tabs</code></td><td><code>value</code> / <code>onValueChange</code></td><td>string / (value) =&gt; void</td></tr>
         <tr><td><code>Tab</code></td><td><code>value</code></td><td>string (required)</td></tr>
         <tr><td><code>TabPanel</code></td><td><code>value</code></td><td>string (required)</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

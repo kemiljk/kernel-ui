@@ -1,4 +1,4 @@
-import { Breadcrumbs, BreadcrumbItem } from "@kernelui/react";
+import { Breadcrumbs, BreadcrumbItem } from "@kernelui-lib/react";
 
 export default function BreadcrumbsDemo() {
   return (

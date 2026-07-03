@@ -1,4 +1,4 @@
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 
 /**
  * Both are real navigations, not in-place actions, so both render as

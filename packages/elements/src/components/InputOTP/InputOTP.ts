@@ -6,7 +6,7 @@ import "./InputOTP.css";
  * logical value: the concatenated code string. Unlike RadioGroup's
  * arrow-key roving, focus here advances automatically as each digit is
  * typed, mirroring how native OTP autofill and every OTP UI users
- * already know behaves. Mirrors `@kernelui/react`'s `<InputOTP>`.
+ * already know behaves. Mirrors `@kernelui-lib/react`'s `<InputOTP>`.
  *
  * Attributes: `length` (default 6), `value`, `label`, `disabled`.
  * Dispatches a real, bubbling `change` event on every edit, and a

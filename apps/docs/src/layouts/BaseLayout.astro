@@ -8,6 +8,8 @@ import SiteFooter from "../components/SiteFooter.astro";
 import MobileNav from "../components/MobileNav";
 import DocsSidebarNav from "../components/DocsSidebarNav.astro";
 import TableOfContents from "../components/TableOfContents.astro";
+import { components } from "../data/components";
+import { SITE_URL } from "../lib/site";
 
 interface Props {
   title: string;
@@ -17,9 +19,24 @@ interface Props {
 
 const {
   title,
-  description = "A component library built on the actual kernel of the web: real semantic HTML, not div soup.",
+  description: descriptionProp,
   withSidebar = false,
 } = Astro.props;
+
+const slugMatch = Astro.url.pathname.match(/^\/components\/([^/]+)\/$/);
+const componentEntry = slugMatch
+  ? components.find((c) => c.slug === slugMatch[1])
+  : undefined;
+
+const description =
+  descriptionProp ??
+  (componentEntry
+    ? `${componentEntry.summary} Built on ${componentEntry.element}.`
+    : "A component library built on the actual kernel of the web: real semantic HTML, not div soup.");
+
+const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
+const ogImage = new URL("/og.png", SITE_URL).href;
+const pageTitle = Astro.url.pathname === "/" ? "Kernel" : `${title} · Kernel`;
 ---
 
 <!doctype html>
@@ -126,22 +143,18 @@ const {
       document.addEventListener("astro:after-swap", kernelReplayHeroEntrance);
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} · Kernel</title>
+    <link rel="canonical" href={canonicalUrl} />
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <!-- Relative, not absolute: no production domain is configured
-         anywhere in the repo (astro.config.mjs has no `site`, vercel.json
-         has no domain). Most crawlers resolve a relative og:image against
-         the page URL, but it's not to spec — once a domain is decided, add
-         `site: "https://..."` to astro.config.mjs and switch this to
-         `new URL("/og.png", Astro.site)` for a proper absolute URL. -->
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/og.png" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
+    <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content="/og.png" />
+    <meta name="twitter:image" content={ogImage} />
     <meta name="color-scheme" content="light dark" />
     <!-- Same mark as SiteHeader's logo, but with a fixed amber fill rather
          than `var(--kernel-color-accent)`: a favicon loads standalone, with
@@ -237,7 +250,7 @@ const {
       });
     </script>
   </head>
-  <body>
+  <body data-with-sidebar={withSidebar ? "true" : "false"}>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader />
     <div class="docs-shell" data-with-sidebar={withSidebar ? "true" : "false"}>

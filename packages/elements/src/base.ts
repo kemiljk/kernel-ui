@@ -4,7 +4,7 @@
  * real native child (a real `<button>`, `<hr>`, `<nav>`, ...) and syncs
  * attributes onto it imperatively — the same way the browser's own
  * built-in elements work internally, and the same "real elements, not
- * div soup" principle `@kernelui/react` is built on.
+ * div soup" principle `@kernelui-lib/react` is built on.
  *
  * Light DOM only: nothing here calls `attachShadow()`. Kernel's whole
  * CSS architecture is one token cascade reaching every component from

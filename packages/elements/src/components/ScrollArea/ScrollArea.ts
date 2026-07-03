@@ -6,7 +6,7 @@ const EDGE_FADE_DISTANCE = 24;
 /**
  * `<kernel-scroll-area>` — a native overflow container. Attributes:
  * `max-block-size` (a CSS length string; omit it and control height via
- * the element's own `style`/class instead, same as `@kernelui/react`'s
+ * the element's own `style`/class instead, same as `@kernelui-lib/react`'s
  * `maxBlockSize` prop), and `edge-shadow` (a boolean attribute — shows
  * an inset shadow at whichever edge still has content to scroll toward,
  * hidden again once that edge is actually scrolled into view).

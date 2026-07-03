@@ -1,4 +1,4 @@
-import { InputOTP } from "@kernelui/react";
+import { InputOTP } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

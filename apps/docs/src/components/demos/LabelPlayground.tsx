@@ -1,4 +1,4 @@
-import { Label } from "@kernelui/react";
+import { Label } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

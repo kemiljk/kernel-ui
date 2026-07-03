@@ -2,9 +2,11 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ThemePlayground from "../components/ThemePlayground";
 import HeroCtas from "../components/HeroCtas";
+import OpenSourceCallout from "../components/OpenSourceCallout";
 import CodeBlock from "../components/CodeBlock.astro";
 import KernelMark from "../components/KernelMark.astro";
 import { components } from "../data/components";
+import { GITHUB_URL } from "../lib/site";
 import BookDemoCard from "../components/showcase/BookDemoCard";
 import StatusRow from "../components/showcase/StatusRow";
 import EditorSettings from "../components/showcase/EditorSettings";
@@ -50,22 +52,25 @@ const divSoupSnippet = `<div
   Save changes
 </div>`;
 
-const reactPlatformSnippet = `import { Button } from "@kernelui/react";
+const reactPlatformSnippet = `import { Button } from "@kernelui-lib/react";
 
 <Button variant="primary">Save changes</Button>`;
 
 const elementsPlatformSnippet = `<script type="module">
-  import "@kernelui/elements";
+  import "@kernelui-lib/elements";
 </script>
 
 <kernel-button variant="primary">Save changes</kernel-button>`;
 
-const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
-// No "@kernelui/react/styles.css" import anywhere —
+const headlessPlatformSnippet = `import { Button } from "@kernelui-lib/react";
+// No "@kernelui-lib/react/styles.css" import anywhere —
 // <Button> is still a real <button>, just unstyled.`;
+
+const CONTRIBUTING_URL = `${GITHUB_URL}/blob/master/CONTRIBUTING.md`;
 ---
 
-<BaseLayout title="Kernel">
+<BaseLayout title="Home" description="A component library built on real semantic HTML — React and Web Components, one shared token layer.">
+  <div class="home">
   <section class="hero">
     <KernelMark class="hero-mark" />
     <div class="hero-copy">
@@ -81,13 +86,14 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
   </section>
 
   <section class="feature-section" aria-labelledby="showcase-heading">
-    <p class="section-eyebrow" id="showcase-heading">Showcase</p>
-    <h2>Real components, composed into real screens</h2>
+    <p class="section-eyebrow">Showcase</p>
+    <h2 id="showcase-heading">Real components, composed into real screens</h2>
     <p class="principles-intro">
       A scheduling card. A docs nav. An install panel. Each one is the
       real library at work, not a screenshot.
     </p>
-    <div class="showcase-columns">
+    <div class="showcase-bleed">
+      <div class="showcase-columns">
       <div class="showcase-card">
         <h3>One value, one cascade</h3>
         <p>
@@ -112,6 +118,7 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
       <UpdateBanner client:visible />
       <NotificationToggle client:visible />
       <UnsavedChangesCard client:visible />
+      </div>
     </div>
   </section>
 
@@ -179,8 +186,8 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
     <p class="section-eyebrow">Platforms</p>
     <h2 id="platforms-heading">Everywhere you already build</h2>
     <p class="comparison-intro">
-      Three ways in. <code>@kernelui/react</code> is the flagship.{" "}
-      <code>@kernelui/elements</code> is the same design system as native
+      Three ways in. <code>@kernelui-lib/react</code> is the flagship.{" "}
+      <code>@kernelui-lib/elements</code> is the same design system as native
       Custom Elements — Vue, Svelte, Astro, or plain HTML, no wrapper
       required. Or skip the stylesheet on either one and get real,
       fully-functional semantic elements with none of Kernel's own look —
@@ -213,10 +220,19 @@ const headlessPlatformSnippet = `import { Button } from "@kernelui/react";
     <p class="section-eyebrow">Get started</p>
     <h2>Built on the parts of the web that already work.</h2>
     <p class="closing-intro">
-      {available} components are ready today{planned > 0 ? `, with ${planned} more on the way.` : " — the full set is live."}
+      Kernel is MIT-licensed and developed on GitHub. Contributions to
+      docs, accessibility, and component parity are welcome.
+      {available} components are ready today{planned > 0 ? `, with ${planned} more on the way.` : ". The full set is live."}
+    </p>
+    <OpenSourceCallout client:visible />
+    <p class="closing-links">
+      <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+      <span aria-hidden="true"> · </span>
+      <a href={CONTRIBUTING_URL} target="_blank" rel="noopener noreferrer">Contributing guide</a>
     </p>
     <div class="hero-ctas">
       <HeroCtas />
     </div>
   </section>
+  </div>
 </BaseLayout>

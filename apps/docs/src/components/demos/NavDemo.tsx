@@ -1,4 +1,4 @@
-import { Nav, NavLink } from "@kernelui/react";
+import { Nav, NavLink } from "@kernelui-lib/react";
 
 /** hrefs here are illustrative, not real routes — this demo shouldn't
  * actually navigate away from the docs page it's embedded in. */

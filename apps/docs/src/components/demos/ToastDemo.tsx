@@ -1,4 +1,4 @@
-import { Button, ToastViewport, toast } from "@kernelui/react";
+import { Button, ToastViewport, toast } from "@kernelui-lib/react";
 
 export default function ToastDemo() {
   return (

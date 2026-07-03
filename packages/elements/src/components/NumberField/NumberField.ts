@@ -28,7 +28,7 @@ function chevron(path: string): SVGSVGElement {
  * `stepDown()` rather than reimplementing increment logic; since those
  * methods change `.value` without dispatching an event, this reads it
  * back and fires `change` by hand afterward. See
- * `@kernelui/react`'s `NumberField.tsx` for the full rationale
+ * `@kernelui-lib/react`'s `NumberField.tsx` for the full rationale
  * (native spinner arrows hidden in CSS, buttons excluded from the tab
  * order since focused ArrowUp/ArrowDown already does the same thing
  * natively).

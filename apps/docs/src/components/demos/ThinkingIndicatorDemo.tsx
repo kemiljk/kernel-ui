@@ -1,4 +1,4 @@
-import { ThinkingIndicator } from "@kernelui/react";
+import { ThinkingIndicator } from "@kernelui-lib/react";
 
 export default function ThinkingIndicatorDemo() {
   return (

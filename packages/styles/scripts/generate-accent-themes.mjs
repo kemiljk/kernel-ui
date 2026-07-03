@@ -218,7 +218,7 @@ for (const { name, hue, lightL: themeLightL, darkL: themeDarkL } of themes) {
 const indexLines = [
   `/**`,
   ` * All named accent themes in one import. Prefer importing a single`,
-  ` * theme file (e.g. "@kernelui/styles/themes/blue.css") in production,`,
+  ` * theme file (e.g. "@kernelui-lib/styles/themes/blue.css") in production,`,
   ` * this convenience entry point is for demos and theme switchers that`,
   ` * need every preset available to flip between at runtime.`,
   ` */`,

@@ -1,22 +1,22 @@
-# @kernelui/elements — LLM reference
+# @kernelui-lib/elements — LLM reference
 
-The same design as `@kernelui/react`, shipped as framework-free Custom
+The same design as `@kernelui-lib/react`, shipped as framework-free Custom
 Elements — light DOM (no shadow root, so the page's own Kernel stylesheet
 reaches every component with no per-instance style duplication), zero
 runtime dependencies. Use this package in Vue, Svelte, Astro, or plain
-HTML; use `@kernelui/react` instead in a React app.
+HTML; use `@kernelui-lib/react` instead in a React app.
 
 ## Install
 
 ```bash
-npm install @kernelui/elements @kernelui/styles
+npm install @kernelui-lib/elements @kernelui-lib/styles
 ```
 
 ```html
-<link rel="stylesheet" href="path/to/@kernelui/styles/index.css" />
-<link rel="stylesheet" href="path/to/@kernelui/elements/dist/kernel.css" />
+<link rel="stylesheet" href="path/to/@kernelui-lib/styles/index.css" />
+<link rel="stylesheet" href="path/to/@kernelui-lib/elements/dist/kernel.css" />
 <script type="module">
-  import "@kernelui/elements"; // registers every <kernel-*> tag below
+  import "@kernelui-lib/elements"; // registers every <kernel-*> tag below
 </script>
 
 <kernel-button variant="primary">Save changes</kernel-button>
@@ -26,7 +26,7 @@ Importing the module registers every custom element via
 `customElements.define` — there is no per-component import path, and no
 separate "install this one component" step.
 
-## Conventions (mirrors @kernelui/react's prop conventions as attributes)
+## Conventions (mirrors @kernelui-lib/react's prop conventions as attributes)
 
 - **Value**: a `value` attribute (or a `values`/`tags`-style JS property
   where a value can't serialize into a plain string, e.g. `TagInput`'s
@@ -36,7 +36,7 @@ separate "install this one component" step.
 - **Form-field scaffold**: `label` (required — still the input's
   accessible name even when `hide-label` is set), `hide-label` (boolean
   attribute), `description`, `error-message`, `invalid`, `disabled`,
-  `required` — same names as `@kernelui/react`'s form fields, kebab-case.
+  `required` — same names as `@kernelui-lib/react`'s form fields, kebab-case.
 - **Boolean attributes are presence-based**: `<kernel-checkbox disabled>`
   means disabled; there is no `disabled="false"` — omit the attribute
   entirely to mean false. (Exception, clearly named to avoid the
@@ -51,7 +51,7 @@ separate "install this one component" step.
   prop — e.g. `<kernel-select>` takes real `<option>`/`<optgroup>`
   children, `<kernel-tabs>` takes `<kernel-tab>`/`<kernel-tab-panel>`.
 
-## Tags (grouped to match @kernelui/react's component groups; composite
+## Tags (grouped to match @kernelui-lib/react's component groups; composite
 ## components' sub-tags are one level deeper, e.g. <kernel-card-header>
 ## goes inside <kernel-card>)
 

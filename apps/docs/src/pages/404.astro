@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { Button } from "@kernelui-lib/react";
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The page you're looking for doesn't exist. Browse components, read the installation guide, or search the docs."
+>
+  <div class="docs-prose" style="max-width: 40rem; margin: 0 auto; padding-block: var(--kernel-space-12);">
+    <h1>Page not found</h1>
+    <p>
+      That URL doesn't match anything in the docs. Try one of these instead,
+      or press <kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> to search.
+    </p>
+    <div class="hero-ctas">
+      <Button variant="primary" size="lg" render={<a href="/components/" />}>
+        Browse components
+      </Button>
+      <Button variant="secondary" size="lg" render={<a href="/installation/" />}>
+        Installation
+      </Button>
+    </div>
+  </div>
+</BaseLayout>

@@ -5,8 +5,8 @@
  * after Tailwind and after tokens.css:
  *
  *   @import "tailwindcss";
- *   @import "@kernelui/styles/tokens.css";
- *   @import "@kernelui/styles/tailwind.css";
+ *   @import "@kernelui-lib/styles/tokens.css";
+ *   @import "@kernelui-lib/styles/tailwind.css";
  *
  * This maps Kernel's CSS custom properties into Tailwind's theme
  * namespace with `@theme inline`, so utilities like `bg-accent`,

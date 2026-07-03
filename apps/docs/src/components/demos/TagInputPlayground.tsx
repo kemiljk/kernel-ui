@@ -1,4 +1,4 @@
-import { TagInput } from "@kernelui/react";
+import { TagInput } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

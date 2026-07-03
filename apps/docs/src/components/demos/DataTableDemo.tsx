@@ -1,5 +1,5 @@
-import { DataTable, Badge } from "@kernelui/react";
-import type { DataTableColumn } from "@kernelui/react";
+import { DataTable, Badge } from "@kernelui-lib/react";
+import type { DataTableColumn } from "@kernelui-lib/react";
 
 interface TeamMember {
   name: string;

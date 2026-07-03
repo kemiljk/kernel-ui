@@ -1,4 +1,4 @@
-import { Avatar } from "@kernelui/react";
+import { Avatar } from "@kernelui-lib/react";
 import { ChevronDownIcon } from "../icons";
 
 /**

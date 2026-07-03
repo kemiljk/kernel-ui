@@ -1,4 +1,4 @@
-import { Header } from "@kernelui/react";
+import { Header } from "@kernelui-lib/react";
 
 export default function HeaderDemo() {
   return (

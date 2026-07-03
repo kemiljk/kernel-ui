@@ -1,5 +1,5 @@
 /* The trigger and content are siblings in the rendered output (same
-   shape as `@kernelui/react`'s own `<>{trigger}<div popover>...` — the
+   shape as `@kernelui-lib/react`'s own `<>{trigger}<div popover>...` — the
    host tag itself shouldn't introduce a wrapping box around them. */
 kernel-popover {
   display: contents;

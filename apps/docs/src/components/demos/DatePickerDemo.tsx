@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DatePicker } from "@kernelui/react";
+import { DatePicker } from "@kernelui-lib/react";
 
 export default function DatePickerDemo() {
   const [date, setDate] = useState<Date>();

@@ -1,4 +1,4 @@
-import { ThinkingIndicator } from "@kernelui/react";
+import { ThinkingIndicator } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [{ type: "text" as const, prop: "label", default: "Thinking" }];

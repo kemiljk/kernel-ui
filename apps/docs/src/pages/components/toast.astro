@@ -29,7 +29,8 @@ import ToastPlayground from "../../components/demos/ToastPlayground";
     <ToastPlayground client:load />
 
     <h2>API</h2>
-    <table class="docs-table">
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Toast.</caption>
       <thead><tr><th>Call</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td><code>toast(title, options?)</code></td><td>Default variant</td></tr>
@@ -38,7 +39,7 @@ import ToastPlayground from "../../components/demos/ToastPlayground";
         <tr><td><code>toast.danger(title, options?)</code></td><td>—</td></tr>
         <tr><td><code>toast.dismiss(id)</code></td><td>Dismiss a specific toast early</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <p>
       <code>options</code>: <code>&#123; description?, duration? &#125;</code>. <code>duration</code> defaults to 4000ms; pass <code>0</code> to require a manual dismiss.
     </p>

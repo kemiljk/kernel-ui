@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@kernelui/react";
+import { Button } from "@kernelui-lib/react";
 import { components } from "../data/components";
 import { MagnifyingGlassIcon } from "./icons";
 
-/** A fixed, hardcoded id rather than `useId()`: the mobile nav's own
- * search trigger (a plain button in a different island) needs to
- * point `popoverTarget` at this exact same DOM id, and two islands
- * can't share a React-generated one. */
 export const COMMAND_PALETTE_ID = "kernel-command-palette";
 
 const LISTBOX_ID = `${COMMAND_PALETTE_ID}-listbox`;
@@ -46,27 +42,30 @@ function filterItems(query: string): PaletteItem[] {
   );
 }
 
-/**
- * Native `popover`, same primitive as MobileHeaderNav and DropdownMenu:
- * top-layer stacking and light-dismiss (Escape, outside click) for
- * free. Every result is a real `<a href>` — Enter navigates the
- * browser natively, no client-side router to reimplement.
- */
+function shortcutLabel() {
+  if (typeof navigator === "undefined") return "⌘K";
+  const ua = navigator.userAgent;
+  return /Mac|iPhone|iPad|iPod/.test(ua) ? "⌘K" : "Ctrl+K";
+}
+
 export default function CommandPalette() {
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [kbdLabel, setKbdLabel] = useState("⌘K");
 
   const results = useMemo(() => filterItems(query), [query]);
+
+  useEffect(() => {
+    setKbdLabel(shortcutLabel());
+  }, []);
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        // Same shortcut closes it back up if it's already open, rather
-        // than only ever opening — the expected toggle behaviour for
-        // every command palette this one is modelled on.
         panelRef.current?.togglePopover();
       }
     }
@@ -78,7 +77,10 @@ export default function CommandPalette() {
     const node = panelRef.current;
     if (!node) return;
     function handleToggle(event: Event) {
-      if ((event as ToggleEvent).newState === "open") {
+      const toggleEvent = event as ToggleEvent;
+      const isOpen = toggleEvent.newState === "open";
+      setOpen(isOpen);
+      if (isOpen) {
         setQuery("");
         setActiveIndex(0);
         requestAnimationFrame(() => inputRef.current?.focus());
@@ -98,9 +100,6 @@ export default function CommandPalette() {
     } else if (event.key === "Enter") {
       const item = results[activeIndex];
       if (!item) return;
-      // Click the real <a> rather than assigning location.href, so Astro's
-      // ClientRouter intercepts it as a soft navigation (persisted sidebar,
-      // no full reload) — the same path a mouse click already takes.
       const link = panelRef.current?.querySelector<HTMLAnchorElement>(
         `#${CSS.escape(optionId(activeIndex))}`,
       );
@@ -120,7 +119,7 @@ export default function CommandPalette() {
         iconStart={<MagnifyingGlassIcon />}
       >
         Search
-        <kbd className="command-palette-kbd">⌘K</kbd>
+        <kbd className="command-palette-kbd">{kbdLabel}</kbd>
       </Button>
       <div id={COMMAND_PALETTE_ID} popover="auto" ref={panelRef} className="command-palette">
         <input
@@ -135,13 +134,16 @@ export default function CommandPalette() {
           placeholder="Search components…"
           aria-label="Search components"
           role="combobox"
-          aria-expanded={results.length > 0}
+          aria-expanded={open}
           aria-controls={LISTBOX_ID}
           aria-autocomplete="list"
           aria-activedescendant={results[activeIndex] ? optionId(activeIndex) : undefined}
           className="command-palette-input"
           autoComplete="off"
         />
+        <div className="command-palette-status" aria-live="polite" aria-atomic="true">
+          {results.length === 0 && query ? `No components match "${query}".` : ""}
+        </div>
         <ul id={LISTBOX_ID} className="command-palette-list" role="listbox">
           {results.map((item, index) => (
             <li key={item.href} role="presentation">
@@ -158,9 +160,6 @@ export default function CommandPalette() {
               </a>
             </li>
           ))}
-          {results.length === 0 && (
-            <li className="command-palette-empty">No components match "{query}".</li>
-          )}
         </ul>
       </div>
     </>

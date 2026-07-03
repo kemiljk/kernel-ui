@@ -1,4 +1,4 @@
-import { Button, Tab, TabPanel, Tabs, TabsList } from "@kernelui/react";
+import { Button, Tab, TabPanel, Tabs, TabsList } from "@kernelui-lib/react";
 
 export default function CodePreviewToggle() {
   return (

@@ -21,7 +21,7 @@
 
 /* Edge shadow: an inset shadow at whichever edge still has content to
    scroll toward, gone once you've actually scrolled that edge into
-   view. Mirrors `@kernelui/react`'s ScrollArea.module.css exactly —
+   view. Mirrors `@kernelui-lib/react`'s ScrollArea.module.css exactly —
    see there for why no `@property` registration is needed. */
 .kernel-ScrollArea-root[data-edge-shadow] {
   --kernel-scroll-shadow-top: 0;

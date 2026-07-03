@@ -1,5 +1,5 @@
 /* Convenience entry point: tokens + reset. Import subpaths directly
-   (`@kernelui/styles/tokens.css`) if you only want the tokens, or if
+   (`@kernelui-lib/styles/tokens.css`) if you only want the tokens, or if
    you're managing your own reset. */
 @import "./tokens.css";
 @import "./reset.css";

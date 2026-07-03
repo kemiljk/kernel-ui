@@ -5,18 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/generate-og-image.mjs && NODE_OPTIONS=--max-old-space-size=8192 astro check && astro build && node scripts/generate-markdown.mjs",
+    "build": "node scripts/fetch-github-stars.mjs && node scripts/generate-og-image.mjs && NODE_OPTIONS=--max-old-space-size=8192 astro check && astro build && node scripts/generate-markdown.mjs",
+    "generate:github-stars": "node scripts/fetch-github-stars.mjs",
     "generate:og": "node scripts/generate-og-image.mjs",
     "preview": "astro preview",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 astro check"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.0",
+    "@astrojs/sitemap": "^3.7.0",
     "@fontsource-variable/lilex": "^5.2.1",
     "@fontsource-variable/stack-sans-text": "^5.2.1",
-    "@kernelui/elements": "workspace:*",
-    "@kernelui/react": "workspace:*",
-    "@kernelui/styles": "workspace:*",
+    "@kernelui-lib/elements": "workspace:*",
+    "@kernelui-lib/react": "workspace:*",
+    "@kernelui-lib/styles": "workspace:*",
     "astro": "^7.0.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

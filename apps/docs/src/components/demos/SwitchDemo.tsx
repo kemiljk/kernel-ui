@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Switch } from "@kernelui/react";
+import { Switch } from "@kernelui-lib/react";
 
 export default function SwitchDemo() {
   const [checked, setChecked] = useState(true);

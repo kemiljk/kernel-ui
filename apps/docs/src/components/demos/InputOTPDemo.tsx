@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { InputOTP } from "@kernelui/react";
+import { InputOTP } from "@kernelui-lib/react";
 
 export default function InputOTPDemo() {
   const [complete, setComplete] = useState(false);

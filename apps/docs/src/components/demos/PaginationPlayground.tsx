@@ -1,4 +1,4 @@
-import { Pagination, PaginationItem, PaginationPrevious, PaginationNext } from "@kernelui/react";
+import { Pagination, PaginationItem, PaginationPrevious, PaginationNext } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

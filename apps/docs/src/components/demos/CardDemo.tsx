@@ -1,4 +1,4 @@
-import { Avatar, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Separator } from "@kernelui/react";
+import { Avatar, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Separator } from "@kernelui-lib/react";
 
 export default function CardDemo() {
   return (

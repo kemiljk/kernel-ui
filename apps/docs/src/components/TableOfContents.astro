@@ -1,9 +1,7 @@
 ---
 // Headings are the source of truth: this reads `.docs-prose h2/h3` from
-// the DOM at runtime rather than requiring each of the 28 component
-// pages to hand-maintain a separate list that could drift out of sync.
-// Plain script, no framework — a sidebar this small doesn't need an
-// island.
+// the DOM at runtime rather than requiring each component page to hand-maintain
+// a separate list that could drift out of sync.
 ---
 
 <nav class="toc" aria-label="On this page">
@@ -12,6 +10,8 @@
 </nav>
 
 <script>
+  let tocObserver: IntersectionObserver | undefined;
+
   function slugify(text: string) {
     return text
       .toLowerCase()
@@ -23,20 +23,25 @@
   function buildToc() {
     const nav = document.querySelector<HTMLElement>(".toc");
     const list = document.querySelector<HTMLUListElement>(".toc-list");
-    // Direct children only: a live component demo embedded in the page
-    // (a Card title, a Dialog's own heading) can itself contain an
-    // h2/h3 several levels deep inside `.docs-example` — that's the
-    // component's own semantic structure, not page structure, and a
-    // descendant selector would wrongly pull it into the TOC.
     const headings = document.querySelectorAll<HTMLHeadingElement>(
       ".docs-prose > h2, .docs-prose > h3",
     );
 
+    if (tocObserver) {
+      tocObserver.disconnect();
+      tocObserver = undefined;
+    }
+
     if (!nav || !list) return;
+
+    list.replaceChildren();
+
     if (headings.length === 0) {
-      nav.remove();
+      nav.hidden = true;
       return;
     }
+
+    nav.hidden = false;
 
     const usedIds = new Set<string>();
     const links: HTMLAnchorElement[] = [];
@@ -59,7 +64,7 @@
       links.push(link);
     });
 
-    const observer = new IntersectionObserver(
+    tocObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           const link = list.querySelector<HTMLAnchorElement>(
@@ -67,14 +72,15 @@
           );
           if (link && entry.isIntersecting) {
             for (const l of links) l.removeAttribute("aria-current");
-            link.setAttribute("aria-current", "page");
+            link.setAttribute("aria-current", "location");
           }
         }
       },
       { rootMargin: "0px 0px -70% 0px" },
     );
-    headings.forEach((heading) => observer.observe(heading));
+    headings.forEach((heading) => tocObserver!.observe(heading));
   }
 
   buildToc();
+  document.addEventListener("astro:page-load", buildToc);
 </script>

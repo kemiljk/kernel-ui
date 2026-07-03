@@ -1,4 +1,4 @@
-import { Combobox } from "@kernelui/react";
+import { Combobox } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const frameworks = [

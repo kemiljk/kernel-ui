@@ -1,4 +1,4 @@
-import { Breadcrumbs, BreadcrumbItem } from "@kernelui/react";
+import { Breadcrumbs, BreadcrumbItem } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

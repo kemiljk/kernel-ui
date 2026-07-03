@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { DateRangePicker } from "@kernelui/react";
-import type { DateRange } from "@kernelui/react";
+import { DateRangePicker } from "@kernelui-lib/react";
+import type { DateRange } from "@kernelui-lib/react";
 
 export default function DateRangePickerDemo() {
   const [range, setRange] = useState<DateRange>({});

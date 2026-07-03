@@ -1,4 +1,4 @@
-import { Select, SelectOption } from "@kernelui/react";
+import { Select, SelectOption } from "@kernelui-lib/react";
 
 export default function SelectDemo() {
   return (

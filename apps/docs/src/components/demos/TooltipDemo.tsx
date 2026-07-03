@@ -1,4 +1,4 @@
-import { Button, Tooltip } from "@kernelui/react";
+import { Button, Tooltip } from "@kernelui-lib/react";
 
 export default function TooltipDemo() {
   return (

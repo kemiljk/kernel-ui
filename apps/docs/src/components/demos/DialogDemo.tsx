@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Dialog, TextField } from "@kernelui/react";
+import { Button, Dialog, TextField } from "@kernelui-lib/react";
 
 export default function DialogDemo() {
   const [open, setOpen] = useState(false);

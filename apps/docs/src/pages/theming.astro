@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import DocsSidebar from "../components/DocsSidebar.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 
-const overrideSnippet = `@import "@kernelui/styles";
+const overrideSnippet = `@import "@kernelui-lib/styles";
 
 :root {
   --kernel-hue-accent: 260;      /* → every accent shade re-hues */
@@ -20,13 +20,13 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
 --kernel-accent-11  through -12  text (low-contrast / high-contrast)`;
 ---
 
-<BaseLayout title="Theming" withSidebar>
+<BaseLayout title="Theming" description="Every CSS custom property that drives Kernel's colours, spacing, radius, and typography — plus named accent presets." withSidebar>
   <DocsSidebar slot="sidebar" />
   <div class="docs-prose">
     <h1>Theming</h1>
     <p>
       Every colour, radius, spacing, and duration a component uses comes
-      from a CSS custom property in <code>@kernelui/styles</code> — there's
+      from a CSS custom property in <code>@kernelui-lib/styles</code> — there's
       no per-component theme prop, no config file. Override a token on{" "}
       <code>:root</code> (or on any container, for scoped theming) and it
       reaches every component reading it, immediately, including whichever

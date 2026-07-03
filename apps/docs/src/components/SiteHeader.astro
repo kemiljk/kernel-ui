@@ -1,9 +1,11 @@
 ---
-import { Header, Nav, NavLink } from "@kernelui/react";
+import { Header, Nav, NavLink } from "@kernelui-lib/react";
 import ThemeToggle from "./ThemeToggle";
 import ThemeMenu from "./ThemeMenu";
 import MobileHeaderNav from "./MobileHeaderNav";
 import CommandPalette from "./CommandPalette";
+import GitHubHeaderLink from "./GitHubHeaderLink.astro";
+import githubStars from "../data/github-stars.json";
 
 const items = [
   { href: "/", label: "Home" },
@@ -77,9 +79,10 @@ const path = Astro.url.pathname;
     }
   </Nav>
   <div class="site-header-toggle-desktop">
+    <GitHubHeaderLink />
     <CommandPalette client:load />
     <ThemeMenu client:load />
     <ThemeToggle client:load />
   </div>
-  <MobileHeaderNav client:load items={items} currentPath={path} />
+  <MobileHeaderNav client:load items={items} currentPath={path} starCount={githubStars.stars} />
 </Header>

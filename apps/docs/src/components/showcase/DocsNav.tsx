@@ -5,7 +5,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@kernelui/react";
+} from "@kernelui-lib/react";
 
 /**
  * No `href` on any non-current item: `BreadcrumbItem`/`PaginationItem`

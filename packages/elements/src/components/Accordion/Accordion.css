@@ -31,7 +31,7 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item {
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-/* See the matching comment in @kernelui/react's Accordion.module.css —
+/* See the matching comment in @kernelui-lib/react's Accordion.module.css —
    the first/last item's outer corners trace .accordion's own rounding
    concentrically; middle items stay square. */
 kernel-accordion-item:first-of-type .kernel-Accordion-trigger {

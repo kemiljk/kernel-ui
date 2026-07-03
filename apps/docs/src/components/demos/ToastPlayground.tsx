@@ -1,4 +1,4 @@
-import { Button, ToastViewport, toast } from "@kernelui/react";
+import { Button, ToastViewport, toast } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
@@ -51,7 +51,7 @@ function elementsCode(values: PlaygroundValues) {
 <kernel-toast-viewport></kernel-toast-viewport>
 
 <script type="module">
-  import { toast } from "@kernelui/elements";
+  import { toast } from "@kernelui-lib/elements";
 
   document.getElementById("publish").addEventListener("click", () => {
     ${call}(${args.join(", ")});

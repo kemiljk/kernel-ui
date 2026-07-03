@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Dialog, TextField } from "@kernelui/react";
+import { Button, Dialog, TextField } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

@@ -1,4 +1,4 @@
-import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui/react";
+import { ContextMenu, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

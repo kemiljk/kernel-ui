@@ -1,4 +1,4 @@
-import { Callout } from "@kernelui/react";
+import { Callout } from "@kernelui-lib/react";
 
 export default function CalloutDemo() {
   return (

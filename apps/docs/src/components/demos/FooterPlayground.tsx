@@ -1,4 +1,4 @@
-import { Footer } from "@kernelui/react";
+import { Footer } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

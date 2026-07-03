@@ -7,7 +7,7 @@ import {
   TableHead,
   TableCell,
   Badge,
-} from "@kernelui/react";
+} from "@kernelui-lib/react";
 
 const rows = [
   { name: "Button", status: "Available" },

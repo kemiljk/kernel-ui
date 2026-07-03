@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { DateRangePicker } from "@kernelui/react";
-import type { DateRange } from "@kernelui/react";
+import { DateRangePicker } from "@kernelui-lib/react";
+import type { DateRange } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

@@ -7,7 +7,7 @@ let textareaCounter = 0;
  * `<kernel-textarea>` — a real `<textarea>` that grows with its content
  * via `field-sizing: content` instead of a `scrollHeight`-measuring
  * resize listener (falls back to a manual resize handle where that
- * property isn't supported yet). Mirrors `@kernelui/react`'s
+ * property isn't supported yet). Mirrors `@kernelui-lib/react`'s
  * `<Textarea>`.
  *
  * Attributes: `label` (required, still the accessible name even when

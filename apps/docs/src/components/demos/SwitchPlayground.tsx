@@ -1,4 +1,4 @@
-import { Switch } from "@kernelui/react";
+import { Switch } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [

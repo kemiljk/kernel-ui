@@ -18,7 +18,7 @@
   scale: 0.97;
 }
 
-/* min-inline-size, not inline-size — see Toggle.module.css (@kernelui/react)
+/* min-inline-size, not inline-size — see Toggle.module.css (@kernelui-lib/react)
    for why: a fixed square sized for a single icon clipped/overflowed
    real text labels, visibly overlapping adjacent toggles. */
 .kernel-Toggle-root[data-size="sm"] {

@@ -6,8 +6,8 @@ import DateRangePickerDemo from "../../components/demos/DateRangePickerDemo";
 import DateRangePickerPlayground from "../../components/demos/DateRangePickerPlayground";
 
 const usageSnippet = `import { useState } from "react";
-import { DateRangePicker } from "@kernelui/react";
-import type { DateRange } from "@kernelui/react";
+import { DateRangePicker } from "@kernelui-lib/react";
+import type { DateRange } from "@kernelui-lib/react";
 
 function Example() {
   const [range, setRange] = useState<DateRange>({});
@@ -39,9 +39,10 @@ function Example() {
     <DateRangePickerPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Date Range Picker.</caption>
       <thead>
-        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
       </thead>
       <tbody>
         <tr><td><code>value</code></td><td>DateRange</td><td>—</td></tr>
@@ -50,7 +51,7 @@ function Example() {
         <tr><td><code>minDate</code></td><td>Date</td><td>—</td></tr>
         <tr><td><code>maxDate</code></td><td>Date</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

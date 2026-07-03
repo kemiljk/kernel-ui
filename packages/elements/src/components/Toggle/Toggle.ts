@@ -5,7 +5,7 @@ import "./Toggle.css";
  * `<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA
  * pattern for a two-state toggle that looks and behaves like a button (a
  * toolbar "bold" button, say), distinct from `<kernel-switch>`, which is
- * the pattern for an on/off setting. Mirrors `@kernelui/react`'s
+ * the pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s
  * `<Toggle>`.
  *
  * Attributes: `pressed`, `disabled` (both boolean), `size`

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RadioGroup, RadioGroupItem } from "@kernelui/react";
+import { RadioGroup, RadioGroupItem } from "@kernelui-lib/react";
 
 export default function RadioGroupDemo() {
   const [plan, setPlan] = useState("pro");

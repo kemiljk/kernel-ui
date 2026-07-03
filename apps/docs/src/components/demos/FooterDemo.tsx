@@ -1,4 +1,4 @@
-import { Footer } from "@kernelui/react";
+import { Footer } from "@kernelui-lib/react";
 
 /** href is illustrative, not a real route — this demo shouldn't actually
  * navigate away from the docs page it's embedded in. */

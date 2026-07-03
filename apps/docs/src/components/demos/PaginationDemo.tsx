@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pagination, PaginationItem, PaginationPrevious, PaginationNext } from "@kernelui/react";
+import { Pagination, PaginationItem, PaginationPrevious, PaginationNext } from "@kernelui-lib/react";
 
 export default function PaginationDemo() {
   const [page, setPage] = useState(2);

@@ -1,4 +1,4 @@
-import { Resizable } from "@kernelui/react";
+import { Resizable } from "@kernelui-lib/react";
 
 export default function ResizableDemo() {
   return (

@@ -1,5 +1,5 @@
 /**
- * @kernelui/elements — Kernel's components as native Custom Elements.
+ * @kernelui-lib/elements — Kernel's components as native Custom Elements.
  * Importing this module registers every tag below via
  * `customElements.define`; framework-specific wrappers aren't needed
  * to use them (see the README for React/Vue/Svelte/Astro usage).
@@ -12,7 +12,7 @@
  * Popover, Tooltip, Tabs, DropdownMenu, Combobox, Accordion, Carousel,
  * Command Palette, Context Menu, Data Table, Date Picker, Date Range
  * Picker, Hover Card, Navigation Menu) leans on the same native
- * platform primitives `@kernelui/react` does — `<dialog>`,
+ * platform primitives `@kernelui-lib/react` does — `<dialog>`,
  * `popover`/CSS anchor positioning, `<details>` — which is what makes
  * a vanilla-JS port of "behaviorally complex" React components
  * tractable at all.

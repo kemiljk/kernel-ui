@@ -6,7 +6,7 @@ import DatePickerDemo from "../../components/demos/DatePickerDemo";
 import DatePickerPlayground from "../../components/demos/DatePickerPlayground";
 
 const usageSnippet = `import { useState } from "react";
-import { DatePicker } from "@kernelui/react";
+import { DatePicker } from "@kernelui-lib/react";
 
 function BookingDate() {
   const [date, setDate] = useState<Date>();
@@ -38,9 +38,10 @@ function BookingDate() {
     <DatePickerPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Date Picker.</caption>
       <thead>
-        <tr><th>Prop</th><th>Type</th><th>Default</th></tr>
+        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
       </thead>
       <tbody>
         <tr><td><code>value</code></td><td>Date</td><td>—</td></tr>
@@ -49,7 +50,7 @@ function BookingDate() {
         <tr><td><code>minDate</code></td><td>Date</td><td>—</td></tr>
         <tr><td><code>maxDate</code></td><td>Date</td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

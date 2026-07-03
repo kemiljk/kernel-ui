@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.kernelui.com/sitemap-index.xml
+
+# Internal scratch pages — not part of the public docs surface
+Disallow: /labs/

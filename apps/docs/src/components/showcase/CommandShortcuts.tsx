@@ -1,4 +1,4 @@
-import { Separator } from "@kernelui/react";
+import { Separator } from "@kernelui-lib/react";
 
 export default function CommandShortcuts() {
   return (

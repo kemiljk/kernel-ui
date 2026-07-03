@@ -99,7 +99,7 @@ export function dismissToast(id: string) {
 }
 
 /**
- * Imperative, like Sonner and identical to `@kernelui/react`'s own
+ * Imperative, like Sonner and identical to `@kernelui-lib/react`'s own
  * `toast()`: call it from anywhere, no setup beyond mounting a
  * `<kernel-toast-viewport>` once, near the root.
  */

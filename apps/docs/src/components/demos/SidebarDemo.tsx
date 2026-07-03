@@ -1,4 +1,4 @@
-import { Sidebar } from "@kernelui/react";
+import { Sidebar } from "@kernelui-lib/react";
 
 export default function SidebarDemo() {
   return (

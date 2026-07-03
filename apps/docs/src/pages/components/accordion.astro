@@ -7,7 +7,7 @@ import AccordionPlayground from "../../components/demos/AccordionPlayground";
 
 interface Props {}
 
-const usageSnippet = `import { Accordion, AccordionItem } from "@kernelui/react";
+const usageSnippet = `import { Accordion, AccordionItem } from "@kernelui-lib/react";
 
 <Accordion type="single">
   <AccordionItem title="What is Kernel?">
@@ -17,6 +17,19 @@ const usageSnippet = `import { Accordion, AccordionItem } from "@kernelui/react"
     Yes, by default, since the browser does most of the work.
   </AccordionItem>
 </Accordion>`;
+
+const elementsUsageSnippet = `<script type="module">
+  import "@kernelui-lib/elements";
+</script>
+
+<kernel-accordion>
+  <kernel-accordion-item title="What is Kernel?">
+    A component library built on real HTML elements.
+  </kernel-accordion-item>
+  <kernel-accordion-item title="Is it accessible?">
+    Yes, by default, since the browser does most of the work.
+  </kernel-accordion-item>
+</kernel-accordion>`;
 ---
 
 <BaseLayout title="Accordion" withSidebar>
@@ -33,23 +46,24 @@ const usageSnippet = `import { Accordion, AccordionItem } from "@kernelui/react"
       <AccordionDemo client:load />
     </div>
 
-    <UsageAccordion code={usageSnippet} lang="tsx" />
+    <UsageAccordion code={usageSnippet} elementsCode={elementsUsageSnippet} lang="tsx" />
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <AccordionPlayground client:load />
 
     <h2>Props</h2>
-    <table class="docs-table">
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Accordion.</caption>
       <thead>
-        <tr><th>Component</th><th>Prop</th><th>Type</th></tr>
+        <tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr>
       </thead>
       <tbody>
         <tr><td><code>Accordion</code></td><td><code>type</code></td><td>"single" | "multiple"</td></tr>
         <tr><td><code>AccordionItem</code></td><td><code>title</code></td><td>ReactNode</td></tr>
         <tr><td><code>AccordionItem</code></td><td><code>defaultOpen</code></td><td>boolean</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h2>Accessibility</h2>
     <ul>

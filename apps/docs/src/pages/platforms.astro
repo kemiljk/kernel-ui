@@ -3,38 +3,38 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import DocsSidebar from "../components/DocsSidebar.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 
-const reactSnippet = `import { Button } from "@kernelui/react";
+const reactSnippet = `import { Button } from "@kernelui-lib/react";
 
 <Button variant="primary">Save changes</Button>`;
 
-const installSnippet = `npm install @kernelui/elements`;
+const installSnippet = `npm install @kernelui-lib/elements @kernelui-lib/styles`;
 
 const elementsSnippet = `<script type="module">
-  import "@kernelui/elements";
+  import "@kernelui-lib/elements";
 </script>
 
 <kernel-button variant="primary">Save changes</kernel-button>`;
 
-const headlessNoneSnippet = `import { Button } from "@kernelui/react";
-// No "@kernelui/react/styles.css" import anywhere —
+const headlessNoneSnippet = `import { Button } from "@kernelui-lib/react";
+// No "@kernelui-lib/react/styles.css" import anywhere —
 // <Button> is still a real <button>, just unstyled.`;
 
-const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + reset only */
-/* @import "@kernelui/react/styles.css"; -- skipped on purpose */`;
+const headlessTokensSnippet = `@import "@kernelui-lib/styles";       /* tokens + reset only */
+/* @import "@kernelui-lib/react/styles.css"; -- skipped on purpose */`;
 ---
 
-<BaseLayout title="Platforms" withSidebar>
+<BaseLayout title="Platforms" description="Use Kernel via @kernelui-lib/react, @kernelui-lib/elements Custom Elements, or headless with tokens only." withSidebar>
   <DocsSidebar slot="sidebar" />
   <div class="docs-prose">
     <h1>Platforms</h1>
     <p>
       Kernel ships two runtimes today, both covering the full component
-      catalog. <code>@kernelui/react</code> is the flagship — the reference
+      catalog. <code>@kernelui-lib/react</code> is the flagship — the reference
       implementation, and where new components land first.
-      <code>@kernelui/elements</code> is the same design system as native
+      <code>@kernelui-lib/elements</code> is the same design system as native
       Custom Elements: framework-agnostic, usable from Vue, Svelte, Astro,
       or plain HTML with no wrapper at all. Both read the exact same tokens
-      from <code>@kernelui/styles</code>, so a theme change (accent hue,
+      from <code>@kernelui-lib/styles</code>, so a theme change (accent hue,
       radius, dark mode) reshades both identically.
     </p>
 
@@ -44,12 +44,12 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
 
     <h2>Web Components</h2>
     <p>
-      <code>@kernelui/elements</code> renders every component as a real,
+      <code>@kernelui-lib/elements</code> renders every component as a real,
       autonomous Custom Element — a genuine <code>&lt;button&gt;</code>,
       <code>&lt;nav&gt;</code>, or <code>&lt;dialog&gt;</code> nested inside
       a tag like <code>&lt;kernel-button&gt;</code>, in light DOM (no shadow
       root), so the same token cascade and CSS classes{" "}
-      <code>@kernelui/react</code> uses apply here untouched.
+      <code>@kernelui-lib/react</code> uses apply here untouched.
     </p>
     <CodeBlock code={installSnippet} lang="bash" />
     <CodeBlock code={elementsSnippet} lang="html" />
@@ -64,7 +64,7 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
       Every component in the catalog has a Custom Element equivalent now —
       including the behaviorally complex ones, like Dialog, Popover, Tabs,
       Combobox, and Accordion. They lean on the same native platform
-      primitives <code>@kernelui/react</code> does — <code>&lt;dialog&gt;</code>,
+      primitives <code>@kernelui-lib/react</code> does — <code>&lt;dialog&gt;</code>,
       popover/anchor positioning, <code>&lt;details&gt;</code> — which is
       what makes a vanilla-JS port of that behavior tractable at all.
     </p>
@@ -81,17 +81,17 @@ const headlessTokensSnippet = `@import "@kernelui/styles";       /* tokens + res
     <p>
       Want the token layer (fonts, spacing, colour variables) without
       Kernel's own component opinions, so you can build your own look on
-      top of the same scale? Import <code>@kernelui/styles</code> on its
+      top of the same scale? Import <code>@kernelui-lib/styles</code> on its
       own and stop there:
     </p>
     <CodeBlock code={headlessTokensSnippet} lang="css" />
 
     <h2>Choosing between them</h2>
     <p>
-      Building with React? Use <code>@kernelui/react</code> — it's the
+      Building with React? Use <code>@kernelui-lib/react</code> — it's the
       flagship implementation, and where new components land first.
       Building with something else, or need a component usable from more
-      than one framework on the same page? <code>@kernelui/elements</code>{" "}
+      than one framework on the same page? <code>@kernelui-lib/elements</code>{" "}
       covers the same full catalog as native Custom Elements. Either way,
       the same accent hue, radius, and spacing tokens theme both at once.
     </p>

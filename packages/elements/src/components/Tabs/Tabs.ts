@@ -7,7 +7,7 @@ let tabsCounter = 0;
  * `<kernel-tabs>` — the WAI-ARIA `tablist` pattern (there's no native
  * tabs element). Wraps a `<kernel-tabs-list>` (containing
  * `<kernel-tab>` triggers) and one `<kernel-tab-panel>` per tab, as
- * flat light-DOM children — same shape as `@kernelui/react`'s
+ * flat light-DOM children — same shape as `@kernelui-lib/react`'s
  * `<Tabs><TabsList>...</TabsList><TabPanel/>...</Tabs>`.
  *
  * Attributes: `value` (controlled — set it to change tabs

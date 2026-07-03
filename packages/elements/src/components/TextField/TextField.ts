@@ -8,7 +8,7 @@ let textFieldCounter = 0;
  * `aria-describedby` wiring for hint and error text. `:user-invalid`
  * handles live, post-interaction validation styling natively; the
  * `invalid` attribute is for validation you already know about before
- * the user has touched the field. Mirrors `@kernelui/react`'s
+ * the user has touched the field. Mirrors `@kernelui-lib/react`'s
  * `<TextField>`.
  *
  * Attributes: `label` (required, still the input's accessible name even

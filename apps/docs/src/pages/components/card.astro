@@ -27,8 +27,9 @@ import CardPlayground from "../../components/demos/CardPlayground";
     <CardPlayground client:load />
 
     <h2>Parts</h2>
-    <table class="docs-table">
-      <thead><tr><th>Component</th><th>Notes</th></tr></thead>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Card.</caption>
+      <thead><tr><th scope="col">Component</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td><code>Card</code></td><td><code>as</code>: "div" | "article" | "section", defaults to "div"</td></tr>
         <tr><td><code>CardHeader</code></td><td>—</td></tr>
@@ -37,6 +38,6 @@ import CardPlayground from "../../components/demos/CardPlayground";
         <tr><td><code>CardContent</code></td><td>—</td></tr>
         <tr><td><code>CardFooter</code></td><td>—</td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </BaseLayout>
