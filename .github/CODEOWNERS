@@ -1,0 +1,6 @@
+# Default owner for all changes. GitHub will request review on PRs from
+# outside contributors; maintainers can still merge their own work.
+* @kemiljk
+
+/.github/ @kemiljk
+/packages/ @kemiljk

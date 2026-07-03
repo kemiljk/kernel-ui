@@ -10,6 +10,13 @@ on:
 # only verifies code quality. Docs are built here on pull requests so merges
 # are validated without duplicating the production build Vercel runs on push.
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
