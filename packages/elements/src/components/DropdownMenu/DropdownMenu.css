@@ -44,9 +44,10 @@ kernel-dropdown-menu {
   align-items: center;
   text-align: start;
   border: none;
-  border-radius: var(--kernel-radius-sm);
-  padding-block: var(--kernel-space-2);
-  padding-inline: var(--kernel-space-3);
+  /* Concentric with .content's own rounding — see the matching comment
+     in @kernelui/react's DropdownMenu.module.css `.item`. */
+  border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
+  padding: var(--kernel-space-3);
   background-color: transparent;
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-sans);

@@ -34,7 +34,7 @@
 }
 
 .kernel-CommandPalette-content::backdrop {
-  background-color: oklch(0% 0 0 / 0.45);
+  background-color: var(--kernel-color-scrim);
   opacity: 0;
   transition:
     opacity var(--kernel-duration-base) var(--kernel-ease-out),

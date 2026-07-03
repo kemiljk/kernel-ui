@@ -38,6 +38,10 @@ export interface TagInputProps
   onError?: (error: TagInputError) => void;
   description?: ReactNode;
   errorMessage?: ReactNode;
+  /** Set to `false` to hard-align the label, description, and error text
+   * flush with the field's left edge, undoing the default inset that lines
+   * them up with the input's own text padding (`--kernel-label-inset`). */
+  labelOffset?: boolean;
   invalid?: boolean;
   disabled?: boolean;
   className?: ClassNameValue<TagInputState>;
@@ -76,6 +80,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     onError,
     description,
     errorMessage,
+    labelOffset = true,
     invalid = false,
     disabled = false,
     id,
@@ -200,6 +205,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
         .join(" ")}
       data-invalid={dataAttr(invalid)}
       data-disabled={dataAttr(disabled)}
+      data-label-offset={labelOffset === false ? "false" : undefined}
     >
       <label
         className={[styles.label, hideLabel ? "kernel-sr-only" : null]

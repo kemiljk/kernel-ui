@@ -13,6 +13,16 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLElement>, "className"
   className?: ClassNameValue<Record<string, never>>;
 }
 
+/**
+ * A visual grouping of related content. Renders a `<div>` by default —
+ * the honest choice for presentational grouping with no stronger native
+ * meaning — and is the one Kernel component without a single obvious
+ * native anchor. Set `as="article"` when the content is genuinely
+ * self-contained and could be syndicated on its own (a post preview, a
+ * product card), or `as="section"` for a thematic region with its own
+ * heading. Compose with `CardHeader`, `CardContent`, `CardFooter`,
+ * `CardTitle`, and `CardDescription`.
+ */
 export const Card = forwardRef<HTMLElement, CardProps>(function Card(
   { as = "div", className, ...rest },
   ref,

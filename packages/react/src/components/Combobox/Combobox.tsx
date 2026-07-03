@@ -15,6 +15,10 @@ export interface ComboboxProps {
   /** Visually hides the label without removing it from the accessibility
    * tree — see `TextField`'s `hideLabel` for the full rationale. */
   hideLabel?: boolean;
+  /** Set to `false` to hard-align the label flush with the field's left
+   * edge, undoing the default inset that lines it up with the input's own
+   * text padding (`--kernel-label-inset`). */
+  labelOffset?: boolean;
   options: ComboboxOption[];
   value?: string;
   defaultValue?: string;
@@ -36,6 +40,7 @@ export interface ComboboxProps {
 export function Combobox({
   label,
   hideLabel = false,
+  labelOffset = true,
   options,
   value,
   defaultValue = "",
@@ -127,7 +132,11 @@ export function Combobox({
   }
 
   return (
-    <div className={styles.root} ref={rootRef}>
+    <div
+      className={styles.root}
+      ref={rootRef}
+      data-label-offset={labelOffset === false ? "false" : undefined}
+    >
       <label
         htmlFor={id}
         className={[styles.label, hideLabel ? "kernel-sr-only" : null]

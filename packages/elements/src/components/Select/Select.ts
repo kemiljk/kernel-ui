@@ -17,7 +17,10 @@ let selectCounter = 0;
  *
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `description`,
- * `error-message`, `invalid`, `required`, `disabled`, `value`, `name`.
+ * `error-message`, `no-label-offset` (boolean — hard-aligns the label,
+ * description, and error text flush left instead of the default inset
+ * that lines them up with the select's own text padding), `invalid`,
+ * `required`, `disabled`, `value`, `name`.
  */
 export class KernelSelect extends KernelElement {
   private readonly generatedId = `kernel-select-${++selectCounter}`;
@@ -28,6 +31,7 @@ export class KernelSelect extends KernelElement {
       "hide-label",
       "description",
       "error-message",
+      "no-label-offset",
       "invalid",
       "required",
       "disabled",
@@ -165,6 +169,10 @@ export class KernelSelect extends KernelElement {
       case "description":
       case "error-message":
         this.updateDescribedBy();
+        break;
+      case "no-label-offset":
+        if (value !== null) root.setAttribute("data-label-offset", "false");
+        else root.removeAttribute("data-label-offset");
         break;
     }
   }

@@ -13,11 +13,13 @@ const controls = [
   { type: "text" as const, prop: "label", default: "Framework" },
   { type: "text" as const, prop: "placeholder", default: "Search frameworks…" },
   { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
+  { type: "boolean" as const, prop: "labelOffset", label: "label offset", default: true },
 ];
 
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label}"`, "options={frameworks}", `placeholder="${values.placeholder}"`];
   if (values.hideLabel) attrs.push("hideLabel");
+  if (values.labelOffset === false) attrs.push("labelOffset={false}");
   return `<Combobox\n  ${attrs.join("\n  ")}\n/>`;
 }
 
@@ -27,6 +29,7 @@ function elementsCode(values: PlaygroundValues) {
     .join("\n");
   const attrs: string[] = [`label="${values.label}"`, `placeholder="${values.placeholder}"`];
   if (values.hideLabel) attrs.push("hide-label");
+  if (values.labelOffset === false) attrs.push("no-label-offset");
   return `<kernel-combobox ${attrs.join(" ")}>\n${options}\n</kernel-combobox>`;
 }
 
@@ -43,6 +46,7 @@ export default function ComboboxPlayground() {
             options={frameworks}
             placeholder={String(values.placeholder)}
             hideLabel={Boolean(values.hideLabel)}
+            labelOffset={Boolean(values.labelOffset)}
           />
         </div>
       )}

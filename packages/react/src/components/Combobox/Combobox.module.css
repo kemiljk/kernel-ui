@@ -3,15 +3,18 @@
   flex-direction: column;
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
+  --label-offset: var(--kernel-label-inset);
+}
+
+.root[data-label-offset="false"] {
+  --label-offset: 0px;
 }
 
 .label {
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
-  /* Aligns with where the input's pill curvature stops looking like a
-     straight edge — see --kernel-label-inset-* in tokens.css. */
-  padding-inline-start: var(--kernel-label-inset);
+  padding-inline-start: var(--label-offset);
 }
 
 .input {

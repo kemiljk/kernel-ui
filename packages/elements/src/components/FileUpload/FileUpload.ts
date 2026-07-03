@@ -78,7 +78,11 @@ function syncNativeFiles(input: HTMLInputElement, files: File[]) {
  * (boolean — hides the label heading only, the hint text underneath
  * still shows), `description` (replaces the default "Drag and drop, or
  * click to browse" hint), `accept`, `multiple` (boolean), `max-files`,
- * `max-size` (bytes), `error-message`, `invalid`, `disabled`, `name`.
+ * `max-size` (bytes), `error-message`, `no-label-offset` (boolean —
+ * hard-aligns the error text flush left instead of the default inset;
+ * doesn't affect `label` or the hint text, which sit above the dropzone
+ * as a heading rather than inset text-field content), `invalid`,
+ * `disabled`, `name`.
  */
 export class KernelFileUpload extends KernelElement {
   private readonly generatedId = `kernel-file-upload-${++fileUploadCounter}`;
@@ -94,6 +98,7 @@ export class KernelFileUpload extends KernelElement {
       "max-files",
       "max-size",
       "error-message",
+      "no-label-offset",
       "invalid",
       "disabled",
       "name",
@@ -301,6 +306,10 @@ export class KernelFileUpload extends KernelElement {
       }
       case "description":
         this.updateHint();
+        break;
+      case "no-label-offset":
+        if (value !== null) this.native.setAttribute("data-label-offset", "false");
+        else this.native.removeAttribute("data-label-offset");
         break;
       case "invalid":
         if (value !== null) this.native.setAttribute("data-invalid", "");

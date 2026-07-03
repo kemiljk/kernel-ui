@@ -3,13 +3,18 @@
   flex-direction: column;
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
+  --label-offset: var(--kernel-label-inset);
+}
+
+.kernel-Combobox-root[data-label-offset="false"] {
+  --label-offset: 0px;
 }
 
 .kernel-Combobox-label {
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
-  padding-inline-start: var(--kernel-label-inset);
+  padding-inline-start: var(--label-offset);
 }
 
 .kernel-Combobox-input {

@@ -3,13 +3,18 @@
   flex-direction: column;
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
+  --label-offset: var(--kernel-label-inset);
+}
+
+.kernel-Select-root[data-label-offset="false"] {
+  --label-offset: 0px;
 }
 
 .kernel-Select-label {
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
-  padding-inline-start: var(--kernel-label-inset);
+  padding-inline-start: var(--label-offset);
 }
 
 .kernel-Select-required {
@@ -76,12 +81,14 @@
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-text-muted);
+  padding-inline-start: var(--label-offset);
 }
 
 .kernel-Select-error {
   margin: 0;
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--label-offset);
 }
 
 @media (prefers-reduced-motion: reduce) {

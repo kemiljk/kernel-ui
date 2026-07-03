@@ -25,6 +25,15 @@
   box-shadow: none;
 }
 
+/* The textarea itself drops its own outline (below); the visible focus
+   indicator lives on the whole control instead, matching TextField/TagInput
+   — an outline sits outside the box-shadow border, so it doesn't fight the
+   static border or the data-thinking sweep. */
+.kernel-Composer-root:has(.kernel-Composer-input:focus-visible) {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .kernel-Composer-input {
   field-sizing: content;
   min-block-size: calc(var(--kernel-space-unit) * 6);

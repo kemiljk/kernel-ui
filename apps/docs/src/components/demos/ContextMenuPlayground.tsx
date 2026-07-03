@@ -41,6 +41,7 @@ export default function ContextMenuPlayground() {
                 alignItems: "center",
                 justifyContent: "center",
                 blockSize: "8rem",
+                paddingInline: "var(--kernel-space-4)",
                 border: "1px dashed var(--kernel-color-border-interactive)",
                 borderRadius: "var(--kernel-radius-md)",
                 color: "var(--kernel-color-text-muted)",

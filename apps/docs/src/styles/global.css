@@ -86,6 +86,29 @@ h3 {
   letter-spacing: -0.014em;
 }
 
+/* Off-screen until it receives keyboard focus, then pinned to the top-left
+   so a keyboard user can jump straight past the header/nav to <main id="main">.
+   Respects the notch via safe-area insets. */
+.skip-link {
+  position: fixed;
+  inset-block-start: calc(var(--kernel-space-2) + env(safe-area-inset-top));
+  inset-inline-start: calc(var(--kernel-space-2) + env(safe-area-inset-left));
+  z-index: var(--kernel-z-overlay);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-md);
+  transform: translateY(calc(-100% - var(--kernel-space-4)));
+  transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .docs-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -342,7 +365,7 @@ p.docs-sidebar-eyebrow:first-child {
   }
 }
 
-.toc-item a[aria-current="true"] {
+.toc-item a[aria-current="page"] {
   color: var(--kernel-color-accent-text);
   border-inline-start-color: var(--kernel-color-accent);
   font-weight: 500;
@@ -388,7 +411,13 @@ p.docs-sidebar-eyebrow:first-child {
   border: none;
   border-inline-end: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: 0;
-  padding: var(--kernel-space-6) var(--kernel-space-4);
+  /* Full-bleed background, but content padding clears the notch / home
+     indicator so the nav is never tucked under a device cutout in
+     landscape. */
+  padding-block: max(var(--kernel-space-6), env(safe-area-inset-top))
+    max(var(--kernel-space-6), env(safe-area-inset-bottom));
+  padding-inline: max(var(--kernel-space-4), env(safe-area-inset-left))
+    var(--kernel-space-4);
   background-color: var(--kernel-color-surface-raised);
   color: var(--kernel-color-text);
   box-shadow: var(--kernel-shadow-lg);
@@ -584,6 +613,24 @@ p.docs-sidebar-eyebrow:first-child {
   border-radius: var(--kernel-radius-sm);
 }
 
+/* The logo is a flex item alongside the nav links and the theme
+   controls in Header's own flex row — without flex-shrink: 0 it was
+   the item the flexbox chose to compress once the row ran out of
+   room, shrinking the wordmark down to illegible (even to 0 width)
+   well before the 800px mobile collapse kicked in. Pinning it to its
+   intrinsic size fixes that; the icon-only swap below handles the
+   remaining squeeze in the 800–1024px band on its own. */
+.site-header-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--kernel-color-text);
+}
+
+.site-header-logo-icon {
+  display: none;
+}
+
 /* Header collapse: four nav links, search, the theme menu, and the
    theme switch need 699px next to the logo before nothing overflows
    (measured via header.scrollWidth vs clientWidth — 698px of content
@@ -594,6 +641,22 @@ p.docs-sidebar-eyebrow:first-child {
    header ever gains another item — don't just guess a bigger number. */
 .mobile-header-nav-trigger {
   display: none;
+}
+
+/* Between the mobile collapse (800px) and ~1024px, the desktop nav is
+   still visible but too tight for the full wordmark to sit next to it
+   without shrinking — swap to the icon-only mark instead of letting
+   flex-shrink squash the wordmark illegible. Below 800px the desktop
+   nav itself disappears (hamburger takes over) and the room comes
+   back, so the full wordmark returns there too. */
+@media (800px <= width < 1024px) {
+  .site-header-logo-full {
+    display: none;
+  }
+
+  .site-header-logo-icon {
+    display: inline-flex;
+  }
 }
 
 @media (width < 800px) {
@@ -707,7 +770,9 @@ p.docs-sidebar-eyebrow:first-child {
    to none, not to keep it laid out while closed. */
 .command-palette {
   position: fixed;
-  inset-block-start: 15vh;
+  /* Keep the palette below a top notch / status bar; the 15vh drop already
+     covers the common case, safe-area is the floor for cutout devices. */
+  inset-block-start: max(15vh, env(safe-area-inset-top));
   inset-inline-start: 50%;
   translate: -50% 0;
   margin: 0;
@@ -760,7 +825,12 @@ p.docs-sidebar-eyebrow:first-child {
 }
 
 .command-palette-input:focus-visible {
+  /* A full outline would clash with the container's rounded corners, so the
+     focus indicator thickens and tints the input's own bottom rule instead
+     — a visible keyboard cue without breaking the sheet's shape. */
   outline: none;
+  border-block-end-color: var(--kernel-color-focus-ring);
+  box-shadow: inset 0 -1px 0 0 var(--kernel-color-focus-ring);
 }
 
 .command-palette-list {

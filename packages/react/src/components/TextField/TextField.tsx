@@ -28,6 +28,10 @@ export interface TextFieldProps
   /** Shown instead of the description, with `role="alert"`, when `invalid`
    * is true. */
   errorMessage?: ReactNode;
+  /** Set to `false` to hard-align the label, description, and error text
+   * flush with the field's left edge, undoing the default inset that lines
+   * them up with the input's own text padding (`--kernel-label-inset`). */
+  labelOffset?: boolean;
   invalid?: boolean;
   size?: "sm" | "md" | "lg";
   className?: ClassNameValue<TextFieldState>;
@@ -48,6 +52,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       hideLabel = false,
       description,
       errorMessage,
+      labelOffset = true,
       invalid = false,
       required = false,
       disabled = false,
@@ -81,6 +86,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
         data-size={size}
+        data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
           className={[styles.label, hideLabel ? "kernel-sr-only" : null]

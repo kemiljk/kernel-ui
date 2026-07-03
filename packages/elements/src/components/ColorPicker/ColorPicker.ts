@@ -31,7 +31,10 @@ function normalizeHex(raw: string): string | null {
  * `#000000`), `no-hex-input` (boolean — hides the editable hex field;
  * present by default the hex field shows, matching the React version's
  * `showHexInput` defaulting to `true`), `size` (sm/md/lg, default md),
- * `description`, `error-message`, `invalid`, `disabled`, `name`.
+ * `description`, `error-message`, `no-label-offset` (boolean — hard-
+ * aligns the description and error text flush left instead of the
+ * default inset; doesn't affect `label`, which never carries the inset
+ * in the first place), `invalid`, `disabled`, `name`.
  */
 export class KernelColorPicker extends KernelElement {
   private readonly generatedId = `kernel-color-picker-${++colorPickerCounter}`;
@@ -46,6 +49,7 @@ export class KernelColorPicker extends KernelElement {
       "size",
       "description",
       "error-message",
+      "no-label-offset",
       "invalid",
       "disabled",
       "name",
@@ -219,6 +223,10 @@ export class KernelColorPicker extends KernelElement {
       case "description":
       case "error-message":
         this.updateDescribedBy();
+        break;
+      case "no-label-offset":
+        if (value !== null) this.native.setAttribute("data-label-offset", "false");
+        else this.native.removeAttribute("data-label-offset");
         break;
       case "name":
         if (this.colorInput) {

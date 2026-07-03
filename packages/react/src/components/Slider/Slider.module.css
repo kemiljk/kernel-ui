@@ -85,7 +85,7 @@
      soft haze, and less opacity keeps it from muddying that crispness. */
   box-shadow:
     0 0 0 1px var(--kernel-stroke-subtle),
-    0 2px 4px oklch(0% 0 0 / 0.15);
+    var(--kernel-shadow-thumb);
   transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
@@ -97,7 +97,7 @@
   background-color: var(--kernel-color-thumb);
   box-shadow:
     0 0 0 1px var(--kernel-stroke-subtle),
-    0 2px 4px oklch(0% 0 0 / 0.15);
+    var(--kernel-shadow-thumb);
 }
 
 .input:active::-webkit-slider-thumb {

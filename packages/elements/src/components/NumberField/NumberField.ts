@@ -36,7 +36,10 @@ function chevron(path: string): SVGSVGElement {
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value`, `min`, `max`,
  * `step` (default 1), `size` (sm/md/lg, default md), `description`,
- * `error-message`, `invalid`, `disabled`, `required`, `name`.
+ * `error-message`, `no-label-offset` (boolean — hard-aligns the label,
+ * description, and error text flush left instead of the default inset
+ * that lines them up with the input's own text padding), `invalid`,
+ * `disabled`, `required`, `name`.
  */
 export class KernelNumberField extends KernelElement {
   private readonly generatedId = `kernel-number-field-${++numberFieldCounter}`;
@@ -52,6 +55,7 @@ export class KernelNumberField extends KernelElement {
       "size",
       "description",
       "error-message",
+      "no-label-offset",
       "invalid",
       "disabled",
       "required",
@@ -228,6 +232,10 @@ export class KernelNumberField extends KernelElement {
       case "description":
       case "error-message":
         this.updateDescribedBy();
+        break;
+      case "no-label-offset":
+        if (value !== null) this.native.setAttribute("data-label-offset", "false");
+        else this.native.removeAttribute("data-label-offset");
         break;
       case "disabled":
         if (input) input.disabled = value !== null;

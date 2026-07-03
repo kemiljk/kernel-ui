@@ -96,6 +96,10 @@ export class KernelHoverCard extends KernelElement {
   disconnectedCallback() {
     clearTimeout(this.openTimer);
     clearTimeout(this.closeTimer);
+    // Removes the fallback path's window scroll/resize listeners if the
+    // card is torn down while open (they'd otherwise reference a detached
+    // element forever on browsers without CSS anchor positioning).
+    this.positioner.destroy();
   }
 }
 

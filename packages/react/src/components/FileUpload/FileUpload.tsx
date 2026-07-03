@@ -27,6 +27,13 @@ export interface FileUploadProps
    * and drop, or click to browse") still shows underneath either way. */
   hideLabel?: boolean;
   description?: ReactNode;
+  /** Set to `false` to hard-align the error text flush with the field's
+   * left edge, undoing the default inset that lines it up with the
+   * dropzone's own text (`--kernel-label-inset`). Doesn't affect `label`
+   * or the hint text, which sit above the dropzone as a heading, not
+   * inset text-field content, so they never carry the inset in the first
+   * place. */
+  labelOffset?: boolean;
   files?: File[];
   defaultFiles?: File[];
   onFilesChange?: (files: File[]) => void;
@@ -128,6 +135,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       label,
       hideLabel = false,
       description,
+      labelOffset = true,
       files,
       defaultFiles = [],
       onFilesChange,
@@ -240,6 +248,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           .join(" ")}
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
+        data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
           className={[styles.dropzone, resolveClassName(className, state)]

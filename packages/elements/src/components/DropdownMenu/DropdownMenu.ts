@@ -97,6 +97,13 @@ export class KernelDropdownMenu extends KernelElement {
     this.native = content;
     this.append(content);
   }
+
+  disconnectedCallback() {
+    // Drops the fallback path's window scroll/resize listeners if the menu
+    // is removed while open (otherwise they leak, referencing a detached
+    // element, on browsers without CSS anchor positioning).
+    this.positioner.destroy();
+  }
 }
 
 /** `<kernel-menu-item>` — a real `<button role="menuitem">`. Shared by

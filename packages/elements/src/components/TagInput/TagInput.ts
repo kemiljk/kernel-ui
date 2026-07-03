@@ -22,7 +22,10 @@ function escapeRegExp(value: string): string {
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value` (comma-joined),
  * `delimiters` (comma-joined, default `","`), `max`, `allow-duplicates`
- * (boolean), `description`, `error-message`, `invalid`, `disabled`, `name`.
+ * (boolean), `description`, `error-message`, `no-label-offset` (boolean —
+ * hard-aligns the label, description, and error text flush left instead
+ * of the default inset that lines them up with the input's own text
+ * padding), `invalid`, `disabled`, `name`.
  */
 export class KernelTagInput extends KernelElement {
   private readonly generatedId = `kernel-tag-input-${++tagInputCounter}`;
@@ -38,6 +41,7 @@ export class KernelTagInput extends KernelElement {
       "allow-duplicates",
       "description",
       "error-message",
+      "no-label-offset",
       "invalid",
       "disabled",
       "name",
@@ -282,6 +286,10 @@ export class KernelTagInput extends KernelElement {
       case "description":
       case "error-message":
         this.updateDescribedBy();
+        break;
+      case "no-label-offset":
+        if (value !== null) this.native.setAttribute("data-label-offset", "false");
+        else this.native.removeAttribute("data-label-offset");
         break;
       case "name":
         if (this.input) {

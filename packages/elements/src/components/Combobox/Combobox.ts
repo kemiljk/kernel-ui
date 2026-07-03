@@ -24,8 +24,10 @@ interface ComboboxOption {
  * rendered as the listbox's own `role="option"` divs.
  *
  * Attributes: `label` (required, still the accessible name even when
- * `hide-label` is set), `hide-label` (boolean), `placeholder`, `value`,
- * `empty-message` (default "No results").
+ * `hide-label` is set), `hide-label` (boolean), `no-label-offset`
+ * (boolean — hard-aligns the label flush left instead of the default
+ * inset that lines it up with the input's own text padding),
+ * `placeholder`, `value`, `empty-message` (default "No results").
  * Events: `valuechange` (`event.detail.value`).
  */
 export class KernelCombobox extends KernelElement {
@@ -42,7 +44,7 @@ export class KernelCombobox extends KernelElement {
   private listboxEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["label", "hide-label", "placeholder", "value"];
+    return ["label", "hide-label", "no-label-offset", "placeholder", "value"];
   }
 
   connectedCallback() {
@@ -208,6 +210,10 @@ export class KernelCombobox extends KernelElement {
         label?.classList.toggle("kernel-sr-only", value !== null);
         break;
       }
+      case "no-label-offset":
+        if (value !== null) this.native.setAttribute("data-label-offset", "false");
+        else this.native.removeAttribute("data-label-offset");
+        break;
       case "placeholder":
         this.inputEl.placeholder = value ?? "";
         break;
@@ -216,6 +222,14 @@ export class KernelCombobox extends KernelElement {
         this.renderOptions();
         break;
     }
+  }
+
+  disconnectedCallback() {
+    // Drops the fallback path's window scroll/resize listeners if the
+    // combobox is removed while its listbox is open (otherwise they leak,
+    // referencing a detached element, on browsers without CSS anchor
+    // positioning).
+    this.positioner.destroy();
   }
 }
 

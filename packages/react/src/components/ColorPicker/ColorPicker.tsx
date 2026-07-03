@@ -33,6 +33,12 @@ export interface ColorPickerProps
   showHexInput?: boolean;
   description?: ReactNode;
   errorMessage?: ReactNode;
+  /** Set to `false` to hard-align the description and error text flush
+   * with the field's left edge, undoing the default inset that lines them
+   * up with the swatch/label edge (`--kernel-label-inset`). Doesn't affect
+   * `label` itself — it sits above the swatch, not read as text-field
+   * content, so it never carries the inset in the first place. */
+  labelOffset?: boolean;
   invalid?: boolean;
   size?: "sm" | "md" | "lg";
   className?: ClassNameValue<ColorPickerState>;
@@ -83,6 +89,7 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
       showHexInput = true,
       description,
       errorMessage,
+      labelOffset = true,
       invalid = false,
       disabled = false,
       size = "md",
@@ -132,6 +139,7 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
         data-size={size}
+        data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
           className={[styles.label, hideLabel ? "kernel-sr-only" : null]

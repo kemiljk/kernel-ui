@@ -65,6 +65,13 @@ export class KernelPopover extends KernelElement {
     this.native = content;
     this.append(content);
   }
+
+  disconnectedCallback() {
+    // Drops the fallback path's window scroll/resize listeners if the
+    // popover is removed while open (otherwise they leak, referencing a
+    // detached element, on browsers without CSS anchor positioning).
+    this.positioner.destroy();
+  }
 }
 
 customElements.define("kernel-popover", KernelPopover);

@@ -136,6 +136,14 @@ export class KernelNavMenuTrigger extends KernelElement {
     if (!button) return;
     if (name === "disabled") button.disabled = value !== null;
   }
+
+  disconnectedCallback() {
+    // Drops the fallback path's window scroll/resize listeners if the
+    // trigger is removed while its menu is open (otherwise they leak,
+    // referencing a detached element, on browsers without CSS anchor
+    // positioning).
+    this.positioner.destroy();
+  }
 }
 
 let navMenuContentCounter = 0;

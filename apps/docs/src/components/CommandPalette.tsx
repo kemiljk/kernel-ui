@@ -9,6 +9,9 @@ import { MagnifyingGlassIcon } from "./icons";
  * can't share a React-generated one. */
 export const COMMAND_PALETTE_ID = "kernel-command-palette";
 
+const LISTBOX_ID = `${COMMAND_PALETTE_ID}-listbox`;
+const optionId = (index: number) => `${COMMAND_PALETTE_ID}-option-${index}`;
+
 interface PaletteItem {
   name: string;
   href: string;
@@ -94,7 +97,15 @@ export default function CommandPalette() {
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (event.key === "Enter") {
       const item = results[activeIndex];
-      if (item) window.location.href = item.href;
+      if (!item) return;
+      // Click the real <a> rather than assigning location.href, so Astro's
+      // ClientRouter intercepts it as a soft navigation (persisted sidebar,
+      // no full reload) — the same path a mouse click already takes.
+      const link = panelRef.current?.querySelector<HTMLAnchorElement>(
+        `#${CSS.escape(optionId(activeIndex))}`,
+      );
+      if (link) link.click();
+      else window.location.href = item.href;
     }
   }
 
@@ -123,14 +134,22 @@ export default function CommandPalette() {
           onKeyDown={handleInputKeyDown}
           placeholder="Search components…"
           aria-label="Search components"
+          role="combobox"
+          aria-expanded={results.length > 0}
+          aria-controls={LISTBOX_ID}
+          aria-autocomplete="list"
+          aria-activedescendant={results[activeIndex] ? optionId(activeIndex) : undefined}
           className="command-palette-input"
           autoComplete="off"
         />
-        <ul className="command-palette-list" role="listbox">
+        <ul id={LISTBOX_ID} className="command-palette-list" role="listbox">
           {results.map((item, index) => (
-            <li key={item.href}>
+            <li key={item.href} role="presentation">
               <a
                 href={item.href}
+                id={optionId(index)}
+                role="option"
+                aria-selected={index === activeIndex}
                 className="command-palette-item"
                 data-active={index === activeIndex || undefined}
               >

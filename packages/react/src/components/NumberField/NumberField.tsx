@@ -20,6 +20,10 @@ export interface NumberFieldProps
   hideLabel?: boolean;
   description?: ReactNode;
   errorMessage?: ReactNode;
+  /** Set to `false` to hard-align the label, description, and error text
+   * flush with the field's left edge, undoing the default inset that lines
+   * them up with the input's own text padding (`--kernel-label-inset`). */
+  labelOffset?: boolean;
   value?: number;
   defaultValue?: number;
   onValueChange?: (value: number | undefined) => void;
@@ -62,6 +66,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
       hideLabel = false,
       description,
       errorMessage,
+      labelOffset = true,
       value,
       defaultValue,
       onValueChange,
@@ -136,6 +141,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
         data-size={size}
+        data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
           className={[styles.label, hideLabel ? "kernel-sr-only" : null]

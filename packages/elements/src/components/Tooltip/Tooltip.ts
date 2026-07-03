@@ -70,6 +70,13 @@ export class KernelTooltip extends KernelElement {
     this.native = content;
     this.append(content);
   }
+
+  disconnectedCallback() {
+    // Drops the fallback path's window scroll/resize listeners if the
+    // tooltip is removed while open (otherwise they leak, referencing a
+    // detached element, on browsers without CSS anchor positioning).
+    this.positioner.destroy();
+  }
 }
 
 customElements.define("kernel-tooltip", KernelTooltip);

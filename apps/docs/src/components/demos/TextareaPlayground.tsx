@@ -15,6 +15,7 @@ const controls = [
   { type: "boolean" as const, prop: "required", default: false },
   { type: "boolean" as const, prop: "disabled", default: false },
   { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
+  { type: "boolean" as const, prop: "labelOffset", label: "label offset", default: true },
 ];
 
 function code(values: PlaygroundValues) {
@@ -26,6 +27,7 @@ function code(values: PlaygroundValues) {
   if (values.required) attrs.push("required");
   if (values.disabled) attrs.push("disabled");
   if (values.hideLabel) attrs.push("hideLabel");
+  if (values.labelOffset === false) attrs.push("labelOffset={false}");
   return `<Textarea ${attrs.join(" ")} />`;
 }
 
@@ -38,6 +40,7 @@ function elementsCode(values: PlaygroundValues) {
   if (values.required) attrs.push("required");
   if (values.disabled) attrs.push("disabled");
   if (values.hideLabel) attrs.push("hide-label");
+  if (values.labelOffset === false) attrs.push("no-label-offset");
   return `<kernel-textarea ${attrs.join(" ")}></kernel-textarea>`;
 }
 
@@ -57,6 +60,7 @@ export default function TextareaPlayground() {
           required={Boolean(values.required)}
           disabled={Boolean(values.disabled)}
           hideLabel={Boolean(values.hideLabel)}
+          labelOffset={Boolean(values.labelOffset)}
         />
       )}
     />

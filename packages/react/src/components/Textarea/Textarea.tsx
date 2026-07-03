@@ -17,6 +17,10 @@ export interface TextareaProps
   hideLabel?: boolean;
   description?: ReactNode;
   errorMessage?: ReactNode;
+  /** Set to `false` to hard-align the label, description, and error text
+   * flush with the field's left edge, undoing the default inset that lines
+   * them up with the textarea's own text padding (`--kernel-label-inset`). */
+  labelOffset?: boolean;
   invalid?: boolean;
   className?: ClassNameValue<TextareaState>;
 }
@@ -33,6 +37,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       hideLabel = false,
       description,
       errorMessage,
+      labelOffset = true,
       invalid = false,
       required = false,
       disabled = false,
@@ -60,6 +65,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         className={styles.root}
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
+        data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
           className={[styles.label, hideLabel ? "kernel-sr-only" : null]

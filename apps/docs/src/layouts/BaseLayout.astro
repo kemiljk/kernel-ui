@@ -238,6 +238,7 @@ const {
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader />
     <div class="docs-shell" data-with-sidebar={withSidebar ? "true" : "false"}>
       {
@@ -247,7 +248,7 @@ const {
           </div>
         )
       }
-      <main class="docs-main">
+      <main class="docs-main" id="main">
         {
           withSidebar && (
             <MobileNav client:load>

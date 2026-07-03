@@ -14,6 +14,7 @@ const controls = [
     default: "Add at least one skill.",
   },
   { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
+  { type: "boolean" as const, prop: "labelOffset", label: "label offset", default: true },
 ];
 
 function code(values: PlaygroundValues) {
@@ -24,6 +25,7 @@ function code(values: PlaygroundValues) {
   if (values.invalid) attrs.push("invalid");
   if (values.errorMessage) attrs.push(`errorMessage="${values.errorMessage}"`);
   if (values.hideLabel) attrs.push("hideLabel");
+  if (values.labelOffset === false) attrs.push("labelOffset={false}");
   return `<TagInput ${attrs.join(" ")} />`;
 }
 
@@ -35,6 +37,7 @@ function elementsCode(values: PlaygroundValues) {
   if (values.invalid) attrs.push("invalid");
   if (values.errorMessage) attrs.push(`error-message="${values.errorMessage}"`);
   if (values.hideLabel) attrs.push("hide-label");
+  if (values.labelOffset === false) attrs.push("no-label-offset");
   return `<kernel-tag-input ${attrs.join(" ")}></kernel-tag-input>`;
 }
 
@@ -54,6 +57,7 @@ export default function TagInputPlayground() {
           invalid={Boolean(values.invalid)}
           errorMessage={String(values.errorMessage)}
           hideLabel={Boolean(values.hideLabel)}
+          labelOffset={Boolean(values.labelOffset)}
         />
       )}
     />

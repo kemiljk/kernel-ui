@@ -16,6 +16,10 @@ export interface SelectProps
   hideLabel?: boolean;
   description?: ReactNode;
   errorMessage?: ReactNode;
+  /** Set to `false` to hard-align the label, description, and error text
+   * flush with the field's left edge, undoing the default inset that lines
+   * them up with the select's own text padding (`--kernel-label-inset`). */
+  labelOffset?: boolean;
   invalid?: boolean;
   className?: ClassNameValue<SelectState>;
 }
@@ -34,6 +38,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     hideLabel = false,
     description,
     errorMessage,
+    labelOffset = true,
     invalid = false,
     required = false,
     disabled = false,
@@ -58,7 +63,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const state: SelectState = { invalid, disabled };
 
   return (
-    <div className={styles.root} data-invalid={dataAttr(invalid)} data-disabled={dataAttr(disabled)}>
+    <div
+      className={styles.root}
+      data-invalid={dataAttr(invalid)}
+      data-disabled={dataAttr(disabled)}
+      data-label-offset={labelOffset === false ? "false" : undefined}
+    >
       <label
         className={[styles.label, hideLabel ? "kernel-sr-only" : null]
           .filter(Boolean)

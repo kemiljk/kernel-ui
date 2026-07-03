@@ -373,6 +373,13 @@
     --kernel-shadow-md: 0 4px 12px oklch(0% 0 0 / 0.10);
     --kernel-shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.16);
 
+    /* The tight "lifted knob" drop shadow for small draggable controls
+       (Slider's thumb): a shorter blur/offset than the -sm tier so it reads
+       as a crisp lifted edge, not a soft haze. Paired with
+       --kernel-stroke-subtle for the hairline. Tokenised so the value isn't
+       hardcoded per-thumb across both packages. */
+    --kernel-shadow-thumb: 0 2px 4px oklch(0% 0 0 / 0.15);
+
     /* A barely-visible edge for a light, floating element that a shadow
        alone doesn't cleanly separate from what's behind it (Slider's
        thumb sitting on its own light-grey unfilled track, e.g.) — black
@@ -383,6 +390,21 @@
        present than the original 5%. */
     --kernel-stroke-subtle: light-dark(oklch(0% 0 0 / 0.1), oklch(100% 0 0 / 0.1));
 
+    /* Modal backdrop scrim — a fixed dark wash behind Dialog / Command
+       Palette in both themes. A dark scrim reads correctly over light and
+       dark surfaces alike (the platform convention for modals), so this is
+       deliberately not a light-dark() pair. Single source of truth for the
+       value that used to be hardcoded in each component's ::backdrop. */
+    --kernel-color-scrim: oklch(0% 0 0 / 0.45);
+
+    /* The single non-top-layer stacking tier. Overlays (Dialog, Popover,
+       Dropdown, Tooltip, Combobox) deliberately need NO z-index — they use
+       the native top layer via `popover`/`<dialog>`. This token is only for
+       the genuinely fixed, non-top-layer chrome that has to sit above page
+       content: the Toast viewport and the docs site header. Component-internal
+       layering (a tab label over its sliding indicator, one stacked toast over
+       another) stays a small local `z-index`, which is correct — not an
+       arbitrary global value. */
     --kernel-z-overlay: 100;
   }
 

@@ -14,8 +14,11 @@ let textFieldCounter = 0;
  * Attributes: `label` (required, still the input's accessible name even
  * when `hide-label` is set), `hide-label` (boolean — visually hides the
  * label without removing it from the accessibility tree), `description`,
- * `error-message`, `invalid`, `required`, `disabled`, `size` (sm/md/lg,
- * default md), `type` (default text), `placeholder`, `value`, `name`.
+ * `error-message`, `no-label-offset` (boolean — hard-aligns the label,
+ * description, and error text flush left instead of the default inset
+ * that lines them up with the input's own text padding), `invalid`,
+ * `required`, `disabled`, `size` (sm/md/lg, default md), `type` (default
+ * text), `placeholder`, `value`, `name`.
  */
 export class KernelTextField extends KernelElement {
   private readonly generatedId = `kernel-text-field-${++textFieldCounter}`;
@@ -26,6 +29,7 @@ export class KernelTextField extends KernelElement {
       "hide-label",
       "description",
       "error-message",
+      "no-label-offset",
       "invalid",
       "required",
       "disabled",
@@ -165,6 +169,10 @@ export class KernelTextField extends KernelElement {
       case "description":
       case "error-message":
         this.updateDescribedBy();
+        break;
+      case "no-label-offset":
+        if (value !== null) root.setAttribute("data-label-offset", "false");
+        else root.removeAttribute("data-label-offset");
         break;
     }
   }

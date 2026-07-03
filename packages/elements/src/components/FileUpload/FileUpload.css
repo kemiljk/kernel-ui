@@ -4,6 +4,11 @@
   gap: var(--kernel-space-3);
   font-family: var(--kernel-font-sans);
   max-inline-size: 100%;
+  --label-offset: var(--kernel-label-inset);
+}
+
+.kernel-FileUpload-root[data-label-offset="false"] {
+  --label-offset: 0px;
 }
 
 .kernel-FileUpload-dropzone {
@@ -73,6 +78,13 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+.kernel-FileUpload-error {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-danger-text);
+  padding-inline-start: var(--label-offset);
 }
 
 .kernel-FileUpload-fileList {

@@ -48,9 +48,15 @@
   align-items: center;
   text-align: start;
   border: none;
-  border-radius: var(--kernel-radius-sm);
-  padding-block: var(--kernel-space-2);
-  padding-inline: var(--kernel-space-3);
+  /* Concentric with .content's own rounding, same
+     outer-radius-minus-padding relationship --kernel-radius-container
+     uses for a card and its nested button: shares .content's radius
+     minus the gap between the item and the panel edge (ContextMenu's
+     wider inline padding still uses this same block-axis gap, since
+     that's the dimension governing whether the first/last item's
+     corner nests against the panel's rounded top/bottom edge). */
+  border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
+  padding: var(--kernel-space-3);
   background-color: transparent;
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-sans);
