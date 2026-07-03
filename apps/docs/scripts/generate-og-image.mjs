@@ -28,6 +28,7 @@ const colors = {
   textMuted: "#726a5f",
   accent: "#e2963c",
   onAccent: "#241f19",
+  success: "#3d9a62",
 };
 
 // The *static* @fontsource/stack-sans-text package (not the
@@ -58,9 +59,18 @@ async function loadFonts() {
   ];
 }
 
-// A small fanned cluster of mock component chips — the same "real
-// components, not a logo" idea as the homepage showcase grid, redrawn
-// here as plain divs (Satori can't render actual React components).
+function textLine(children, style) {
+  return {
+    type: "div",
+    props: {
+      style: { display: "flex", ...style },
+      children,
+    },
+  };
+}
+
+// Mock component chips — echoes the homepage showcase, redrawn as plain
+// divs (Satori can't render actual React components).
 function componentChip({ rotate, top, left, children, style }) {
   return {
     type: "div",
@@ -77,7 +87,6 @@ function componentChip({ rotate, top, left, children, style }) {
         borderRadius: 999,
         backgroundColor: colors.canvas,
         border: `1px solid ${colors.border}`,
-        boxShadow: "0 8px 20px rgba(43, 38, 32, 0.12)",
         fontSize: 20,
         color: colors.text,
         ...style,
@@ -113,15 +122,14 @@ function buildTree() {
         position: "relative",
         backgroundColor: colors.canvas,
         fontFamily: "Stack Sans Text",
-        padding: 80,
+        padding: "72px 80px",
       },
       children: [
-        // Fanned component chips, upper-right — decorative, echoes the
-        // homepage showcase without trying to be a literal screenshot.
+        // Fanned component chips, right edge — decorative, not a screenshot.
         componentChip({
-          rotate: -6,
-          top: 56,
-          left: 700,
+          rotate: -5,
+          top: 48,
+          left: 820,
           children: [
             {
               type: "div",
@@ -142,14 +150,14 @@ function buildTree() {
         }),
         componentChip({
           rotate: 4,
-          top: 170,
-          left: 880,
+          top: 148,
+          left: 960,
           children: [dot(colors.accent), { type: "div", props: { children: "Auto-save" } }],
         }),
         componentChip({
           rotate: -3,
-          top: 300,
-          left: 760,
+          top: 248,
+          left: 870,
           style: { padding: "10px 16px" },
           children: [
             {
@@ -181,10 +189,54 @@ function buildTree() {
           ],
         }),
         componentChip({
-          rotate: 5,
-          top: 420,
-          left: 860,
+          rotate: 6,
+          top: 340,
+          left: 990,
+          style: { padding: "10px 18px", borderRadius: 12 },
           children: [
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  width: 22,
+                  height: 22,
+                  borderRadius: 6,
+                  border: `2px solid ${colors.accent}`,
+                  backgroundColor: colors.accent,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: colors.onAccent,
+                  fontSize: 14,
+                  fontWeight: 700,
+                },
+                children: "✓",
+              },
+            },
+            { type: "div", props: { children: "Remember me" } },
+          ],
+        }),
+        componentChip({
+          rotate: -4,
+          top: 430,
+          left: 900,
+          children: [
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  padding: "4px 12px",
+                  borderRadius: 8,
+                  backgroundColor: colors.surface,
+                  border: `1px solid ${colors.border}`,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: colors.success,
+                },
+                children: "Stable",
+              },
+            },
             {
               type: "div",
               props: {
@@ -207,16 +259,40 @@ function buildTree() {
             { type: "div", props: { children: "Kernel" } },
           ],
         }),
+        componentChip({
+          rotate: 3,
+          top: 520,
+          left: 1010,
+          style: { padding: "8px 14px", borderRadius: 12 },
+          children: [
+            {
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  backgroundColor: colors.surface,
+                  border: `1px solid ${colors.border}`,
+                  fontSize: 16,
+                  color: colors.textMuted,
+                },
+                children: "Search…",
+              },
+            },
+          ],
+        }),
 
-        // Main copy, left-aligned.
+        // Main copy, left-aligned — explicit line breaks avoid Satori's
+        // awkward auto-wrapping at share-preview sizes.
         {
           type: "div",
           props: {
             style: {
               display: "flex",
               flexDirection: "column",
-              gap: 24,
-              maxWidth: 620,
+              gap: 22,
+              maxWidth: 560,
               marginTop: "auto",
               marginBottom: "auto",
             },
@@ -228,7 +304,7 @@ function buildTree() {
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: 700,
                     color: colors.accent,
                     letterSpacing: 1,
@@ -242,12 +318,17 @@ function buildTree() {
                 props: {
                   style: {
                     display: "flex",
-                    fontSize: 58,
+                    flexDirection: "column",
+                    gap: 4,
+                    fontSize: 50,
                     fontWeight: 700,
-                    lineHeight: 1.1,
+                    lineHeight: 1.08,
                     color: colors.text,
                   },
-                  children: "The kernel of the web, componentised.",
+                  children: [
+                    textLine("The kernel of the web,"),
+                    textLine("componentised."),
+                  ],
                 },
               },
               {
@@ -255,12 +336,16 @@ function buildTree() {
                 props: {
                   style: {
                     display: "flex",
-                    fontSize: 26,
-                    lineHeight: 1.4,
+                    flexDirection: "column",
+                    gap: 4,
+                    fontSize: 24,
+                    lineHeight: 1.35,
                     color: colors.textMuted,
                   },
-                  children:
-                    "A component library built on real semantic HTML instead of div soup.",
+                  children: [
+                    textLine("A component library built on real semantic HTML"),
+                    textLine("instead of div soup."),
+                  ],
                 },
               },
             ],
