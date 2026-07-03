@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 # Production deploys are handled by Vercel (see vercel.json). This workflow
 # only verifies code quality. Docs are built here on pull requests so merges

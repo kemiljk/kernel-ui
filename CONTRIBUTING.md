@@ -15,7 +15,7 @@ The docs site runs at `http://localhost:4321`.
 
 ### Before opening a PR
 
-CI runs on pull requests (typecheck, tests, package builds, and a docs build). Pushes to `master` deploy via **Vercel**. You will see a `Production - kernel-ui` check from the Vercel GitHub app. That is the production build, not a duplicate Actions workflow.
+CI runs on pull requests (typecheck, tests, package builds, and a docs build). Pushes to `main` deploy via **Vercel**. You will see a `Production - kernel-ui` check from the Vercel GitHub app. That is the production build, not a duplicate Actions workflow.
 
 1. Build both component packages after changes:
    ```bash
