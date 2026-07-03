@@ -1,10 +1,14 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Button, Nav, NavLink } from "@kernelui/react";
+import type { ReactNode } from "react";
+import { Button } from "@kernelui/react";
 import { CrossIcon, HamburgerMenuIcon } from "./icons";
 
 interface MobileNavProps {
-  items: { href: string; label: string }[];
-  currentPath: string;
+  /** The same `<DocsSidebarNav />` markup the desktop sidebar renders,
+   * passed through from BaseLayout as static Astro-rendered children —
+   * see the comment on DocsSidebarNav.astro for why this is the one
+   * shared source instead of a second, flat-list copy of the nav. */
+  children: ReactNode;
 }
 
 /**
@@ -20,7 +24,7 @@ interface MobileNavProps {
  * "confirm this", a slide-in from the edge reads as "here's your nav",
  * which is what this actually is).
  */
-export default function MobileNav({ items, currentPath }: MobileNavProps) {
+export default function MobileNav({ children }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -53,7 +57,7 @@ export default function MobileNav({ items, currentPath }: MobileNavProps) {
         onClick={() => setOpen(true)}
       >
         <HamburgerMenuIcon width="16" height="16" />
-        Components
+        Menu
       </Button>
       <dialog
         ref={dialogRef}
@@ -61,7 +65,12 @@ export default function MobileNav({ items, currentPath }: MobileNavProps) {
         aria-labelledby={titleId}
         className="mobile-nav-panel"
         onClick={(event) => {
-          if (event.target === dialogRef.current) setOpen(false);
+          const target = event.target as HTMLElement;
+          // Backdrop click, or a click on any nav link the shared markup
+          // below rendered — either way, the drawer's job is done.
+          if (target === dialogRef.current || target.closest("a[href]")) {
+            setOpen(false);
+          }
         }}
         onCancel={(event) => {
           event.stopPropagation();
@@ -69,7 +78,7 @@ export default function MobileNav({ items, currentPath }: MobileNavProps) {
       >
         <div className="mobile-nav-panel-header">
           <span id={titleId} className="mobile-nav-panel-title">
-            Components
+            Menu
           </span>
           <Button
             type="button"
@@ -81,18 +90,7 @@ export default function MobileNav({ items, currentPath }: MobileNavProps) {
             <CrossIcon width="16" height="16" />
           </Button>
         </div>
-        <Nav aria-label="Components">
-          {items.map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              aria-current={currentPath === item.href ? "page" : undefined}
-              onClick={() => setOpen(false)}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </Nav>
+        {children}
       </dialog>
     </>
   );

@@ -6,8 +6,8 @@ import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import MobileNav from "../components/MobileNav";
+import DocsSidebarNav from "../components/DocsSidebarNav.astro";
 import TableOfContents from "../components/TableOfContents.astro";
-import { components } from "../data/components";
 
 interface Props {
   title: string;
@@ -20,11 +20,6 @@ const {
   description = "A component library built on the actual kernel of the web: real semantic HTML, not div soup.",
   withSidebar = false,
 } = Astro.props;
-
-const path = Astro.url.pathname;
-const navItems = components
-  .filter((component) => component.status === "available")
-  .map((component) => ({ href: `/components/${component.slug}/`, label: component.name }));
 ---
 
 <!doctype html>
@@ -253,7 +248,13 @@ const navItems = components
         )
       }
       <main class="docs-main">
-        {withSidebar && <MobileNav client:load items={navItems} currentPath={path} />}
+        {
+          withSidebar && (
+            <MobileNav client:load>
+              <DocsSidebarNav />
+            </MobileNav>
+          )
+        }
         <slot />
       </main>
       {
