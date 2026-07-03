@@ -1,0 +1,26 @@
+---
+import { NPM_REACT_URL } from "../lib/site";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<a
+  href={NPM_REACT_URL}
+  class:list={["site-header-registry-link", className]}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="View @kernelui-lib/react on npm"
+>
+  <svg viewBox="0 0 800 800" fill="none" aria-hidden="true" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M800 800H0V0H800V800ZM150 150V650H400V250H550V650H650V150H150Z"
+      fill="#C12127"></path>
+  </svg>
+  <span>npm</span>
+</a>

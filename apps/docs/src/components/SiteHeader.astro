@@ -5,6 +5,7 @@ import ThemeMenu from "./ThemeMenu";
 import MobileHeaderNav from "./MobileHeaderNav";
 import CommandPalette from "./CommandPalette";
 import GitHubHeaderLink from "./GitHubHeaderLink.astro";
+import NpmHeaderLink from "./NpmHeaderLink.astro";
 import githubStars from "../data/github-stars.json";
 
 const items = [
@@ -80,6 +81,7 @@ const path = Astro.url.pathname;
   </Nav>
   <div class="site-header-toggle-desktop">
     <GitHubHeaderLink />
+    <NpmHeaderLink />
     <CommandPalette client:load />
     <ThemeMenu client:load />
     <ThemeToggle client:load />

@@ -71,7 +71,7 @@ See [`AGENTS.md`](./AGENTS.md) and [`CONTRIBUTING.md`](./CONTRIBUTING.md) for co
 
 ## Status
 
-51 components are documented and available today across React and Custom Elements. See [`ROADMAP.md`](./ROADMAP.md) for architecture decisions and what's next.
+51 components are documented and available today across React and Custom Elements. Browse the [component catalog](https://www.kernelui.com/components/).
 
 ## License
 

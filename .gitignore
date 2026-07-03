@@ -1,0 +1,23 @@
+node_modules
+dist
+.astro
+.DS_Store
+*.log
+.turbo
+coverage
+
+# Bun temp files (e.g. from failed installs)
+_tmp_*
+
+# Local tooling / agent scratch
+.superdesign/
+.claude/
+.cursor/
+
+# Other package managers (this repo uses Bun — see bun.lock)
+pnpm-workspace.yaml
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+examples/**/node_modules
+examples/**/dist

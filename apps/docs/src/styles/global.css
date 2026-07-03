@@ -490,7 +490,7 @@ p.docs-sidebar-eyebrow:first-child {
   gap: var(--kernel-space-3);
 }
 
-.site-header-github {
+.site-header-registry-link {
   display: inline-flex;
   align-items: center;
   gap: var(--kernel-space-2);
@@ -500,7 +500,7 @@ p.docs-sidebar-eyebrow:first-child {
   white-space: nowrap;
 }
 
-.site-header-github svg {
+.site-header-registry-link svg {
   flex-shrink: 0;
 }
 
@@ -510,12 +510,12 @@ p.docs-sidebar-eyebrow:first-child {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .site-header-github:hover {
+  .site-header-registry-link:hover {
     color: var(--kernel-color-text);
   }
 }
 
-.site-header-github:focus-visible {
+.site-header-registry-link:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 2px;
   border-radius: var(--kernel-radius-sm);
@@ -525,7 +525,7 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   display: none;
 }
 
-.mobile-header-nav-github {
+.mobile-header-nav-registry-link {
   display: inline-flex;
   align-items: center;
   gap: var(--kernel-space-2);

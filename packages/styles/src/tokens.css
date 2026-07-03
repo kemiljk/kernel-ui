@@ -38,8 +38,9 @@
      * swatches, this curve isn't individually calibrated per hue for
      * guaranteed APCA contrast, it's one lightness/chroma curve shared
      * by every hue, which is close but not identical in perceived
-     * contrast across very different hues (yellow vs. blue, say). See
-     * ROADMAP.md for per-hue calibration as a future refinement.
+     * contrast across very different hues (yellow vs. blue, say). Named
+     * theme presets in @kernelui-lib/styles/themes/ provide per-hue,
+     * gamut-checked ramps for a curated set of hues.
      */
     /* 70 is gold (verified against #F59E0B converted to OKLCH, not
        eyeballed): the Kernel brand accent, a "popcorn kernel" nod that
