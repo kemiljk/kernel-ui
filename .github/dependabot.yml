@@ -11,13 +11,28 @@ updates:
     groups:
       production-dependencies:
         dependency-type: production
-      development-dependencies:
-        dependency-type: development
+      # Bun only supports dependency-type production|runtime in groups, not
+      # development — match dev tools by name instead.
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "@astrojs/*"
+          - "@vitejs/*"
+          - "typescript"
+          - "vitest"
+          - "vite*"
+          - "jsdom"
     ignore:
-      # Major dev-tool bumps (TypeScript, Vitest, Vite plugins) need a
-      # deliberate upgrade pass, not a grouped Dependabot PR.
-      - dependency-name: "*"
-        dependency-type: development
+      # Major dev-tool bumps need a deliberate upgrade pass.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jsdom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite-plugin-dts"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
