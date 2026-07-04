@@ -5,6 +5,7 @@ import ExampleGrid from "../../components/ExampleGrid.astro";
 import Example from "../../components/Example.astro";
 import ComposerDemo from "../../components/demos/ComposerDemo";
 import ComposerActionsExample from "../../components/demos/ComposerActionsExample";
+import ComposerThinkingExample from "../../components/demos/ComposerThinkingExample";
 import ComposerPlayground from "../../components/demos/ComposerPlayground";
 import { Composer } from "@kernelui-lib/react";
 
@@ -22,7 +23,11 @@ const actionsSnippet = `<Composer
   )}
 />`;
 
-const thinkingSnippet = `<Composer placeholder="Ask anything…" thinking />`;
+const thinkingSnippet = `<Composer
+  placeholder="Ask anything…"
+  defaultValue="How do I theme Kernel with a custom accent colour?"
+  thinking
+/>`;
 ---
 
 <BaseLayout title="Composer" withSidebar>
@@ -55,10 +60,10 @@ const thinkingSnippet = `<Composer placeholder="Ask anything…" thinking />`;
       </Example>
       <Example
         title="Thinking state"
-        description="An animated border sweep signals an in-flight response and blocks submission."
+        description="An animated border sweep signals an in-flight response and blocks submission. The submitted query stays visible."
         code={thinkingSnippet}
       >
-        <Composer placeholder="Ask anything…" thinking />
+        <ComposerThinkingExample client:load />
       </Example>
     </ExampleGrid>
 

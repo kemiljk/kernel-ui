@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Composer } from "@kernelui-lib/react";
 
 export default function ComposerDemo() {
+  const [value, setValue] = useState("");
   const [thinking, setThinking] = useState(false);
 
   function handleSubmit() {
@@ -12,6 +13,8 @@ export default function ComposerDemo() {
   return (
     <Composer
       placeholder="Ask anything…"
+      value={value}
+      onValueChange={setValue}
       thinking={thinking}
       onSubmit={handleSubmit}
       actionsTrailing={({ submit }) => (
