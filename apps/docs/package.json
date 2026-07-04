@@ -5,9 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/fetch-github-stars.mjs && node scripts/generate-og-image.mjs && NODE_OPTIONS=--max-old-space-size=8192 astro check && astro build && node scripts/generate-markdown.mjs",
+    "build": "node scripts/fetch-github-stars.mjs && NODE_OPTIONS=--max-old-space-size=8192 astro check && astro build && node scripts/generate-markdown.mjs",
     "generate:github-stars": "node scripts/fetch-github-stars.mjs",
-    "generate:og": "node scripts/generate-og-image.mjs",
     "preview": "astro preview",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 astro check"
   },
@@ -25,13 +24,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@fontsource/stack-sans-text": "^5.2.1",
-    "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "node-html-parser": "^8.0.4",
-    "satori": "^0.26.0",
-    "typescript": "^5.7.3",
-    "wawoff2": "^2.0.1"
+    "typescript": "^5.7.3"
   }
 }
