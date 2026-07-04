@@ -1,6 +1,9 @@
 version: 2
 updates:
-  - package-ecosystem: npm
+  # Bun workspaces: use the bun ecosystem so Dependabot updates bun.lock
+  # alongside package.json. The npm ecosystem only bumps manifests and
+  # breaks CI's `bun install --frozen-lockfile` step.
+  - package-ecosystem: bun
     directory: /
     schedule:
       interval: weekly
@@ -10,6 +13,12 @@ updates:
         dependency-type: production
       development-dependencies:
         dependency-type: development
+    ignore:
+      # Major dev-tool bumps (TypeScript, Vitest, Vite plugins) need a
+      # deliberate upgrade pass, not a grouped Dependabot PR.
+      - dependency-name: "*"
+        dependency-type: development
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
