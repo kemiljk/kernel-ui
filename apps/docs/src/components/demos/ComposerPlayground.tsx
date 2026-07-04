@@ -1,5 +1,6 @@
 import { Composer } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
+import { EXAMPLE_QUERY } from "./ComposerThinkingExample";
 
 const controls = [
   { type: "text" as const, prop: "placeholder", default: "Ask anything…" },
@@ -16,7 +17,10 @@ const controls = [
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`placeholder="${values.placeholder}"`];
   if (values.submitOn !== "mod+enter") attrs.push(`submitOn="${values.submitOn}"`);
-  if (values.thinking) attrs.push("thinking");
+  if (values.thinking) {
+    attrs.push("thinking");
+    attrs.push(`defaultValue="${EXAMPLE_QUERY}"`);
+  }
   if (values.disabled) attrs.push("disabled");
   return `<Composer ${attrs.join(" ")} />`;
 }
@@ -24,7 +28,10 @@ function code(values: PlaygroundValues) {
 function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [`placeholder="${values.placeholder}"`];
   if (values.submitOn !== "mod+enter") attrs.push(`submit-on="${values.submitOn}"`);
-  if (values.thinking) attrs.push("thinking");
+  if (values.thinking) {
+    attrs.push("thinking");
+    attrs.push(`value="${EXAMPLE_QUERY}"`);
+  }
   if (values.disabled) attrs.push("disabled");
   return `<kernel-composer ${attrs.join(" ")}></kernel-composer>`;
 }
@@ -37,8 +44,10 @@ export default function ComposerPlayground() {
       elementsCode={elementsCode}
       render={(values) => (
         <Composer
+          key={values.thinking ? "thinking" : "idle"}
           placeholder={String(values.placeholder)}
           submitOn={values.submitOn as "mod+enter" | "enter"}
+          defaultValue={values.thinking ? EXAMPLE_QUERY : ""}
           thinking={Boolean(values.thinking)}
           disabled={Boolean(values.disabled)}
         />
