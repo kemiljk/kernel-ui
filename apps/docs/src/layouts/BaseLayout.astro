@@ -9,7 +9,7 @@ import MobileNav from "../components/MobileNav";
 import DocsSidebarNav from "../components/DocsSidebarNav.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import { components } from "../data/components";
-import { SITE_URL } from "../lib/site";
+import { SITE_URL, SITE_NAME, SITE_DEFAULT_TITLE, SITE_DEFAULT_DESCRIPTION } from "../lib/site";
 
 interface Props {
   title: string;
@@ -32,11 +32,12 @@ const description =
   descriptionProp ??
   (componentEntry
     ? `${componentEntry.summary} Built on ${componentEntry.element}.`
-    : "A component library built on the actual kernel of the web: real semantic HTML, not div soup.");
+    : SITE_DEFAULT_DESCRIPTION);
 
 const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
 const ogImage = new URL("/og.png", SITE_URL).href;
-const pageTitle = Astro.url.pathname === "/" ? "Kernel" : `${title} · Kernel`;
+const pageTitle =
+  Astro.url.pathname === "/" ? SITE_DEFAULT_TITLE : `${title} — ${SITE_NAME}`;
 ---
 
 <!doctype html>
@@ -148,6 +149,7 @@ const pageTitle = Astro.url.pathname === "/" ? "Kernel" : `${title} · Kernel`;
     <meta name="description" content={description} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content="website" />
