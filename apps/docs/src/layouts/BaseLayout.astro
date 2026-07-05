@@ -163,6 +163,16 @@ const pageTitle =
          no page CSS context, so a theme-reactive colour would just never
          resolve and fall back to nothing. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          defer
+          src="https://analytics.karlkoch.me/script.js"
+          data-website-id="f4ad2f0d-e314-4dca-a2db-e120ab282e4b"
+        />
+      )
+    }
     <ClientRouter />
     <!--
       The sidebar below is transition:persist'd across navigations —
