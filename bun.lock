@@ -27,7 +27,7 @@
         "@astrojs/check": "^0.9.9",
         "@types/react": "^19.1.0",
         "@types/react-dom": "^19.1.0",
-        "node-html-parser": "^8.0.4",
+        "node-html-parser": "^9.0.0",
         "typescript": "^5.7.3",
       },
     },
@@ -1004,7 +1004,7 @@
 
     "node-fetch-native": ["node-fetch-native@1.6.7", "", {}, "sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q=="],
 
-    "node-html-parser": ["node-html-parser@8.0.4", "", { "dependencies": { "css-select": "^5.1.0", "entities": "^8.0.0" } }, "sha512-w2YxujN/TqrSIWGVNW/fVgKKfAyQeHMXCvnKZI0owLnfP0tfjdLecUoy9zhOMZGoEFk6eP5qSDyvUarjPl3bwQ=="],
+    "node-html-parser": ["node-html-parser@9.0.0", "", { "dependencies": { "css-select": "^5.1.0", "entities": "^8.0.0" } }, "sha512-MhdaHPyxnyYu/sf0TpiRvDnTrkum0UKHC7FdbDGIUQNlx3I7xzwXoyV0eMUMv/XU+lkJT1glOUzpDPq7b2p1Ew=="],
 
     "node-mock-http": ["node-mock-http@1.0.4", "", {}, "sha512-8DY+kFsDkNXy1sJglUfuODx1/opAGJGyrTuFqEoN90oRc2Vk0ZbD4K2qmKXBBEhZQzdKHIVfEJpDU8Ak2NJEvQ=="],
 
