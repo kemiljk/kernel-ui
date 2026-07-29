@@ -23,7 +23,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "node-html-parser": "^8.0.4",
