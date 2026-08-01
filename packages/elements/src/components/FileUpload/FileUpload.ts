@@ -140,11 +140,13 @@ export class KernelFileUpload extends KernelElement {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("FileUpload");
+    root.setAttribute("data-slot", "file-upload");
 
     const id = this.getAttribute("id") || this.generatedId;
 
     const dropzone = document.createElement("label");
     dropzone.className = kernelClass("FileUpload", "dropzone");
+    dropzone.setAttribute("data-slot", "file-upload-dropzone");
     dropzone.htmlFor = id;
     dropzone.innerHTML = `
       <span class="${kernelClass("FileUpload", "empty")}">
@@ -157,7 +159,7 @@ export class KernelFileUpload extends KernelElement {
           <span class="${kernelClass("FileUpload", "hint")}">Drag and drop, or click to browse</span>
         </span>
       </span>
-      <span class="${kernelClass("FileUpload", "preview")}" aria-hidden="true" hidden></span>
+      <span class="${kernelClass("FileUpload", "preview")}" data-slot="file-upload-preview" aria-hidden="true" hidden></span>
     `;
 
     const input = document.createElement("input");
@@ -236,6 +238,7 @@ export class KernelFileUpload extends KernelElement {
 
     const fileList = document.createElement("ul");
     fileList.className = kernelClass("FileUpload", "fileList");
+    fileList.setAttribute("data-slot", "file-upload-list");
     fileList.setAttribute("aria-label", "Selected files");
 
     root.append(dropzone, fileList);
@@ -363,6 +366,7 @@ export class KernelFileUpload extends KernelElement {
     if (!preview) {
       preview = document.createElement("span");
       preview.className = kernelClass("FileUpload", "preview");
+      preview.setAttribute("data-slot", "file-upload-preview");
       preview.setAttribute("aria-hidden", "true");
       dropzone.insertBefore(preview, input);
     }

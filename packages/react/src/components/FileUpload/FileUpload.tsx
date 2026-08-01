@@ -363,6 +363,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         className={[styles.root, resolveClassName(wrapperClassName, state)]
           .filter(Boolean)
           .join(" ")}
+        data-slot="file-upload"
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
         data-preview={dataAttr(preview)}
@@ -374,6 +375,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           className={[styles.dropzone, resolveClassName(className, state)]
             .filter(Boolean)
             .join(" ")}
+          data-slot="file-upload-dropzone"
           htmlFor={inputId}
           data-drag-active={dataAttr(dragActive)}
           data-has-preview={dataAttr(showMould)}
@@ -420,6 +422,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           {preview ? (
             <span
               className={styles.preview}
+              data-slot="file-upload-preview"
               data-layout={showMould ? previewLayout : undefined}
               aria-hidden="true"
             >
@@ -472,7 +475,11 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         ) : null}
 
         {currentFiles.length > 0 ? (
-          <ul className={styles.fileList} aria-label="Selected files">
+          <ul
+            className={styles.fileList}
+            data-slot="file-upload-list"
+            aria-label="Selected files"
+          >
             {currentFiles.map((file, index) => (
               <li className={styles.fileItem} key={`${file.name}-${file.size}-${file.lastModified}`}>
                 <span className={styles.fileName}>{file.name}</span>

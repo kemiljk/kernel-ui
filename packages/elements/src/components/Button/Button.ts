@@ -23,6 +23,7 @@ export class KernelButton extends KernelElement {
     if (this.native) return;
     const button = document.createElement("button");
     button.className = kernelClass("Button");
+    button.setAttribute("data-slot", "button");
 
     const label = document.createElement("span");
     label.className = kernelClass("Button", "label");

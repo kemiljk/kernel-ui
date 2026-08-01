@@ -98,6 +98,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className: [styles.root, resolveClassName(className, state)]
           .filter(Boolean)
           .join(" "),
+        "data-slot": "button",
         "data-variant": variant,
         "data-size": size,
         "data-loading": dataAttr(loading),

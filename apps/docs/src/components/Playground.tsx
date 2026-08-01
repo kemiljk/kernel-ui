@@ -89,6 +89,7 @@ export default function Playground({
   const [values, setValues] = useState<PlaygroundValues>(() =>
     Object.fromEntries(controls.map((control) => [control.prop, control.default])),
   );
+  const [unstyled, setUnstyled] = useState(false);
 
   function set(prop: string, value: string | boolean | number) {
     setValues((previous) => ({ ...previous, [prop]: value }));
@@ -101,11 +102,27 @@ export default function Playground({
     <div className="prop-playground">
       <div
         className={["prop-playground-stage", stageClassName].filter(Boolean).join(" ")}
+        data-unstyled={unstyled ? "" : undefined}
       >
         {render(values)}
       </div>
 
       <div className="prop-playground-panel">
+        <div className="prop-playground-chrome">
+          <div className="prop-playground-field">
+            <span className="prop-playground-field-label">Unstyled</span>
+            <Switch
+              checked={unstyled}
+              aria-label="Unstyled"
+              onCheckedChange={setUnstyled}
+            />
+          </div>
+          <p className="prop-playground-chrome-hint">
+            Same component — Kernel look stripped. See{" "}
+            <a href="/platforms/">Platforms</a>.
+          </p>
+        </div>
+
         {controls.map((control) => {
           const label = control.label ?? control.prop;
 
@@ -233,6 +250,13 @@ export default function Playground({
                 <CopyButton text={reactCode} />
               </div>
             )}
+            {unstyled ? (
+              <p className="prop-playground-unstyled-note">
+                Omit <code>@kernelui-lib/react/styles.css</code> (or{" "}
+                <code>@kernelui-lib/elements/styles.css</code>) for the same DOM
+                without Kernel visuals — see <a href="/platforms/">Platforms</a>.
+              </p>
+            ) : null}
           </div>
         </details>
       ) : null}

@@ -1158,6 +1158,66 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   background-size: 16px 16px;
 }
 
+/* Unstyled mode: stage-scoped revert of Kernel component classes so the
+   playground previews headless / Platforms usage without unloading the
+   global styles.css the docs site depends on. */
+.prop-playground-stage[data-unstyled] {
+  background-image: none;
+  outline: var(--kernel-border-width) dashed color-mix(in oklch, var(--kernel-color-border) 70%, transparent);
+  outline-offset: calc(var(--kernel-space-unit) * -2);
+  min-block-size: calc(var(--kernel-space-unit) * 24);
+  padding: var(--kernel-space-10);
+}
+
+.prop-playground-stage[data-unstyled] [class*="kernel-"] {
+  all: revert;
+}
+
+.prop-playground-stage[data-unstyled] [class*="kernel-"]::backdrop {
+  all: revert;
+}
+
+/* hideLabel demos still need sr-only after revert — `display: none` would
+   strip labels from the accessibility tree. */
+.prop-playground-stage[data-unstyled] .kernel-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.prop-playground-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3) var(--kernel-space-4);
+  padding-block-end: var(--kernel-space-3);
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  margin-block-end: var(--kernel-space-1);
+}
+
+.prop-playground-chrome .prop-playground-field {
+  min-block-size: auto;
+}
+
+.prop-playground-chrome-hint {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+  color: var(--kernel-color-text-muted);
+}
+
+.prop-playground-unstyled-note {
+  margin: var(--kernel-space-3) 0 0;
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+  color: var(--kernel-color-text-muted);
+}
+
 /* Left-align stages whose demo content grows (Reasoning open state,
    longer duration labels) — centering would reflow the whole block. */
 .prop-playground-stage-start,
