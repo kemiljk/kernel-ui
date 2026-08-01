@@ -92,6 +92,16 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       its own gap value.
     </p>
 
+    <h2>Elevation</h2>
+    <p>
+      <code>--kernel-shadow-sm/md/lg</code> are baked multi-layer shadows,
+      not single blurred offsets or a runtime plugin. Each tier combines a
+      crisp contact edge, a short umbra, and a wider low-opacity ambient
+      layer for smoother falloff. The same tokens adapt their edge and
+      falloff contrast through <code>light-dark()</code>, so cards,
+      popovers, menus, and dialogs keep their depth in either theme.
+    </p>
+
     <h2>Type and motion</h2>
     <p>
       <code>--kernel-font-sans</code> and <code>--kernel-font-mono</code>{" "}

@@ -20,6 +20,12 @@ function formatBytes(bytes: number): string {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
 }
 
+function isPreviewableImage(file: File): boolean {
+  if (!file.type.startsWith("image/")) return false;
+  const type = file.type.toLowerCase();
+  return type !== "image/tiff" && type !== "image/tif";
+}
+
 function matchesAccept(file: File, accept: string | null): boolean {
   if (!accept) return true;
   const patterns = accept
@@ -62,6 +68,24 @@ function syncNativeFiles(input: HTMLInputElement, files: File[]) {
   input.files = dataTransfer.files;
 }
 
+function updateRevealOrigin(dropzone: HTMLElement, event: DragEvent) {
+  const rect = dropzone.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
+  const clamp = (value: number) => Math.max(0, Math.min(100, value));
+  const x = clamp(((event.clientX - rect.left) / rect.width) * 100);
+  const y = clamp(((event.clientY - rect.top) / rect.height) * 100);
+  dropzone.style.setProperty("--kernel-drop-origin-x", `${x}%`);
+  dropzone.style.setProperty("--kernel-drop-origin-y", `${y}%`);
+}
+
+function resetRevealOrigin(dropzone: HTMLElement | null) {
+  if (!dropzone) return;
+  dropzone.style.setProperty("--kernel-drop-origin-x", "50%");
+  dropzone.style.setProperty("--kernel-drop-origin-y", "50%");
+}
+
+const PREVIEW_GRID_CAP = 4;
+
 /**
  * `<kernel-file-upload>` — a real `<input type="file">` wrapped entirely
  * inside a real `<label>` that IS the drop zone, same approach as
@@ -78,7 +102,11 @@ function syncNativeFiles(input: HTMLInputElement, files: File[]) {
  * (boolean — hides the label heading only, the hint text underneath
  * still shows), `description` (replaces the default "Drag and drop, or
  * click to browse" hint), `accept`, `multiple` (boolean), `max-files`,
- * `max-size` (bytes), `error-message`, `no-label-offset` (boolean —
+ * `max-size` (bytes), `preview` (boolean — moulds the dropzone around
+ * the current selection with image object-URL thumbnails / file chips;
+ * off by default), `aspect-ratio="square"` (locks a 1:1 Card-radius
+ * tile; omit or `"auto"` for the default full-width field),
+ * `error-message`, `no-label-offset` (boolean —
  * hard-aligns the error text flush left instead of the default inset;
  * doesn't affect `label` or the hint text, which sit above the dropzone
  * as a heading rather than inset text-field content), `invalid`,
@@ -87,6 +115,7 @@ function syncNativeFiles(input: HTMLInputElement, files: File[]) {
 export class KernelFileUpload extends KernelElement {
   private readonly generatedId = `kernel-file-upload-${++fileUploadCounter}`;
   private dragCounter = 0;
+  private previewUrls: string[] = [];
 
   static get observedAttributes() {
     return [
@@ -97,6 +126,8 @@ export class KernelFileUpload extends KernelElement {
       "multiple",
       "max-files",
       "max-size",
+      "preview",
+      "aspect-ratio",
       "error-message",
       "no-label-offset",
       "invalid",
@@ -116,14 +147,17 @@ export class KernelFileUpload extends KernelElement {
     dropzone.className = kernelClass("FileUpload", "dropzone");
     dropzone.htmlFor = id;
     dropzone.innerHTML = `
-      <svg class="${kernelClass("FileUpload", "icon")}" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M8 10.5V3.5M8 3.5L5 6.5M8 3.5L11 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M2.5 10.5V11.5C2.5 12.0523 2.94772 12.5 3.5 12.5H12.5C13.0523 12.5 13.5 12.0523 13.5 11.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-      <span class="${kernelClass("FileUpload", "instructions")}">
-        <strong class="${kernelClass("FileUpload", "label")}"></strong>
-        <span class="${kernelClass("FileUpload", "hint")}">Drag and drop, or click to browse</span>
+      <span class="${kernelClass("FileUpload", "empty")}">
+        <svg class="${kernelClass("FileUpload", "icon")}" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 10.5V3.5M8 3.5L5 6.5M8 3.5L11 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M2.5 10.5V11.5C2.5 12.0523 2.94772 12.5 3.5 12.5H12.5C13.0523 12.5 13.5 12.0523 13.5 11.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="${kernelClass("FileUpload", "instructions")}">
+          <strong class="${kernelClass("FileUpload", "label")}"></strong>
+          <span class="${kernelClass("FileUpload", "hint")}">Drag and drop, or click to browse</span>
+        </span>
       </span>
+      <span class="${kernelClass("FileUpload", "preview")}" aria-hidden="true" hidden></span>
     `;
 
     const input = document.createElement("input");
@@ -134,6 +168,8 @@ export class KernelFileUpload extends KernelElement {
       const incoming = Array.from(input.files ?? []);
       input.value = "";
       if (incoming.length === 0) return;
+      // Keyboard / picker selection has no pointer — don't reuse a stale drag origin.
+      resetRevealOrigin(this.dropzone);
       const result = validateFiles(
         incoming,
         0,
@@ -147,6 +183,7 @@ export class KernelFileUpload extends KernelElement {
       }
       syncNativeFiles(input, result.accepted);
       this.renderFileList();
+      this.renderPreview();
       this.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
@@ -154,10 +191,14 @@ export class KernelFileUpload extends KernelElement {
 
     dropzone.addEventListener("dragenter", (event) => {
       event.preventDefault();
+      updateRevealOrigin(dropzone, event);
       this.dragCounter += 1;
       dropzone.dataset.dragActive = "true";
     });
-    dropzone.addEventListener("dragover", (event) => event.preventDefault());
+    dropzone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      updateRevealOrigin(dropzone, event);
+    });
     dropzone.addEventListener("dragleave", (event) => {
       event.preventDefault();
       this.dragCounter -= 1;
@@ -168,6 +209,7 @@ export class KernelFileUpload extends KernelElement {
     });
     dropzone.addEventListener("drop", (event) => {
       event.preventDefault();
+      updateRevealOrigin(dropzone, event);
       this.dragCounter = 0;
       delete dropzone.dataset.dragActive;
       if (this.hasAttribute("disabled")) return;
@@ -188,6 +230,7 @@ export class KernelFileUpload extends KernelElement {
       }
       syncNativeFiles(input, [...existing, ...result.accepted]);
       this.renderFileList();
+      this.renderPreview();
       this.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
@@ -199,6 +242,10 @@ export class KernelFileUpload extends KernelElement {
     this.native = root;
     this.append(root);
     this.syncAllAttrs();
+  }
+
+  disconnectedCallback() {
+    this.revokePreviewUrls();
   }
 
   private get maxFiles(): number | null {
@@ -213,6 +260,15 @@ export class KernelFileUpload extends KernelElement {
 
   private get input(): HTMLInputElement | null {
     return this.native?.querySelector(`.${kernelClass("FileUpload", "input")}`) ?? null;
+  }
+
+  private get dropzone(): HTMLLabelElement | null {
+    return this.native?.querySelector(`.${kernelClass("FileUpload", "dropzone")}`) ?? null;
+  }
+
+  private revokePreviewUrls() {
+    for (const url of this.previewUrls) URL.revokeObjectURL(url);
+    this.previewUrls = [];
   }
 
   private updateDescribedBy() {
@@ -256,6 +312,7 @@ export class KernelFileUpload extends KernelElement {
     const next = Array.from(input.files ?? []).filter((_, i) => i !== index);
     syncNativeFiles(input, next);
     this.renderFileList();
+    this.renderPreview();
     this.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
@@ -289,6 +346,97 @@ export class KernelFileUpload extends KernelElement {
     });
   }
 
+  private renderPreview() {
+    const dropzone = this.dropzone;
+    const input = this.input;
+    if (!dropzone || !input) return;
+
+    this.revokePreviewUrls();
+    dropzone.querySelector(`.${kernelClass("FileUpload", "previewLabel")}`)?.remove();
+
+    const files = Array.from(input.files ?? []);
+    const previewEnabled = this.hasAttribute("preview");
+    const empty = dropzone.querySelector(`.${kernelClass("FileUpload", "empty")}`);
+    let preview = dropzone.querySelector(
+      `.${kernelClass("FileUpload", "preview")}`,
+    ) as HTMLElement | null;
+    if (!preview) {
+      preview = document.createElement("span");
+      preview.className = kernelClass("FileUpload", "preview");
+      preview.setAttribute("aria-hidden", "true");
+      dropzone.insertBefore(preview, input);
+    }
+
+    if (!previewEnabled) {
+      preview.setAttribute("hidden", "");
+      preview.innerHTML = "";
+      delete dropzone.dataset.hasPreview;
+      delete dropzone.dataset.previewLayout;
+      empty?.removeAttribute("aria-hidden");
+      return;
+    }
+
+    preview.removeAttribute("hidden");
+
+    if (files.length === 0) {
+      delete dropzone.dataset.hasPreview;
+      delete dropzone.dataset.previewLayout;
+      preview.innerHTML = "";
+      delete preview.dataset.layout;
+      empty?.removeAttribute("aria-hidden");
+      return;
+    }
+
+    const imageFiles = files.filter(isPreviewableImage);
+    const layout = imageFiles.length === 1 && files.length === 1 ? "single" : "grid";
+    dropzone.dataset.hasPreview = "true";
+    dropzone.dataset.previewLayout = layout;
+    preview.dataset.layout = layout;
+    empty?.setAttribute("aria-hidden", "true");
+
+    const gridOverflow =
+      layout === "grid" && files.length > PREVIEW_GRID_CAP
+        ? files.length - (PREVIEW_GRID_CAP - 1)
+        : 0;
+    const visibleFiles = gridOverflow > 0 ? files.slice(0, PREVIEW_GRID_CAP - 1) : files;
+
+    preview.innerHTML = "";
+    for (const file of visibleFiles) {
+      if (isPreviewableImage(file)) {
+        const url = URL.createObjectURL(file);
+        this.previewUrls.push(url);
+        const img = document.createElement("img");
+        img.className = kernelClass("FileUpload", "previewImage");
+        img.src = url;
+        img.alt = "";
+        preview.append(img);
+      } else {
+        const chip = document.createElement("span");
+        chip.className = kernelClass("FileUpload", "previewFile");
+        const name = document.createElement("span");
+        name.className = kernelClass("FileUpload", "previewFileName");
+        name.textContent = file.name;
+        chip.append(name);
+        preview.append(chip);
+      }
+    }
+    if (gridOverflow > 0) {
+      const overflow = document.createElement("span");
+      overflow.className = kernelClass("FileUpload", "previewOverflow");
+      overflow.textContent = `+${gridOverflow}`;
+      preview.append(overflow);
+    }
+
+    const sr = document.createElement("span");
+    sr.className = `${kernelClass("FileUpload", "previewLabel")} kernel-sr-only`;
+    const labelText =
+      this.native?.querySelector(`.${kernelClass("FileUpload", "label")}`)?.textContent ?? "";
+    const hintText =
+      this.native?.querySelector(`.${kernelClass("FileUpload", "hint")}`)?.textContent ?? "";
+    sr.textContent = `${labelText} ${hintText}`.trim();
+    dropzone.insertBefore(sr, input);
+  }
+
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
     const input = this.input;
@@ -307,6 +455,23 @@ export class KernelFileUpload extends KernelElement {
       case "description":
         this.updateHint();
         break;
+      case "preview":
+        if (value !== null) this.native.setAttribute("data-preview", "");
+        else this.native.removeAttribute("data-preview");
+        this.renderPreview();
+        break;
+      case "aspect-ratio": {
+        const square = value === "square";
+        const dropzone = this.dropzone;
+        if (square) {
+          this.native.setAttribute("data-aspect-ratio", "square");
+          dropzone?.setAttribute("data-aspect-ratio", "square");
+        } else {
+          this.native.removeAttribute("data-aspect-ratio");
+          dropzone?.removeAttribute("data-aspect-ratio");
+        }
+        break;
+      }
       case "no-label-offset":
         if (value !== null) this.native.setAttribute("data-label-offset", "false");
         else this.native.removeAttribute("data-label-offset");

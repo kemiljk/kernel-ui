@@ -109,6 +109,12 @@ h3 {
   outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
 .docs-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -396,16 +402,21 @@ p.docs-sidebar-eyebrow:first-child {
   }
 }
 
-/* `display` is deliberately never set here — same bug class fixed
-   earlier on the popover/dialog-based components in packages/react:
-   `dialog:not([open]) { display: none }` is a UA default, and setting
-   `display` unconditionally in author CSS would beat it, leaving a
-   closed panel still laid out and hit-testable. */
-.mobile-nav-panel {
+/* Site chrome restyles Kernel's Dialog into a left-edge docs drawer.
+   `dialog.` raises specificity above Dialog.module.css's single hashed
+   class so the sheet layout (and slide-in motion) wins over the default
+   centred card. `display` is deliberately never set here — same bug
+   class fixed earlier on the popover/dialog-based components in
+   packages/react: `dialog:not([open]) { display: none }` is a UA
+   default, and setting `display` unconditionally in author CSS would
+   beat it, leaving a closed panel still laid out and hit-testable. */
+dialog.mobile-nav-panel {
   margin: 0;
   inset-block: 0;
   inset-inline-start: 0;
+  inset-inline-end: auto;
   inline-size: min(85vw, 20rem);
+  max-inline-size: min(85vw, 20rem);
   block-size: 100dvh;
   max-block-size: 100dvh;
   border: none;
@@ -424,62 +435,38 @@ p.docs-sidebar-eyebrow:first-child {
   overflow-y: auto;
   overscroll-behavior: contain;
 
+  /* Drawer motion replaces Dialog's default scale settle. */
+  scale: 1;
+  opacity: 1;
   transform: translateX(-100%);
   transition:
     transform var(--kernel-duration-base) var(--kernel-ease-out),
-    overlay var(--kernel-duration-base) allow-discrete,
-    display var(--kernel-duration-base) allow-discrete;
-}
-
-.mobile-nav-panel[open] {
-  transform: translateX(0);
-}
-
-@starting-style {
-  .mobile-nav-panel[open] {
-    transform: translateX(-100%);
-  }
-}
-
-.mobile-nav-panel::backdrop {
-  background-color: oklch(0% 0 0 / 0.45);
-  opacity: 0;
-  transition:
     opacity var(--kernel-duration-base) var(--kernel-ease-out),
     overlay var(--kernel-duration-base) allow-discrete,
     display var(--kernel-duration-base) allow-discrete;
 }
 
-.mobile-nav-panel[open]::backdrop {
-  opacity: 1;
+dialog.mobile-nav-panel[open] {
+  transform: translateX(0);
+}
+
+dialog.mobile-nav-panel[data-closing] {
+  transform: translateX(-100%);
 }
 
 @starting-style {
-  .mobile-nav-panel[open]::backdrop {
-    opacity: 0;
+  dialog.mobile-nav-panel[open] {
+    transform: translateX(-100%);
   }
 }
 
-.mobile-nav-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--kernel-space-4);
-  margin-block-end: var(--kernel-space-4);
-}
-
-.mobile-nav-panel-title {
-  font-weight: 600;
-  font-size: var(--kernel-font-size-lg);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .mobile-nav-panel {
+  dialog.mobile-nav-panel {
     transition: opacity var(--kernel-duration-fast) linear;
     transform: translateX(0);
   }
 
-  .mobile-nav-panel::backdrop {
+  dialog.mobile-nav-panel::backdrop {
     transition: opacity var(--kernel-duration-fast) linear;
   }
 }
@@ -641,59 +628,20 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   border: var(--kernel-border-width) solid var(--kernel-color-border);
 }
 
-/* display is deliberately NOT set in the base rule here — only inside
-   :popover-open below. Setting it unconditionally is exactly the bug
-   fixed earlier in .command-palette and DropdownMenu.module.css: it
-   silently overrides the browser's own
-   [popover]:not(:popover-open) { display: none } default, leaving the
-   panel laid out and hit-testable at all times, just invisible via
-   opacity: 0. */
-/* No inset-* here at all: `useFloatingPosition` (the same hook
-   DropdownMenu/Combobox/Tooltip/Popover use) sets real CSS anchor
-   positioning — anchor-name on the trigger, position-anchor +
-   position-area on this panel — as inline styles, which always win
-   over anything set here. Hand-writing fixed insets (the previous
-   approach) only looked tethered to the trigger by coincidence,
-   because both happened to sit a constant distance from the same
-   viewport edge; it broke the moment that assumption didn't hold. */
-.theme-menu-panel {
-  position: fixed;
-  margin: 0;
+/* Additive width/layout on Kernel's Popover — the package owns border,
+   padding, shadow, and open/close motion. `data-slot` raises specificity
+   above Popover.module.css so `inline-size` wins. */
+[data-slot="popover-content"].theme-menu-panel {
+  inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
+  max-inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
+  box-shadow: var(--kernel-shadow-lg);
+  transform-origin: var(--kernel-transform-origin, center);
+}
+
+[data-slot="popover-content"].theme-menu-panel:popover-open {
+  display: flex;
   flex-direction: column;
   gap: var(--kernel-space-4);
-  padding: var(--kernel-padding-container);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-container);
-  background-color: var(--kernel-color-surface-raised);
-  box-shadow: var(--kernel-shadow-lg);
-  inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
-
-  opacity: 0;
-  scale: 0.96;
-  transition:
-    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-fast) var(--kernel-ease-out),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
-}
-
-.theme-menu-panel:popover-open {
-  display: flex;
-  opacity: 1;
-  scale: 1;
-}
-
-@starting-style {
-  .theme-menu-panel:popover-open {
-    opacity: 0;
-    scale: 0.96;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-menu-panel {
-    transition: opacity var(--kernel-duration-fast) linear;
-  }
 }
 
 .site-footer-brand {
@@ -783,21 +731,16 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
 }
 
 /* A disclosure anchored to its trigger, not a modal: no backdrop (a
-   plain popover has none by default), flush with the header and the
-   viewport's sides, rounded only on the one free edge. */
-.mobile-header-nav-panel {
-  position: fixed;
-  inset-inline: 0;
-  inset-block-start: calc(var(--kernel-space-unit) * 16);
-  margin: 0;
-  border: none;
-  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: 0 0 var(--kernel-radius-container) var(--kernel-radius-container);
-  padding: var(--kernel-space-4) var(--kernel-space-6) var(--kernel-space-6);
-  background-color: var(--kernel-color-surface);
-  box-shadow: var(--kernel-shadow-md);
-  max-inline-size: none;
+   plain popover has none by default). Kernel's Popover owns placement,
+   border, radius, and shadow; site CSS only sizes the richer nav
+   payload and swaps the default scale settle for a short vertical
+   slide. `data-slot` raises specificity above Popover.module.css. */
+[data-slot="popover-content"].mobile-header-nav-panel {
+  inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
+  max-inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
 
+  /* Drop Popover's scale settle in favour of a short vertical slide. */
+  scale: 1;
   opacity: 0;
   translate: 0 -8px;
   transition:
@@ -807,15 +750,22 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
     display var(--kernel-duration-base) allow-discrete;
 }
 
-.mobile-header-nav-panel:popover-open {
+[data-slot="popover-content"].mobile-header-nav-panel:popover-open {
   opacity: 1;
   translate: 0 0;
 }
 
 @starting-style {
-  .mobile-header-nav-panel:popover-open {
+  [data-slot="popover-content"].mobile-header-nav-panel:popover-open {
     opacity: 0;
     translate: 0 -8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="popover-content"].mobile-header-nav-panel {
+    transition: opacity var(--kernel-duration-fast) linear;
+    translate: 0 0;
   }
 }
 
@@ -866,164 +816,6 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   background-color: var(--kernel-color-canvas);
   font-family: var(--kernel-font-mono);
   font-size: 0.7em;
-}
-
-/* Command palette panel. `display` is deliberately NOT set here: this
-   rule used to carry `display: flex` unconditionally, which — because
-   author styles always beat the UA stylesheet — permanently overrode
-   the browser's own `[popover]:not(:popover-open) { display: none }`
-   default. The panel (links included) was laid out and hit-testable
-   at all times, just invisible via opacity: 0, which is how it ended
-   up sitting on top of unrelated page content as a phantom click
-   target. `display: flex` now only applies under :popover-open, so
-   the closed state genuinely falls back to `display: none`; it's kept
-   in the transition list with `allow-discrete` purely so the CLOSE
-   animation (opacity/scale) has a frame to play before display flips
-   to none, not to keep it laid out while closed. */
-.command-palette {
-  position: fixed;
-  /* Keep the palette below a top notch / status bar; the 15vh drop already
-     covers the common case, safe-area is the floor for cutout devices. */
-  inset-block-start: max(15vh, env(safe-area-inset-top));
-  inset-inline-start: 50%;
-  translate: -50% 0;
-  margin: 0;
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-sheet);
-  padding: 0;
-  background-color: var(--kernel-color-surface-raised);
-  box-shadow: var(--kernel-shadow-lg);
-  inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));
-  max-block-size: min(28rem, calc(100dvh - 20vh));
-  flex-direction: column;
-  overflow: hidden;
-
-  opacity: 0;
-  scale: 0.98;
-  transition:
-    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-fast) var(--kernel-ease-out),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
-}
-
-.command-palette:popover-open {
-  display: flex;
-  opacity: 1;
-  scale: 1;
-}
-
-@starting-style {
-  .command-palette:popover-open {
-    opacity: 0;
-    scale: 0.98;
-  }
-}
-
-.command-palette::backdrop {
-  background-color: oklch(0% 0 0 / 0.32);
-}
-
-.command-palette-status {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.command-palette-input {
-  flex-shrink: 0;
-  border: none;
-  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: 0;
-  padding: var(--kernel-space-4) var(--kernel-space-6);
-  background: none;
-  color: var(--kernel-color-text);
-  font-size: var(--kernel-font-size-base);
-  font-family: var(--kernel-font-sans);
-}
-
-.command-palette-input:focus-visible {
-  /* A full outline would clash with the container's rounded corners, so the
-     focus indicator thickens and tints the input's own bottom rule instead
-     — a visible keyboard cue without breaking the sheet's shape. */
-  outline: none;
-  border-block-end-color: var(--kernel-color-focus-ring);
-  box-shadow: inset 0 -1px 0 0 var(--kernel-color-focus-ring);
-}
-
-.command-palette-list {
-  margin: 0;
-  /* Doubled to match the same "large radius needs more inset" fix
-     applied to packages/react's CommandPalette .content padding — this
-     panel keeps the input full-bleed with its own border separator, so
-     the list's own padding is the equivalent breathing room here. */
-  padding: var(--kernel-space-4);
-  list-style: none;
-  overflow-y: auto;
-}
-
-.command-palette-item {
-  display: flex;
-  align-items: baseline;
-  gap: var(--kernel-space-2);
-  padding-block: var(--kernel-space-2);
-  padding-inline: var(--kernel-space-3);
-  border-radius: var(--kernel-radius-control);
-  text-decoration: none;
-  color: var(--kernel-color-text);
-}
-
-.command-palette-item[data-active] {
-  background-color: var(--kernel-color-accent-subtle);
-}
-
-/* Mouse hover gets its own purely-visual highlight, separate from
-   `[data-active]` (keyboard/arrow-key selection): CommandPalette.tsx no
-   longer moves the keyboard-selection index on `onMouseEnter`, so
-   scrolling the mouse over the list while navigating with arrow keys
-   can't steal the active item out from under the keyboard. */
-@media (hover: hover) and (pointer: fine) {
-  .command-palette-item:hover {
-    background-color: var(--kernel-color-accent-subtle);
-  }
-}
-
-.command-palette-item-name {
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-.command-palette-item-summary {
-  color: var(--kernel-color-text-muted);
-  font-size: var(--kernel-font-size-sm);
-  font-family: var(--kernel-font-mono);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.command-palette-empty {
-  padding: var(--kernel-space-4) var(--kernel-space-6);
-  color: var(--kernel-color-text-muted);
-  font-size: var(--kernel-font-size-sm);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .command-palette {
-    transition: opacity var(--kernel-duration-fast) linear;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mobile-header-nav-panel {
-    transition: opacity var(--kernel-duration-fast) linear;
-  }
 }
 
 .docs-main {
@@ -1366,6 +1158,20 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   background-size: 16px 16px;
 }
 
+/* Left-align stages whose demo content grows (Reasoning open state,
+   longer duration labels) — centering would reflow the whole block. */
+.prop-playground-stage-start,
+.docs-example-start {
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.prop-playground-stage-start > *,
+.docs-example-start > * {
+  inline-size: 100%;
+  max-inline-size: 28rem;
+}
+
 .prop-playground-panel {
   display: grid;
   gap: var(--kernel-space-3);
@@ -1405,31 +1211,221 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
    already zeroes the code block's margin. */
 
 .prop-playground-text {
-  /* TextField brings its own label, so it spans the row rather than sitting
-     in the label/control two-column rhythm the enum and boolean fields use. */
+  /* TextField and NumberField bring their own labels, so they span the row
+     rather than sitting in the label/control two-column rhythm the enum
+     and boolean fields use. */
   inline-size: 100%;
 }
 
-/* A plain number input rather than a library component — there's no
-   NumberField in the set, and a bounded stepper is exactly what value/
-   length/min/max props want. Styled to sit in the same right-aligned slot
-   as the enum segments and boolean switches. */
-.prop-playground-number {
-  inline-size: calc(var(--kernel-space-unit) * 20);
-  padding-block: var(--kernel-space-1);
-  padding-inline: var(--kernel-space-2);
-  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
-  border-radius: var(--kernel-radius-control);
-  background-color: var(--kernel-color-surface);
-  color: var(--kernel-color-text);
-  font-family: var(--kernel-font-mono);
-  font-size: var(--kernel-font-size-sm);
-  text-align: end;
+/* File Upload playground: desktop rails around a growing center column
+   so accepted previews + file lists never collide with sample icons. */
+.file-upload-desktop-stage {
+  align-items: stretch;
+  justify-content: stretch;
+  padding: var(--kernel-space-4);
 }
 
-.prop-playground-number:focus-visible {
+.file-upload-desktop-stage > * {
+  inline-size: 100%;
+}
+
+.file-upload-desktop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  inline-size: 100%;
+}
+
+.file-upload-desktop-hint,
+.file-upload-desktop-status {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+  text-wrap: pretty;
+}
+
+.file-upload-desktop-hint code {
+  font-size: 0.92em;
+}
+
+.file-upload-desktop-status {
+  color: var(--kernel-color-text);
+  padding-block: var(--kernel-space-1);
+  padding-inline: var(--kernel-space-3);
+  border-radius: var(--kernel-radius-md);
+  background-color: color-mix(in oklch, var(--kernel-color-surface-raised) 70%, transparent);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.file-upload-desktop-surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-4);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-sheet);
+  background-color: color-mix(in oklch, var(--kernel-color-surface) 88%, var(--kernel-color-canvas));
+  background-image:
+    radial-gradient(
+      color-mix(in oklch, var(--kernel-color-border) 55%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 18px 18px;
+  overflow: visible;
+}
+
+.file-upload-desktop-rail {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  gap: var(--kernel-space-2);
+  min-block-size: 0;
+}
+
+.file-upload-desktop-rail[data-rail="start"],
+.file-upload-desktop-rail[data-rail="end"] {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--kernel-space-4);
+  padding-block-start: var(--kernel-space-2);
+}
+
+.file-upload-desktop-body {
+  display: grid;
+  grid-template-columns: 5.75rem minmax(0, 1fr) 5.75rem;
+  gap: var(--kernel-space-3);
+  align-items: start;
+}
+
+.file-upload-desktop-dropzone {
+  position: relative;
+  justify-self: center;
+  inline-size: min(100%, 16rem);
+  min-inline-size: 0;
+  z-index: 0;
+}
+
+.file-upload-desktop-dropzone > * {
+  inline-size: 100%;
+}
+
+.file-upload-desktop-icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  margin: 0;
+  padding: var(--kernel-space-2);
+  border: none;
+  border-radius: var(--kernel-radius-md);
+  background: transparent;
+  color: var(--kernel-color-text);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  inline-size: 5.5rem;
+  flex: 0 0 auto;
+  translate: var(--desktop-nudge-x, 0) var(--desktop-nudge-y, 0);
+  rotate: var(--desktop-rotate, 0deg);
+  transition:
+    scale var(--kernel-duration-fast) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.file-upload-desktop-icon:active,
+.file-upload-desktop-icon[data-dragging] {
+  cursor: grabbing;
+  scale: 1.04;
+  z-index: 2;
+  background-color: color-mix(in oklch, var(--kernel-color-surface-raised) 80%, transparent);
+  box-shadow: var(--kernel-shadow-md);
+}
+
+.file-upload-desktop-icon:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: 2px;
+}
+
+.file-upload-desktop-glyph {
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 3.25rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.file-upload-desktop-icon[data-kind="folder"] .file-upload-desktop-glyph {
+  color: var(--kernel-color-accent);
+}
+
+.file-upload-desktop-icon[data-kind="image"] .file-upload-desktop-glyph {
+  color: var(--kernel-color-text);
+}
+
+.file-upload-desktop-icon[data-kind="zip"] .file-upload-desktop-glyph {
+  color: var(--kernel-color-text-muted);
+}
+
+.file-upload-desktop-glyph svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.file-upload-desktop-thumb {
+  inline-size: 2.75rem;
+  block-size: 3.25rem;
+  object-fit: cover;
+  border-radius: var(--kernel-radius-sm);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-sm);
+  pointer-events: none;
+}
+
+.file-upload-desktop-name {
+  padding-inline: var(--kernel-space-1);
+  border-radius: var(--kernel-radius-sm);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  .file-upload-desktop-body {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--kernel-space-3);
+  }
+
+  .file-upload-desktop-rail[data-rail="start"],
+  .file-upload-desktop-rail[data-rail="end"] {
+    flex-direction: row;
+    justify-content: space-evenly;
+    inline-size: 100%;
+    padding-block-start: 0;
+  }
+
+  .file-upload-desktop-dropzone {
+    inline-size: min(100%, 14rem);
+    order: -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-upload-desktop-icon {
+    transition: none;
+  }
+
+  .file-upload-desktop-icon:active,
+  .file-upload-desktop-icon[data-dragging] {
+    scale: 1;
+  }
 }
 
 .playground-gallery {

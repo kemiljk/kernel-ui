@@ -1,0 +1,50 @@
+import {
+  components,
+  getComponentBySlug,
+  type RegistryEntry,
+} from "@kernelui-lib/registry";
+
+export { components, getComponentBySlug };
+export type { RegistryEntry };
+
+export function findComponent(query: string): RegistryEntry | undefined {
+  const normalized = query.toLowerCase().trim();
+  const bySlug = getComponentBySlug(normalized);
+  if (bySlug) return bySlug;
+
+  return components.find((entry) => {
+    if (entry.name.toLowerCase() === normalized) return true;
+    if (entry.reactExports.some((name) => name.toLowerCase() === normalized)) return true;
+    if (entry.shadcnAliases?.some((alias) => alias === normalized)) return true;
+    return false;
+  });
+}
+
+export function formatComponentMarkdown(entry: RegistryEntry): string {
+  const lines = [
+    `# ${entry.name}`,
+    "",
+    entry.summary,
+    "",
+    `- Docs: ${entry.docsUrl}`,
+    `- Native element: ${entry.element}`,
+    `- React exports: \`${entry.reactExports.join("`, `")}\``,
+    `- Custom element: \`${entry.elementTag}\``,
+  ];
+
+  if (entry.shadcnAliases?.length) {
+    lines.push(`- shadcn aliases: ${entry.shadcnAliases.map((a) => `\`${a}\``).join(", ")}`);
+  }
+  if (entry.radixPackages?.length) {
+    lines.push(`- Radix packages: ${entry.radixPackages.map((a) => `\`${a}\``).join(", ")}`);
+  }
+  if (entry.migrationCaveats?.length) {
+    lines.push("", "## Migration notes", "");
+    for (const caveat of entry.migrationCaveats) {
+      lines.push(`- ${caveat}`);
+    }
+  }
+
+  lines.push("");
+  return lines.join("\n");
+}

@@ -36,11 +36,15 @@ new component done, grep both `packages/react/src/index.ts` and
   tokens from here; never hardcode a color/spacing/radius value in a
   component's own CSS.
 - `apps/docs` — Astro docs site. Each component needs: an entry in
-  `src/data/components.ts` (alphabetical by `name`), a page at
-  `src/pages/components/<slug>.astro`, and `src/components/demos/<Name>Demo.tsx`
-  + `<Name>Playground.tsx`. Copy the structure of an existing page
-  (`text-field.astro`/`scroll-area.astro` are good recent examples)
-  rather than inventing a new layout.
+  `packages/registry` (re-exported by `apps/docs/src/data/components.ts`),
+  a page at `src/pages/components/<slug>.astro`, and
+  `src/components/demos/<Name>Demo.tsx` + `<Name>Playground.tsx`. Copy the
+  structure of an existing page (`text-field.astro`/`scroll-area.astro` are
+  good recent examples) rather than inventing a new layout.
+- `packages/registry` — shared component catalog consumed by docs, CLI, and
+  LLM asset generation. Run `bun run build` there after changing entries.
+- `packages/cli` — `@kernelui-lib/cli`. Published integration CLI (`kernel init`,
+  `kernel doctor`, `kernel docs`).
 
 ## Conventions to match, not reinvent
 
@@ -58,11 +62,23 @@ new component done, grep both `packages/react/src/index.ts` and
   Every component's top JSDoc comment explains *why* it's built the way
   it is (which native element, which ARIA pattern, what tradeoff) — write
   one for every new component; this is a strict, load-bearing convention,
-  not decoration (it's also what gets scraped into the docs site and the
-  llms.txt files, so it's read by both humans and agents later).
+  not decoration (it's also what agents read via package `llms.txt` and the
+  docs site's generated markdown mirrors).
 - Icons are hand-authored inline `<svg>` with `stroke="currentColor"`
   (see `Toast.tsx`'s close icon or `Checkbox.tsx`'s checkmark) — no icon
   library dependency in either package.
+- **Motion baseline** (tokens in `packages/styles/src/tokens.css`, craft
+  bar from [transitions.dev](https://transitions.dev/) + Emil): enter with
+  `--kernel-ease-overlay` / `--kernel-ease-out`, never `ease-in` on
+  entrances; exit faster than enter (`--kernel-duration-exit` /
+  `--kernel-duration-exit-fast`); never `scale(0)` — use
+  `--kernel-scale-enter` / `--kernel-scale-exit`; origin-aware overlays
+  via `--kernel-transform-origin`; CSS transitions (not keyframes) for
+  reversible UI; enumerate transition properties. `popover="manual"`
+  surfaces exit via `usePopoverExit` + `[data-closing]` *before*
+  `hidePopover()`; `popover="auto"` exits rely on Chromium's `overlay`
+  transition, with Safari guarded in `reset.css`. Prefer shared tokens
+  over per-component duration/easing literals.
 
 ## Known gotchas (hit these once already; don't re-hit them)
 

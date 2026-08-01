@@ -6,7 +6,7 @@
  *
  * Phase 1 + Phase 2 + Phase 3: every component in the catalog now has
  * a Custom Element equivalent — see CATEGORIES in
- * apps/docs/src/data/components.ts for the category ordering rationale
+ * packages/registry for the category ordering rationale
  * this package's own file layout follows (how often each group
  * actually gets reached, not alphabetically). Phase 3 (Dialog,
  * Popover, Tooltip, Tabs, DropdownMenu, Combobox, Accordion, Carousel,
@@ -71,6 +71,16 @@ export {
 export { KernelThinkingIndicator } from "./components/ThinkingIndicator/ThinkingIndicator";
 export { KernelComposer } from "./components/Composer/Composer";
 export { KernelReasoning } from "./components/Reasoning/Reasoning";
+export {
+  KernelSuggestion,
+  KernelSuggestionItem,
+} from "./components/Suggestion/Suggestion";
+export {
+  KernelSources,
+  KernelSource,
+  KernelCitation,
+} from "./components/Sources/Sources";
+export { KernelToolCall } from "./components/ToolCall/ToolCall";
 
 // Phase 3 — Overlays (native <dialog> / [popover] / CSS anchor positioning)
 export { KernelDialog } from "./components/Dialog/Dialog";

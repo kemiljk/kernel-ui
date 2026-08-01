@@ -93,7 +93,7 @@ kernel-nav-menu-item {
   box-shadow: var(--kernel-shadow-md);
 
   opacity: 0;
-  scale: 0.96;
+  scale: var(--kernel-scale-exit);
   /* Set by FloatingPositioner as an anchor-relative percentage — see
      that class's doc comment — so this scales in from the trigger
      instead of a fixed center. */
@@ -101,22 +101,27 @@ kernel-nav-menu-item {
   /* opacity and scale share one duration so the open/close reads as one
      coordinated motion. */
   transition:
-    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-fast) var(--kernel-ease-spring),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
+    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit-fast) allow-discrete,
+    display var(--kernel-duration-exit-fast) allow-discrete;
 }
 
 .kernel-NavigationMenu-content:popover-open {
   display: flex;
   opacity: 1;
   scale: 1;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
 }
 
 @starting-style {
   .kernel-NavigationMenu-content:popover-open {
     opacity: 0;
-    scale: 0.96;
+    scale: var(--kernel-scale-enter);
   }
 }
 

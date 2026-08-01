@@ -1,12 +1,33 @@
-import { forwardRef, useEffect, useId, useRef } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import {
+  dataAttr,
+  mergeRefs,
+  renderElement,
+  resolveClassName,
+  type ClassNameValue,
+  type RenderProp,
+} from "../../utils/polymorphic";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { Button } from "../Button/Button";
 import styles from "./Dialog.module.css";
 
 export interface DialogState {
   open: boolean;
+  opening: boolean;
+  closing: boolean;
 }
+
+export interface DialogClassNames {
+  root?: ClassNameValue<DialogState>;
+  header?: ClassNameValue<DialogState>;
+  title?: ClassNameValue<DialogState>;
+  description?: ClassNameValue<DialogState>;
+  content?: ClassNameValue<DialogState>;
+  close?: ClassNameValue<DialogState>;
+}
+
+export type DialogBackdrop = "default" | "blur" | "opaque" | "transparent";
 
 export interface DialogProps {
   open: boolean;
@@ -17,15 +38,27 @@ export interface DialogProps {
   /** Clicking the ::backdrop closes the dialog. On for a modal that's
    * dismissable; turn off for one that must be explicitly confirmed. */
   closeOnBackdropClick?: boolean;
+  /** Hide the built-in close control entirely. */
+  showCloseButton?: boolean;
+  /** Replace the built-in close control. */
+  renderClose?: RenderProp<DialogState>;
+  /** Per-dialog `::backdrop` treatment. Style further via
+   * `--kernel-dialog-backdrop-bg` / `--kernel-dialog-backdrop-filter`. */
+  backdrop?: DialogBackdrop;
+  /** @deprecated Prefer `classNames.root`. Still applied to the root. */
   className?: ClassNameValue<DialogState>;
+  /** Typed class hooks for every structural slot. */
+  classNames?: DialogClassNames;
 }
 
 /**
  * A real `<dialog>`, opened with `showModal()`. That single call gets you
  * a native top-layer stacking context, a native focus trap, native
  * Escape-to-close, and a native `::backdrop`, none of which have to be
- * reimplemented in JavaScript. React only has to keep `open` in sync and
- * render the content.
+ * reimplemented in JavaScript. React keeps `open` in sync, exposes slot
+ * class hooks for composition, and delays the final native `close()`
+ * until exit transitions finish so consumer-owned animations can run.
+ * Focus is restored by the browser when that final `close()` fires.
  */
 export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
   function Dialog(
@@ -36,33 +69,134 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       description,
       children,
       closeOnBackdropClick = true,
+      showCloseButton = true,
+      renderClose,
+      backdrop = "default",
       className,
+      classNames,
     },
     forwardedRef,
   ) {
     const internalRef = useRef<HTMLDialogElement>(null);
     const titleId = useId();
     const descriptionId = useId();
+    const [opening, setOpening] = useState(false);
+    const [closing, setClosing] = useState(false);
+    const exitAbortRef = useRef<AbortController | null>(null);
+    const skipCloseSyncRef = useRef(false);
+
+    const state: DialogState = {
+      open: open || closing,
+      opening,
+      closing,
+    };
 
     useEffect(() => {
       const node = internalRef.current;
       if (!node) return;
-      if (open && !node.open) node.showModal();
-      if (!open && node.open) node.close();
+
+      if (open) {
+        exitAbortRef.current?.abort();
+        exitAbortRef.current = null;
+        setClosing(false);
+        if (!node.open) {
+          setOpening(true);
+          node.showModal();
+          requestAnimationFrame(() => setOpening(false));
+        }
+        return;
+      }
+
+      if (!node.open) return;
+
+      let cancelled = false;
+      const controller = new AbortController();
+      exitAbortRef.current?.abort();
+      exitAbortRef.current = controller;
+      setClosing(true);
+
+      void (async () => {
+        if (!prefersReducedMotion()) {
+          await waitForExitTransition(node, { signal: controller.signal });
+        }
+        if (cancelled || controller.signal.aborted) return;
+        skipCloseSyncRef.current = true;
+        node.close();
+        setClosing(false);
+      })();
+
+      return () => {
+        cancelled = true;
+        controller.abort();
+      };
     }, [open]);
 
     useEffect(() => {
       const node = internalRef.current;
       if (!node) return;
-      // Fires for every closing path: Escape, a `method="dialog"` form
-      // submission, or our own `.close()` call above. Routing them all
-      // through here keeps `onOpenChange` as the single source of truth.
-      const handleClose = () => onOpenChange(false);
+      // Fires for every closing path after the native `close()` — Escape
+      // (once we allow it through), a `method="dialog"` form submission,
+      // or our delayed `.close()` above. Routing them all through here
+      // keeps `onOpenChange` as the single source of truth.
+      const handleClose = () => {
+        if (skipCloseSyncRef.current) {
+          skipCloseSyncRef.current = false;
+          return;
+        }
+        onOpenChange(false);
+      };
       node.addEventListener("close", handleClose);
       return () => node.removeEventListener("close", handleClose);
     }, [onOpenChange]);
 
-    const state: DialogState = { open };
+    useEffect(() => {
+      return () => exitAbortRef.current?.abort();
+    }, []);
+
+    function requestClose() {
+      if (!open || closing) return;
+      onOpenChange(false);
+    }
+
+    const closeControl =
+      showCloseButton === false
+        ? null
+        : renderClose !== undefined
+          ? renderElement(
+              renderClose,
+              "button",
+              {
+                type: "button",
+                "aria-label": "Close",
+                "data-slot": "dialog-close",
+                className: [styles.closeButton, resolveClassName(classNames?.close, state)]
+                  .filter(Boolean)
+                  .join(" "),
+                onClick: requestClose,
+              },
+              state,
+            )
+          : (
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Close"
+                data-slot="dialog-close"
+                className={[styles.closeButton, resolveClassName(classNames?.close, state)]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={requestClose}
+              >
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+                  <path
+                    d="M4 4L12 12M12 4L4 12"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </Button>
+            );
 
     return (
       <dialog
@@ -74,46 +208,67 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
         {...{ closedby: "any" }}
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
-        className={[styles.content, resolveClassName(className, state)]
+        data-slot="dialog"
+        data-open={dataAttr((open || closing) && !opening)}
+        data-opening={dataAttr(opening)}
+        data-closing={dataAttr(closing)}
+        data-backdrop={backdrop === "default" ? undefined : backdrop}
+        className={[
+          styles.content,
+          resolveClassName(className, state),
+          resolveClassName(classNames?.root, state),
+        ]
           .filter(Boolean)
           .join(" ")}
         onClick={(event) => {
           if (closeOnBackdropClick && event.target === internalRef.current) {
-            onOpenChange(false);
+            requestClose();
           }
         }}
         onCancel={(event) => {
-          // Let the native close proceed; `close` above will sync state.
+          // Hold the native close until the exit transition finishes —
+          // otherwise consumer exit animations never get a frame.
+          event.preventDefault();
           event.stopPropagation();
+          requestClose();
         }}
       >
-        <header className={styles.header}>
-          <h2 className={styles.title} id={titleId}>
+        <header
+          data-slot="dialog-header"
+          className={[styles.header, resolveClassName(classNames?.header, state)]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <h2
+            data-slot="dialog-title"
+            className={[styles.title, resolveClassName(classNames?.title, state)]
+              .filter(Boolean)
+              .join(" ")}
+            id={titleId}
+          >
             {title}
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Close"
-            className={styles.closeButton}
-            onClick={() => onOpenChange(false)}
-          >
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
-              <path
-                d="M4 4L12 12M12 4L4 12"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </Button>
+          {closeControl}
         </header>
         {description ? (
-          <p className={styles.description} id={descriptionId}>
+          <p
+            data-slot="dialog-description"
+            className={[styles.description, resolveClassName(classNames?.description, state)]
+              .filter(Boolean)
+              .join(" ")}
+            id={descriptionId}
+          >
             {description}
           </p>
         ) : null}
-        <div className={styles.body}>{children}</div>
+        <div
+          data-slot="dialog-content"
+          className={[styles.body, resolveClassName(classNames?.content, state)]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {children}
+        </div>
       </dialog>
     );
   },

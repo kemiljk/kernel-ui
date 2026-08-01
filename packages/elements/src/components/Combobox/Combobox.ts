@@ -1,5 +1,5 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
-import { FloatingPositioner } from "../../utils/floatingPosition";
+import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import "./Combobox.css";
 
 let comboboxCounter = 0;
@@ -27,7 +27,9 @@ interface ComboboxOption {
  * `hide-label` is set), `hide-label` (boolean), `no-label-offset`
  * (boolean — hard-aligns the label flush left instead of the default
  * inset that lines it up with the input's own text padding),
- * `placeholder`, `value`, `empty-message` (default "No results").
+ * `placeholder`, `value`, `empty-message` (default "No results"),
+ * `placement` (default bottom), `align` (start/center/end, default
+ * center), `offset` (px, default 8).
  * Events: `valuechange` (`event.detail.value`).
  */
 export class KernelCombobox extends KernelElement {
@@ -85,10 +87,15 @@ export class KernelCombobox extends KernelElement {
     listbox.id = `${this.baseId}-listbox`;
     listbox.setAttribute("role", "listbox");
     listbox.setAttribute("popover", "manual");
+    listbox.setAttribute("data-slot", "combobox-listbox");
     listbox.className = kernelClass("Combobox", "listbox");
     this.listboxEl = listbox;
 
-    this.positioner.attach(input, listbox, { placement: "bottom" });
+    const { placement, align, offset } = readFloatingAttributes(this);
+    listbox.setAttribute("data-placement", placement);
+    listbox.setAttribute("data-align", align);
+
+    this.positioner.attach(input, listbox, { placement, align, offset });
 
     input.addEventListener("focus", () => this.openList());
     input.addEventListener("input", () => {
@@ -115,6 +122,7 @@ export class KernelCombobox extends KernelElement {
     if (this.open) return;
     this.open = true;
     this.inputEl.setAttribute("aria-expanded", "true");
+    this.listboxEl.setAttribute("data-open", "");
     this.listboxEl.showPopover?.();
     this.positioner.setOpen(true);
   }
@@ -124,6 +132,7 @@ export class KernelCombobox extends KernelElement {
     this.activeIndex = -1;
     this.inputEl.setAttribute("aria-expanded", "false");
     this.inputEl.removeAttribute("aria-activedescendant");
+    this.listboxEl.removeAttribute("data-open");
     this.listboxEl.hidePopover?.();
     this.positioner.setOpen(false);
   }

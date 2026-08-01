@@ -12,7 +12,7 @@ import { parse } from "node-html-parser";
 
 const distDir = path.join(import.meta.dirname, "..", "dist");
 const componentsDir = path.join(distDir, "components");
-const guideSlugs = ["installation", "theming", "platforms"];
+const guideSlugs = ["installation", "cli", "migration", "theming", "platforms"];
 
 function inlineToMarkdown(node) {
   let out = "";
@@ -183,6 +183,10 @@ async function main() {
     "## Guides",
     "",
     ...guides.map(({ slug, markdown }) => `- [${titleOf(markdown)}](/${slug}.md)`),
+    "",
+    "## Machine-readable catalog",
+    "",
+    "- [registry.json](/registry.json) — structured component metadata (shadcn aliases, migration caveats, docs URLs)",
     "",
     "## Components",
     "",

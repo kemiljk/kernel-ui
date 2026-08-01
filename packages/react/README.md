@@ -27,6 +27,10 @@ Requires React 18 or newer.
 
 Full documentation, live demos, and API reference: [kernelui.com](https://www.kernelui.com/)
 
+For LLM/agent usage, this package ships `llms.txt` in the npm tarball. The docs site also publishes `/llms.txt`, `/llms-full.txt`, and `/registry.json`.
+
+Quick setup: `npx @kernelui-lib/cli init`
+
 ## License
 
 MIT

@@ -1,0 +1,188 @@
+/* Same composition rule as Reasoning: no bordered card chrome. Tool
+   calls live inside a chat message that already owns the container. */
+.root {
+  font-family: var(--kernel-font-sans);
+}
+
+.static {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding-block: var(--kernel-space-2);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding-block: var(--kernel-space-2);
+  cursor: default;
+  list-style: none;
+  user-select: none;
+}
+
+.trigger::-webkit-details-marker {
+  display: none;
+}
+
+.trigger::marker {
+  content: "";
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  min-inline-size: 0;
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  color: var(--kernel-color-text);
+}
+
+.labelText {
+  min-inline-size: 0;
+  text-wrap: pretty;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+}
+
+.dot {
+  inline-size: 0.35em;
+  block-size: 0.35em;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-text-muted);
+  animation: kernel-toolcall-bounce 1s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes kernel-toolcall-bounce {
+  0%,
+  80%,
+  100% {
+    translate: 0 0;
+  }
+  40% {
+    translate: 0 -0.3em;
+  }
+}
+
+/* Same shimmer language as ThinkingIndicator — peak is --kernel-color-shine
+   so Lightning CSS never sees light-dark() inside a gradient argument. */
+.shimmer {
+  min-inline-size: 0;
+  background-image: linear-gradient(
+    90deg,
+    var(--kernel-color-text-muted) 30%,
+    var(--kernel-color-shine) 50%,
+    var(--kernel-color-text-muted) 70%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: kernel-toolcall-shimmer 2.5s linear infinite;
+  text-wrap: pretty;
+}
+
+@keyframes kernel-toolcall-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.root[data-status="complete"] .icon {
+  color: var(--kernel-color-success-text);
+}
+
+.root[data-status="error"] .icon {
+  color: var(--kernel-color-danger-text);
+}
+
+.chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.root[open] .chevron {
+  rotate: 180deg;
+}
+
+.content {
+  padding-block-end: var(--kernel-space-2);
+  padding-inline-start: calc(1rem + var(--kernel-space-2));
+}
+
+.root[data-state="opening"] .content,
+.root[data-state="closing"] .content {
+  user-select: none;
+}
+
+@supports selector(::details-content) {
+  .root::details-content {
+    overflow: hidden;
+    height: 0;
+    transition:
+      height var(--kernel-duration-base) var(--kernel-ease-in-out),
+      content-visibility var(--kernel-duration-base) allow-discrete;
+  }
+
+  .root[open]::details-content {
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+
+  .root::details-content {
+    transition: none;
+  }
+
+  .dot {
+    animation: none;
+    translate: 0 0;
+    opacity: 0.7;
+  }
+
+  .shimmer {
+    animation: none;
+    background-image: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: var(--kernel-color-text-muted);
+    -webkit-text-fill-color: unset;
+  }
+}

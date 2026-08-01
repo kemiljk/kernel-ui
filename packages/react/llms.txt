@@ -38,7 +38,10 @@ real underlying element, fully functional, just unstyled — never broken.
   removing it from the accessibility tree; `label` is still required when
   this is set), `description` (helper text), `errorMessage` (shown
   instead of `description`, with `role="alert"`, when `invalid` is true),
-  `invalid` (boolean), `disabled`, `required`.
+  `invalid` (boolean), `disabled`, `required`. Slot class hooks
+  (`wrapperClassName`, `labelClassName`, `descriptionClassName`,
+  `errorClassName`) and `data-focused`/`data-filled` support floating-label
+  animations without targeting generated CSS-module class names.
 - **Styling hooks**: `className` (on the actual interactive element,
   accepts a string or `(state) => string` for state-driven styling) and
   `wrapperClassName` (on the outer wrapper, same shape) where a component
@@ -59,73 +62,78 @@ real underlying element, fully functional, just unstyled — never broken.
   attributes). Reach for it in Vue/Svelte/Astro/plain-HTML projects
   instead of this package.
 
+<!-- GENERATED:COMPONENTS:START -->
 ## Components
 
 ### Primitives
 - **Avatar** — Real image, with an initials fallback.
 - **Badge** — A small status chip.
 - **Button** — Click, keyboard, and form association, for free.
-- **Checkbox** — Tri-state, styled with `:checked` and `:indeterminate`.
+- **Checkbox** — Tri-state, styled with :checked and :indeterminate.
 - **Label** — A standalone label for custom composed controls.
 - **RadioGroup** (+ `RadioGroupItem`) — Grouped choice with native arrow-key roving.
-- **Separator** — A divider that's already `role="separator"`.
+- **Separator** — A divider that's already role="separator".
 - **Switch** — The WAI-ARIA switch pattern on a real button.
 - **Toggle** — A two-state toggle that looks and acts like a button.
 
 ### Forms
 - **ColorPicker** — A real colour input, plus a typeable hex field on the same value.
-- **Combobox** — Filterable list with `aria-activedescendant`.
-- **FileUpload** — Drag-and-drop over a real file input, never a replacement for it.
+- **Combobox** — Filterable list with aria-activedescendant.
+- **FileUpload** — Drag-and-drop over a real file input, with optional image preview moulding (`preview`, `aspectRatio="square"`).
 - **InputOTP** — One-time-code entry with roving focus.
-- **NumberField** — `TextField`'s scaffold, specialised for numbers, with stepper buttons.
+- **NumberField** — TextField's scaffold, specialised for numbers.
 - **Select** (+ `SelectOption`) — The platform's own picker UI, on every device.
 - **Slider** — Custom-painted thumb, native drag and keyboard behaviour.
 - **TagInput** — Freeform text that commits into discrete, removable tags.
 - **TextField** — Correct labelling and live validation styling.
-- **Textarea** — Auto-growing with `field-sizing: content`.
+- **Textarea** — Auto-growing with field-sizing: content.
 
 ### Layout
-- **Card** (+ `CardHeader`/`CardTitle`/`CardDescription`/`CardContent`/`CardFooter`) — For genuinely self-contained, distributable content.
-- **Footer** — The `contentinfo` landmark.
-- **Header** — The `banner` landmark.
-- **Nav** (+ `NavLink`) — Active state via `aria-current`, no client JS.
+- **Card** (+ `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`) — For genuinely self-contained, distributable content.
+- **Footer** — The contentinfo landmark.
+- **Header** — The banner landmark.
+- **Nav** (+ `NavLink`) — Active state via aria-current, no client JS.
 - **Resizable** — Pane-to-pane split layouts.
 - **ScrollArea** — Custom scrollbar styling as enhancement only.
 - **Sidebar** — The complementary landmark.
 
 ### Feedback
-- **Callout** — Live-region feedback that announces itself (`role="alert"`/`role="status"`).
+- **Callout** — Live-region feedback that announces itself.
 - **Progress** — Reports its own value to assistive tech, natively.
 - **Skeleton** — Loading placeholder tied to real content dimensions.
-- **ToastViewport** + `toast()` — A shared, queued live region; mount once, call `toast()` from anywhere.
+- **ToastViewport** (+ `toast`) — A shared, queued live region.
 
 ### Overlays
 - **CommandPalette** — A searchable, keyboard-driven action list.
-- **ContextMenu** — Right-click menu, same primitives as DropdownMenu.
-- **Dialog** — `showModal()`: focus trap, top layer, and `::backdrop`, free.
-- **DropdownMenu** (+ `MenuItem`/`MenuSeparator`) — Anchor-positioned menu with arrow-key navigation.
+- **ContextMenu** — Right-click menu, same primitives as Dropdown Menu.
+- **Dialog** — showModal(): focus trap, top layer, and ::backdrop, free.
+- **DropdownMenu** (+ `MenuItem`, `MenuSeparator`) — Anchor-positioned menu with arrow-key navigation.
 - **HoverCard** — Rich hover preview, a heavier Tooltip.
-- **NavigationMenu** (+ subparts) — Multi-level site navigation, mega-menu via popover.
+- **NavigationMenu** (+ `NavigationMenuItem`, `NavigationMenuLink`, `NavigationMenuTrigger`, `NavigationMenuContent`) — Multi-level site navigation, mega-menu via popover.
 - **Popover** — Anchor-positioned floating panel.
 - **Tooltip** — Hover/focus hints via the Popover API.
 
 ### Navigation
-- **Breadcrumbs** (+ `BreadcrumbItem`/`BreadcrumbsTrail`) — Ordered trail, `aria-current` for the current page.
-- **Pagination** (+ subparts) — Ordered page links, `aria-current` for the active one.
-- **Tabs** (+ `TabsList`/`Tab`/`TabPanel`) — No native element exists yet, ARIA APG pattern.
+- **Breadcrumbs** (+ `BreadcrumbItem`, `BreadcrumbsTrail`) — Ordered trail, aria-current for the current page.
+- **Pagination** (+ `PaginationItem`, `PaginationPrevious`, `PaginationNext`, `PaginationEllipsis`) — Ordered page links, aria-current for the active one.
+- **Tabs** (+ `TabsList`, `Tab`, `TabPanel`) — No native element exists yet, ARIA APG pattern.
 
 ### Data Display
 - **Accordion** (+ `AccordionItem`) — Native disclosure, exclusive open via a shared name.
 - **Carousel** (+ `CarouselSlide`) — Native scrolling instead of a JS carousel engine.
-- **DataTable** — Table plus sort/filter/paginate behaviour layered on top.
-- **DatePicker** — Calendar grid with `aria-selected`.
+- **DataTable** — Table plus the behaviour layered on top.
+- **DatePicker** — Calendar grid with aria-selected.
 - **DateRangePicker** — Two-click range selection over the same calendar grid.
-- **Table** (+ `TableCaption`/`TableHeader`/`TableBody`/`TableRow`/`TableHead`/`TableCell`) — Sortable headers, real `<caption>`, real `<th scope>`.
+- **Table** (+ `TableCaption`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell`) — Sortable headers, real <caption>, real <th scope>.
 
 ### AI
 - **Composer** — A chat message input, with a live "thinking" state.
 - **Reasoning** — A collapsible AI reasoning trace that auto-opens while streaming.
+- **Sources** (+ `Source`, `Citation`) — Cited sources and inline numbered citation chips for grounded answers.
+- **Suggestion** (+ `SuggestionItem`) — Prompt suggestion chips that seed the next composer message.
 - **ThinkingIndicator** — The universal typing-indicator dots, next to real visible text.
+- **ToolCall** — Collapsible agent tool status with pending, running, complete, and error states.
+<!-- GENERATED:COMPONENTS:END -->
 
 ## Where to look for exact prop types
 
@@ -135,4 +143,5 @@ has a JSDoc comment explaining the *why*, not just the type) — or, if
 this package was installed alongside the project's docs site, every
 component has a live Playground and a machine-readable markdown mirror
 at `/components/<slug>.md` (and one combined `/llms-full.txt` for the
-whole library) generated from the same pages a human would read.
+whole library, plus `/registry.json` for structured metadata) generated
+from the same pages a human would read.

@@ -1,15 +1,18 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./ScrollArea.css";
 
-const EDGE_FADE_DISTANCE = 24;
+/* Matches the ambient layer extent in ScrollArea.css (~40px) so the
+ * opacity ramp finishes as the soft falloff fully reads. */
+const EDGE_FADE_DISTANCE = 48;
 
 /**
  * `<kernel-scroll-area>` — a native overflow container. Attributes:
  * `max-block-size` (a CSS length string; omit it and control height via
  * the element's own `style`/class instead, same as `@kernelui-lib/react`'s
- * `maxBlockSize` prop), and `edge-shadow` (a boolean attribute — shows
- * an inset shadow at whichever edge still has content to scroll toward,
- * hidden again once that edge is actually scrolled into view).
+ * `maxBlockSize` prop), and `edge-shadow` (a boolean attribute — soft
+ * edge fade + layered inset shadow at whichever edge still has content
+ * to scroll toward, hidden again once that edge is scrolled into view;
+ * the fade masks into the host surface so it stays context-aware).
  */
 export class KernelScrollArea extends KernelElement {
   private resizeObserver: ResizeObserver | null = null;

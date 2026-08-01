@@ -1,4 +1,5 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./CommandPalette.css";
 
 let paletteCounter = 0;
@@ -19,24 +20,32 @@ export interface KernelCommandPaletteItem {
  * `aria-activedescendant` pointing at whichever is highlighted, focus
  * staying on the input throughout.
  *
+ * Enter/exit motion (opacity + slight scale + settle) is the default —
+ * Escape and backdrop dismiss are held until the exit transition
+ * finishes, matching `<kernel-dialog>`.
+ *
  * Items carry an `onSelect` callback, which isn't expressible as an
  * HTML attribute — set them via the `items` property (not attribute):
  * `paletteEl.items = [{ id, label, description?, onSelect }]`.
  *
  * Attributes: `open` (toggle to show/hide), `placeholder` (default
- * "Filter commands"), `empty-message` (default "No results").
+ * "Filter commands"), `empty-message` (default "No results"), `blur`
+ * (boolean — light frost on the `::backdrop`).
  */
 export class KernelCommandPalette extends KernelElement {
   private readonly baseId = `kernel-command-palette-${++paletteCounter}`;
   private _items: KernelCommandPaletteItem[] = [];
   private query = "";
   private activeIndex = 0;
+  private closing = false;
+  private skipCloseEvent = false;
+  private exitAbort: AbortController | null = null;
 
   private inputEl!: HTMLInputElement;
   private listboxEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["open", "placeholder", "empty-message"];
+    return ["open", "placeholder", "empty-message", "blur"];
   }
 
   get items(): KernelCommandPaletteItem[] {
@@ -49,7 +58,12 @@ export class KernelCommandPalette extends KernelElement {
   }
 
   private get filtered(): KernelCommandPaletteItem[] {
-    return this._items.filter((item) => item.label.toLowerCase().includes(this.query.toLowerCase()));
+    const q = this.query.toLowerCase();
+    return this._items.filter(
+      (item) =>
+        item.label.toLowerCase().includes(q) ||
+        (item.description?.toLowerCase().includes(q) ?? false),
+    );
   }
 
   connectedCallback() {
@@ -59,9 +73,20 @@ export class KernelCommandPalette extends KernelElement {
     dialog.className = kernelClass("CommandPalette", "content");
     dialog.setAttribute("aria-label", "Command palette");
     dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) this.removeAttribute("open");
+      if (event.target === dialog) this.requestClose();
     });
-    dialog.addEventListener("close", () => this.removeAttribute("open"));
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.requestClose();
+    });
+    dialog.addEventListener("close", () => {
+      if (this.skipCloseEvent) {
+        this.skipCloseEvent = false;
+        return;
+      }
+      this.removeAttribute("open");
+    });
 
     const input = document.createElement("input");
     input.type = "text";
@@ -92,6 +117,34 @@ export class KernelCommandPalette extends KernelElement {
     this.renderOptions();
   }
 
+  private requestClose() {
+    if (!this.hasAttribute("open") || this.closing) return;
+    this.removeAttribute("open");
+  }
+
+  private async finishClose(dialog: HTMLDialogElement) {
+    if (!dialog.open || this.closing) return;
+    this.closing = true;
+    dialog.removeAttribute("data-open");
+    dialog.setAttribute("data-closing", "");
+
+    if (!prefersReducedMotion()) {
+      const controller = new AbortController();
+      this.exitAbort?.abort();
+      this.exitAbort = controller;
+      await waitForExitTransition(dialog, { signal: controller.signal });
+      if (controller.signal.aborted) {
+        this.closing = false;
+        return;
+      }
+    }
+
+    this.skipCloseEvent = true;
+    dialog.close();
+    dialog.removeAttribute("data-closing");
+    this.closing = false;
+  }
+
   private handleKeyDown(event: KeyboardEvent) {
     switch (event.key) {
       case "ArrowDown":
@@ -112,13 +165,12 @@ export class KernelCommandPalette extends KernelElement {
         }
         break;
       }
-      // Escape is left unhandled: the native <dialog> already closes.
     }
   }
 
   private selectItem(item: KernelCommandPaletteItem) {
     item.onSelect();
-    this.removeAttribute("open");
+    this.requestClose();
   }
 
   private renderOptions() {
@@ -174,14 +226,20 @@ export class KernelCommandPalette extends KernelElement {
     switch (name) {
       case "open":
         if (value !== null && !dialog.open) {
+          this.exitAbort?.abort();
+          this.closing = false;
+          dialog.removeAttribute("data-closing");
           this.query = "";
           this.activeIndex = 0;
           this.inputEl.value = "";
           this.renderOptions();
           dialog.showModal();
+          dialog.setAttribute("data-open", "");
           requestAnimationFrame(() => this.inputEl.focus());
         }
-        if (value === null && dialog.open) dialog.close();
+        if (value === null && dialog.open) {
+          void this.finishClose(dialog);
+        }
         break;
       case "placeholder":
         this.inputEl.placeholder = value || "Filter commands";
@@ -190,7 +248,17 @@ export class KernelCommandPalette extends KernelElement {
       case "empty-message":
         this.renderOptions();
         break;
+      case "blur": {
+        const blurred = dataAttr(value !== null);
+        if (blurred) dialog.setAttribute("data-blur", blurred);
+        else dialog.removeAttribute("data-blur");
+        break;
+      }
     }
+  }
+
+  disconnectedCallback() {
+    this.exitAbort?.abort();
   }
 }
 

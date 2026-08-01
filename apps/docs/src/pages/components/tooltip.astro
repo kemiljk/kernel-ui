@@ -27,7 +27,6 @@ import TooltipPlayground from "../../components/demos/TooltipPlayground";
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <TooltipPlayground client:load />
 
-    
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">
       <caption>Props for Tooltip.</caption>
@@ -35,8 +34,25 @@ import TooltipPlayground from "../../components/demos/TooltipPlayground";
       <tbody>
         <tr><td><code>content</code></td><td>ReactNode (required)</td><td>—</td></tr>
         <tr><td><code>render</code></td><td>the trigger element (required)</td><td>—</td></tr>
+        <tr><td><code>renderContent</code></td><td>RenderProp — replace the popup</td><td>—</td></tr>
+        <tr><td><code>className</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
         <tr><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td><td>"top"</td></tr>
+        <tr><td><code>align</code></td><td>"start" | "center" | "end"</td><td>"center"</td></tr>
+        <tr><td><code>offset</code></td><td>number (px)</td><td>8</td></tr>
+        <tr><td><code>openDelay</code></td><td>number (ms)</td><td>0</td></tr>
+        <tr><td><code>closeDelay</code></td><td>number (ms)</td><td>0</td></tr>
+        <tr><td><code>arrow</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>renderArrow</code></td><td>RenderProp</td><td>—</td></tr>
       </tbody>
     </table></div>
+
+    <h2>Composition</h2>
+    <p>
+      The popup exposes <code>data-slot="tooltip-content"</code>,
+      <code>data-placement</code>, <code>data-align</code>, <code>data-open</code>,
+      <code>data-opening</code>, and <code>data-closing</code>. Set
+      <code>closeDelay</code> so the pointer can travel from the trigger
+      into rich content without the tooltip closing underneath it.
+    </p>
   </div>
 </BaseLayout>

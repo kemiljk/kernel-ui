@@ -45,7 +45,7 @@ See [AGENTS.md](./AGENTS.md) for the full implementation guide. The essentials:
 - Add every new component to **both** `packages/react` and `packages/elements`.
 - Use design tokens from `@kernelui-lib/styles`; do not hardcode colours or spacing.
 - Prefer native HTML elements and document the accessibility tradeoff in the component JSDoc.
-- Add docs: entry in `apps/docs/src/data/components.ts`, page, demo, and playground.
+- Add docs: entry in `packages/registry` (re-exported by `apps/docs/src/data/components.ts`), page, demo, and playground.
 
 ### Versioning
 

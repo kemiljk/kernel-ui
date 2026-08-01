@@ -9,9 +9,14 @@ const usageSnippet = `import { Button, DropdownMenu, MenuChevron, MenuItem, Menu
 
 function ActionsMenu() {
   return (
-    <DropdownMenu render={<Button variant="secondary" iconEnd={<MenuChevron />}>Actions</Button>}>
+    <DropdownMenu
+      align="end"
+      offset={4}
+      className="my-menu"
+      render={<Button variant="secondary" iconEnd={<MenuChevron />}>Actions</Button>}
+    >
       <MenuItem onSelect={() => {}}>Edit</MenuItem>
-      <MenuItem onSelect={() => {}}>Duplicate</MenuItem>
+      <MenuItem render={<a href="/docs" />}>Documentation</MenuItem>
       <MenuSeparator />
       <MenuItem destructive onSelect={() => {}}>
         Delete
@@ -49,9 +54,16 @@ function ActionsMenu() {
       <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
       <tbody>
         <tr><td><code>DropdownMenu</code></td><td><code>render</code></td><td>the trigger (required)</td></tr>
+        <tr><td><code>DropdownMenu</code></td><td><code>renderContent</code></td><td>RenderProp — replace the popup</td></tr>
+        <tr><td><code>DropdownMenu</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
+        <tr><td><code>DropdownMenu</code></td><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td></tr>
+        <tr><td><code>DropdownMenu</code></td><td><code>align</code></td><td>"start" | "center" | "end"</td></tr>
+        <tr><td><code>DropdownMenu</code></td><td><code>offset</code></td><td>number (px)</td></tr>
+        <tr><td><code>MenuItem</code></td><td><code>render</code></td><td>RenderProp — e.g. <code>&lt;a&gt;</code> / router Link</td></tr>
+        <tr><td><code>MenuItem</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
-        <tr><td><code>MenuChevron</code></td><td>—</td><td>no props — drop into a trigger's <code>iconEnd</code> (or any child); rotates itself via <code>aria-expanded</code> on its nearest ancestor</td></tr>
+        <tr><td><code>MenuChevron</code></td><td>—</td><td>no props — drop into a trigger's <code>iconEnd</code>; rotates via <code>aria-expanded</code></td></tr>
       </tbody>
     </table></div>
 
@@ -59,7 +71,9 @@ function ActionsMenu() {
     <p>
       Opening moves focus to the first item. Arrow Up/Down, Home, and End
       move between items. Selecting an item, or pressing Escape, closes
-      the menu.
+      the menu. Link items keep native navigation, modifier-clicks, and
+      new-tab behaviour — selection closes the menu without
+      <code>preventDefault</code>.
     </p>
   </div>
 </BaseLayout>

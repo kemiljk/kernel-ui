@@ -1,0 +1,63 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kernel-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--kernel-font-sans);
+}
+
+.root[data-disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.item {
+  margin: 0;
+  padding: 0;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font: inherit;
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: start;
+  text-wrap: pretty;
+  cursor: default;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover:not(:disabled) {
+    border-color: var(--kernel-color-border-hover);
+    background-color: var(--kernel-color-surface-raised);
+  }
+}
+
+.button:active:not(:disabled) {
+  scale: 0.98;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

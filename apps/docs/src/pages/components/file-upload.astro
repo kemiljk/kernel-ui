@@ -20,7 +20,18 @@ import FileUploadPlayground from "../../components/demos/FileUploadPlayground";
       real input stays authoritative either way — dropped files are
       re-assigned onto its own <code>.files</code> via a fresh{" "}
       <code>DataTransfer</code>, so it still participates correctly in a
-      plain, non-JS <code>&lt;form&gt;</code> submission.
+      plain, non-JS <code>&lt;form&gt;</code> submission. While dragging,
+      the active wash scales outward from the pointer's live position;
+      its radius is counter-scaled to preserve the dropzone's roundness,
+      and reduced-motion users get a simple opacity transition. Opt into{" "}
+      <code>preview</code> to mould the dropzone around the selection —
+      displayable images fill or tile as object-URL thumbnails; other
+      files show as compact name chips. Pair with{" "}
+      <code>aspectRatio=&quot;square&quot;</code> for a 1:1 tile that uses
+      Card&apos;s concentric radius pair (
+      <code>--kernel-radius-sheet</code> outer,{" "}
+      <code>--kernel-radius-md</code> inner via{" "}
+      <code>--kernel-padding-sheet</code>).
     </p>
 
     <div class="docs-example">
@@ -45,6 +56,8 @@ import FileUploadPlayground from "../../components/demos/FileUploadPlayground";
         <tr><td><code>multiple</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>maxFiles</code></td><td>number</td><td>—</td></tr>
         <tr><td><code>maxSize</code></td><td>number (bytes)</td><td>—</td></tr>
+        <tr><td><code>preview</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>aspectRatio</code></td><td>"auto" | "square"</td><td>"auto"</td></tr>
         <tr><td><code>onError</code></td><td>{"(error) => void"}</td><td>—</td></tr>
         <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
         <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>

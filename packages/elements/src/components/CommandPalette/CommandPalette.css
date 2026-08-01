@@ -12,24 +12,46 @@
   max-block-size: calc(100dvh - var(--kernel-space-12));
 
   opacity: 0;
-  scale: 0.96;
+  scale: var(--kernel-scale-enter);
+  translate: 0 0.5rem;
   transition:
-    opacity var(--kernel-duration-base) var(--kernel-ease-out),
-    scale var(--kernel-duration-base) var(--kernel-ease-spring),
-    overlay var(--kernel-duration-base) allow-discrete,
-    display var(--kernel-duration-base) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
 }
 
 .kernel-CommandPalette-content[open] {
   display: flex;
   opacity: 1;
   scale: 1;
+  translate: 0 0;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-enter) allow-discrete,
+    display var(--kernel-duration-enter) allow-discrete;
+}
+
+.kernel-CommandPalette-content[data-closing] {
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  translate: 0 0.5rem;
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
 }
 
 @starting-style {
   .kernel-CommandPalette-content[open] {
     opacity: 0;
-    scale: 0.96;
+    scale: var(--kernel-scale-enter);
+    translate: 0 0.5rem;
   }
 }
 
@@ -37,13 +59,31 @@
   background-color: var(--kernel-color-scrim);
   opacity: 0;
   transition:
-    opacity var(--kernel-duration-base) var(--kernel-ease-out),
-    overlay var(--kernel-duration-base) allow-discrete,
-    display var(--kernel-duration-base) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
+}
+
+/* Light frost — same 8px as Dialog's `backdrop="blur"`. */
+.kernel-CommandPalette-content[data-blur]::backdrop {
+  background-color: color-mix(in oklab, var(--kernel-color-scrim) 70%, transparent);
+  backdrop-filter: blur(8px);
 }
 
 .kernel-CommandPalette-content[open]::backdrop {
   opacity: 1;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-enter) allow-discrete,
+    display var(--kernel-duration-enter) allow-discrete;
+}
+
+.kernel-CommandPalette-content[data-closing]::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
 }
 
 @starting-style {
@@ -58,7 +98,7 @@
   block-size: calc(var(--kernel-space-unit) * 12);
   border: none;
   border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: 0;
+  border-radius: var(--kernel-radius-control);
   background-color: transparent;
   color: var(--kernel-color-text);
   padding-inline: var(--kernel-space-3);
@@ -67,8 +107,6 @@
 }
 
 .kernel-CommandPalette-input:focus-visible {
-  /* Inset, not suppressed — see the matching comment in @kernelui-lib/react's
-     CommandPalette.module.css `.input`. */
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: -2px;
 }
@@ -118,7 +156,15 @@
     transition: opacity var(--kernel-duration-fast) linear;
   }
 
-  .kernel-CommandPalette-content {
+  .kernel-CommandPalette-content,
+  .kernel-CommandPalette-content[data-closing] {
     scale: 1;
-  }
+    translate: 0 0;
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
+}
 }

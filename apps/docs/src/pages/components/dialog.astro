@@ -16,6 +16,11 @@ const [open, setOpen] = useState(false);
   onOpenChange={setOpen}
   title="Delete account"
   description="This can't be undone."
+  backdrop="blur"
+  classNames={{
+    root: "my-dialog",
+    title: "my-dialog-title",
+  }}
 >
   <Button variant="danger" onClick={() => setOpen(false)}>
     Confirm
@@ -31,6 +36,8 @@ const [open, setOpen] = useState(false);
       A real <code>&lt;dialog&gt;</code>, opened with <code>showModal()</code>.
       That single call gets a native top-layer stacking context, a native
       focus trap, native Escape-to-close, and a native <code>::backdrop</code>.
+      Exit transitions finish before the final native <code>close()</code>,
+      so consumer-owned animations can run; focus restores afterwards.
     </p>
 
     <div class="docs-example">
@@ -55,14 +62,32 @@ const [open, setOpen] = useState(false);
         <tr><td><code>title</code></td><td>ReactNode (required)</td><td>—</td></tr>
         <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
         <tr><td><code>closeOnBackdropClick</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>showCloseButton</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>renderClose</code></td><td>RenderProp</td><td>—</td></tr>
+        <tr><td><code>backdrop</code></td><td>"default" | "blur" | "opaque" | "transparent"</td><td>"default"</td></tr>
+        <tr><td><code>classNames</code></td><td>&#123; root, header, title, description, content, close &#125;</td><td>—</td></tr>
+        <tr><td><code>className</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
       </tbody>
     </table></div>
 
+    <h2>Composition</h2>
+    <p>
+      Stable <code>data-slot</code> hooks:
+      <code>dialog</code>, <code>dialog-header</code>,
+      <code>dialog-title</code>, <code>dialog-description</code>,
+      <code>dialog-content</code>, <code>dialog-close</code>.
+      Open state: <code>data-open</code>, <code>data-opening</code>,
+      <code>data-closing</code>. Style <code>::backdrop</code> via
+      <code>backdrop</code> or the <code>--kernel-dialog-backdrop-bg</code>
+      / <code>--kernel-dialog-backdrop-filter</code> custom properties.
+    </p>
+
     <h2>Accessibility</h2>
     <ul>
-      <li>Focus moves into the dialog on open and returns to the trigger on close, both native to <code>showModal()</code>.</li>
-      <li>Escape closes it, also native, no keydown listener written for it.</li>
-      <li><code>title</code> is linked via <code>aria-labelledby</code> automatically.</li>
+      <li>Focus moves into the dialog on open and returns to the trigger after the closing animation completes, both native to <code>showModal()</code> / <code>close()</code>.</li>
+      <li>Escape closes it through the same animation-aware path as the close button and backdrop click.</li>
+      <li><code>title</code> is linked via <code>aria-labelledby</code> automatically and accepts rich React content.</li>
+      <li><code>prefers-reduced-motion</code> skips the exit wait and closes immediately.</li>
     </ul>
   </div>
 </BaseLayout>

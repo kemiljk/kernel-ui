@@ -2,7 +2,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
-import { useFloatingPosition } from "../../utils/useFloatingPosition";
+import {
+  useFloatingPosition,
+  type FloatingAlign,
+  type FloatingPlacement,
+} from "../../utils/useFloatingPosition";
+import { usePopoverExit } from "../../utils/usePopoverExit";
 import styles from "./Combobox.module.css";
 
 export interface ComboboxOption {
@@ -25,6 +30,12 @@ export interface ComboboxProps {
   onValueChange?: (value: string) => void;
   placeholder?: string;
   emptyMessage?: ReactNode;
+  /** Which side of the field the listbox opens on. */
+  placement?: FloatingPlacement;
+  /** Cross-axis alignment relative to the field. */
+  align?: FloatingAlign;
+  /** Gap between the field and the listbox, in pixels. */
+  offset?: number;
 }
 
 /**
@@ -47,6 +58,9 @@ export function Combobox({
   onValueChange,
   placeholder,
   emptyMessage = "No results",
+  placement = "bottom",
+  align = "center",
+  offset = 8,
 }: ComboboxProps) {
   const [selectedValue, setSelectedValue] = useControllableState({
     value,
@@ -71,19 +85,29 @@ export function Combobox({
 
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLInputElement, HTMLDivElement>({
     open,
-    placement: "bottom",
+    placement,
+    align,
+    offset,
   });
 
+  const { closing, playExit, cancelExit } = usePopoverExit(listboxRef);
+
   function openList() {
+    cancelExit();
     if (open) return;
     setOpen(true);
     listboxRef.current?.showPopover?.();
   }
 
+  /** `open` flips immediately — `aria-expanded` and the keyboard
+   * handlers shouldn't keep treating a listbox the user has dismissed
+   * as live just because its fade hasn't finished. `playExit` only owns
+   * the visual tail, and hides the popover once that's done. */
   function closeList() {
+    if (!open) return;
     setOpen(false);
-    listboxRef.current?.hidePopover?.();
     setActiveIndex(-1);
+    void playExit();
   }
 
   function selectOption(option: ComboboxOption) {
@@ -170,6 +194,11 @@ export function Combobox({
         id={listboxId}
         role="listbox"
         popover="manual"
+        data-slot="combobox-listbox"
+        data-placement={placement}
+        data-align={align}
+        data-open={dataAttr(open)}
+        data-closing={dataAttr(closing)}
         className={styles.listbox}
       >
         {filtered.length === 0 ? (

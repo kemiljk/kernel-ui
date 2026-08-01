@@ -1,0 +1,51 @@
+{
+  "name": "@kernelui-lib/cli",
+  "version": "1.0.0",
+  "description": "Integration CLI for Kernel UI — install, diagnose, and look up components.",
+  "license": "MIT",
+  "author": "Karl Koch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiljk/kernel-ui.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://www.kernelui.com",
+  "bugs": "https://github.com/kemiljk/kernel-ui/issues",
+  "keywords": [
+    "cli",
+    "kernel",
+    "design-system",
+    "react",
+    "shadcn",
+    "radix"
+  ],
+  "type": "module",
+  "bin": {
+    "kernel": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@kernelui-lib/registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  }
+}

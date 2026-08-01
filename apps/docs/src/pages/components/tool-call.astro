@@ -1,0 +1,112 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import ToolCallDemo from "../../components/demos/ToolCallDemo";
+import ToolCallPlayground from "../../components/demos/ToolCallPlayground";
+import { Source, Sources, ToolCall } from "@kernelui-lib/react";
+
+const runningSnippet = `<ToolCall
+  label={'Searching "JWT auth vulnerabilities"'}
+  status="running"
+  defaultOpen
+>
+  <Sources heading={null}>…</Sources>
+</ToolCall>`;
+
+const completeSnippet = `<ToolCall
+  label={'Searched "JWT auth vulnerabilities"'}
+  status="complete"
+  defaultOpen
+>
+  <Sources heading={null}>
+    <Source title="JWT verification best practices" href="…" />
+  </Sources>
+</ToolCall>`;
+
+const statusOnlySnippet = `<ToolCall label="Reading src/auth.ts" status="complete" />`;
+---
+
+<BaseLayout title="Tool Call" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Tool Call</h1>
+    <p>
+      A collapsible agent tool-invocation status — web search, file reads,
+      code runs — on real <code>&lt;details&gt;</code>/
+      <code>&lt;summary&gt;</code>, the same foundation as{" "}
+      <a href="/components/reasoning/">Reasoning</a>. Compose results with{" "}
+      <a href="/components/sources/">Sources</a> or any other content.
+    </p>
+
+    <div class="docs-example docs-example-start" style="flex-direction: column; align-items: stretch;">
+      <ToolCallDemo client:load />
+    </div>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example
+        title="Searching"
+        description="Running state shimmers the label while results populate underneath."
+        code={runningSnippet}
+      >
+        <ToolCallDemo client:load />
+      </Example>
+      <Example
+        title="Complete"
+        description="Settled checkmark once the tool finishes; still expandable."
+        code={completeSnippet}
+      >
+        <ToolCall
+          label={'Searched "JWT auth vulnerabilities"'}
+          status="complete"
+          defaultOpen
+        >
+          <Sources heading={null}>
+            <Source
+              title="JWT verification best practices"
+              href="https://auth0.com/blog/jwt-security-best-practices"
+            />
+            <Source
+              title="Node.js authentication security guide"
+              href="https://owasp.org/www-project-nodejs-goat"
+            />
+          </Sources>
+        </ToolCall>
+      </Example>
+      <Example
+        title="Status only"
+        description="Without children, ToolCall is a non-collapsible status row."
+        code={statusOnlySnippet}
+      >
+        <ToolCall label="Reading src/auth.ts" status="complete" />
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ToolCallPlayground client:load />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Tool Call.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>status</code></td><td>"pending" | "running" | "complete" | "error"</td><td>"pending"</td></tr>
+        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>true while pending/running</td></tr>
+        <tr><td><code>open</code> / <code>onOpenChange</code></td><td>controlled open state</td><td>—</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Expand/collapse and keyboard support come from native <code>&lt;details&gt;</code> when results are present.</li>
+      <li>The running state announces via <code>role="status"</code>, same polite live-region pattern as ThinkingIndicator.</li>
+      <li>Without children, the control is a plain status row — no disclosure control to confuse when there's nothing to expand.</li>
+      <li>Motion (dots + shimmer) freezes under <code>prefers-reduced-motion</code>; the label text still communicates the state.</li>
+    </ul>
+  </div>
+</BaseLayout>

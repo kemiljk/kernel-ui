@@ -38,7 +38,11 @@ function App() {
       controlled, not self-triggering, you decide what opens it, a button,
       a keyboard shortcut, whatever, and it stays generic: it takes a flat
       list of <code>items</code>, it doesn't know anything about your app's
-      navigation or commands.
+      navigation or commands. Open and close fade the panel and backdrop
+      with a slight scale + settle by default — Escape and backdrop
+      dismiss wait for the exit transition, same as Dialog — and
+      <code>prefers-reduced-motion</code> collapses that to a short opacity
+      fade.
     </p>
 
     <div class="docs-example">
@@ -63,6 +67,7 @@ function App() {
         <tr><td><code>items</code></td><td>CommandPaletteItem[]</td><td>—</td></tr>
         <tr><td><code>placeholder</code></td><td>string</td><td>"Filter commands"</td></tr>
         <tr><td><code>emptyMessage</code></td><td>ReactNode</td><td>"No results"</td></tr>
+        <tr><td><code>blur</code></td><td>boolean</td><td>false</td></tr>
       </tbody>
     </table></div>
     <p>

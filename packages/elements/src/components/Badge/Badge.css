@@ -10,6 +10,9 @@
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .kernel-Badge-root[data-variant="neutral"] {

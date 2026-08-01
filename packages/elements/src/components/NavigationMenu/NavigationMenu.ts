@@ -1,5 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
-import { FloatingPositioner } from "../../utils/floatingPosition";
+import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import "./NavigationMenu.css";
 
 let navMenuCounter = 0;
@@ -35,7 +35,11 @@ export class KernelNavigationMenu extends KernelElement {
 
 /** `<kernel-nav-menu-item>` — wraps one top-level entry (an `<li>`).
  * Contains either a `<kernel-nav-menu-link>` or a
- * `<kernel-nav-menu-trigger>` + `<kernel-nav-menu-content>` pair. */
+ * `<kernel-nav-menu-trigger>` + `<kernel-nav-menu-content>` pair.
+ * Attributes: `placement` (default bottom), `align` (start/center/end,
+ * default center), `offset` (px, default 8) — the panel's positioning
+ * lives on the item, matching React's `NavigationMenuItem`, and the
+ * trigger accepts the same three as an override. */
 export class KernelNavMenuItem extends KernelElement {
   protected createNative(): HTMLElement {
     const li = document.createElement("li");
@@ -71,7 +75,8 @@ const CHEVRON_PATH = "M4 6L8 10L12 6";
  * submenu. Opens its sibling `<kernel-nav-menu-content>` via
  * `popovertarget`, click-based (not hover-only) so it behaves the same
  * on touch. Must be a child of the same `<kernel-nav-menu-item>` as
- * its content. Attributes: `disabled`. */
+ * its content. Attributes: `disabled`, plus `placement`/`align`/`offset`
+ * as an override of the item's own. */
 export class KernelNavMenuTrigger extends KernelElement {
   private readonly positioner = new FloatingPositioner();
 
@@ -122,11 +127,17 @@ export class KernelNavMenuTrigger extends KernelElement {
     if (!button || !contentNative) return;
 
     button.setAttribute("popovertarget", contentNative.id);
-    this.positioner.attach(button, contentNative, { placement: "bottom" });
+    const { placement, align, offset } = item
+      ? readFloatingAttributes(item, readFloatingAttributes(this))
+      : readFloatingAttributes(this);
+    contentNative.setAttribute("data-placement", placement);
+    contentNative.setAttribute("data-align", align);
+    this.positioner.attach(button, contentNative, { placement, align, offset });
 
     contentNative.addEventListener("toggle", (event) => {
       const open = (event as ToggleEvent).newState === "open";
       button.setAttribute("aria-expanded", String(open));
+      contentNative.toggleAttribute("data-open", open);
       this.positioner.setOpen(open);
     });
   }
@@ -156,6 +167,7 @@ export class KernelNavMenuContent extends KernelElement {
     const div = document.createElement("div");
     div.id = `kernel-nav-menu-content-${++navMenuContentCounter}-${++navMenuCounter}`;
     div.setAttribute("popover", "auto");
+    div.setAttribute("data-slot", "navigation-menu-content");
     div.className = kernelClass("NavigationMenu", "content");
     return div;
   }

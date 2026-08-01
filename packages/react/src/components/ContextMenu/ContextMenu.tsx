@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { MenuContext } from "../DropdownMenu/DropdownMenu";
+import { dataAttr } from "../../utils/polymorphic";
+import { usePopoverExit } from "../../utils/usePopoverExit";
 import styles from "./ContextMenu.module.css";
 
 const MARGIN = 8;
@@ -27,13 +29,23 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const { closing, playExit, cancelExit } = usePopoverExit(menuRef);
+
+  /** `open` flips immediately so the dismissal listeners below tear
+   * down at once; `playExit` only owns the fade, and hides the popover
+   * once it has finished. Animating before the hide (rather than
+   * relying on the closed state's CSS) is what keeps the panel from
+   * being yanked out of the top layer mid-animation — see
+   * `usePopoverExit`. */
   function close() {
+    if (!open) return;
     setOpen(false);
-    menuRef.current?.hidePopover();
+    void playExit();
   }
 
   function handleContextMenu(event: ReactMouseEvent<HTMLDivElement>) {
     event.preventDefault();
+    cancelExit();
     setPosition({ top: event.clientY, left: event.clientX });
     setOpen(true);
     menuRef.current?.showPopover();
@@ -98,6 +110,8 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
         ref={menuRef}
         role="menu"
         popover="manual"
+        data-open={dataAttr(open)}
+        data-closing={dataAttr(closing)}
         className={styles.content}
         style={{ position: "fixed", top: position.top, left: position.left }}
       >

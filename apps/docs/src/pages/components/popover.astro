@@ -33,9 +33,22 @@ import PopoverPlayground from "../../components/demos/PopoverPlayground";
       <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
       <tbody>
         <tr><td><code>render</code></td><td>the trigger element (required)</td><td>—</td></tr>
+        <tr><td><code>renderContent</code></td><td>RenderProp — replace the panel</td><td>—</td></tr>
+        <tr><td><code>className</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
         <tr><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td><td>"bottom"</td></tr>
+        <tr><td><code>align</code></td><td>"start" | "center" | "end"</td><td>"center"</td></tr>
+        <tr><td><code>offset</code></td><td>number (px)</td><td>8</td></tr>
         <tr><td><code>open</code> / <code>onOpenChange</code></td><td>boolean / (open) =&gt; void</td><td>—</td></tr>
       </tbody>
     </table></div>
+
+    <h2>Composition</h2>
+    <p>
+      The panel exposes <code>data-slot="popover-content"</code>,
+      <code>data-placement</code>, <code>data-align</code>, and
+      <code>data-open</code>, the same styling hooks Tooltip and
+      DropdownMenu expose, so one set of CSS can target every anchored
+      surface.
+    </p>
   </div>
 </BaseLayout>

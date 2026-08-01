@@ -15,4 +15,4 @@ export const NPM_REACT_URL = "https://www.npmjs.com/package/@kernelui-lib/react"
 export const NPM_ELEMENTS_URL = "https://www.npmjs.com/package/@kernelui-lib/elements";
 export const NPM_STYLES_URL = "https://www.npmjs.com/package/@kernelui-lib/styles";
 
-export const PACKAGE_VERSION = "0.1.0";
+export const PACKAGE_VERSION = "1.0.0";

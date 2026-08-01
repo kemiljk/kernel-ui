@@ -4,6 +4,10 @@
 .root {
   overflow-y: auto;
   scrollbar-gutter: stable;
+  /* Stay out of the way of the host surface — page canvas, playground
+     stage, card — so edge fades composite against the real background
+     instead of reading as a separate white/gray panel. */
+  background-color: transparent;
 
   /* Firefox's standardized scrollbar properties. */
   scrollbar-width: thin;
@@ -25,19 +29,64 @@
   border-radius: var(--kernel-radius-full);
 }
 
-/* Edge shadow: an inset shadow at whichever edge still has content to
-   scroll toward, gone once you've actually scrolled that edge into
-   view. --kernel-scroll-shadow-top/-bottom (0–1, how close the
-   respective edge is) are plain unregistered custom properties set
-   from JS on scroll/resize — no `@property` needed, since `box-shadow`
-   itself is what transitions, not the properties feeding its calc(). */
+/* Edge cue: soft dissolve into the host surface plus a layered inset
+   shadow at whichever edge still has content to scroll toward — gone
+   once that edge is scrolled into view. --kernel-scroll-shadow-top/
+   -bottom (0–1) are plain unregistered custom properties set from JS
+   on scroll/resize — no `@property` needed, since `box-shadow` /
+   `mask-image` are what transition, not the properties feeding calc().
+
+   The mask is what makes the fade context-aware: content thins out to
+   transparent so the page canvas (or whatever sits behind) shows
+   through, instead of painting a fixed gray strip. The box-shadow
+   stack mirrors --kernel-shadow-md/lg craft — short umbra, then broad
+   low-alpha ambient — with spread cancelled by blur (-N) so the glow
+   stays pinned to the scrolled edge. */
 .root[data-edge-shadow] {
   --kernel-scroll-shadow-top: 0;
   --kernel-scroll-shadow-bottom: 0;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-scroll-shadow-top))) 0,
+    #000 2.75rem,
+    #000 calc(100% - 2.75rem),
+    rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-scroll-shadow-bottom))) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-scroll-shadow-top))) 0,
+    #000 2.75rem,
+    #000 calc(100% - 2.75rem),
+    rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-scroll-shadow-bottom))) 100%
+  );
   box-shadow:
-    inset 0 8px 8px -8px oklch(0% 0 0 / calc(0.16 * var(--kernel-scroll-shadow-top))),
-    inset 0 -8px 8px -8px oklch(0% 0 0 / calc(0.16 * var(--kernel-scroll-shadow-bottom)));
-  transition: box-shadow var(--kernel-duration-base) var(--kernel-ease-out);
+    inset 0 2px 4px -2px light-dark(
+      oklch(0% 0 0 / calc(0.16 * var(--kernel-scroll-shadow-top))),
+      oklch(0% 0 0 / calc(0.42 * var(--kernel-scroll-shadow-top)))
+    ),
+    inset 0 8px 16px -6px light-dark(
+      oklch(0% 0 0 / calc(0.12 * var(--kernel-scroll-shadow-top))),
+      oklch(0% 0 0 / calc(0.32 * var(--kernel-scroll-shadow-top)))
+    ),
+    inset 0 22px 40px -14px light-dark(
+      oklch(0% 0 0 / calc(0.08 * var(--kernel-scroll-shadow-top))),
+      oklch(0% 0 0 / calc(0.24 * var(--kernel-scroll-shadow-top)))
+    ),
+    inset 0 -2px 4px -2px light-dark(
+      oklch(0% 0 0 / calc(0.16 * var(--kernel-scroll-shadow-bottom))),
+      oklch(0% 0 0 / calc(0.42 * var(--kernel-scroll-shadow-bottom)))
+    ),
+    inset 0 -8px 16px -6px light-dark(
+      oklch(0% 0 0 / calc(0.12 * var(--kernel-scroll-shadow-bottom))),
+      oklch(0% 0 0 / calc(0.32 * var(--kernel-scroll-shadow-bottom)))
+    ),
+    inset 0 -22px 40px -14px light-dark(
+      oklch(0% 0 0 / calc(0.08 * var(--kernel-scroll-shadow-bottom))),
+      oklch(0% 0 0 / calc(0.24 * var(--kernel-scroll-shadow-bottom)))
+    );
+  transition:
+    box-shadow var(--kernel-duration-base) var(--kernel-ease-out),
+    mask-image var(--kernel-duration-base) var(--kernel-ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {

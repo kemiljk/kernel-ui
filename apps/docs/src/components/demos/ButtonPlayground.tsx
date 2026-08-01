@@ -1,5 +1,6 @@
 import { Button } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
+import { MagnifyingGlassIcon, ChevronDownIcon } from "../icons";
 
 const controls = [
   {
@@ -16,31 +17,31 @@ const controls = [
     options: ["button", "submit", "reset"],
     default: "button",
   },
+  { type: "boolean" as const, prop: "iconStart", label: "iconStart", default: false },
+  { type: "boolean" as const, prop: "iconEnd", label: "iconEnd", default: false },
   { type: "boolean" as const, prop: "loading", default: false },
   { type: "boolean" as const, prop: "disabled", default: false },
 ];
 
-/** Only serialise props that differ from Button's own defaults, so the
- * generated snippet reads like something you'd actually write, not every
- * prop spelled out including the ones you'd leave off. */
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`variant="${values.variant}"`];
   if (values.size !== "md") attrs.push(`size="${values.size}"`);
   if (values.type !== "button") attrs.push(`type="${values.type}"`);
+  if (values.iconStart) attrs.push("iconStart={<MagnifyingGlassIcon />}");
+  if (values.iconEnd) attrs.push("iconEnd={<ChevronDownIcon />}");
   if (values.loading) attrs.push("loading");
   if (values.disabled) attrs.push("disabled");
   return `<Button ${attrs.join(" ")}>${values.children || "Button"}</Button>`;
 }
 
-/** Same values, as `@kernelui-lib/elements`' `<kernel-button>` — same
- * attribute names as the React props (see Button.ts's own
- * `observedAttributes`), just plain HTML rather than JSX. */
 function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [`variant="${values.variant}"`];
   if (values.size !== "md") attrs.push(`size="${values.size}"`);
   if (values.type !== "button") attrs.push(`type="${values.type}"`);
   if (values.loading) attrs.push("loading");
   if (values.disabled) attrs.push("disabled");
+  // Icon slots aren't ported on `<kernel-button>` yet — React playground
+  // still demos iconStart/iconEnd; elements snippet stays text-only.
   return `<kernel-button ${attrs.join(" ")}>${values.children || "Button"}</kernel-button>`;
 }
 
@@ -55,6 +56,10 @@ export default function ButtonPlayground() {
           variant={values.variant as "primary" | "secondary" | "ghost" | "danger"}
           size={values.size as "sm" | "md" | "lg"}
           type={values.type as "button" | "submit" | "reset"}
+          iconStart={
+            values.iconStart ? <MagnifyingGlassIcon width="14" height="14" /> : undefined
+          }
+          iconEnd={values.iconEnd ? <ChevronDownIcon width="14" height="14" /> : undefined}
           loading={Boolean(values.loading)}
           disabled={Boolean(values.disabled)}
         >

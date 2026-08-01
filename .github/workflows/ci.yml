@@ -33,11 +33,20 @@ jobs:
       - name: Build packages
         run: bun run --filter '@kernelui-lib/*' build
 
+      - name: Build registry
+        run: bun run --cwd packages/registry build
+
+      - name: Registry consistency check
+        run: bun run --cwd packages/registry check
+
       - name: Typecheck packages
         run: bun run --filter '@kernelui-lib/*' typecheck
 
       - name: Test React package
         run: bun run --cwd packages/react test
+
+      - name: Test CLI package
+        run: bun run --cwd packages/cli test
 
       - name: Typecheck docs
         run: bun run --cwd apps/docs typecheck

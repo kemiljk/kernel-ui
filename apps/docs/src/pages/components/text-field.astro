@@ -38,8 +38,21 @@ import TextFieldPlayground from "../../components/demos/TextFieldPlayground";
         <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
         <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>size</code></td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
+        <tr><td><code>className</code></td><td>string | (state) =&gt; string — control</td><td>—</td></tr>
+        <tr><td><code>wrapperClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
+        <tr><td><code>labelClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
+        <tr><td><code>descriptionClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
+        <tr><td><code>errorClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
       </tbody>
     </table></div>
+
+    <h2>Floating labels</h2>
+    <p>
+      The wrapper exposes <code>data-focused</code> and <code>data-filled</code>
+      (and the same flags in className state callbacks) so unstyled consumers
+      can animate floating labels for controlled values, uncontrolled values,
+      <code>defaultValue</code>, user input, and browser autofill where practical.
+    </p>
 
     <h2>Accessibility</h2>
     <ul>

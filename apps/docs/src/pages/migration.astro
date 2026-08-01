@@ -1,0 +1,149 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import { components } from "@kernelui-lib/registry";
+
+const mappable = components
+  .filter((entry) => entry.shadcnAliases?.length)
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+const structural = components.filter((entry) => entry.migrationCaveats?.length);
+
+const renderSnippet = `<Button render={<a href="/docs">Docs</a>}>
+  Read the docs
+</Button>`;
+
+const textFieldSnippet = `<TextField
+  label="Email"
+  hideLabel
+  type="email"
+  placeholder="you@example.com"
+/>`;
+
+const dialogSnippet = `<Dialog
+  open={open}
+  onOpenChange={setOpen}
+  title="Delete project"
+  description="This cannot be undone."
+>
+  <p>Project files will be permanently removed.</p>
+</Dialog>`;
+---
+
+<BaseLayout title="Migration from shadcn/Radix" description="Map shadcn/ui and Radix primitives to Kernel components, understand structural API differences, and adopt incrementally." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Migration from shadcn/Radix</h1>
+    <p>
+      Kernel covers most of the same UI surface as shadcn/ui, but the APIs are
+      not drop-in replacements. Many components are <em>structurally</em>
+      different because Kernel wraps real native elements (<code>&lt;dialog&gt;</code>,
+      <code>&lt;select&gt;</code>, <code>&lt;details&gt;</code>) instead of
+      Radix's compound component trees.
+    </p>
+    <p>
+      Start with <code>kernel init</code> and <code>kernel doctor</code> — see
+      the <a href="/cli/">CLI guide</a>. Then migrate screen by screen rather
+      than attempting a whole-repo rewrite.
+    </p>
+
+    <h2>What changes everywhere</h2>
+    <ul>
+      <li>
+        <strong><code>asChild</code> → <code>render</code></strong> — polymorphic
+        composition uses a <code>render</code> prop, not Radix Slot.
+      </li>
+      <li>
+        <strong>Required labels</strong> — form fields need a <code>label</code>
+        prop; use <code>hideLabel</code> when the label should be visually hidden.
+      </li>
+      <li>
+        <strong>No copied source</strong> — you install packages and import
+        components; there is no <code>components/ui/</code> folder to own.
+      </li>
+      <li>
+        <strong>CSS, not a theme provider</strong> — theming is CSS custom
+        properties from <code>@kernelui-lib/styles</code>, not a React context.
+      </li>
+    </ul>
+    <CodeBlock code={renderSnippet} lang="tsx" />
+
+    <h2>Component mapping</h2>
+    <p>
+      The table below is generated from the shared registry. Run
+      <code>kernel docs &lt;shadcn-name&gt;</code> for details on any row.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Kernel</th>
+          <th>shadcn alias</th>
+          <th>React export</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          mappable.map((entry) => (
+            <tr>
+              <td><a href={`/components/${entry.slug}/`}>{entry.name}</a></td>
+              <td>{entry.shadcnAliases?.join(", ")}</td>
+              <td><code>{entry.reactExports[0]}</code></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+
+    <h2>Structural differences to plan for</h2>
+    {
+      structural.map((entry) => (
+        <div>
+          <h3>{entry.name}</h3>
+          <ul>
+            {entry.migrationCaveats?.map((caveat) => <li>{caveat}</li>)}
+          </ul>
+        </div>
+      ))
+    }
+
+    <h2>Common patterns</h2>
+    <h3>Input → TextField</h3>
+    <p>
+      shadcn's unlabeled <code>Input</code> becomes a <code>TextField</code> with
+      a required <code>label</code>:
+    </p>
+    <CodeBlock code={textFieldSnippet} lang="tsx" />
+
+    <h3>Dialog / Sheet / Alert Dialog</h3>
+    <p>
+      All collapse into one <code>Dialog</code> component with
+      <code>title</code>, <code>description</code>, and <code>children</code>
+      props — not a Root/Trigger/Portal/Content tree.
+    </p>
+    <CodeBlock code={dialogSnippet} lang="tsx" />
+
+    <h3>Select vs Combobox</h3>
+    <ul>
+      <li>
+        <strong><a href="/components/select/">Select</a></strong> — native
+        <code>&lt;select&gt;</code>; the OS renders the picker. Use when a
+        platform-native picker is acceptable.
+      </li>
+      <li>
+        <strong><a href="/components/combobox/">Combobox</a></strong> — custom
+        filterable listbox. Use when migrating a styled Radix Select with search
+        or custom item rendering.
+      </li>
+    </ul>
+
+    <h2>Incremental adoption</h2>
+    <ol>
+      <li>Run <code>kernel init</code> in a branch.</li>
+      <li>Pick one screen or feature to migrate.</li>
+      <li>Start with mechanical swaps: Button, Badge, Separator, Checkbox, Switch.</li>
+      <li>Tackle structural components (Dialog, Select, Accordion) with the caveats above.</li>
+      <li>Use <a href="/platforms/">headless mode</a> (tokens only) on pages you have not migrated yet.</li>
+    </ol>
+  </div>
+</BaseLayout>

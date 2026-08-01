@@ -8,7 +8,8 @@
   font-size: var(--kernel-font-size-sm);
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    color var(--kernel-duration-fast) var(--kernel-ease-out);
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .icon {

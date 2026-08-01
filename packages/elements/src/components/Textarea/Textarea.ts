@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass, dataAttr } from "../../base";
+import { KernelElement, kernelClass } from "../../base";
 import "./Textarea.css";
 
 let textareaCounter = 0;
@@ -40,21 +40,41 @@ export class KernelTextarea extends KernelElement {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("Textarea");
+    root.setAttribute("data-slot", "textarea");
 
     const id = this.getAttribute("id") || this.generatedId;
 
     const label = document.createElement("label");
     label.className = kernelClass("Textarea", "label");
     label.htmlFor = id;
+    label.setAttribute("data-slot", "textarea-label");
 
     const textarea = document.createElement("textarea");
     textarea.id = id;
     textarea.className = kernelClass("Textarea", "input");
+    textarea.setAttribute("data-slot", "textarea-control");
+    textarea.addEventListener("focus", () => root.setAttribute("data-focused", ""));
+    textarea.addEventListener("blur", () => root.removeAttribute("data-focused"));
+    textarea.addEventListener("input", () => this.syncFilled());
+    textarea.addEventListener("animationstart", (event) => {
+      if ((event as AnimationEvent).animationName.toLowerCase().includes("onautofillstart")) {
+        root.setAttribute("data-filled", "");
+      }
+    });
 
     root.append(label, textarea);
     this.native = root;
     this.append(root);
     this.syncAllAttrs();
+    this.syncFilled();
+  }
+
+  private syncFilled() {
+    const root = this.native;
+    const textarea = this.textarea;
+    if (!root || !textarea) return;
+    if (textarea.value.length > 0) root.setAttribute("data-filled", "");
+    else root.removeAttribute("data-filled");
   }
 
   private get textarea(): HTMLTextAreaElement | null {
@@ -97,12 +117,14 @@ export class KernelTextarea extends KernelElement {
       p.className = kernelClass("Textarea", "error");
       p.id = `${textarea.id}-error`;
       p.setAttribute("role", "alert");
+      p.setAttribute("data-slot", "textarea-error");
       p.textContent = errorMessage;
       root.append(p);
     } else if (description) {
       const p = document.createElement("p");
       p.className = kernelClass("Textarea", "description");
       p.id = `${textarea.id}-description`;
+      p.setAttribute("data-slot", "textarea-description");
       p.textContent = description;
       root.append(p);
     }
@@ -136,6 +158,8 @@ export class KernelTextarea extends KernelElement {
         break;
       case "disabled":
         textarea.disabled = value !== null;
+        if (value !== null) root.setAttribute("data-disabled", "");
+        else root.removeAttribute("data-disabled");
         break;
       case "placeholder":
         if (value === null) textarea.removeAttribute("placeholder");
@@ -143,6 +167,7 @@ export class KernelTextarea extends KernelElement {
         break;
       case "value":
         textarea.value = value ?? "";
+        this.syncFilled();
         break;
       case "name":
         if (value === null) textarea.removeAttribute("name");

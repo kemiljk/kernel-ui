@@ -73,8 +73,11 @@
   block-size: 0.55em;
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-on-accent);
-  scale: 0;
-  transition: scale var(--kernel-duration-fast) var(--kernel-ease-spring);
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-spring);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -89,6 +92,7 @@
 }
 
 .kernel-RadioGroup-input:checked + .kernel-RadioGroup-control::after {
+  opacity: 1;
   scale: 1;
 }
 

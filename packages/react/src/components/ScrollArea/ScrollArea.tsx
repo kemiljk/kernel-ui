@@ -9,16 +9,19 @@ export interface ScrollAreaProps
   /** The block-size at which this starts scrolling. Omit it and the
    * caller controls height via `className`/`style` instead. */
   maxBlockSize?: string;
-  /** Shows an inset shadow at whichever edge still has content to
-   * scroll toward — top, bottom, or both — and hides it again once
-   * you've actually scrolled that edge into view. A permanent cue tied
-   * to scroll position, not a transient one tied to the gesture, so it
-   * never cuts off mid-scroll the moment your finger or wheel stops. */
+  /** Soft edge fade + layered inset shadow at whichever edge still has
+   * content to scroll toward — top, bottom, or both — hidden again once
+   * that edge is scrolled into view. The fade masks into the host
+   * surface (page canvas, etc.) so it stays context-aware. Tied to
+   * scroll position, not the gesture, so it never cuts off mid-scroll
+   * the moment your finger or wheel stops. */
   edgeShadow?: boolean;
   className?: ClassNameValue<Record<string, never>>;
 }
 
-const EDGE_FADE_DISTANCE = 24;
+/* Matches the ambient layer extent in ScrollArea.module.css (~40px)
+   so the opacity ramp finishes as the soft falloff fully reads. */
+const EDGE_FADE_DISTANCE = 48;
 
 /**
  * A native overflow container. `scrollbar-gutter: stable` reserves the

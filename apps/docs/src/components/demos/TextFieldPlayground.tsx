@@ -4,6 +4,12 @@ import Playground, { type PlaygroundValues } from "../Playground";
 const controls = [
   { type: "text" as const, prop: "label", default: "Email" },
   { type: "text" as const, prop: "placeholder", default: "you@example.com" },
+  {
+    type: "enum" as const,
+    prop: "type",
+    options: ["text", "email", "password", "search", "url", "tel"],
+    default: "email",
+  },
   { type: "enum" as const, prop: "size", options: ["sm", "md", "lg"], default: "md" },
   {
     type: "text" as const,
@@ -26,6 +32,7 @@ const controls = [
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label || "Label"}"`];
   if (values.placeholder) attrs.push(`placeholder="${values.placeholder}"`);
+  if (values.type !== "text") attrs.push(`type="${values.type}"`);
   if (values.size !== "md") attrs.push(`size="${values.size}"`);
   if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
@@ -40,6 +47,7 @@ function code(values: PlaygroundValues) {
 function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label || "Label"}"`];
   if (values.placeholder) attrs.push(`placeholder="${values.placeholder}"`);
+  if (values.type !== "text") attrs.push(`type="${values.type}"`);
   if (values.size !== "md") attrs.push(`size="${values.size}"`);
   if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
@@ -61,6 +69,7 @@ export default function TextFieldPlayground() {
         <TextField
           label={String(values.label) || "Label"}
           placeholder={String(values.placeholder)}
+          type={String(values.type)}
           size={values.size as "sm" | "md" | "lg"}
           description={String(values.description)}
           invalid={Boolean(values.invalid)}

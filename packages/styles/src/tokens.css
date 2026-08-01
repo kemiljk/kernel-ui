@@ -327,11 +327,47 @@
     --kernel-line-height-display: 1.05;
 
     /* ---------------------------------------------------------------- */
-    /* Motion: physical, interruptible feeling defaults                 */
+    /* Motion: craft baseline (transitions.dev + Emil)                  */
     /* ---------------------------------------------------------------- */
+    /*
+     * Kernel's motion rules of the road — every overlay and micro-
+     * interaction should inherit these rather than inventing local
+     * durations/easings/scales:
+     *
+     *  1. Enter and exit with ease-out / --kernel-ease-overlay.
+     *     Never ease-in on UI entrances (it delays the moment the
+     *     user is watching). --kernel-ease-in exists for rare
+     *     "pulled away on purpose" cases only.
+     *  2. Exit faster than enter. Arrival can take a beat to
+     *     establish presence; dismissal should feel snappy.
+     *  3. Never scale(0). Enter from --kernel-scale-enter (~0.96).
+     *     Anchored menus exit to --kernel-scale-exit (~0.99) — mostly
+     *     a fade with a hint of shrink. Centered modals exit to
+     *     --kernel-scale-enter (same dip both ways).
+     *  4. Trigger-anchored surfaces set transform-origin from the
+     *     trigger via --kernel-transform-origin. Modals stay centered.
+     *  5. Prefer CSS transitions over keyframes for reversible UI
+     *     (menus, toasts, toggles) so interruption retargets smoothly.
+     *  6. Enumerate properties — never `transition: all`.
+     *  7. Respect prefers-reduced-motion: keep opacity/color, drop
+     *     movement. Safari without `overlay` skips closed-popover
+     *     exits (see reset.css) so panels don't jump-then-fade.
+     *
+     * Tier map: fast = micro (press, color, small menus enter);
+     * enter/base = overlay enter (popover, dialog); exit = overlay
+     * dismissal; exit-fast = tooltip/menu dismissal; slow = toast
+     * stack. --kernel-ease-overlay is the transitions.dev default
+     * curve (same values as --kernel-ease-magnetic).
+     */
     --kernel-duration-fast: 120ms;
     --kernel-duration-base: 200ms;
     --kernel-duration-slow: 320ms;
+    --kernel-duration-enter: var(--kernel-duration-base);
+    --kernel-duration-exit: 150ms;
+    --kernel-duration-exit-fast: 90ms;
+
+    --kernel-scale-enter: 0.96;
+    --kernel-scale-exit: 0.99;
 
     /* Was a `linear()`-approximated spring with a genuine overshoot
        (past 1 and back). Replaced with the same strong deceleration
@@ -358,6 +394,11 @@
        way a real magnetic field weakens with distance — not a spring
        overshoot. */
     --kernel-ease-magnetic: cubic-bezier(0.22, 1, 0.36, 1);
+    /* Default curve for floating surfaces (menus, popovers, modals).
+       Same bezier as --kernel-ease-magnetic / transitions.dev's
+       dropdown+modal ease — kept as its own name so overlay CSS reads
+       intent ("overlay motion") rather than "magnetic tab indicator". */
+    --kernel-ease-overlay: var(--kernel-ease-magnetic);
     /* For properties that move or resize *on screen* (height, translate
        between two visible positions) rather than entering/exiting —
        accelerates then decelerates, unlike --kernel-ease-out's pure
@@ -370,16 +411,36 @@
     /* ---------------------------------------------------------------- */
     /* Elevation                                                        */
     /* ---------------------------------------------------------------- */
-    --kernel-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.06);
-    --kernel-shadow-md: 0 4px 12px oklch(0% 0 0 / 0.10);
-    --kernel-shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.16);
+    /* Smooth, layered shadows: a hairline/contact layer keeps the edge
+       crisp, a short umbra establishes height, and a broad low-alpha
+       ambient layer creates natural falloff. Dark mode uses a light edge
+       for separation plus deeper black falloff instead of turning the
+       whole shadow into one muddy halo. Baked tokens, no runtime/plugin. */
+    --kernel-shadow-edge:
+      0 0 0 1px light-dark(oklch(0% 0 0 / 0.055), oklch(100% 0 0 / 0.075));
+    --kernel-shadow-sm:
+      var(--kernel-shadow-edge),
+      0 1px 2px -1px light-dark(oklch(0% 0 0 / 0.14), oklch(0% 0 0 / 0.38)),
+      0 3px 6px -3px light-dark(oklch(0% 0 0 / 0.09), oklch(0% 0 0 / 0.28));
+    --kernel-shadow-md:
+      var(--kernel-shadow-edge),
+      0 2px 4px -2px light-dark(oklch(0% 0 0 / 0.16), oklch(0% 0 0 / 0.42)),
+      0 7px 14px -5px light-dark(oklch(0% 0 0 / 0.12), oklch(0% 0 0 / 0.32)),
+      0 16px 28px -12px light-dark(oklch(0% 0 0 / 0.08), oklch(0% 0 0 / 0.24));
+    --kernel-shadow-lg:
+      var(--kernel-shadow-edge),
+      0 3px 6px -3px light-dark(oklch(0% 0 0 / 0.18), oklch(0% 0 0 / 0.46)),
+      0 12px 24px -8px light-dark(oklch(0% 0 0 / 0.14), oklch(0% 0 0 / 0.36)),
+      0 28px 56px -16px light-dark(oklch(0% 0 0 / 0.11), oklch(0% 0 0 / 0.3));
 
     /* The tight "lifted knob" drop shadow for small draggable controls
        (Slider's thumb): a shorter blur/offset than the -sm tier so it reads
        as a crisp lifted edge, not a soft haze. Paired with
        --kernel-stroke-subtle for the hairline. Tokenised so the value isn't
        hardcoded per-thumb across both packages. */
-    --kernel-shadow-thumb: 0 2px 4px oklch(0% 0 0 / 0.15);
+    --kernel-shadow-thumb:
+      0 1px 2px light-dark(oklch(0% 0 0 / 0.18), oklch(0% 0 0 / 0.45)),
+      0 3px 6px -2px light-dark(oklch(0% 0 0 / 0.14), oklch(0% 0 0 / 0.34));
 
     /* A barely-visible edge for a light, floating element that a shadow
        alone doesn't cleanly separate from what's behind it (Slider's

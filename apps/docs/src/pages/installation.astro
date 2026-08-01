@@ -33,6 +33,19 @@ const tokensOnlySnippet = `npm install @kernelui-lib/styles`;
       <code>package.json</code>.
     </p>
 
+    <h2>CLI (recommended for React)</h2>
+    <p>
+      The fastest way to wire up a React project — especially when migrating
+      from shadcn/ui:
+    </p>
+    <CodeBlock code={`npx @kernelui-lib/cli init`} lang="bash" />
+    <p>
+      See the <a href="/cli/">CLI guide</a> for <code>kernel doctor</code>,
+      <code>kernel docs</code>, and options like <code>--tailwind</code> and{" "}
+      <code>--accent</code>. Migrating from shadcn/Radix? Read the{" "}
+      <a href="/migration/">migration guide</a> after init.
+    </p>
+
     <h2>React</h2>
     <p>
       The flagship package: every component in the library, as real React

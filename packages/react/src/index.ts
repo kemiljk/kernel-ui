@@ -2,7 +2,7 @@ export { Button } from "./components/Button/Button";
 export type { ButtonProps } from "./components/Button/Button";
 
 export { TextField } from "./components/TextField/TextField";
-export type { TextFieldProps } from "./components/TextField/TextField";
+export type { TextFieldProps, TextFieldState } from "./components/TextField/TextField";
 
 export { Checkbox } from "./components/Checkbox/Checkbox";
 export type { CheckboxProps } from "./components/Checkbox/Checkbox";
@@ -17,7 +17,12 @@ export type {
 } from "./components/Accordion/Accordion";
 
 export { Dialog } from "./components/Dialog/Dialog";
-export type { DialogProps } from "./components/Dialog/Dialog";
+export type {
+  DialogProps,
+  DialogState,
+  DialogClassNames,
+  DialogBackdrop,
+} from "./components/Dialog/Dialog";
 
 export { Header } from "./components/Header/Header";
 export type { HeaderProps } from "./components/Header/Header";
@@ -35,8 +40,7 @@ export { Label } from "./components/Label/Label";
 export type { LabelProps } from "./components/Label/Label";
 
 export { Textarea } from "./components/Textarea/Textarea";
-export type { TextareaProps } from "./components/Textarea/Textarea";
-
+export type { TextareaProps, TextareaState } from "./components/Textarea/Textarea";
 export { RadioGroup, RadioGroupItem } from "./components/RadioGroup/RadioGroup";
 export type {
   RadioGroupProps,
@@ -124,13 +128,14 @@ export { Slider } from "./components/Slider/Slider";
 export type { SliderProps } from "./components/Slider/Slider";
 
 export { Tooltip } from "./components/Tooltip/Tooltip";
-export type { TooltipProps } from "./components/Tooltip/Tooltip";
+export type { TooltipProps, TooltipState } from "./components/Tooltip/Tooltip";
 
 export { Popover } from "./components/Popover/Popover";
 export type { PopoverProps, PopoverState } from "./components/Popover/Popover";
 
 export {
   useFloatingPosition,
+  type FloatingAlign,
   type FloatingPlacement,
 } from "./utils/useFloatingPosition";
 
@@ -142,7 +147,9 @@ export {
 } from "./components/DropdownMenu/DropdownMenu";
 export type {
   DropdownMenuProps,
+  DropdownMenuState,
   MenuItemProps,
+  MenuItemState,
 } from "./components/DropdownMenu/DropdownMenu";
 
 export { Combobox } from "./components/Combobox/Combobox";
@@ -170,6 +177,7 @@ export {
 } from "./components/NavigationMenu/NavigationMenu";
 export type {
   NavigationMenuProps,
+  NavigationMenuItemProps,
   NavigationMenuLinkProps,
   NavigationMenuTriggerProps,
   NavigationMenuContentProps,
@@ -179,7 +187,7 @@ export { ContextMenu } from "./components/ContextMenu/ContextMenu";
 export type { ContextMenuProps } from "./components/ContextMenu/ContextMenu";
 
 export { HoverCard } from "./components/HoverCard/HoverCard";
-export type { HoverCardProps } from "./components/HoverCard/HoverCard";
+export type { HoverCardProps, HoverCardState } from "./components/HoverCard/HoverCard";
 
 export { DataTable } from "./components/DataTable/DataTable";
 export type {
@@ -220,11 +228,37 @@ export type { ReasoningProps, ReasoningState } from "./components/Reasoning/Reas
 export { ThinkingIndicator } from "./components/ThinkingIndicator/ThinkingIndicator";
 export type { ThinkingIndicatorProps } from "./components/ThinkingIndicator/ThinkingIndicator";
 
+export { Suggestion, SuggestionItem } from "./components/Suggestion/Suggestion";
+export type {
+  SuggestionProps,
+  SuggestionState,
+  SuggestionItemProps,
+  SuggestionItemState,
+} from "./components/Suggestion/Suggestion";
+
+export { Sources, Source, Citation } from "./components/Sources/Sources";
+export type {
+  SourcesProps,
+  SourceProps,
+  CitationProps,
+} from "./components/Sources/Sources";
+
+export { ToolCall } from "./components/ToolCall/ToolCall";
+export type {
+  ToolCallProps,
+  ToolCallState,
+  ToolCallStatus,
+} from "./components/ToolCall/ToolCall";
+
 export { ColorPicker } from "./components/ColorPicker/ColorPicker";
 export type { ColorPickerProps, ColorPickerState } from "./components/ColorPicker/ColorPicker";
 
 export { FileUpload } from "./components/FileUpload/FileUpload";
-export type { FileUploadProps, FileUploadState } from "./components/FileUpload/FileUpload";
+export type {
+  FileUploadProps,
+  FileUploadState,
+  FileUploadError,
+} from "./components/FileUpload/FileUpload";
 
 export { TagInput } from "./components/TagInput/TagInput";
 export type { TagInputProps, TagInputState } from "./components/TagInput/TagInput";

@@ -13,6 +13,7 @@ const controls = [
     label: "error message",
     default: "Choose a valid color.",
   },
+  { type: "boolean" as const, prop: "disabled", default: false },
   { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
   { type: "boolean" as const, prop: "labelOffset", label: "label offset", default: true },
 ];
@@ -24,6 +25,7 @@ function code(values: PlaygroundValues) {
   if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
   if (values.errorMessage) attrs.push(`errorMessage="${values.errorMessage}"`);
+  if (values.disabled) attrs.push("disabled");
   if (values.hideLabel) attrs.push("hideLabel");
   if (values.labelOffset === false) attrs.push("labelOffset={false}");
   return `<ColorPicker ${attrs.join(" ")} />`;
@@ -36,6 +38,7 @@ function elementsCode(values: PlaygroundValues) {
   if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
   if (values.errorMessage) attrs.push(`error-message="${values.errorMessage}"`);
+  if (values.disabled) attrs.push("disabled");
   if (values.hideLabel) attrs.push("hide-label");
   if (values.labelOffset === false) attrs.push("no-label-offset");
   return `<kernel-color-picker ${attrs.join(" ")}></kernel-color-picker>`;
@@ -56,6 +59,7 @@ export default function ColorPickerPlayground() {
           description={String(values.description)}
           invalid={Boolean(values.invalid)}
           errorMessage={String(values.errorMessage)}
+          disabled={Boolean(values.disabled)}
           hideLabel={Boolean(values.hideLabel)}
           labelOffset={Boolean(values.labelOffset)}
         />

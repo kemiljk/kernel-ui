@@ -46,22 +46,42 @@ export class KernelTextField extends KernelElement {
     const root = document.createElement("div");
     root.className = kernelClass("TextField");
     root.dataset.size = "md";
+    root.setAttribute("data-slot", "text-field");
 
     const id = this.getAttribute("id") || this.generatedId;
 
     const label = document.createElement("label");
     label.className = kernelClass("TextField", "label");
     label.htmlFor = id;
+    label.setAttribute("data-slot", "text-field-label");
 
     const input = document.createElement("input");
     input.id = id;
     input.type = "text";
     input.className = kernelClass("TextField", "input");
+    input.setAttribute("data-slot", "text-field-control");
+    input.addEventListener("focus", () => root.setAttribute("data-focused", ""));
+    input.addEventListener("blur", () => root.removeAttribute("data-focused"));
+    input.addEventListener("input", () => this.syncFilled());
+    input.addEventListener("animationstart", (event) => {
+      if ((event as AnimationEvent).animationName.toLowerCase().includes("onautofillstart")) {
+        root.setAttribute("data-filled", "");
+      }
+    });
 
     root.append(label, input);
     this.native = root;
     this.append(root);
     this.syncAllAttrs();
+    this.syncFilled();
+  }
+
+  private syncFilled() {
+    const root = this.native;
+    const input = this.input;
+    if (!root || !input) return;
+    if (input.value.length > 0) root.setAttribute("data-filled", "");
+    else root.removeAttribute("data-filled");
   }
 
   private get input(): HTMLInputElement | null {
@@ -103,12 +123,14 @@ export class KernelTextField extends KernelElement {
       p.className = kernelClass("TextField", "error");
       p.id = `${input.id}-error`;
       p.setAttribute("role", "alert");
+      p.setAttribute("data-slot", "text-field-error");
       p.textContent = errorMessage;
       root.append(p);
     } else if (description) {
       const p = document.createElement("p");
       p.className = kernelClass("TextField", "description");
       p.id = `${input.id}-description`;
+      p.setAttribute("data-slot", "text-field-description");
       p.textContent = description;
       root.append(p);
     }
@@ -142,6 +164,8 @@ export class KernelTextField extends KernelElement {
         break;
       case "disabled":
         input.disabled = value !== null;
+        if (value !== null) root.setAttribute("data-disabled", "");
+        else root.removeAttribute("data-disabled");
         break;
       case "size":
         root.dataset.size = value ?? "md";
@@ -155,6 +179,7 @@ export class KernelTextField extends KernelElement {
         break;
       case "value":
         input.value = value ?? "";
+        this.syncFilled();
         break;
       case "name":
         if (value === null) input.removeAttribute("name");

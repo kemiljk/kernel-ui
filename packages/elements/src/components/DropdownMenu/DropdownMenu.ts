@@ -1,5 +1,5 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
-import { FloatingPositioner, type FloatingPlacement } from "../../utils/floatingPosition";
+import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import { findTriggerElement } from "../../utils/trigger";
 import "./DropdownMenu.css";
 
@@ -44,7 +44,8 @@ function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
  * Children: one element tagged `slot="trigger"`, everything else
  * (`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.
  *
- * Attributes: `placement` (default bottom).
+ * Attributes: `placement` (default bottom), `align` (start/center/end,
+ * default center), `offset` (px, default 8).
  */
 export class KernelDropdownMenu extends KernelElement {
   private readonly contentId = `kernel-dropdown-menu-${++menuCounter}`;
@@ -55,6 +56,7 @@ export class KernelDropdownMenu extends KernelElement {
     content.id = this.contentId;
     content.setAttribute("role", "menu");
     content.setAttribute("popover", "auto");
+    content.setAttribute("data-slot", "dropdown-menu-content");
     content.className = kernelClass("DropdownMenu", "content");
     return content;
   }
@@ -73,23 +75,28 @@ export class KernelDropdownMenu extends KernelElement {
     content.append(...rest);
     content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event));
 
+    const { placement, align, offset } = readFloatingAttributes(this);
+    content.setAttribute("data-placement", placement);
+    content.setAttribute("data-align", align);
+
     if (triggerSlot) {
       const triggerEl = findTriggerElement(triggerSlot);
       triggerEl.setAttribute("popovertarget", this.contentId);
       triggerEl.setAttribute("aria-haspopup", "menu");
       triggerEl.setAttribute("aria-expanded", "false");
-      this.positioner.attach(triggerEl, content, {
-        placement: (this.getAttribute("placement") as FloatingPlacement) || "bottom",
-      });
+      this.positioner.attach(triggerEl, content, { placement, align, offset });
 
       content.addEventListener("toggle", (event) => {
         const open = (event as ToggleEvent).newState === "open";
         triggerEl.setAttribute("aria-expanded", String(open));
         this.positioner.setOpen(open);
         if (open) {
+          content.setAttribute("data-open", "");
           requestAnimationFrame(() => {
             content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
           });
+        } else {
+          content.removeAttribute("data-open");
         }
       });
     }
@@ -99,46 +106,78 @@ export class KernelDropdownMenu extends KernelElement {
   }
 
   disconnectedCallback() {
-    // Drops the fallback path's window scroll/resize listeners if the menu
-    // is removed while open (otherwise they leak, referencing a detached
-    // element, on browsers without CSS anchor positioning).
     this.positioner.destroy();
   }
 }
 
-/** `<kernel-menu-item>` — a real `<button role="menuitem">`. Shared by
- * `<kernel-context-menu>`. Attributes: `disabled`, `destructive`
- * (boolean). Events: `select` fires on activation, after which the
- * nearest `[popover]` ancestor (the menu) is closed. */
+/**
+ * `<kernel-menu-item>` — a real `<button role="menuitem">` by default.
+ * Set `href` to render as an `<a>` instead (native link semantics for
+ * navigation, new-tab, etc.). Attributes: `disabled`, `destructive`,
+ * `href`, `target`, `rel`. Events: `select` fires on activation, after
+ * which the nearest `[popover]` ancestor (the menu) is closed — without
+ * preventingDefault on the click, so links still navigate.
+ */
 export class KernelMenuItem extends KernelElement {
   static get observedAttributes() {
-    return ["disabled", "destructive"];
+    return ["disabled", "destructive", "href", "target", "rel"];
   }
 
   protected createNative(): HTMLElement {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.setAttribute("role", "menuitem");
-    button.tabIndex = -1;
-    button.className = kernelClass("DropdownMenu", "item");
-    button.addEventListener("click", () => {
+    const href = this.getAttribute("href");
+    const el = href
+      ? Object.assign(document.createElement("a"), { href })
+      : Object.assign(document.createElement("button"), { type: "button" });
+    el.setAttribute("role", "menuitem");
+    el.tabIndex = -1;
+    el.setAttribute("data-slot", "menu-item");
+    el.className = kernelClass("DropdownMenu", "item");
+
+    el.addEventListener("focus", () => el.setAttribute("data-highlighted", ""));
+    el.addEventListener("blur", () => el.removeAttribute("data-highlighted"));
+    el.addEventListener("keydown", (event) => {
+      if (!(event instanceof KeyboardEvent) || event.key !== " ") return;
+      if (el.getAttribute("aria-disabled") === "true") return;
+      event.preventDefault();
+      el.click();
+    });
+    el.addEventListener("click", (event) => {
+      if (el.getAttribute("aria-disabled") === "true") {
+        event.preventDefault();
+        return;
+      }
       this.dispatchEvent(new CustomEvent("select", { bubbles: true }));
       (this.closest("[popover]") as (HTMLElement & { hidePopover?: () => void }) | null)?.hidePopover?.();
     });
-    return button;
+    return el;
   }
 
   protected syncAttr(name: string, value: string | null) {
-    const button = this.native as HTMLButtonElement | null;
-    if (!button) return;
+    const el = this.native;
+    if (!el) return;
     if (name === "disabled") {
-      button.disabled = value !== null;
-      if (value !== null) button.setAttribute("aria-disabled", "true");
-      else button.removeAttribute("aria-disabled");
+      const disabled = value !== null;
+      if (el instanceof HTMLButtonElement) el.disabled = disabled;
+      if (disabled) {
+        el.setAttribute("aria-disabled", "true");
+        el.setAttribute("data-disabled", "");
+      } else {
+        el.removeAttribute("aria-disabled");
+        el.removeAttribute("data-disabled");
+      }
     } else if (name === "destructive") {
       const flag = dataAttr(value !== null);
-      if (flag) button.setAttribute("data-destructive", flag);
-      else button.removeAttribute("data-destructive");
+      if (flag) el.setAttribute("data-destructive", flag);
+      else el.removeAttribute("data-destructive");
+    } else if (name === "href" && el instanceof HTMLAnchorElement) {
+      if (value === null) el.removeAttribute("href");
+      else el.href = value;
+    } else if (name === "target" && el instanceof HTMLAnchorElement) {
+      if (value === null) el.removeAttribute("target");
+      else el.target = value;
+    } else if (name === "rel" && el instanceof HTMLAnchorElement) {
+      if (value === null) el.removeAttribute("rel");
+      else el.rel = value;
     }
   }
 }
@@ -148,6 +187,7 @@ export class KernelMenuSeparator extends KernelElement {
   protected createNative(): HTMLElement {
     const div = document.createElement("div");
     div.setAttribute("role", "separator");
+    div.setAttribute("data-slot", "menu-separator");
     div.className = kernelClass("DropdownMenu", "separator");
     return div;
   }

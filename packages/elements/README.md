@@ -27,6 +27,8 @@ npm install @kernelui-lib/elements @kernelui-lib/styles
 
 Full documentation and framework notes: [kernelui.com/platforms](https://www.kernelui.com/platforms/)
 
+For LLM/agent usage, this package ships `llms.txt` in the npm tarball.
+
 ## License
 
 MIT

@@ -9,12 +9,21 @@ const controls = [
     options: ["top", "bottom", "left", "right"],
     default: "bottom",
   },
+  {
+    type: "enum" as const,
+    prop: "align",
+    options: ["start", "center", "end"],
+    default: "center",
+  },
+  { type: "number" as const, prop: "offset", label: "offset (px)", default: 8, min: 0, max: 32, step: 1 },
   { type: "text" as const, prop: "trigger", label: "trigger label", default: "Distance" },
 ];
 
 function code(values: PlaygroundValues) {
   const attrs: string[] = [];
   if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  if (values.align !== "center") attrs.push(`align="${values.align}"`);
+  if (Number(values.offset) !== 8) attrs.push(`offset={${Number(values.offset)}}`);
   attrs.push(`render={<Button variant="secondary">${values.trigger || "Distance"}</Button>}`);
   return `<Popover ${attrs.join(" ")}>
   <RadioGroup label="Distance from me" value={distance} onValueChange={setDistance}>
@@ -27,6 +36,8 @@ function code(values: PlaygroundValues) {
 function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [];
   if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  if (values.align !== "center") attrs.push(`align="${values.align}"`);
+  if (Number(values.offset) !== 8) attrs.push(`offset="${Number(values.offset)}"`);
   return `<kernel-popover ${attrs.join(" ")}>
   <kernel-button slot="trigger" variant="secondary">${values.trigger || "Distance"}</kernel-button>
   <kernel-radio-group label="Distance from me" value="5">
@@ -49,6 +60,8 @@ export default function PopoverPlayground() {
       render={(values) => (
         <Popover
           placement={values.placement as "top" | "bottom" | "left" | "right"}
+          align={values.align as "start" | "center" | "end"}
+          offset={Number(values.offset)}
           render={<Button variant="secondary">{String(values.trigger) || "Distance"}</Button>}
         >
           <div style={{ minInlineSize: "14rem" }}>

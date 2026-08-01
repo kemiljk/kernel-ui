@@ -1,0 +1,115 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import SourcesDemo from "../../components/demos/SourcesDemo";
+import SourcesPlayground from "../../components/demos/SourcesPlayground";
+import { Source, Sources } from "@kernelui-lib/react";
+
+const listSnippet = `<Sources>
+  <Source
+    index={1}
+    title="Attention Is All You Need"
+    href="https://arxiv.org/abs/1706.03762"
+  />
+  <Source
+    index={2}
+    title="Efficient Transformers: A Survey"
+    href="https://arxiv.org/abs/2009.06732"
+  />
+</Sources>`;
+
+const inlineSnippet = `<p>
+  Transformers scale well with data and compute
+  <Citation index={1} href="https://arxiv.org/abs/1706.03762" />
+  , though attention is quadratic
+  <Citation index={2} href="https://arxiv.org/abs/2009.06732" />.
+</p>
+<Sources>…</Sources>`;
+---
+
+<BaseLayout title="Sources" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Sources</h1>
+    <p>
+      Cited sources under an AI response, plus compact numbered{" "}
+      <code>Citation</code> chips for the markers models emit in grounded
+      answers — a real <code>&lt;section&gt;</code> of real{" "}
+      <code>&lt;a&gt;</code> links, not a card of styled divs.
+    </p>
+
+    <div class="docs-example" style="flex-direction: column; align-items: stretch;">
+      <SourcesDemo client:load />
+    </div>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Reference list" description="Numbered entries with title and host derived from the URL." code={listSnippet}>
+        <Sources>
+          <Source
+            index={1}
+            title="Attention Is All You Need"
+            href="https://arxiv.org/abs/1706.03762"
+          />
+          <Source
+            index={2}
+            title="Efficient Transformers: A Survey"
+            href="https://arxiv.org/abs/2009.06732"
+          />
+        </Sources>
+      </Example>
+      <Example
+        title="Inline citations"
+        description="Citation chips in the prose link to the same sources listed below."
+        code={inlineSnippet}
+      >
+        <SourcesDemo client:load />
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <SourcesPlayground client:load />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Sources.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>heading</code></td><td>ReactNode | null</td><td>"Sources"</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode (Source)</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Source.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>href</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>title</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>host</code></td><td>ReactNode</td><td>derived from href</td></tr>
+        <tr><td><code>index</code></td><td>number</td><td>—</td></tr>
+        <tr><td><code>target</code></td><td>string</td><td>"_blank"</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Citation.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>index</code></td><td>number (required)</td><td>—</td></tr>
+        <tr><td><code>href</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>target</code></td><td>string</td><td>"_blank"</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Each source is a real link — open in a new tab, copy URL, and find-in-page all work without a custom interaction layer.</li>
+      <li>External links default to <code>rel="noopener noreferrer"</code> when <code>target="_blank"</code>.</li>
+      <li>Citation chips are also real anchors, so the inline marker and the footer entry share the same navigable destination.</li>
+    </ul>
+  </div>
+</BaseLayout>

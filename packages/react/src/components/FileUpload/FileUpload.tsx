@@ -1,13 +1,19 @@
-import { forwardRef, useId, useRef, useState } from "react";
+import { forwardRef, useId, useLayoutEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent, InputHTMLAttributes, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
 import styles from "./FileUpload.module.css";
 
+interface PreviewEntry {
+  file: File;
+  url: string | null;
+}
+
 export interface FileUploadState {
   dragActive: boolean;
   disabled: boolean;
   invalid: boolean;
+  preview: boolean;
 }
 
 export interface FileUploadError {
@@ -46,6 +52,19 @@ export interface FileUploadProps
    * `maxSize` or failing `accept`. Distinct from `invalid`/`errorMessage`,
    * which are for form-level validation state. */
   onError?: (error: FileUploadError) => void;
+  /** When true, the dropzone moulds around the current selection:
+   * browser-displayable images (`image/*` except TIFF) render as
+   * object-URL thumbnails inside the zone (one image fills; several
+   * tile in a grid), and non-image files show as compact name chips.
+   * Opt-in so existing consumers keep the empty-state chrome until they
+   * ask for it. Object URLs are revoked when the selection changes. */
+  preview?: boolean;
+  /** Locks the dropzone to a 1:1 tile. Off by default so existing
+   * full-width upload zones keep their natural height. When set, the
+   * dropzone reads Card's concentric radius pair (`--kernel-radius-sheet`
+   * outer / `--kernel-radius-md` inner via `--kernel-padding-sheet`) so a
+   * moulded image preview shares a corner centre with the frame. */
+  aspectRatio?: "auto" | "square";
   errorMessage?: ReactNode;
   invalid?: boolean;
   disabled?: boolean;
@@ -63,6 +82,15 @@ function formatBytes(bytes: number): string {
     unitIndex += 1;
   }
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
+}
+
+/** TIFF (and a few exotic image MIME types) report as `image/*` but
+ * browsers won't paint them in an `<img>`, so preview treats them as
+ * ordinary file chips instead of broken thumbnails. */
+function isPreviewableImage(file: File): boolean {
+  if (!file.type.startsWith("image/")) return false;
+  const type = file.type.toLowerCase();
+  return type !== "image/tiff" && type !== "image/tif";
 }
 
 /** `accept`'s native filtering only applies to the OS picker dialog — it
@@ -117,6 +145,25 @@ function syncNativeFiles(input: HTMLInputElement | null, files: File[]) {
   input.files = dataTransfer.files;
 }
 
+function updateRevealOrigin(event: DragEvent<HTMLLabelElement>) {
+  const dropzone = event.currentTarget;
+  const rect = dropzone.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
+  const clamp = (value: number) => Math.max(0, Math.min(100, value));
+  const x = clamp(((event.clientX - rect.left) / rect.width) * 100);
+  const y = clamp(((event.clientY - rect.top) / rect.height) * 100);
+  dropzone.style.setProperty("--kernel-drop-origin-x", `${x}%`);
+  dropzone.style.setProperty("--kernel-drop-origin-y", `${y}%`);
+}
+
+function resetRevealOrigin(dropzone: HTMLElement | null) {
+  if (!dropzone) return;
+  dropzone.style.setProperty("--kernel-drop-origin-x", "50%");
+  dropzone.style.setProperty("--kernel-drop-origin-y", "50%");
+}
+
+const PREVIEW_GRID_CAP = 4;
+
 /**
  * A real `<input type="file">`, wrapped entirely inside a real
  * `<label htmlFor={id}>` that IS the drop zone — icon, instructions, and
@@ -128,6 +175,13 @@ function syncNativeFiles(input: HTMLInputElement | null, files: File[]) {
  * itself has no drag-and-drop and no size/count limits at all — `accept`
  * only filters the OS dialog, never a drop — so all of that validation is
  * reimplemented once, in `validateFiles`, and reused by both paths.
+ *
+ * Pass `preview` to mould the dropzone around the current selection:
+ * displayable images become object-URL thumbnails (one fills the zone;
+ * several tile), and other files become compact chips. Off by default.
+ * Pass `aspectRatio="square"` for a 1:1 Card-radius tile — useful when
+ * the selection is meant to read as a single photo rather than a wide
+ * dashed field.
  */
 export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
   function FileUpload(
@@ -144,6 +198,8 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       maxFiles,
       maxSize,
       onError,
+      preview = false,
+      aspectRatio = "auto",
       errorMessage,
       invalid = false,
       disabled = false,
@@ -160,7 +216,9 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     const errorId = `${inputId}-error`;
 
     const inputRef = useRef<HTMLInputElement>(null);
+    const dropzoneRef = useRef<HTMLLabelElement>(null);
     const dragCounterRef = useRef(0);
+    const previewUrlCacheRef = useRef(new Map<string, string>());
     const [dragActive, setDragActive] = useState(false);
 
     const [currentFiles, setCurrentFiles] = useControllableState<File[]>({
@@ -169,12 +227,57 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       onChange: onFilesChange,
     });
 
+    const previewEntries: PreviewEntry[] = preview
+      ? currentFiles.map((file) => {
+          if (!isPreviewableImage(file)) return { file, url: null };
+          const key = `${file.name}-${file.size}-${file.lastModified}`;
+          let url = previewUrlCacheRef.current.get(key);
+          if (!url) {
+            url = URL.createObjectURL(file);
+            previewUrlCacheRef.current.set(key, url);
+          }
+          return { file, url };
+        })
+      : [];
+
+    useLayoutEffect(() => {
+      syncNativeFiles(inputRef.current, currentFiles);
+    }, [currentFiles]);
+
+    useLayoutEffect(() => {
+      const liveKeys = new Set(
+        preview
+          ? currentFiles
+              .filter(isPreviewableImage)
+              .map((file) => `${file.name}-${file.size}-${file.lastModified}`)
+          : [],
+      );
+      for (const [key, url] of previewUrlCacheRef.current) {
+        if (!liveKeys.has(key)) {
+          URL.revokeObjectURL(url);
+          previewUrlCacheRef.current.delete(key);
+        }
+      }
+    }, [currentFiles, preview]);
+
+    useLayoutEffect(() => {
+      return () => {
+        for (const url of previewUrlCacheRef.current.values()) {
+          URL.revokeObjectURL(url);
+        }
+        previewUrlCacheRef.current.clear();
+      };
+    }, []);
+
     function handleNativeChange(event: ChangeEvent<HTMLInputElement>) {
       const incoming = Array.from(event.target.files ?? []);
       // Native <input type="file"> quirk: without resetting .value, picking
       // the same file twice in a row never fires a second `change` event.
       event.target.value = "";
       if (incoming.length === 0) return;
+
+      // Keyboard / picker selection has no pointer — don't reuse a stale drag origin.
+      resetRevealOrigin(dropzoneRef.current);
 
       const result = validateFiles(incoming, 0, accept, maxSize, maxFiles);
       if ("error" in result) {
@@ -187,6 +290,8 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
 
     function handleDrop(event: DragEvent<HTMLLabelElement>) {
       event.preventDefault();
+      // Capture origin one last time at the drop point before clearing drag state.
+      updateRevealOrigin(event);
       dragCounterRef.current = 0;
       setDragActive(false);
       if (disabled) return;
@@ -206,6 +311,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
 
     function handleDragEnter(event: DragEvent<HTMLLabelElement>) {
       event.preventDefault();
+      updateRevealOrigin(event);
       dragCounterRef.current += 1;
       setDragActive(true);
     }
@@ -213,6 +319,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     function handleDragOver(event: DragEvent<HTMLLabelElement>) {
       // Required for `drop` to fire at all.
       event.preventDefault();
+      updateRevealOrigin(event);
     }
 
     function handleDragLeave(event: DragEvent<HTMLLabelElement>) {
@@ -239,7 +346,17 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         .filter(Boolean)
         .join(" ") || undefined;
 
-    const state: FileUploadState = { dragActive, disabled, invalid };
+    const state: FileUploadState = { dragActive, disabled, invalid, preview };
+    const showMould = preview && currentFiles.length > 0;
+    const imageCount = previewEntries.filter((entry) => entry.url).length;
+    const previewLayout = imageCount === 1 && previewEntries.length === 1 ? "single" : "grid";
+    const square = aspectRatio === "square";
+    const gridOverflow =
+      previewLayout === "grid" && previewEntries.length > PREVIEW_GRID_CAP
+        ? previewEntries.length - (PREVIEW_GRID_CAP - 1)
+        : 0;
+    const visiblePreviewEntries =
+      gridOverflow > 0 ? previewEntries.slice(0, PREVIEW_GRID_CAP - 1) : previewEntries;
 
     return (
       <div
@@ -248,47 +365,92 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           .join(" ")}
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
+        data-preview={dataAttr(preview)}
+        data-aspect-ratio={square ? "square" : undefined}
         data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
+          ref={dropzoneRef}
           className={[styles.dropzone, resolveClassName(className, state)]
             .filter(Boolean)
             .join(" ")}
           htmlFor={inputId}
           data-drag-active={dataAttr(dragActive)}
+          data-has-preview={dataAttr(showMould)}
+          data-preview-layout={showMould ? previewLayout : undefined}
+          data-aspect-ratio={square ? "square" : undefined}
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <svg className={styles.icon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M8 10.5V3.5M8 3.5L5 6.5M8 3.5L11 6.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2.5 10.5V11.5C2.5 12.0523 2.94772 12.5 3.5 12.5H12.5C13.0523 12.5 13.5 12.0523 13.5 11.5V10.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className={styles.instructions}>
-            <strong
-              className={[styles.label, hideLabel ? "kernel-sr-only" : null]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              {label}
-            </strong>
-            <span className={styles.hint}>
-              {description ?? "Drag and drop, or click to browse"}
+          {/* Empty chrome + preview stay stacked so the mould is a CSS
+              crossfade/scale (transitions.dev DnD "zone morphs into the
+              image"), not a hard cut from unmounting one tree for the other. */}
+          <span className={styles.empty} aria-hidden={showMould || undefined}>
+            <svg className={styles.icon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M8 10.5V3.5M8 3.5L5 6.5M8 3.5L11 6.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M2.5 10.5V11.5C2.5 12.0523 2.94772 12.5 3.5 12.5H12.5C13.0523 12.5 13.5 12.0523 13.5 11.5V10.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className={styles.instructions}>
+              <strong
+                className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {label}
+              </strong>
+              <span className={styles.hint}>
+                {description ?? "Drag and drop, or click to browse"}
+              </span>
             </span>
           </span>
+          {preview ? (
+            <span
+              className={styles.preview}
+              data-layout={showMould ? previewLayout : undefined}
+              aria-hidden="true"
+            >
+              {visiblePreviewEntries.map((entry, index) =>
+                entry.url ? (
+                  <img
+                    key={`${entry.file.name}-${entry.file.size}-${entry.file.lastModified}-${index}`}
+                    className={styles.previewImage}
+                    src={entry.url}
+                    alt=""
+                  />
+                ) : (
+                  <span
+                    key={`${entry.file.name}-${entry.file.size}-${entry.file.lastModified}-${index}`}
+                    className={styles.previewFile}
+                  >
+                    <span className={styles.previewFileName}>{entry.file.name}</span>
+                  </span>
+                ),
+              )}
+              {gridOverflow > 0 ? (
+                <span className={styles.previewOverflow}>+{gridOverflow}</span>
+              ) : null}
+            </span>
+          ) : null}
+          {showMould ? (
+            <span className="kernel-sr-only">
+              {label}
+              {description ? ` ${description}` : ""}
+            </span>
+          ) : null}
           <input
             {...rest}
             ref={mergeRefs(ref, inputRef)}

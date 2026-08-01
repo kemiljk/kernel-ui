@@ -1,15 +1,36 @@
 export type FloatingPlacement = "top" | "bottom" | "left" | "right";
+export type FloatingAlign = "start" | "center" | "end";
 
 export interface FloatingPositionOptions {
   placement?: FloatingPlacement;
+  /** Cross-axis alignment relative to the anchor. */
+  align?: FloatingAlign;
   /** Gap between the anchor and the floating element, in pixels. */
   offset?: number;
 }
 
 let anchorCounter = 0;
 
+/** Reads the `placement`/`align`/`offset` attribute trio every anchored
+ * element exposes, so all of them parse it identically (and a malformed
+ * `offset` falls back rather than positioning at `NaN`). Pass `defaults`
+ * for the components whose resting placement isn't `bottom`. */
+export function readFloatingAttributes(
+  host: Element,
+  defaults: FloatingPositionOptions = {},
+): Required<FloatingPositionOptions> {
+  const offset = Number(host.getAttribute("offset"));
+  return {
+    placement: (host.getAttribute("placement") as FloatingPlacement) || defaults.placement || "bottom",
+    align: (host.getAttribute("align") as FloatingAlign) || defaults.align || "center",
+    offset: Number.isFinite(offset) && host.hasAttribute("offset") ? offset : (defaults.offset ?? 8),
+  };
+}
+
 const supportsAnchorPositioning =
-  typeof CSS !== "undefined" && CSS.supports("anchor-name: --kernel-support-check");
+  typeof CSS !== "undefined" &&
+  typeof CSS.supports === "function" &&
+  CSS.supports("anchor-name: --kernel-support-check");
 
 /** Coarse fallback used only for the very first paint, before real rects
  * exist to measure — the exact origin below replaces this the instant
@@ -30,6 +51,30 @@ function computeTransformOrigin(anchorRect: DOMRect, floatingRect: DOMRect): str
   const x = clamp(((anchorRect.left + anchorRect.width / 2 - floatingRect.left) / floatingRect.width) * 100);
   const y = clamp(((anchorRect.top + anchorRect.height / 2 - floatingRect.top) / floatingRect.height) * 100);
   return `${x}% ${y}%`;
+}
+
+function positionArea(
+  placement: FloatingPlacement,
+  align: FloatingAlign,
+): string {
+  if (align === "center") return `${placement} center`;
+
+  if (placement === "top" || placement === "bottom") {
+    return `${placement} ${align === "start" ? "span-right" : "span-left"}`;
+  }
+
+  return `${placement} ${align === "start" ? "span-bottom" : "span-top"}`;
+}
+
+function alignedCrossAxis(
+  anchorStart: number,
+  anchorSize: number,
+  floatingSize: number,
+  align: FloatingAlign,
+): number {
+  if (align === "start") return anchorStart;
+  if (align === "end") return anchorStart + anchorSize - floatingSize;
+  return anchorStart + anchorSize / 2 - floatingSize / 2;
 }
 
 /**
@@ -53,6 +98,7 @@ export class FloatingPositioner {
   private anchor: HTMLElement | null = null;
   private floating: HTMLElement | null = null;
   private placement: FloatingPlacement = "bottom";
+  private align: FloatingAlign = "center";
   private offset = 8;
   private readonly anchorName = `--kernel-anchor-${++anchorCounter}`;
   private open = false;
@@ -74,6 +120,7 @@ export class FloatingPositioner {
     this.anchor = anchor;
     this.floating = floating;
     this.placement = options.placement ?? "bottom";
+    this.align = options.align ?? "center";
     this.offset = options.offset ?? 8;
 
     floating.style.setProperty("--kernel-transform-origin", TRANSFORM_ORIGIN_BY_PLACEMENT[this.placement]);
@@ -82,7 +129,10 @@ export class FloatingPositioner {
     if (supportsAnchorPositioning) {
       anchor.style.setProperty("anchor-name", this.anchorName);
       floating.style.setProperty("position-anchor", this.anchorName);
-      floating.style.setProperty("position-area", this.placement);
+      floating.style.setProperty(
+        "position-area",
+        positionArea(this.placement, this.align),
+      );
       floating.style.setProperty("position-try-fallbacks", "flip-block, flip-inline");
       floating.style.setProperty("margin", `${this.offset}px`);
       // A resize can change which fallback side is active while already
@@ -122,18 +172,18 @@ export class FloatingPositioner {
     switch (this.placement) {
       case "bottom":
         top = anchorRect.bottom + this.offset;
-        left = anchorRect.left + anchorRect.width / 2 - floatingRect.width / 2;
+        left = alignedCrossAxis(anchorRect.left, anchorRect.width, floatingRect.width, this.align);
         break;
       case "top":
         top = anchorRect.top - floatingRect.height - this.offset;
-        left = anchorRect.left + anchorRect.width / 2 - floatingRect.width / 2;
+        left = alignedCrossAxis(anchorRect.left, anchorRect.width, floatingRect.width, this.align);
         break;
       case "left":
-        top = anchorRect.top + anchorRect.height / 2 - floatingRect.height / 2;
+        top = alignedCrossAxis(anchorRect.top, anchorRect.height, floatingRect.height, this.align);
         left = anchorRect.left - floatingRect.width - this.offset;
         break;
       case "right":
-        top = anchorRect.top + anchorRect.height / 2 - floatingRect.height / 2;
+        top = alignedCrossAxis(anchorRect.top, anchorRect.height, floatingRect.height, this.align);
         left = anchorRect.right + this.offset;
         break;
     }

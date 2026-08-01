@@ -7,22 +7,32 @@ const controls = [
   { type: "text" as const, prop: "triggerLabel", label: "trigger text", default: "Open command palette" },
   { type: "text" as const, prop: "placeholder", default: "Filter commands" },
   { type: "text" as const, prop: "emptyMessage", label: "empty message", default: "No results" },
+  { type: "boolean" as const, prop: "blur", default: false },
 ];
 
 function code(values: PlaygroundValues) {
+  const attrs = [
+    `placeholder="${values.placeholder}"`,
+    `emptyMessage="${values.emptyMessage}"`,
+  ];
+  if (values.blur) attrs.push("blur");
   return `<Button onClick={() => setOpen(true)}>${values.triggerLabel}</Button>
 <CommandPalette
   open={open}
   onOpenChange={setOpen}
   items={items}
-  placeholder="${values.placeholder}"
-  emptyMessage="${values.emptyMessage}"
+  ${attrs.join("\n  ")}
 />`;
 }
 
 function elementsCode(values: PlaygroundValues) {
+  const attrs = [
+    `placeholder="${values.placeholder}"`,
+    `empty-message="${values.emptyMessage}"`,
+  ];
+  if (values.blur) attrs.push("blur");
   return `<kernel-button id="open-palette">${values.triggerLabel}</kernel-button>
-<kernel-command-palette id="palette" placeholder="${values.placeholder}" empty-message="${values.emptyMessage}"></kernel-command-palette>
+<kernel-command-palette id="palette" ${attrs.join(" ")}></kernel-command-palette>
 
 <script type="module">
   const palette = document.getElementById("palette");
@@ -55,6 +65,7 @@ function Stage({ values }: { values: PlaygroundValues }) {
         items={items}
         placeholder={String(values.placeholder)}
         emptyMessage={String(values.emptyMessage)}
+        blur={Boolean(values.blur)}
       />
     </>
   );

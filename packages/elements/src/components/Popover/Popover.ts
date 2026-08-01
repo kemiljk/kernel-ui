@@ -1,5 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
-import { FloatingPositioner, type FloatingPlacement } from "../../utils/floatingPosition";
+import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import { findTriggerElement } from "../../utils/trigger";
 import "./Popover.css";
 
@@ -18,7 +18,8 @@ let popoverCounter = 0;
  * or plain `<button>`/`<a>`), everything else becomes the popover's
  * content.
  *
- * Attributes: `placement` (top/bottom/left/right, default bottom).
+ * Attributes: `placement` (top/bottom/left/right, default bottom),
+ * `align` (start/center/end, default center), `offset` (px, default 8).
  * Events: `toggle` `CustomEvent` (`event.detail.open`).
  */
 export class KernelPopover extends KernelElement {
@@ -29,6 +30,7 @@ export class KernelPopover extends KernelElement {
     const content = document.createElement("div");
     content.id = this.contentId;
     content.setAttribute("popover", "auto");
+    content.setAttribute("data-slot", "popover-content");
     content.className = kernelClass("Popover", "content");
     return content;
   }
@@ -46,17 +48,20 @@ export class KernelPopover extends KernelElement {
     const content = this.createNative();
     content.append(...rest);
 
+    const { placement, align, offset } = readFloatingAttributes(this);
+    content.setAttribute("data-placement", placement);
+    content.setAttribute("data-align", align);
+
     if (triggerSlot) {
       const triggerEl = findTriggerElement(triggerSlot);
       triggerEl.setAttribute("popovertarget", this.contentId);
       triggerEl.setAttribute("aria-expanded", "false");
-      this.positioner.attach(triggerEl, content, {
-        placement: (this.getAttribute("placement") as FloatingPlacement) || "bottom",
-      });
+      this.positioner.attach(triggerEl, content, { placement, align, offset });
 
       content.addEventListener("toggle", (event) => {
         const open = (event as ToggleEvent).newState === "open";
         triggerEl.setAttribute("aria-expanded", String(open));
+        content.toggleAttribute("data-open", open);
         this.positioner.setOpen(open);
         this.dispatchEvent(new CustomEvent("toggle", { detail: { open }, bubbles: true }));
       });

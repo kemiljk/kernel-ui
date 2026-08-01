@@ -37,11 +37,12 @@ import ScrollAreaPlayground from "../../components/demos/ScrollAreaPlayground";
       </tbody>
     </table></div>
     <p>
-      <code>edgeShadow</code> shows an inset shadow at whichever edge still
-      has content to scroll toward, top, bottom, or both, and hides it again
-      once you've actually scrolled that edge into view. It tracks scroll
-      position rather than the scroll gesture itself, so it never cuts off
-      mid-scroll the moment your finger or wheel stops.
+      <code>edgeShadow</code> soft-fades content into the host surface and
+      draws a layered inset shadow at whichever edge still has content to
+      scroll toward — top, bottom, or both — then hides both again once
+      that edge is scrolled into view. It tracks scroll position rather
+      than the scroll gesture itself, so it never cuts off mid-scroll the
+      moment your finger or wheel stops.
     </p>
 
     <h2>Accessibility</h2>

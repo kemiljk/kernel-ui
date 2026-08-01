@@ -51,18 +51,20 @@ separate "install this one component" step.
   prop — e.g. `<kernel-select>` takes real `<option>`/`<optgroup>`
   children, `<kernel-tabs>` takes `<kernel-tab>`/`<kernel-tab-panel>`.
 
+<!-- GENERATED:COMPONENTS:START -->
 ## Tags (grouped to match @kernelui-lib/react's component groups; composite
 ## components' sub-tags are one level deeper, e.g. <kernel-card-header>
 ## goes inside <kernel-card>)
 
 - Primitives: `kernel-avatar`, `kernel-badge`, `kernel-button`, `kernel-checkbox`, `kernel-label`, `kernel-radio-group` (+ `kernel-radio-group-item`), `kernel-separator`, `kernel-switch`, `kernel-toggle`
 - Forms: `kernel-color-picker`, `kernel-combobox`, `kernel-file-upload`, `kernel-input-otp`, `kernel-number-field`, `kernel-select`, `kernel-slider`, `kernel-tag-input`, `kernel-text-field`, `kernel-textarea`
-- Layout: `kernel-card` (+ `kernel-card-header`/`-title`/`-description`/`-content`/`-footer`), `kernel-footer`, `kernel-header`, `kernel-nav` (+ `kernel-nav-link`), `kernel-resizable`, `kernel-scroll-area`, `kernel-sidebar`
-- Feedback: `kernel-callout`, `kernel-progress`, `kernel-skeleton`, `kernel-toast-viewport` (then call the exported `toast()` function)
-- Overlays: `kernel-command-palette`, `kernel-context-menu`, `kernel-dialog`, `kernel-dropdown-menu` (+ `kernel-menu-item`/`kernel-menu-separator`), `kernel-hover-card`, `kernel-navigation-menu` (+ `kernel-nav-menu-*`), `kernel-popover`, `kernel-tooltip`
-- Navigation: `kernel-breadcrumbs` (+ `kernel-breadcrumb-item`), `kernel-pagination` (+ `kernel-pagination-item`/`-previous`/`-next`/`-ellipsis`), `kernel-tabs` (+ `kernel-tabs-list`/`kernel-tab`/`kernel-tab-panel`)
-- Data Display: `kernel-accordion` (+ `kernel-accordion-item`), `kernel-carousel` (+ `kernel-carousel-slide`), `kernel-data-table`, `kernel-date-picker`, `kernel-date-range-picker`, `kernel-table` (+ `kernel-table-header`/`-body`/`-row`/`-head`/`-cell`/`-caption`)
-- AI: `kernel-composer`, `kernel-reasoning`, `kernel-thinking-indicator`
+- Layout: `kernel-card` (+ `kernel-card-header`/`kernel-card-title`/`kernel-card-description`/`kernel-card-content`/`kernel-card-footer`), `kernel-footer`, `kernel-header`, `kernel-nav` (+ `kernel-nav-link`), `kernel-resizable`, `kernel-scroll-area`, `kernel-sidebar`
+- Feedback: `kernel-callout`, `kernel-progress`, `kernel-skeleton`, `kernel-toast-viewport`
+- Overlays: `kernel-command-palette`, `kernel-context-menu`, `kernel-dialog`, `kernel-dropdown-menu` (+ `kernel-menu-item`/`kernel-menu-separator`), `kernel-hover-card`, `kernel-navigation-menu` (+ `kernel-nav-menu-item`/`kernel-nav-menu-link`/`kernel-nav-menu-trigger`/`kernel-nav-menu-content`), `kernel-popover`, `kernel-tooltip`
+- Navigation: `kernel-breadcrumbs` (+ `kernel-breadcrumb-item`), `kernel-pagination` (+ `kernel-pagination-item`/`kernel-pagination-previous`/`kernel-pagination-next`/`kernel-pagination-ellipsis`), `kernel-tabs` (+ `kernel-tabs-list`/`kernel-tab`/`kernel-tab-panel`)
+- Data Display: `kernel-accordion` (+ `kernel-accordion-item`), `kernel-carousel` (+ `kernel-carousel-slide`), `kernel-data-table`, `kernel-date-picker`, `kernel-date-range-picker`, `kernel-table` (+ `kernel-table-caption`/`kernel-table-header`/`kernel-table-body`/`kernel-table-row`/`kernel-table-head`/`kernel-table-cell`)
+- AI: `kernel-composer`, `kernel-reasoning`, `kernel-sources` (+ `kernel-source`/`kernel-citation`), `kernel-suggestion` (+ `kernel-suggestion-item`), `kernel-thinking-indicator`, `kernel-tool-call`
+<!-- GENERATED:COMPONENTS:END -->
 
 ## Where to look for exact attributes
 

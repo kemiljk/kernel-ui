@@ -1,8 +1,8 @@
-import { useId } from "react";
-import { Button, Nav, NavLink } from "@kernelui-lib/react";
+import { useState } from "react";
+import { Button, Nav, NavLink, Popover } from "@kernelui-lib/react";
 import ThemeToggle from "./ThemeToggle";
 import ThemeControls from "./ThemeControls";
-import { COMMAND_PALETTE_ID } from "./CommandPalette";
+import { OPEN_COMMAND_PALETTE_EVENT } from "./CommandPalette";
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "./icons";
 import { GITHUB_URL, NPM_REACT_URL } from "../lib/site";
 import { formatStarCount } from "../lib/formatStarCount";
@@ -36,87 +36,93 @@ function NpmIcon() {
 
 /**
  * Below `--site-header-collapse` (see global.css), the header's inline
- * Nav and ThemeToggle are hidden and replaced by this. It's a native
- * `popover`, not a `<dialog>`: a page-level nav menu is a disclosure
- * anchored to its trigger, not a task that needs to block the rest of
- * the page behind a modal scrim. `popover="auto"` gets top-layer
- * stacking, light-dismiss (outside click, Escape), and open/close via
- * `popoverTarget` for free, no JavaScript at all.
+ * Nav and ThemeToggle are hidden and replaced by this. Kernel's
+ * `Popover` is the right primitive: a page-level nav menu is a
+ * disclosure anchored to its trigger, not a task that needs to block
+ * the rest of the page behind a modal scrim.
  */
 export default function MobileHeaderNav({ items, currentPath, starCount }: MobileHeaderNavProps) {
-  const panelId = useId();
+  const [open, setOpen] = useState(false);
   const githubLabel =
     starCount != null
       ? `GitHub repository (${formatStarCount(starCount)} stars)`
       : "GitHub repository";
 
   return (
-    <>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        className="mobile-header-nav-trigger"
-        aria-label="Menu"
-        popoverTarget={panelId}
-      >
-        <HamburgerMenuIcon width="16" height="16" />
-      </Button>
-      <div id={panelId} popover="auto" className="mobile-header-nav-panel">
-        <a
-          href={GITHUB_URL}
-          className="mobile-header-nav-registry-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={githubLabel}
-        >
-          <GitHubIcon />
-          <span>GitHub</span>
-          {starCount != null ? (
-            <span className="site-header-github-stars" aria-hidden="true">
-              {formatStarCount(starCount)}
-            </span>
-          ) : null}
-        </a>
-        <a
-          href={NPM_REACT_URL}
-          className="mobile-header-nav-registry-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="View @kernelui-lib/react on npm"
-        >
-          <NpmIcon />
-          <span>npm</span>
-        </a>
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+      placement="bottom"
+      align="end"
+      className="mobile-header-nav-panel"
+      render={
         <Button
           type="button"
           variant="secondary"
           size="sm"
-          className="mobile-header-nav-search"
-          popoverTarget={COMMAND_PALETTE_ID}
-          iconStart={<MagnifyingGlassIcon />}
+          className="mobile-header-nav-trigger"
+          aria-label="Menu"
         >
-          Search components
+          <HamburgerMenuIcon width="16" height="16" />
         </Button>
-        <Nav aria-label="Primary">
-          {items.map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              aria-current={currentPath === item.href ? "page" : undefined}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </Nav>
-        <div className="mobile-header-nav-theme">
-          <ThemeControls />
-        </div>
-        <div className="mobile-header-nav-toggle">
-          <span>Colour scheme</span>
-          <ThemeToggle />
-        </div>
+      }
+    >
+      <a
+        href={GITHUB_URL}
+        className="mobile-header-nav-registry-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={githubLabel}
+      >
+        <GitHubIcon />
+        <span>GitHub</span>
+        {starCount != null ? (
+          <span className="site-header-github-stars" aria-hidden="true">
+            {formatStarCount(starCount)}
+          </span>
+        ) : null}
+      </a>
+      <a
+        href={NPM_REACT_URL}
+        className="mobile-header-nav-registry-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="View @kernelui-lib/react on npm"
+      >
+        <NpmIcon />
+        <span>npm</span>
+      </a>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        className="mobile-header-nav-search"
+        iconStart={<MagnifyingGlassIcon />}
+        onClick={() => {
+          setOpen(false);
+          window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT));
+        }}
+      >
+        Search components
+      </Button>
+      <Nav aria-label="Primary">
+        {items.map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            aria-current={currentPath === item.href ? "page" : undefined}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </Nav>
+      <div className="mobile-header-nav-theme">
+        <ThemeControls />
       </div>
-    </>
+      <div className="mobile-header-nav-toggle">
+        <span>Colour scheme</span>
+        <ThemeToggle />
+      </div>
+    </Popover>
   );
 }

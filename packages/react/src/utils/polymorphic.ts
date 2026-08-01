@@ -56,6 +56,14 @@ function mergeProps(
       continue;
     }
 
+    if (key === "ref") {
+      merged.ref = mergeRefs(
+        outer.ref as Ref<unknown> | undefined,
+        inner.ref as Ref<unknown> | undefined,
+      );
+      continue;
+    }
+
     const outerValue = outer[key];
     const innerValue = inner[key];
     if (

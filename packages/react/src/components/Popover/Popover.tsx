@@ -1,18 +1,39 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { mergeRefs, renderElement, type RenderProp } from "../../utils/polymorphic";
-import { useFloatingPosition, type FloatingPlacement } from "../../utils/useFloatingPosition";
+import {
+  dataAttr,
+  mergeRefs,
+  renderElement,
+  resolveClassName,
+  type ClassNameValue,
+  type RenderProp,
+} from "../../utils/polymorphic";
+import {
+  useFloatingPosition,
+  type FloatingAlign,
+  type FloatingPlacement,
+} from "../../utils/useFloatingPosition";
 import styles from "./Popover.module.css";
 
 export interface PopoverState {
   open: boolean;
+  placement: FloatingPlacement;
+  align: FloatingAlign;
 }
 
 export interface PopoverProps {
   children: ReactNode;
   placement?: FloatingPlacement;
+  /** Cross-axis alignment relative to the trigger. */
+  align?: FloatingAlign;
+  /** Gap between the trigger and the panel, in pixels. */
+  offset?: number;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Classes for the popover panel. */
+  className?: ClassNameValue<PopoverState>;
+  /** Replace the panel element (e.g. wrap with Motion). */
+  renderContent?: RenderProp<PopoverState>;
   /** The trigger. Rendered with `popoverTarget` wired up, so open, close,
    * toggle, outside-click, and Escape all work with zero JavaScript;
    * `open`/`onOpenChange` are there for when you also need to know or
@@ -30,8 +51,12 @@ export interface PopoverProps {
 export function Popover({
   children,
   placement = "bottom",
+  align = "center",
+  offset = 8,
   open,
   onOpenChange,
+  className,
+  renderContent,
   render,
 }: PopoverProps) {
   const id = useId();
@@ -42,7 +67,11 @@ export function Popover({
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLElement, HTMLDivElement>({
     open: isOpen,
     placement,
+    align,
+    offset,
   });
+
+  const state: PopoverState = { open: isOpen, placement, align };
 
   useEffect(() => {
     const node = popoverRef.current;
@@ -73,15 +102,30 @@ export function Popover({
       popoverTarget: id,
       "aria-expanded": isOpen,
     },
-    { open: isOpen },
+    state,
+  );
+
+  const popup = renderElement(
+    renderContent,
+    "div",
+    {
+      ref: mergeRefs(popoverRef, floatingRef),
+      id,
+      popover: "auto",
+      "data-slot": "popover-content",
+      "data-placement": placement,
+      "data-align": align,
+      "data-open": dataAttr(isOpen),
+      className: [styles.content, resolveClassName(className, state)].filter(Boolean).join(" "),
+      children,
+    },
+    state,
   );
 
   return (
     <>
       {trigger}
-      <div ref={mergeRefs(popoverRef, floatingRef)} id={id} popover="auto" className={styles.content}>
-        {children}
-      </div>
+      {popup}
     </>
   );
 }

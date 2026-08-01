@@ -31,30 +31,35 @@ kernel-menu-separator {
   box-shadow: var(--kernel-shadow-md);
 
   opacity: 0;
-  scale: 0.96;
+  scale: var(--kernel-scale-exit);
   /* Set by FloatingPositioner as an anchor-relative percentage — see
      that class's doc comment — so this scales in from the trigger
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
-  /* opacity and scale share one duration so the open/close reads as one
-     coordinated motion. */
+  /* Resting/closed uses exit timing so Chromium dismissals stay snappy;
+     :popover-open overrides with enter timing (asymmetric enter/exit). */
   transition:
-    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-fast) var(--kernel-ease-spring),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
+    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit-fast) allow-discrete,
+    display var(--kernel-duration-exit-fast) allow-discrete;
 }
 
 .kernel-DropdownMenu-content:popover-open {
   display: flex;
   opacity: 1;
   scale: 1;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
 }
 
 @starting-style {
   .kernel-DropdownMenu-content:popover-open {
     opacity: 0;
-    scale: 0.96;
+    scale: var(--kernel-scale-enter);
   }
 }
 
@@ -63,6 +68,7 @@ kernel-menu-separator {
   align-items: center;
   text-align: start;
   border: none;
+  text-decoration: none;
   /* Concentric with .content's own rounding — see the matching comment
      in @kernelui-lib/react's DropdownMenu.module.css `.item`. */
   border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
@@ -75,6 +81,14 @@ kernel-menu-separator {
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+a.kernel-DropdownMenu-item {
+  cursor: pointer;
+}
+
+.kernel-DropdownMenu-item[data-highlighted] {
+  background-color: var(--kernel-color-accent-subtle);
 }
 
 .kernel-DropdownMenu-item:active:not(:disabled) {

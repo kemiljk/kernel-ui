@@ -1,0 +1,27 @@
+{
+  "name": "@kernelui-lib/registry",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared component catalog for Kernel docs, CLI, and LLM assets.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./registry.json": "./dist/registry.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/generate-assets.mjs",
+    "generate": "node scripts/generate-assets.mjs",
+    "check": "node scripts/check-consistency.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

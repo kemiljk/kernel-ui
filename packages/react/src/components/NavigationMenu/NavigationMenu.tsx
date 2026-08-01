@@ -1,12 +1,18 @@
 import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode, RefObject } from "react";
-import { mergeRefs } from "../../utils/polymorphic";
-import { useFloatingPosition } from "../../utils/useFloatingPosition";
+import { dataAttr, mergeRefs } from "../../utils/polymorphic";
+import {
+  useFloatingPosition,
+  type FloatingAlign,
+  type FloatingPlacement,
+} from "../../utils/useFloatingPosition";
 import styles from "./NavigationMenu.module.css";
 
 interface NavigationMenuItemContextValue {
   contentId: string;
   open: boolean;
+  placement: FloatingPlacement;
+  align: FloatingAlign;
   anchorRef: RefObject<HTMLButtonElement | null>;
   floatingRef: RefObject<HTMLDivElement | null>;
 }
@@ -39,11 +45,29 @@ export function NavigationMenu({ children, "aria-label": ariaLabel }: Navigation
  * (once per item that has a panel) rather than inside the trigger or
  * content themselves, since both need the same pair of refs.
  */
-export function NavigationMenuItem({ children }: { children: ReactNode }) {
+export interface NavigationMenuItemProps {
+  children: ReactNode;
+  /** Which side of the trigger the panel opens on. */
+  placement?: FloatingPlacement;
+  /** Cross-axis alignment relative to the trigger. */
+  align?: FloatingAlign;
+  /** Gap between the trigger and the panel, in pixels. */
+  offset?: number;
+}
+
+export function NavigationMenuItem({
+  children,
+  placement = "bottom",
+  align = "center",
+  offset = 8,
+}: NavigationMenuItemProps) {
   const contentId = useId();
   const [open, setOpen] = useState(false);
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLButtonElement, HTMLDivElement>({
     open,
+    placement,
+    align,
+    offset,
   });
   const floatingNode = floatingRef.current;
 
@@ -60,7 +84,9 @@ export function NavigationMenuItem({ children }: { children: ReactNode }) {
   }, [floatingNode]);
 
   return (
-    <NavigationMenuItemContext.Provider value={{ contentId, open, anchorRef, floatingRef }}>
+    <NavigationMenuItemContext.Provider
+      value={{ contentId, open, placement, align, anchorRef, floatingRef }}
+    >
       <li className={styles.item}>{children}</li>
     </NavigationMenuItemContext.Provider>
   );
@@ -134,13 +160,17 @@ export function NavigationMenuContent({ children }: NavigationMenuContentProps) 
   if (!context) {
     throw new Error("NavigationMenuContent must be used inside a NavigationMenuItem");
   }
-  const { contentId, floatingRef } = context;
+  const { contentId, open, placement, align, floatingRef } = context;
 
   return (
     <div
       ref={mergeRefs(floatingRef)}
       id={contentId}
       popover="auto"
+      data-slot="navigation-menu-content"
+      data-placement={placement}
+      data-align={align}
+      data-open={dataAttr(open)}
       className={styles.content}
     >
       {children}

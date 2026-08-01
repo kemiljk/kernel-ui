@@ -29,6 +29,7 @@ export default function ReasoningPlayground() {
       controls={controls}
       code={code}
       elementsCode={elementsCode}
+      stageClassName="prop-playground-stage-start"
       render={(values) => (
         <Reasoning
           streaming={Boolean(values.streaming)}

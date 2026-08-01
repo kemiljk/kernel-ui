@@ -133,3 +133,34 @@
     white-space: nowrap;
   }
 }
+
+/* Deliberately outside `@layer kernel.base`: component stylesheets are
+   unlayered, so a layered rule would lose to `.content { transition: … }`
+   however specific it was. This one has to win — it's correcting for a
+   platform gap, not setting a default.
+
+   A popover can only animate its exit if it stays in the top layer for
+   the length of that animation, which is exactly what
+   `transition: overlay … allow-discrete` buys. Only Chromium implements
+   `overlay`. Everywhere else, hiding a popover drops it out of the top
+   layer immediately, so the exit transition plays on an element that is
+   a plain `position: fixed` box again — subject to whatever containing
+   block its ancestors impose. Any ancestor with a `transform`, `filter`
+   or `backdrop-filter` (Header's blurred sticky bar, e.g.) becomes that
+   containing block, the anchor positioning stops resolving against the
+   trigger, and the panel visibly jumps elsewhere while it fades. A
+   jump-then-fade is worse than no exit animation, so where the browser
+   can't hold the element in the top layer, don't animate the exit.
+
+   Scoped to the closed state only. An entry animation resolves its
+   transition from the `:popover-open` style, which this doesn't touch,
+   so `@starting-style` entrances still play in every browser. And the
+   components that drive their own close from JavaScript (every
+   `popover="manual"` one — Tooltip, HoverCard, Combobox, ContextMenu)
+   animate under `[data-closing]` while still open, so they keep a real
+   exit animation here too. */
+@supports not (overlay: auto) {
+  [popover]:not(:popover-open) {
+    transition: none;
+  }
+}

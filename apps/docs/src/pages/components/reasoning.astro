@@ -29,10 +29,12 @@ const openSnippet = `<Reasoning defaultOpen durationLabel="Thought for 6s">
       <code>&lt;summary&gt;</code>. Auto-opens while <code>streaming</code> is
       true and auto-collapses the moment it flips back to false — after
       that, the user's own manual open/close is left alone, same as a plain{" "}
-      <code>&lt;details&gt;</code>.
+      <code>&lt;details&gt;</code>. Stream step text as children while
+      <code>streaming</code> is true; the summary swaps to a duration label
+      when it finishes.
     </p>
 
-    <div class="docs-example">
+    <div class="docs-example docs-example-start">
       <ReasoningDemo client:load />
     </div>
 

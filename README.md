@@ -12,11 +12,16 @@ A component library built on the actual kernel of the web: real semantic HTML el
 | --- | --- |
 | [`@kernelui-lib/react`](https://www.npmjs.com/package/@kernelui-lib/react) | React components on real semantic HTML |
 | [`@kernelui-lib/elements`](https://www.npmjs.com/package/@kernelui-lib/elements) | The same design as framework-free Custom Elements |
+| [`@kernelui-lib/cli`](https://www.npmjs.com/package/@kernelui-lib/cli) | Integration CLI — init, doctor, and local component lookup |
 | [`@kernelui-lib/styles`](https://www.npmjs.com/package/@kernelui-lib/styles) | Design tokens, reset, and Tailwind v4 bridge |
 
-## Using Kernel
+## Quick start (React)
 
-### React
+```bash
+npx @kernelui-lib/cli init
+```
+
+Or install manually:
 
 ```bash
 npm install @kernelui-lib/react @kernelui-lib/styles
@@ -71,7 +76,7 @@ See [`AGENTS.md`](./AGENTS.md) and [`CONTRIBUTING.md`](./CONTRIBUTING.md) for co
 
 ## Status
 
-51 components are documented and available today across React and Custom Elements. Browse the [component catalog](https://www.kernelui.com/components/).
+53 components are documented and available today across React and Custom Elements. Browse the [component catalog](https://www.kernelui.com/components/).
 
 ## License
 

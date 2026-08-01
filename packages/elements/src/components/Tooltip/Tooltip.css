@@ -14,31 +14,78 @@ kernel-tooltip {
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   max-inline-size: 16rem;
-  pointer-events: none;
 
   opacity: 0;
-  scale: 0.96;
+  scale: var(--kernel-scale-exit);
   /* Set by FloatingPositioner as an anchor-relative percentage — see
      that class's doc comment — so this scales in from the trigger
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    opacity var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-fast) var(--kernel-ease-out),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
+    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit-fast) allow-discrete,
+    display var(--kernel-duration-exit-fast) allow-discrete;
 }
 
 .kernel-Tooltip-content:popover-open {
   opacity: 1;
   scale: 1;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+.kernel-Tooltip-content[data-closing] {
+  opacity: 0;
+  scale: var(--kernel-scale-exit);
+  transition:
+    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit-fast) allow-discrete,
+    display var(--kernel-duration-exit-fast) allow-discrete;
 }
 
 @starting-style {
   .kernel-Tooltip-content:popover-open {
     opacity: 0;
-    scale: 0.96;
+    scale: var(--kernel-scale-enter);
   }
+}
+
+.kernel-Tooltip-arrow {
+  position: absolute;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  background-color: inherit;
+  rotate: 45deg;
+  pointer-events: none;
+}
+
+.kernel-Tooltip-content[data-placement="top"] .kernel-Tooltip-arrow {
+  inset-block-end: -0.2rem;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+}
+
+.kernel-Tooltip-content[data-placement="bottom"] .kernel-Tooltip-arrow {
+  inset-block-start: -0.2rem;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+}
+
+.kernel-Tooltip-content[data-placement="left"] .kernel-Tooltip-arrow {
+  inset-inline-end: -0.2rem;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+}
+
+.kernel-Tooltip-content[data-placement="right"] .kernel-Tooltip-arrow {
+  inset-inline-start: -0.2rem;
+  inset-block-start: 50%;
+  translate: 0 -50%;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const installSnippet = `npm install -D @kernelui-lib/cli
+# or run once without installing:
+npx @kernelui-lib/cli init`;
+
+const initSnippet = `kernel init
+kernel init --tailwind --accent blue
+kernel init --dry-run`;
+
+const doctorSnippet = `kernel doctor
+kernel doctor --path ./apps/web`;
+
+const docsSnippet = `kernel docs
+kernel docs text-field --json
+kernel docs dialog --markdown`;
+---
+
+<BaseLayout title="CLI" description="Use the Kernel CLI to install packages, wire up styles, diagnose setup, and look up component metadata locally." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>CLI</h1>
+    <p>
+      The Kernel CLI handles the mechanical parts of integrating the library:
+      installing packages, adding the required stylesheet imports, and checking
+      that your project is wired up correctly. It does <em>not</em> copy
+      component source into your repo the way shadcn/ui does — Kernel ships as
+      npm packages.
+    </p>
+
+    <h2>Install</h2>
+    <CodeBlock code={installSnippet} lang="bash" />
+
+    <h2><code>kernel init</code></h2>
+    <p>
+      Detects your package manager and framework (Vite or Next.js), installs
+      <code>@kernelui-lib/react</code> and <code>@kernelui-lib/styles</code>,
+      then idempotently adds the required CSS imports.
+    </p>
+    <CodeBlock code={initSnippet} lang="bash" />
+    <p>Options:</p>
+    <ul>
+      <li><code>--tailwind</code> — use the Tailwind v4 bridge instead of plain CSS imports</li>
+      <li><code>--accent &lt;name&gt;</code> — import a named accent theme (amber, blue, green, orange, red, teal, violet)</li>
+      <li><code>--tokens-only</code> — install only <code>@kernelui-lib/styles</code></li>
+      <li><code>--dry-run</code> — preview file changes without writing</li>
+      <li><code>--package-manager npm|yarn|pnpm|bun</code> — override lockfile detection</li>
+      <li><code>--framework vite|next</code> — override framework detection</li>
+    </ul>
+
+    <h2><code>kernel doctor</code></h2>
+    <p>
+      Verifies React 18+, package installation, and stylesheet imports. If
+      <code>components.json</code> or <code>@radix-ui/*</code> packages are
+      present, it points you to the <a href="/migration/">migration guide</a>.
+    </p>
+    <CodeBlock code={doctorSnippet} lang="bash" />
+
+    <h2><code>kernel docs</code></h2>
+    <p>
+      Looks up component metadata from the local registry — useful for agents and
+      offline development. Accepts a slug, component name, or shadcn alias.
+    </p>
+    <CodeBlock code={docsSnippet} lang="bash" />
+
+    <h2>LLM assets</h2>
+    <p>
+      Kernel publishes several machine-readable surfaces:
+    </p>
+    <ul>
+      <li><code>llms.txt</code> in <code>@kernelui-lib/react</code> and <code>@kernelui-lib/elements</code> (shipped with npm)</li>
+      <li><a href="/llms.txt">/llms.txt</a> and <a href="/llms-full.txt">/llms-full.txt</a> on the docs site</li>
+      <li><a href="/registry.json">/registry.json</a> — structured component catalog with shadcn aliases and migration caveats</li>
+      <li><code>kernel docs &lt;component&gt; --json</code> for local lookup</li>
+    </ul>
+    <p>
+      Exact prop types always live in <code>dist/index.d.ts</code> inside each
+      package. The registry and <code>llms.txt</code> files are maps, not the
+      source of truth for types.
+    </p>
+  </div>
+</BaseLayout>

@@ -1,5 +1,5 @@
-import { forwardRef, useId } from "react";
-import type { InputHTMLAttributes, ReactNode } from "react";
+import { forwardRef, useId, useState } from "react";
+import type { FocusEvent, InputHTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import styles from "./TextField.module.css";
 
@@ -7,6 +7,8 @@ export interface TextFieldState {
   invalid: boolean;
   disabled: boolean;
   required: boolean;
+  focused: boolean;
+  filled: boolean;
 }
 
 export interface TextFieldProps
@@ -36,6 +38,21 @@ export interface TextFieldProps
   size?: "sm" | "md" | "lg";
   className?: ClassNameValue<TextFieldState>;
   wrapperClassName?: ClassNameValue<TextFieldState>;
+  labelClassName?: ClassNameValue<TextFieldState>;
+  descriptionClassName?: ClassNameValue<TextFieldState>;
+  errorClassName?: ClassNameValue<TextFieldState>;
+}
+
+function readFilled(
+  value: InputHTMLAttributes<HTMLInputElement>["value"],
+  defaultValue: InputHTMLAttributes<HTMLInputElement>["defaultValue"],
+  uncontrolled: string,
+): boolean {
+  if (value !== undefined && value !== null) return String(value).length > 0;
+  if (defaultValue !== undefined && defaultValue !== null && uncontrolled === String(defaultValue)) {
+    return String(defaultValue).length > 0;
+  }
+  return uncontrolled.length > 0;
 }
 
 /**
@@ -44,6 +61,10 @@ export interface TextFieldProps
  * post-interaction validation styling natively; the `invalid` prop is for
  * validation you already know about (a failed server response, for
  * example) before the user has touched the field.
+ *
+ * Slot class hooks (`wrapperClassName`, `labelClassName`, …) and
+ * `data-focused` / `data-filled` on the wrapper let unstyled consumers
+ * drive floating-label animations without targeting generated classes.
  */
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   function TextField(
@@ -60,7 +81,16 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       id,
       className,
       wrapperClassName,
+      labelClassName,
+      descriptionClassName,
+      errorClassName,
       type = "text",
+      value,
+      defaultValue,
+      onChange,
+      onFocus,
+      onBlur,
+      onAnimationStart,
       ...rest
     },
     ref,
@@ -69,6 +99,14 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const inputId = id ?? generatedId;
     const descriptionId = `${inputId}-description`;
     const errorId = `${inputId}-error`;
+    const [focused, setFocused] = useState(false);
+    const [uncontrolledValue, setUncontrolledValue] = useState(() =>
+      defaultValue !== undefined && defaultValue !== null ? String(defaultValue) : "",
+    );
+    const [autofilled, setAutofilled] = useState(false);
+
+    const filled =
+      autofilled || readFilled(value, defaultValue, uncontrolledValue);
 
     const showError = invalid && Boolean(errorMessage);
     const describedBy =
@@ -76,20 +114,28 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         .filter(Boolean)
         .join(" ") || undefined;
 
-    const state: TextFieldState = { invalid, disabled, required };
+    const state: TextFieldState = { invalid, disabled, required, focused, filled };
 
     return (
       <div
+        data-slot="text-field"
         className={[styles.root, resolveClassName(wrapperClassName, state)]
           .filter(Boolean)
           .join(" ")}
         data-invalid={dataAttr(invalid)}
         data-disabled={dataAttr(disabled)}
+        data-focused={dataAttr(focused)}
+        data-filled={dataAttr(filled)}
         data-size={size}
         data-label-offset={labelOffset === false ? "false" : undefined}
       >
         <label
-          className={[styles.label, hideLabel ? "kernel-sr-only" : null]
+          data-slot="text-field-label"
+          className={[
+            styles.label,
+            hideLabel ? "kernel-sr-only" : null,
+            resolveClassName(labelClassName, state),
+          ]
             .filter(Boolean)
             .join(" ")}
           htmlFor={inputId}
@@ -106,20 +152,58 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           ref={ref}
           id={inputId}
           type={type}
+          value={value}
+          defaultValue={defaultValue}
           disabled={disabled}
           required={required}
           aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
+          data-slot="text-field-control"
           className={[styles.input, resolveClassName(className, state)]
             .filter(Boolean)
             .join(" ")}
+          onChange={(event) => {
+            if (value === undefined) setUncontrolledValue(event.target.value);
+            setAutofilled(false);
+            onChange?.(event);
+          }}
+          onFocus={(event: FocusEvent<HTMLInputElement>) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event: FocusEvent<HTMLInputElement>) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
+          onAnimationStart={(event) => {
+            // Chromium fires an animation named `onAutoFillStart` (via UA
+            // stylesheet) when autofill paints — the practical hook for
+            // detecting filled-without-input state.
+            if (event.animationName.toLowerCase().includes("onautofillstart")) {
+              setAutofilled(true);
+            }
+            onAnimationStart?.(event);
+          }}
         />
         {showError ? (
-          <p className={styles.error} id={errorId} role="alert">
+          <p
+            data-slot="text-field-error"
+            className={[styles.error, resolveClassName(errorClassName, state)]
+              .filter(Boolean)
+              .join(" ")}
+            id={errorId}
+            role="alert"
+          >
             {errorMessage}
           </p>
         ) : description ? (
-          <p className={styles.description} id={descriptionId}>
+          <p
+            data-slot="text-field-description"
+            className={[styles.description, resolveClassName(descriptionClassName, state)]
+              .filter(Boolean)
+              .join(" ")}
+            id={descriptionId}
+          >
             {description}
           </p>
         ) : null}

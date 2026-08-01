@@ -10,11 +10,20 @@ const controls = [
     default: "They'll get an email with a link to join this workspace.",
   },
   { type: "boolean" as const, prop: "closeOnBackdropClick", default: true },
+  { type: "boolean" as const, prop: "showCloseButton", default: true },
+  {
+    type: "enum" as const,
+    prop: "backdrop",
+    options: ["default", "blur", "opaque", "transparent"],
+    default: "default",
+  },
 ];
 
 function code(values: PlaygroundValues) {
   const attrs = [`title="${values.title}"`, `description="${values.description}"`];
   if (!values.closeOnBackdropClick) attrs.push("closeOnBackdropClick={false}");
+  if (!values.showCloseButton) attrs.push("showCloseButton={false}");
+  if (values.backdrop !== "default") attrs.push(`backdrop="${values.backdrop}"`);
   return `<Dialog open={open} onOpenChange={setOpen} ${attrs.join(" ")}>
   ...
 </Dialog>`;
@@ -23,6 +32,8 @@ function code(values: PlaygroundValues) {
 function elementsCode(values: PlaygroundValues) {
   const attrs = [`title="${values.title}"`, `description="${values.description}"`];
   if (!values.closeOnBackdropClick) attrs.push('close-on-backdrop-click="false"');
+  if (!values.showCloseButton) attrs.push('show-close-button="false"');
+  if (values.backdrop !== "default") attrs.push(`backdrop="${values.backdrop}"`);
   return `<kernel-dialog ${attrs.join(" ")}>
   ...
 </kernel-dialog>`;
@@ -41,6 +52,8 @@ function Stage({ values }: { values: PlaygroundValues }) {
         title={String(values.title)}
         description={String(values.description)}
         closeOnBackdropClick={Boolean(values.closeOnBackdropClick)}
+        showCloseButton={Boolean(values.showCloseButton)}
+        backdrop={values.backdrop as "default" | "blur" | "opaque" | "transparent"}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <TextField label="Email address" type="email" placeholder="teammate@example.com" />

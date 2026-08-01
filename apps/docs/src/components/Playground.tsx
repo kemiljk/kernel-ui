@@ -1,14 +1,21 @@
 import { useState, type ReactNode } from "react";
-import { Button, Switch, Tab, TabPanel, Tabs, TabsList, TextField } from "@kernelui-lib/react";
+import {
+  Button,
+  NumberField,
+  Switch,
+  Tab,
+  TabPanel,
+  Tabs,
+  TabsList,
+  TextField,
+} from "@kernelui-lib/react";
 import CopyButton from "./CopyButton";
 import { HighlightedCode } from "./HighlightedCode";
 
 /** One adjustable prop. `prop` is the key handed back to `render`/`code`.
- * Kept intentionally small — enum (pick one), boolean (on/off), and text
- * (free string, also used for a component's `children`) cover every
- * adjustable prop across the library today; add a `number` variant here
- * when the first slider-min/max-style playground actually needs one,
- * rather than speculatively now. */
+ * Enum (pick one), boolean (on/off), text (free string / children), and
+ * number (bounded steppers via NumberField) cover the adjustable props
+ * across the library today. */
 type EnumControl = {
   type: "enum";
   prop: string;
@@ -46,6 +53,9 @@ export interface PlaygroundProps {
   controls: PlaygroundControl[];
   /** Renders the live component from the current values. */
   render: (values: PlaygroundValues) => ReactNode;
+  /** Extra class on the live stage — e.g. `prop-playground-stage-start` to
+   * left-align content that grows (Reasoning) so centering doesn't jump. */
+  stageClassName?: string;
   /** The JSX a consumer would write for the current values, kept live in
    * the Usage section below the controls — this IS the page's usage
    * example now, not a second, separately-hardcoded one: a static
@@ -64,11 +74,18 @@ export interface PlaygroundProps {
  * A live, prop-by-prop sandbox: the component up top reacting instantly to
  * the controls below it, so the whole surface of what a component can do is
  * explorable by clicking rather than by reading the props table and
- * imagining it. Deliberately built FROM the library's own Toggle / Switch /
- * TextField — the playground for a design system should itself be evidence
- * the components compose, not a bespoke set of controls that sidesteps them.
+ * imagining it. Deliberately built FROM the library's own Button / Switch /
+ * TextField / NumberField — the playground for a design system should itself
+ * be evidence the components compose, not a bespoke set of controls that
+ * sidesteps them.
  */
-export default function Playground({ controls, render, code, elementsCode }: PlaygroundProps) {
+export default function Playground({
+  controls,
+  render,
+  stageClassName,
+  code,
+  elementsCode,
+}: PlaygroundProps) {
   const [values, setValues] = useState<PlaygroundValues>(() =>
     Object.fromEntries(controls.map((control) => [control.prop, control.default])),
   );
@@ -82,7 +99,11 @@ export default function Playground({ controls, render, code, elementsCode }: Pla
 
   return (
     <div className="prop-playground">
-      <div className="prop-playground-stage">{render(values)}</div>
+      <div
+        className={["prop-playground-stage", stageClassName].filter(Boolean).join(" ")}
+      >
+        {render(values)}
+      </div>
 
       <div className="prop-playground-panel">
         {controls.map((control) => {
@@ -104,19 +125,17 @@ export default function Playground({ controls, render, code, elementsCode }: Pla
 
           if (control.type === "number") {
             return (
-              <div className="prop-playground-field" key={control.prop}>
-                <span className="prop-playground-field-label">{label}</span>
-                <input
-                  type="number"
-                  className="prop-playground-number"
-                  value={Number(values[control.prop] ?? 0)}
-                  min={control.min}
-                  max={control.max}
-                  step={control.step}
-                  aria-label={label}
-                  onChange={(event) => set(control.prop, event.target.valueAsNumber)}
-                />
-              </div>
+              <NumberField
+                key={control.prop}
+                size="sm"
+                label={label}
+                value={Number(values[control.prop] ?? control.default)}
+                min={control.min}
+                max={control.max}
+                step={control.step}
+                wrapperClassName="prop-playground-text"
+                onValueChange={(value) => set(control.prop, value ?? control.default)}
+              />
             );
           }
 

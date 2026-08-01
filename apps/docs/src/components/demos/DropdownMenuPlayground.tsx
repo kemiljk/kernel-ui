@@ -9,6 +9,13 @@ const controls = [
     options: ["top", "bottom", "left", "right"],
     default: "bottom",
   },
+  {
+    type: "enum" as const,
+    prop: "align",
+    options: ["start", "center", "end"],
+    default: "center",
+  },
+  { type: "number" as const, prop: "offset", label: "offset (px)", default: 8, min: 0, max: 32, step: 1 },
   { type: "boolean" as const, prop: "destructive", label: "delete item destructive", default: true },
   { type: "boolean" as const, prop: "disabled", label: "duplicate item disabled", default: false },
 ];
@@ -16,6 +23,8 @@ const controls = [
 function code(values: PlaygroundValues) {
   const attrs: string[] = [];
   if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  if (values.align !== "center") attrs.push(`align="${values.align}"`);
+  if (Number(values.offset) !== 8) attrs.push(`offset={${Number(values.offset)}}`);
   const deleteAttrs: string[] = ["onSelect={() => {}}"];
   if (values.destructive) deleteAttrs.unshift("destructive");
   return `<DropdownMenu${attrs.length ? ` ${attrs.join(" ")}` : ""} render={<Button variant="secondary" iconEnd={<MenuChevron />}>${values.triggerLabel}</Button>}>
@@ -33,6 +42,8 @@ const chevronSvg = `<svg class="kernel-menu-chevron" viewBox="0 0 16 16" fill="n
 function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [];
   if (values.placement !== "bottom") attrs.push(`placement="${values.placement}"`);
+  if (values.align !== "center") attrs.push(`align="${values.align}"`);
+  if (Number(values.offset) !== 8) attrs.push(`offset="${Number(values.offset)}"`);
   return `<kernel-dropdown-menu${attrs.length ? ` ${attrs.join(" ")}` : ""}>
   <kernel-button slot="trigger" variant="secondary">
     ${values.triggerLabel}
@@ -54,6 +65,8 @@ export default function DropdownMenuPlayground() {
       render={(values) => (
         <DropdownMenu
           placement={values.placement as "top" | "bottom" | "left" | "right"}
+          align={values.align as "start" | "center" | "end"}
+          offset={Number(values.offset)}
           render={
             <Button variant="secondary" iconEnd={<MenuChevron />}>
               {String(values.triggerLabel)}

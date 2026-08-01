@@ -1,16 +1,21 @@
 import { useEffect, useId, useRef } from "react";
 
 export type FloatingPlacement = "top" | "bottom" | "left" | "right";
+export type FloatingAlign = "start" | "center" | "end";
 
 export interface UseFloatingPositionOptions {
   open: boolean;
   placement?: FloatingPlacement;
+  /** Cross-axis alignment relative to the anchor. */
+  align?: FloatingAlign;
   /** Gap between the anchor and the floating element, in pixels. */
   offset?: number;
 }
 
 const supportsAnchorPositioning =
-  typeof CSS !== "undefined" && CSS.supports("anchor-name: --kernel-support-check");
+  typeof CSS !== "undefined" &&
+  typeof CSS.supports === "function" &&
+  CSS.supports("anchor-name: --kernel-support-check");
 
 /** The floating element should scale in from wherever its anchor
  * actually sits, not from an assumed side/alignment — this measures
@@ -26,6 +31,30 @@ function computeTransformOrigin(anchorRect: DOMRect, floatingRect: DOMRect): str
   const x = clamp(((anchorRect.left + anchorRect.width / 2 - floatingRect.left) / floatingRect.width) * 100);
   const y = clamp(((anchorRect.top + anchorRect.height / 2 - floatingRect.top) / floatingRect.height) * 100);
   return `${x}% ${y}%`;
+}
+
+function positionArea(
+  placement: FloatingPlacement,
+  align: FloatingAlign,
+): string {
+  if (align === "center") return `${placement} center`;
+
+  if (placement === "top" || placement === "bottom") {
+    return `${placement} ${align === "start" ? "span-right" : "span-left"}`;
+  }
+
+  return `${placement} ${align === "start" ? "span-bottom" : "span-top"}`;
+}
+
+function alignedCrossAxis(
+  anchorStart: number,
+  anchorSize: number,
+  floatingSize: number,
+  align: FloatingAlign,
+): number {
+  if (align === "start") return anchorStart;
+  if (align === "end") return anchorStart + anchorSize - floatingSize;
+  return anchorStart + anchorSize / 2 - floatingSize / 2;
 }
 
 /**
@@ -52,7 +81,12 @@ function computeTransformOrigin(anchorRect: DOMRect, floatingRect: DOMRect): str
 export function useFloatingPosition<
   TAnchor extends HTMLElement = HTMLElement,
   TFloating extends HTMLElement = HTMLElement,
->({ open, placement = "bottom", offset = 8 }: UseFloatingPositionOptions) {
+>({
+  open,
+  placement = "bottom",
+  align = "center",
+  offset = 8,
+}: UseFloatingPositionOptions) {
   const anchorRef = useRef<TAnchor>(null);
   const floatingRef = useRef<TFloating>(null);
   const anchorName = `--kernel-anchor-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
@@ -89,7 +123,7 @@ export function useFloatingPosition<
     if (supportsAnchorPositioning) {
       anchor.style.setProperty("anchor-name", anchorName);
       floating.style.setProperty("position-anchor", anchorName);
-      floating.style.setProperty("position-area", placement);
+      floating.style.setProperty("position-area", positionArea(placement, align));
       floating.style.setProperty("position-try-fallbacks", `flip-block, flip-inline`);
       floating.style.setProperty("margin", `${offset}px`);
       // A resize can change which fallback side is active while already
@@ -117,18 +151,18 @@ export function useFloatingPosition<
       switch (placement) {
         case "bottom":
           top = anchorRect.bottom + offset;
-          left = anchorRect.left + anchorRect.width / 2 - floatingRect.width / 2;
+          left = alignedCrossAxis(anchorRect.left, anchorRect.width, floatingRect.width, align);
           break;
         case "top":
           top = anchorRect.top - floatingRect.height - offset;
-          left = anchorRect.left + anchorRect.width / 2 - floatingRect.width / 2;
+          left = alignedCrossAxis(anchorRect.left, anchorRect.width, floatingRect.width, align);
           break;
         case "left":
-          top = anchorRect.top + anchorRect.height / 2 - floatingRect.height / 2;
+          top = alignedCrossAxis(anchorRect.top, anchorRect.height, floatingRect.height, align);
           left = anchorRect.left - floatingRect.width - offset;
           break;
         case "right":
-          top = anchorRect.top + anchorRect.height / 2 - floatingRect.height / 2;
+          top = alignedCrossAxis(anchorRect.top, anchorRect.height, floatingRect.height, align);
           left = anchorRect.right + offset;
           break;
       }
@@ -150,7 +184,7 @@ export function useFloatingPosition<
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, true);
     };
-  }, [open, placement, offset, anchorName]);
+  }, [open, placement, align, offset, anchorName]);
 
   return { anchorRef, floatingRef, supportsAnchorPositioning };
 }

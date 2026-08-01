@@ -11,26 +11,88 @@
   --label-offset: 0px;
 }
 
+@property --kernel-drop-reveal-scale {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.001;
+}
+
 /* The real <input type="file"> is visually hidden — never display: none
    (that would drop it from the tab order and break drag-and-drop's
    requirement that it stay a real target for .files assignment). This
    <label> is the actual drop zone: the whole padded area is natively
    clickable and focus-adjacent since it wraps the real input. */
 .dropzone {
+  /* Default outer radius tracks the control scale. Square / preview
+     moulding swaps this for Card's sheet pair so the inset image can
+     share a corner centre (outer = md + padding-sheet). */
+  --kernel-dropzone-radius: var(--kernel-radius-control);
+  --kernel-dropzone-padding: var(--kernel-space-6) var(--kernel-space-8);
+  --kernel-drop-reveal-scale: 0.001;
+  --kernel-drop-origin-x: 50%;
+  --kernel-drop-origin-y: 50%;
   position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--kernel-space-2);
-  padding: var(--kernel-space-6) var(--kernel-space-8);
+  padding: var(--kernel-dropzone-padding);
   border: var(--kernel-border-width) dashed var(--kernel-color-border-interactive);
-  border-radius: var(--kernel-radius-control);
+  border-radius: var(--kernel-dropzone-radius);
   background-color: var(--kernel-color-surface);
   text-align: center;
   cursor: pointer;
+  overflow: hidden;
   transition:
-    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+    border-color var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    border-style var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    background-color var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    box-shadow var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    padding var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    border-radius var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-enter) var(--kernel-ease-overlay);
+}
+
+.dropzone[data-aspect-ratio="square"] {
+  --kernel-dropzone-radius: var(--kernel-radius-sheet);
+  --kernel-dropzone-padding: var(--kernel-padding-sheet);
+  aspect-ratio: 1;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* A drag-active wash blooms from the live pointer position. The animated
+   custom property drives both scale and inverse radius: transforms scale
+   corner radii too, so counter-scaling keeps the apparent roundness close
+   to the resting dropzone radius throughout the reveal. */
+.dropzone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--kernel-color-accent-subtle);
+  border-radius: var(--kernel-dropzone-radius);
+  border-radius: calc(
+    var(--kernel-dropzone-radius) /
+    max(var(--kernel-drop-reveal-scale), 0.001)
+  );
+  transform-origin:
+    var(--kernel-drop-origin-x)
+    var(--kernel-drop-origin-y);
+  scale: var(--kernel-drop-reveal-scale);
+  filter: blur(6px);
+  transition:
+    --kernel-drop-reveal-scale var(--kernel-duration-slow) var(--kernel-ease-spring),
+    filter var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.dropzone > * {
+  position: relative;
+  z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -40,8 +102,12 @@
 }
 
 .dropzone[data-drag-active] {
+  --kernel-drop-reveal-scale: 1;
   border-color: var(--kernel-color-accent);
-  background-color: var(--kernel-color-accent-subtle);
+}
+
+.dropzone[data-drag-active]::before {
+  filter: blur(0);
 }
 
 .dropzone:has(.input:focus-visible) {
@@ -53,6 +119,31 @@
   inline-size: 1.5rem;
   block-size: 1.5rem;
   color: var(--kernel-color-text-muted);
+}
+
+/* Empty prompt + preview share the dropzone box. Toggling
+   data-has-preview crossfades them (icon-swap craft) while the
+   frame itself settles into Card padding/radius — the transitions.dev
+   "zone morphs into the image" idea, on Kernel motion tokens. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    filter var(--kernel-duration-enter) var(--kernel-ease-overlay);
+}
+
+.dropzone[data-has-preview] .empty {
+  position: absolute;
+  inset: 0;
+  justify-content: center;
+  opacity: 0;
+  scale: var(--kernel-scale-exit);
+  filter: blur(2px);
+  pointer-events: none;
 }
 
 .instructions {
@@ -158,4 +249,188 @@
 .remove:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 1px;
+}
+
+.dropzone[data-has-preview] {
+  /* Card concentric pair: sheet outer radius + sheet padding, so the
+     nested preview reads --kernel-radius-md as its inner corner. */
+  --kernel-dropzone-radius: var(--kernel-radius-sheet);
+  --kernel-dropzone-padding: var(--kernel-padding-sheet);
+  min-block-size: 8.5rem;
+  justify-content: center;
+  border-style: solid;
+  border-color: transparent;
+  box-shadow: var(--kernel-shadow-sm);
+}
+
+.dropzone[data-has-preview][data-preview-layout="single"] {
+  min-block-size: 10rem;
+}
+
+.dropzone[data-aspect-ratio="square"][data-has-preview] {
+  min-block-size: 0;
+}
+
+.preview {
+  position: absolute;
+  inset: var(--kernel-dropzone-padding);
+  display: grid;
+  min-inline-size: 0;
+  min-block-size: 0;
+  gap: var(--kernel-space-2);
+  pointer-events: none;
+  /* Same origin vars as the orange bloom — preview scales out from the drop. */
+  transform-origin: var(--kernel-drop-origin-x, 50%) var(--kernel-drop-origin-y, 50%);
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  filter: blur(2px);
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    filter var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    inset var(--kernel-duration-enter) var(--kernel-ease-overlay);
+}
+
+.dropzone[data-has-preview] .preview {
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
+}
+
+.dropzone[data-aspect-ratio="square"] .preview,
+.dropzone[data-aspect-ratio="square"] .preview[data-layout="single"] {
+  min-block-size: 0;
+}
+
+/* Multi-file mosaic: fixed 2×2 of equal square cells inside the zone. */
+.preview[data-layout="grid"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  align-content: stretch;
+  overflow: hidden;
+}
+
+.previewImage {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 4.5rem;
+  max-block-size: 14rem;
+  object-fit: cover;
+  /* Concentric with the sheet frame: md = sheet − padding-sheet. */
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  opacity: 0;
+  transition: opacity var(--kernel-duration-enter) var(--kernel-ease-overlay);
+}
+
+.dropzone[data-has-preview] .previewImage {
+  opacity: 1;
+}
+
+@starting-style {
+  .dropzone[data-has-preview] .preview {
+    opacity: 0;
+    scale: var(--kernel-scale-enter);
+    filter: blur(2px);
+  }
+
+  .dropzone[data-has-preview] .previewImage,
+  .dropzone[data-has-preview] .previewFile,
+  .dropzone[data-has-preview] .previewOverflow {
+    opacity: 0;
+  }
+}
+
+.preview[data-layout="single"] .previewImage {
+  max-block-size: none;
+  min-block-size: 0;
+  border-radius: var(--kernel-radius-md);
+}
+
+.dropzone[data-aspect-ratio="square"] .preview[data-layout="single"] .previewImage {
+  min-block-size: 0;
+  max-block-size: none;
+  block-size: 100%;
+}
+
+/* Grid tiles: every cell is a small square — images crop, chips match. */
+.preview[data-layout="grid"] .previewImage,
+.preview[data-layout="grid"] .previewFile,
+.preview[data-layout="grid"] .previewOverflow {
+  aspect-ratio: 1;
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: 100%;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.preview[data-layout="grid"] .previewImage {
+  object-fit: cover;
+}
+
+.previewFile,
+.previewOverflow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 4.5rem;
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  opacity: 0;
+  transition: opacity var(--kernel-duration-enter) var(--kernel-ease-overlay);
+}
+
+.dropzone[data-has-preview] .previewFile,
+.dropzone[data-has-preview] .previewOverflow {
+  opacity: 1;
+}
+
+.previewOverflow {
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 600;
+  color: var(--kernel-color-text-muted);
+}
+
+.previewFileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 600;
+  color: var(--kernel-color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropzone::before {
+    filter: none;
+    transition: opacity var(--kernel-duration-fast) linear;
+    opacity: 0;
+    scale: 1;
+  }
+
+  .dropzone[data-drag-active]::before {
+    opacity: 1;
+  }
+
+  .dropzone,
+  .empty,
+  .preview,
+  .previewImage,
+  .previewFile,
+  .previewOverflow {
+    transition: none !important;
+  }
+
+  .dropzone[data-has-preview] .empty {
+    filter: none;
+  }
+
+  .preview {
+    filter: none;
+    scale: 1;
+  }
 }

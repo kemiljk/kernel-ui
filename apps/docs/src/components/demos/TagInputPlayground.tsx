@@ -5,6 +5,12 @@ const controls = [
   { type: "text" as const, prop: "label", default: "Skills" },
   { type: "number" as const, prop: "max", label: "max tags", default: 5, min: 1 },
   { type: "boolean" as const, prop: "allowDuplicates", default: false },
+  {
+    type: "enum" as const,
+    prop: "delimiters",
+    options: [",", ";", "space"],
+    default: ",",
+  },
   { type: "text" as const, prop: "description", default: "Press Enter or comma to add a skill." },
   { type: "boolean" as const, prop: "invalid", default: false },
   {
@@ -13,17 +19,28 @@ const controls = [
     label: "error message",
     default: "Add at least one skill.",
   },
+  { type: "boolean" as const, prop: "disabled", default: false },
   { type: "boolean" as const, prop: "hideLabel", label: "hide label", default: false },
   { type: "boolean" as const, prop: "labelOffset", label: "label offset", default: true },
 ];
+
+function delimitersFor(value: string | boolean | number): string[] {
+  if (value === ";") return [";"];
+  if (value === "space") return [" "];
+  return [","];
+}
 
 function code(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label}"`, `defaultValue={["React", "TypeScript"]}`];
   if (values.max) attrs.push(`max={${Number(values.max)}}`);
   if (values.allowDuplicates) attrs.push("allowDuplicates");
+  if (values.delimiters !== ",") {
+    attrs.push(`delimiters={${JSON.stringify(delimitersFor(values.delimiters))}}`);
+  }
   if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
   if (values.errorMessage) attrs.push(`errorMessage="${values.errorMessage}"`);
+  if (values.disabled) attrs.push("disabled");
   if (values.hideLabel) attrs.push("hideLabel");
   if (values.labelOffset === false) attrs.push("labelOffset={false}");
   return `<TagInput ${attrs.join(" ")} />`;
@@ -33,9 +50,13 @@ function elementsCode(values: PlaygroundValues) {
   const attrs: string[] = [`label="${values.label}"`, `value="React,TypeScript"`];
   if (values.max) attrs.push(`max="${Number(values.max)}"`);
   if (values.allowDuplicates) attrs.push("allow-duplicates");
+  if (values.delimiters !== ",") {
+    attrs.push(`delimiters="${delimitersFor(values.delimiters).join("")}"`);
+  }
   if (values.description) attrs.push(`description="${values.description}"`);
   if (values.invalid) attrs.push("invalid");
   if (values.errorMessage) attrs.push(`error-message="${values.errorMessage}"`);
+  if (values.disabled) attrs.push("disabled");
   if (values.hideLabel) attrs.push("hide-label");
   if (values.labelOffset === false) attrs.push("no-label-offset");
   return `<kernel-tag-input ${attrs.join(" ")}></kernel-tag-input>`;
@@ -53,9 +74,11 @@ export default function TagInputPlayground() {
           defaultValue={["React", "TypeScript"]}
           max={Number(values.max)}
           allowDuplicates={Boolean(values.allowDuplicates)}
+          delimiters={delimitersFor(values.delimiters)}
           description={String(values.description)}
           invalid={Boolean(values.invalid)}
           errorMessage={String(values.errorMessage)}
+          disabled={Boolean(values.disabled)}
           hideLabel={Boolean(values.hideLabel)}
           labelOffset={Boolean(values.labelOffset)}
         />
