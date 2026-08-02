@@ -150,6 +150,9 @@
   .kernel-Dialog-content[open][data-side="top"],
   .kernel-Dialog-content[open][data-side="bottom"] {
     opacity: 0;
+    /* The center variant's starting style still matches a side sheet and
+       would otherwise hand it a scaled first frame that snaps to 1. */
+    scale: 1;
     translate: var(--kernel-dialog-translate);
   }
 }
