@@ -158,9 +158,17 @@
    components that drive their own close from JavaScript (every
    `popover="manual"` one — Tooltip, HoverCard, Combobox, ContextMenu)
    animate under `[data-closing]` while still open, so they keep a real
-   exit animation here too. */
+   exit animation here too.
+
+   `!important` because specificity alone can't keep the promise above.
+   This selector scores (0,2,0), which any consumer styling their own
+   panel ties or beats — `[data-slot="popover-content"].my-panel`, say —
+   and unlayered ties are settled by source order, so a consumer
+   stylesheet loaded after this one silently re-enables the exact broken
+   exit this exists to suppress. A platform correction that a plain
+   class override can switch back off isn't a correction. */
 @supports not (overlay: auto) {
   [popover]:not(:popover-open) {
-    transition: none;
+    transition: none !important;
   }
 }

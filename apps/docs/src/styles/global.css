@@ -690,20 +690,28 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
   max-inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
 
-  /* Drop Popover's scale settle in favour of a short vertical slide. */
+  /* Drop Popover's scale settle in favour of a short vertical slide.
+     Split across the two states rather than declared once here, so the
+     exit stays faster than the entrance (motion baseline) instead of
+     both directions inheriting a single duration. */
   scale: 1;
   opacity: 0;
   translate: 0 -8px;
   transition:
-    opacity var(--kernel-duration-base) var(--kernel-ease-out),
-    translate var(--kernel-duration-base) var(--kernel-ease-spring),
-    overlay var(--kernel-duration-base) allow-discrete,
-    display var(--kernel-duration-base) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-out),
+    translate var(--kernel-duration-exit) var(--kernel-ease-out),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
 }
 
 [data-slot="popover-content"].mobile-header-nav-panel:popover-open {
   opacity: 1;
   translate: 0 0;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-out),
+    translate var(--kernel-duration-enter) var(--kernel-ease-spring),
+    overlay var(--kernel-duration-enter) allow-discrete,
+    display var(--kernel-duration-enter) allow-discrete;
 }
 
 @starting-style {
