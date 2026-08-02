@@ -34,6 +34,9 @@
   background-color: transparent;
   color: var(--kernel-color-text);
   cursor: pointer;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),
@@ -95,6 +98,9 @@
   color: var(--kernel-color-text);
   font: inherit;
   cursor: pointer;
+  /* Also matters here beyond the usual convention: hovering across cells
+     while previewing/selecting a range must not drag-select day text. */
+  user-select: none;
   transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 

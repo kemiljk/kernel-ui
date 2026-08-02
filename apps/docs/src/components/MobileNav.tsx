@@ -9,9 +9,10 @@ interface MobileNavProps {
 
 /**
  * Docs-sidebar drawer on narrow viewports. Kernel's `Dialog` supplies
- * the real `<dialog>`, focus trap, Escape, and exit-aware close; site
- * CSS (`.mobile-nav-panel`) restyles it into a left-edge sheet rather
- * than the default centred card.
+ * the real `<dialog>`, focus trap, Escape, and exit-aware close, plus
+ * the left-edge sheet layout and slide-in motion via `side="left"`;
+ * site CSS (`.mobile-nav-panel`) only trims the sheet to the sidebar's
+ * own width.
  */
 export default function MobileNav({ children }: MobileNavProps) {
   const [open, setOpen] = useState(false);
@@ -33,6 +34,7 @@ export default function MobileNav({ children }: MobileNavProps) {
         open={open}
         onOpenChange={setOpen}
         title="Docs menu"
+        side="left"
         classNames={{ root: "mobile-nav-panel" }}
         closeOnBackdropClick
       >

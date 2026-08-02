@@ -162,6 +162,47 @@ function resetRevealOrigin(dropzone: HTMLElement | null) {
   dropzone.style.setProperty("--kernel-drop-origin-y", "50%");
 }
 
+/** Module-scoped (not per-instance) so two dropzones dragged over in quick
+ * succession — or one unmounting mid-drag — can't clobber each other's
+ * restore value; only the instance that takes the count to 0 restores the
+ * pre-drag `overflow`/`touch-action`, matching how a use-count mutex works. */
+let scrollLockCount = 0;
+let previousDocumentOverflow = "";
+let previousDocumentTouchAction = "";
+
+/** Body scroll is locked for the whole page (not just `touch-action: none`
+ * on the dropzone) because mobile browsers still rubber-band/scroll the
+ * page from a touch point that started outside the dropzone but drags a
+ * file over it, and because iOS Safari ignores `touch-action` on drag
+ * sources it doesn't own. */
+function lockPageScroll() {
+  if (scrollLockCount === 0) {
+    const root = document.documentElement;
+    previousDocumentOverflow = root.style.overflow;
+    previousDocumentTouchAction = root.style.touchAction;
+    root.style.overflow = "hidden";
+    root.style.touchAction = "none";
+  }
+  scrollLockCount += 1;
+}
+
+function unlockPageScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) {
+    const root = document.documentElement;
+    root.style.overflow = previousDocumentOverflow;
+    root.style.touchAction = previousDocumentTouchAction;
+  }
+}
+
+/** Some mobile/touch browsers never fire a matching `dragleave`/`drop` for
+ * a drag that started as a touch gesture (the drag is abandoned, the tab is
+ * backgrounded, or the OS cancels it) — `dragenter`/`dragover` re-arm this
+ * watchdog on every event, so a drag that's gone silent for a beat clears
+ * itself instead of leaving the dropzone stuck lit and the page scroll
+ * locked. */
+const DRAG_ACTIVE_TIMEOUT_MS = 1000;
+
 const PREVIEW_GRID_CAP = 4;
 
 /**
@@ -182,6 +223,17 @@ const PREVIEW_GRID_CAP = 4;
  * Pass `aspectRatio="square"` for a 1:1 Card-radius tile — useful when
  * the selection is meant to read as a single photo rather than a wide
  * dashed field.
+ *
+ * `dragActive` also drives a page-level scroll lock (`documentElement`
+ * `overflow`/`touch-action`) for the duration of the drag: mobile browsers
+ * otherwise scroll or rubber-band the page out from under a drag gesture
+ * that's hovering the dropzone. Because touch-originated drags don't
+ * reliably fire a matching `dragleave`/`drop` (tab backgrounded, gesture
+ * aborted by the OS, dropped outside the window), a watchdog timer
+ * re-armed on every `dragenter`/`dragover` — plus `window` `dragend`/
+ * `drop`/`blur` and `visibilitychange` listeners — force-clears
+ * `dragActive` if the drag goes silent, so the dropzone can't get stuck
+ * lit with scroll locked.
  */
 export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
   function FileUpload(
@@ -218,8 +270,25 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     const inputRef = useRef<HTMLInputElement>(null);
     const dropzoneRef = useRef<HTMLLabelElement>(null);
     const dragCounterRef = useRef(0);
+    const dragActiveTimeoutRef = useRef<number | null>(null);
     const previewUrlCacheRef = useRef(new Map<string, string>());
     const [dragActive, setDragActive] = useState(false);
+
+    function clearDragActiveTimeout() {
+      if (dragActiveTimeoutRef.current !== null) {
+        window.clearTimeout(dragActiveTimeoutRef.current);
+        dragActiveTimeoutRef.current = null;
+      }
+    }
+
+    function armDragActiveTimeout() {
+      clearDragActiveTimeout();
+      dragActiveTimeoutRef.current = window.setTimeout(() => {
+        dragActiveTimeoutRef.current = null;
+        dragCounterRef.current = 0;
+        setDragActive(false);
+      }, DRAG_ACTIVE_TIMEOUT_MS);
+    }
 
     const [currentFiles, setCurrentFiles] = useControllableState<File[]>({
       value: files,
@@ -269,6 +338,41 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       };
     }, []);
 
+    // Locks page scroll for as long as a drag is active, regardless of how
+    // `dragActive` became false (leave, drop, or the watchdog/force-reset
+    // below) — tying the lock to this effect's lifetime, rather than to
+    // each individual handler, means every exit path restores scroll.
+    useLayoutEffect(() => {
+      if (!dragActive) return;
+      lockPageScroll();
+      return () => unlockPageScroll();
+    }, [dragActive]);
+
+    // Touch/mobile drags can go silent without ever firing `dragleave` or
+    // `drop` on this element — leaving the window entirely, backgrounding
+    // the tab, or the OS aborting the gesture. These listeners are a
+    // best-effort net underneath the per-drag watchdog timeout, catching
+    // the cases where the browser tells us *something* happened, just not
+    // through this element.
+    useLayoutEffect(() => {
+      function forceResetDragState() {
+        clearDragActiveTimeout();
+        dragCounterRef.current = 0;
+        setDragActive(false);
+      }
+      window.addEventListener("dragend", forceResetDragState);
+      window.addEventListener("drop", forceResetDragState);
+      window.addEventListener("blur", forceResetDragState);
+      document.addEventListener("visibilitychange", forceResetDragState);
+      return () => {
+        window.removeEventListener("dragend", forceResetDragState);
+        window.removeEventListener("drop", forceResetDragState);
+        window.removeEventListener("blur", forceResetDragState);
+        document.removeEventListener("visibilitychange", forceResetDragState);
+        clearDragActiveTimeout();
+      };
+    }, []);
+
     function handleNativeChange(event: ChangeEvent<HTMLInputElement>) {
       const incoming = Array.from(event.target.files ?? []);
       // Native <input type="file"> quirk: without resetting .value, picking
@@ -293,6 +397,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       // Capture origin one last time at the drop point before clearing drag state.
       updateRevealOrigin(event);
       dragCounterRef.current = 0;
+      clearDragActiveTimeout();
       setDragActive(false);
       if (disabled) return;
 
@@ -313,6 +418,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       event.preventDefault();
       updateRevealOrigin(event);
       dragCounterRef.current += 1;
+      armDragActiveTimeout();
       setDragActive(true);
     }
 
@@ -320,6 +426,11 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       // Required for `drop` to fire at all.
       event.preventDefault();
       updateRevealOrigin(event);
+      // Re-arms the stuck-state watchdog on every `dragover`, not just
+      // `dragenter` — a drag that's actively hovering keeps resetting the
+      // clock, so only a drag that's gone silent (the touch quirks this
+      // guards against) ever hits the timeout.
+      armDragActiveTimeout();
     }
 
     function handleDragLeave(event: DragEvent<HTMLLabelElement>) {
@@ -330,6 +441,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       dragCounterRef.current -= 1;
       if (dragCounterRef.current <= 0) {
         dragCounterRef.current = 0;
+        clearDragActiveTimeout();
         setDragActive(false);
       }
     }

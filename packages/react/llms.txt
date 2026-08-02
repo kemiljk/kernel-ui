@@ -79,7 +79,7 @@ real underlying element, fully functional, just unstyled — never broken.
 ### Forms
 - **ColorPicker** — A real colour input, plus a typeable hex field on the same value.
 - **Combobox** — Filterable list with aria-activedescendant.
-- **FileUpload** — Drag-and-drop over a real file input, with optional image preview moulding (`preview`, `aspectRatio="square"`).
+- **FileUpload** — Drag-and-drop over a real file input, with optional square image preview moulding.
 - **InputOTP** — One-time-code entry with roving focus.
 - **NumberField** — TextField's scaffold, specialised for numbers.
 - **Select** (+ `SelectOption`) — The platform's own picker UI, on every device.

@@ -47,6 +47,113 @@
   }
 }
 
+/* Side sheets: full-bleed, edge-anchored, and driven by `translate`
+   instead of `scale` — a drawer should read as pulled in from
+   off-screen, not grown from the center of the viewport. Each side
+   only sets where it's anchored, its size, and the off-screen
+   `--kernel-dialog-translate` it slides from; the shared open/closing
+   rules below apply that value the same way the center variant applies
+   `--kernel-scale-enter`, so cascade order (not selector specificity)
+   still decides open vs. closing exactly like the rules above. */
+.content[data-side="left"] {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  inline-size: min(85vw, 24rem);
+  max-inline-size: min(85vw, 24rem);
+  block-size: 100dvh;
+  max-block-size: 100dvh;
+  border-inline-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  --kernel-dialog-translate: -100% 0;
+}
+
+.content[data-side="right"] {
+  inset-block: 0;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  inline-size: min(85vw, 24rem);
+  max-inline-size: min(85vw, 24rem);
+  block-size: 100dvh;
+  max-block-size: 100dvh;
+  border-inline-start: var(--kernel-border-width) solid var(--kernel-color-border);
+  --kernel-dialog-translate: 100% 0;
+}
+
+.content[data-side="top"] {
+  inset-inline: 0;
+  inset-block-start: 0;
+  inset-block-end: auto;
+  inline-size: 100vw;
+  max-inline-size: 100vw;
+  block-size: auto;
+  max-block-size: min(85dvh, 32rem);
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  --kernel-dialog-translate: 0 -100%;
+}
+
+.content[data-side="bottom"] {
+  inset-inline: 0;
+  inset-block-start: auto;
+  inset-block-end: 0;
+  inline-size: 100vw;
+  max-inline-size: 100vw;
+  block-size: auto;
+  max-block-size: min(85dvh, 32rem);
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+  --kernel-dialog-translate: 0 100%;
+}
+
+.content[data-side="left"],
+.content[data-side="right"],
+.content[data-side="top"],
+.content[data-side="bottom"] {
+  margin: 0;
+  border-radius: 0;
+  scale: 1;
+  translate: var(--kernel-dialog-translate);
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
+}
+
+.content[open][data-side="left"],
+.content[open][data-side="right"],
+.content[open][data-side="top"],
+.content[open][data-side="bottom"] {
+  scale: 1;
+  translate: 0 0;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-enter) allow-discrete,
+    display var(--kernel-duration-enter) allow-discrete;
+}
+
+.content[data-closing][data-side="left"],
+.content[data-closing][data-side="right"],
+.content[data-closing][data-side="top"],
+.content[data-closing][data-side="bottom"] {
+  scale: 1;
+  translate: var(--kernel-dialog-translate);
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
+}
+
+@starting-style {
+  .content[open][data-side="left"],
+  .content[open][data-side="right"],
+  .content[open][data-side="top"],
+  .content[open][data-side="bottom"] {
+    opacity: 0;
+    translate: var(--kernel-dialog-translate);
+  }
+}
+
 .content::backdrop {
   background-color: var(--kernel-dialog-backdrop-bg, var(--kernel-color-scrim));
   backdrop-filter: var(--kernel-dialog-backdrop-filter, none);
@@ -130,14 +237,28 @@
 
   .content {
     scale: 1;
+    translate: 0 0;
   }
 
   .content[data-closing] {
     scale: 1;
+    translate: 0 0;
   transition:
     opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
 }
+
+  .content[data-side="left"],
+  .content[data-side="right"],
+  .content[data-side="top"],
+  .content[data-side="bottom"],
+  .content[data-closing][data-side="left"],
+  .content[data-closing][data-side="right"],
+  .content[data-closing][data-side="top"],
+  .content[data-closing][data-side="bottom"] {
+    translate: 0 0;
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
 }

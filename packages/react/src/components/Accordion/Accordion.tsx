@@ -61,9 +61,11 @@ export interface AccordionItemProps {
 /**
  * Built on `<details>`/`<summary>`: expand/collapse, keyboard support,
  * find-in-page, and print-friendliness all come from the browser. The
- * height transition is progressive enhancement (`::details-content`,
- * newly available); browsers without it still open and close instantly
- * and correctly, they just don't animate.
+ * open/close transition is progressive enhancement (`::details-content`,
+ * animating a CSS grid row track between `0fr` and `1fr` — see the CSS
+ * for why that's used instead of a `height: 0` → `auto` transition);
+ * browsers without `::details-content` support still open and close
+ * instantly and correctly, they just don't animate.
  */
 export function AccordionItem({
   title,
@@ -91,7 +93,7 @@ export function AccordionItem({
       parseFloat(getComputedStyle(node).getPropertyValue("--kernel-duration-base")) || 200;
     const timer = window.setTimeout(() => setTransitioning(false), durationMs);
     function handleTransitionEnd(event: TransitionEvent) {
-      if (event.propertyName === "height") setTransitioning(false);
+      if (event.propertyName === "grid-template-rows") setTransitioning(false);
     }
     node.addEventListener("transitionend", handleTransitionEnd);
     return () => {

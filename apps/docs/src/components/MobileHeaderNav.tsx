@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button, Nav, NavLink, Popover } from "@kernelui-lib/react";
 import ThemeToggle from "./ThemeToggle";
 import ThemeControls from "./ThemeControls";
@@ -43,6 +43,15 @@ function NpmIcon() {
  */
 export default function MobileHeaderNav({ items, currentPath, starCount }: MobileHeaderNavProps) {
   const [open, setOpen] = useState(false);
+  // Both Popover (`popover="auto"`) and CommandPalette (`<dialog>`) are
+  // top-layer elements. Closing one and opening the other in the same
+  // tick races the browser's top-layer bookkeeping and can freeze the
+  // page on mobile. Popover only fires `onOpenChange(false)` once its
+  // native `toggle` event confirms `hidePopover()` has actually run, so
+  // deferring the palette-open request until that callback fires (rather
+  // than dispatching it inline in the click handler) guarantees the
+  // popover is fully out of the top layer first.
+  const openPaletteOnCloseRef = useRef(false);
   const githubLabel =
     starCount != null
       ? `GitHub repository (${formatStarCount(starCount)} stars)`
@@ -51,7 +60,13 @@ export default function MobileHeaderNav({ items, currentPath, starCount }: Mobil
   return (
     <Popover
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen && openPaletteOnCloseRef.current) {
+          openPaletteOnCloseRef.current = false;
+          window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT));
+        }
+      }}
       placement="bottom"
       align="end"
       className="mobile-header-nav-panel"
@@ -99,8 +114,8 @@ export default function MobileHeaderNav({ items, currentPath, starCount }: Mobil
         className="mobile-header-nav-search"
         iconStart={<MagnifyingGlassIcon />}
         onClick={() => {
+          openPaletteOnCloseRef.current = true;
           setOpen(false);
-          window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT));
         }}
       >
         Search components

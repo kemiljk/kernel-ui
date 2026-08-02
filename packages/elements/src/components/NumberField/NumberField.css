@@ -106,6 +106,9 @@
   background: none;
   color: var(--kernel-color-text-muted);
   cursor: pointer;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out),

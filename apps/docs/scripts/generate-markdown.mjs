@@ -14,27 +14,45 @@ const distDir = path.join(import.meta.dirname, "..", "dist");
 const componentsDir = path.join(distDir, "components");
 const guideSlugs = ["installation", "cli", "migration", "theming", "platforms"];
 
+// JSX/HTML whitespace collapse means a `<strong>`/`<em>` can abut its
+// neighbouring text with no source space at all (`word<strong>bold</strong>word`),
+// which would otherwise concatenate into fused markers like `word**bold**word`.
+// Adjacent inline segments get a space between them unless one side already
+// supplies whitespace, or the boundary is punctuation that must hug the
+// preceding word (`**bold**.`, `**bold**,`) or an opening bracket that must
+// hug the following one (`(**bold**`).
+function appendInline(out, segment) {
+  if (!segment) return out;
+  if (!out) return segment;
+  const prevChar = out[out.length - 1];
+  const nextChar = segment[0];
+  if (/\s/.test(prevChar) || /\s/.test(nextChar)) return out + segment;
+  if (/[.,!?;:)\]}%]/.test(nextChar)) return out + segment;
+  if (/[(\[{]/.test(prevChar)) return out + segment;
+  return `${out} ${segment}`;
+}
+
 function inlineToMarkdown(node) {
   let out = "";
   for (const child of node.childNodes) {
     if (child.nodeType === 3) {
       // `.rawText` is the undecoded source (`=&gt;` stays literal);
       // `.text` runs entity decoding, which is what plain prose needs.
-      out += child.text.replace(/\s+/g, " ");
+      out = appendInline(out, child.text.replace(/\s+/g, " "));
       continue;
     }
     if (typeof child.tagName !== "string") continue;
     const tag = child.tagName.toLowerCase();
     if (tag === "code" || tag === "kbd") {
-      out += `\`${child.text}\``;
+      out = appendInline(out, `\`${child.text}\``);
     } else if (tag === "a") {
-      out += `[${inlineToMarkdown(child).trim()}](${child.getAttribute("href") ?? ""})`;
+      out = appendInline(out, `[${inlineToMarkdown(child).trim()}](${child.getAttribute("href") ?? ""})`);
     } else if (tag === "strong" || tag === "b") {
-      out += `**${inlineToMarkdown(child).trim()}**`;
+      out = appendInline(out, `**${inlineToMarkdown(child).trim()}**`);
     } else if (tag === "em" || tag === "i") {
-      out += `*${inlineToMarkdown(child).trim()}*`;
+      out = appendInline(out, `*${inlineToMarkdown(child).trim()}*`);
     } else {
-      out += inlineToMarkdown(child);
+      out = appendInline(out, inlineToMarkdown(child));
     }
   }
   return out;

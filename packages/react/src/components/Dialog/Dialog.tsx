@@ -29,6 +29,8 @@ export interface DialogClassNames {
 
 export type DialogBackdrop = "default" | "blur" | "opaque" | "transparent";
 
+export type DialogSide = "center" | "left" | "right" | "top" | "bottom";
+
 export interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,6 +47,12 @@ export interface DialogProps {
   /** Per-dialog `::backdrop` treatment. Style further via
    * `--kernel-dialog-backdrop-bg` / `--kernel-dialog-backdrop-filter`. */
   backdrop?: DialogBackdrop;
+  /** Appear direction. `"center"` keeps the default scale-settling card;
+   * a side turns the dialog into an edge-anchored sheet that slides in
+   * by translate instead — a drawer (nav, filters, details panel) reads
+   * as pulled in from off-screen, not grown from the middle of the
+   * screen. */
+  side?: DialogSide;
   /** @deprecated Prefer `classNames.root`. Still applied to the root. */
   className?: ClassNameValue<DialogState>;
   /** Typed class hooks for every structural slot. */
@@ -72,6 +80,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       showCloseButton = true,
       renderClose,
       backdrop = "default",
+      side = "center",
       className,
       classNames,
     },
@@ -213,6 +222,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
         data-opening={dataAttr(opening)}
         data-closing={dataAttr(closing)}
         data-backdrop={backdrop === "default" ? undefined : backdrop}
+        data-side={side}
         className={[
           styles.content,
           resolveClassName(className, state),

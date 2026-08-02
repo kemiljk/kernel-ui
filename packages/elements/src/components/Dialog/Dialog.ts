@@ -17,7 +17,10 @@ let dialogCounter = 0;
  * `slot="title"` for richer markup), `description`,
  * `close-on-backdrop-click` (default true — set to `"false"` to
  * require an explicit close), `show-close-button` (default true — set
- * to `"false"` to omit), `backdrop` (default/blur/opaque/transparent).
+ * to `"false"` to omit), `backdrop` (default/blur/opaque/transparent),
+ * `side` (center/left/right/top/bottom, default center — a side turns
+ * the dialog into an edge-anchored sheet that slides in by translate
+ * instead of the default scale settle, for drawers like a mobile nav).
  *
  * Part classes (stable `data-slot` hooks too): dialog, header, title,
  * description, content, close.
@@ -35,7 +38,7 @@ export class KernelDialog extends KernelElement {
   private skipCloseEvent = false;
 
   static get observedAttributes() {
-    return ["open", "title", "description", "backdrop", "show-close-button"];
+    return ["open", "title", "description", "backdrop", "show-close-button", "side"];
   }
 
   connectedCallback() {
@@ -188,6 +191,9 @@ export class KernelDialog extends KernelElement {
         else dialog.removeAttribute("data-backdrop");
         break;
       case "show-close-button":
+        break;
+      case "side":
+        dialog.setAttribute("data-side", value && value !== "" ? value : "center");
         break;
     }
   }

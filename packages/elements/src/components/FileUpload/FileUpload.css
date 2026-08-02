@@ -44,6 +44,7 @@
   text-align: center;
   cursor: pointer;
   overflow: hidden;
+  user-select: none;
   transition:
     border-color var(--kernel-duration-enter) var(--kernel-ease-overlay),
     border-style var(--kernel-duration-enter) var(--kernel-ease-overlay),
@@ -104,6 +105,10 @@
 .kernel-FileUpload-dropzone[data-drag-active] {
   --kernel-drop-reveal-scale: 1;
   border-color: var(--kernel-color-accent);
+  /* Belt-and-suspenders alongside the JS-driven documentElement scroll
+     lock: stops the dropzone itself from panning/zooming under a touch
+     drag even in the instant before the lock takes effect. */
+  touch-action: none;
 }
 
 .kernel-FileUpload-dropzone[data-drag-active]::before {
@@ -205,6 +210,10 @@
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-control);
   font-size: var(--kernel-font-size-sm);
+  /* A drag gesture that starts on/near a file row shouldn't fight the
+     browser's own text-selection heuristics — nothing in the row is
+     meant to be selected as text. */
+  user-select: none;
 }
 
 .kernel-FileUpload-fileName {

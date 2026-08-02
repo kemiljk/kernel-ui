@@ -91,6 +91,9 @@
   color: var(--kernel-color-text);
   font-size: var(--kernel-font-size-sm);
   cursor: default;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
 }
 
 .kernel-Combobox-option[data-active] {

@@ -26,6 +26,9 @@
   font: inherit;
   font-weight: inherit;
   cursor: pointer;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
 }
 
 .kernel-DataTable-sortButton:focus-visible {

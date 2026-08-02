@@ -29,9 +29,10 @@ export class KernelAccordion extends KernelElement {
 /**
  * `<kernel-accordion-item>` — a real `<details>`/`<summary>`; expand/
  * collapse, keyboard support, find-in-page, and print all come from the
- * browser. The height transition is progressive enhancement
- * (`::details-content`); browsers without it still open/close
- * correctly, just without the animation.
+ * browser. The open/close transition is progressive enhancement
+ * (`::details-content`, animating a CSS grid row track between `0fr`
+ * and `1fr` — see the CSS for why); browsers without it still
+ * open/close correctly, just without the animation.
  *
  * Attributes: `title` (the summary text — for richer markup, use a
  * child tagged `slot="title"` instead), `default-open` (boolean, read

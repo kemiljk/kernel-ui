@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-01T14:25:57.113Z",
+  "generatedAt": "2026-08-02T11:31:21.567Z",
   "components": [
     {
       "name": "Accordion",
@@ -440,7 +440,7 @@
       "category": "Forms",
       "slug": "file-upload",
       "element": "<label> + <input type=\"file\">",
-      "summary": "Drag-and-drop over a real file input, with optional image preview moulding.",
+      "summary": "Drag-and-drop over a real file input, with optional square image preview moulding.",
       "status": "available",
       "reactExports": [
         "FileUpload"

@@ -84,6 +84,11 @@ function resetRevealOrigin(dropzone: HTMLElement | null) {
   dropzone.style.setProperty("--kernel-drop-origin-y", "50%");
 }
 
+/** Watchdog interval for stuck touch-originated drags — see the class
+ * doc comment and `@kernelui-lib/react`'s `FileUpload` for the full
+ * rationale (mirrored 1:1 here). */
+const DRAG_ACTIVE_TIMEOUT_MS = 1000;
+
 const PREVIEW_GRID_CAP = 4;
 
 /**
@@ -111,11 +116,50 @@ const PREVIEW_GRID_CAP = 4;
  * doesn't affect `label` or the hint text, which sit above the dropzone
  * as a heading rather than inset text-field content), `invalid`,
  * `disabled`, `name`.
+ *
+ * While a drag is over the dropzone, page scroll is locked (`documentElement`
+ * `overflow`/`touch-action`) so mobile browsers don't scroll/rubber-band the
+ * page out from under the gesture. Touch-originated drags don't reliably
+ * fire a matching `dragleave`/`drop` (backgrounded tab, OS-aborted gesture,
+ * dropped outside the window), so a watchdog timer re-armed on every
+ * `dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and
+ * `visibilitychange` listeners — force-clears the drag-active state if the
+ * drag goes silent, so the dropzone can't get stuck lit with scroll locked.
  */
 export class KernelFileUpload extends KernelElement {
   private readonly generatedId = `kernel-file-upload-${++fileUploadCounter}`;
   private dragCounter = 0;
+  private dragActive = false;
+  private dragActiveTimeout: number | null = null;
   private previewUrls: string[] = [];
+
+  /** Module-scoped across every `<kernel-file-upload>` instance (not
+   * per-element) so overlapping drags — or an element unmounting mid-drag
+   * — can't clobber each other's restore value; only the instance that
+   * takes the count to 0 restores the pre-drag `overflow`/`touch-action`. */
+  private static scrollLockCount = 0;
+  private static previousDocumentOverflow = "";
+  private static previousDocumentTouchAction = "";
+
+  private static lockPageScroll() {
+    if (KernelFileUpload.scrollLockCount === 0) {
+      const root = document.documentElement;
+      KernelFileUpload.previousDocumentOverflow = root.style.overflow;
+      KernelFileUpload.previousDocumentTouchAction = root.style.touchAction;
+      root.style.overflow = "hidden";
+      root.style.touchAction = "none";
+    }
+    KernelFileUpload.scrollLockCount += 1;
+  }
+
+  private static unlockPageScroll() {
+    KernelFileUpload.scrollLockCount = Math.max(0, KernelFileUpload.scrollLockCount - 1);
+    if (KernelFileUpload.scrollLockCount === 0) {
+      const root = document.documentElement;
+      root.style.overflow = KernelFileUpload.previousDocumentOverflow;
+      root.style.touchAction = KernelFileUpload.previousDocumentTouchAction;
+    }
+  }
 
   static get observedAttributes() {
     return [
@@ -195,25 +239,36 @@ export class KernelFileUpload extends KernelElement {
       event.preventDefault();
       updateRevealOrigin(dropzone, event);
       this.dragCounter += 1;
-      dropzone.dataset.dragActive = "true";
+      this.setDragActive(true);
+      this.armDragActiveTimeout();
     });
     dropzone.addEventListener("dragover", (event) => {
       event.preventDefault();
       updateRevealOrigin(dropzone, event);
+      // Re-arms the stuck-state watchdog on every `dragover`, not just
+      // `dragenter` — a drag that's actively hovering keeps resetting the
+      // clock, so only a drag that's gone silent (the touch quirks this
+      // guards against) ever hits the timeout.
+      this.armDragActiveTimeout();
     });
     dropzone.addEventListener("dragleave", (event) => {
       event.preventDefault();
+      // dragenter/dragleave fire on every child element traversed, not
+      // just the label itself — a plain counter here avoids flicker every
+      // time the pointer crosses the icon or instructions text.
       this.dragCounter -= 1;
       if (this.dragCounter <= 0) {
         this.dragCounter = 0;
-        delete dropzone.dataset.dragActive;
+        this.clearDragActiveTimeout();
+        this.setDragActive(false);
       }
     });
     dropzone.addEventListener("drop", (event) => {
       event.preventDefault();
       updateRevealOrigin(dropzone, event);
       this.dragCounter = 0;
-      delete dropzone.dataset.dragActive;
+      this.clearDragActiveTimeout();
+      this.setDragActive(false);
       if (this.hasAttribute("disabled")) return;
 
       const incoming = Array.from(event.dataTransfer?.files ?? []);
@@ -245,10 +300,59 @@ export class KernelFileUpload extends KernelElement {
     this.native = root;
     this.append(root);
     this.syncAllAttrs();
+
+    // Touch-originated drags don't reliably fire a matching `dragleave`/
+    // `drop` on the dropzone itself (backgrounded tab, OS-aborted gesture,
+    // dropped outside the window) — these are a best-effort net underneath
+    // the per-drag watchdog timeout above.
+    window.addEventListener("dragend", this.forceResetDrag);
+    window.addEventListener("drop", this.forceResetDrag);
+    window.addEventListener("blur", this.forceResetDrag);
+    document.addEventListener("visibilitychange", this.forceResetDrag);
   }
 
   disconnectedCallback() {
     this.revokePreviewUrls();
+    this.clearDragActiveTimeout();
+    this.setDragActive(false);
+    window.removeEventListener("dragend", this.forceResetDrag);
+    window.removeEventListener("drop", this.forceResetDrag);
+    window.removeEventListener("blur", this.forceResetDrag);
+    document.removeEventListener("visibilitychange", this.forceResetDrag);
+  }
+
+  private readonly forceResetDrag = () => {
+    this.dragCounter = 0;
+    this.clearDragActiveTimeout();
+    this.setDragActive(false);
+  };
+
+  private setDragActive(active: boolean) {
+    if (active === this.dragActive) return;
+    this.dragActive = active;
+    if (active) {
+      this.dropzone?.setAttribute("data-drag-active", "true");
+      KernelFileUpload.lockPageScroll();
+    } else {
+      this.dropzone?.removeAttribute("data-drag-active");
+      KernelFileUpload.unlockPageScroll();
+    }
+  }
+
+  private armDragActiveTimeout() {
+    this.clearDragActiveTimeout();
+    this.dragActiveTimeout = window.setTimeout(() => {
+      this.dragActiveTimeout = null;
+      this.dragCounter = 0;
+      this.setDragActive(false);
+    }, DRAG_ACTIVE_TIMEOUT_MS);
+  }
+
+  private clearDragActiveTimeout() {
+    if (this.dragActiveTimeout !== null) {
+      window.clearTimeout(this.dragActiveTimeout);
+      this.dragActiveTimeout = null;
+    }
   }
 
   private get maxFiles(): number | null {

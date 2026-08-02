@@ -54,6 +54,10 @@
   font-size: var(--kernel-font-size-sm);
   pointer-events: auto;
   transform-origin: top center;
+  /* The whole toast is swipe-to-dismiss draggable; without this a drag
+     gesture starting on its text selects that text instead of moving
+     the toast. */
+  user-select: none;
 
   /* Collapsed default (depth 0, the front toast): no peek offset. Deeper
      toasts set their own `--y` in the `[data-depth="N"]` rules below — a
@@ -237,6 +241,9 @@
      danger toast. */
   color: var(--kernel-color-text-muted);
   cursor: default;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
   opacity: 0.7;
   transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out),
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),

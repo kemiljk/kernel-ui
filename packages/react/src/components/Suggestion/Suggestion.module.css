@@ -22,8 +22,12 @@
   display: inline-flex;
   align-items: center;
   max-inline-size: 100%;
-  padding-block: var(--kernel-space-2);
-  padding-inline: var(--kernel-space-3);
+  /* Roomier than a space-2/3 rectangular control: the pill's fully
+     round corners (--kernel-radius-full) eat into the visual padding on
+     each end, so a tight pad reads as cramped next to other fully-rounded
+     controls (Round theme's --kernel-radius-control: full buttons/inputs). */
+  padding-block: var(--kernel-space-3);
+  padding-inline: var(--kernel-space-4);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-surface);
@@ -35,6 +39,9 @@
   text-align: start;
   text-wrap: pretty;
   cursor: default;
+  /* Same convention as Button/Checkbox/Switch: a clickable control's
+     own label text never drag-selects. */
+  user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),
