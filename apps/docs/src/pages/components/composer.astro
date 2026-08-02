@@ -45,7 +45,7 @@ const thinkingSnippet = `<Composer
     </p>
 
     <div class="docs-example">
-      <ComposerDemo client:load />
+      <ComposerDemo client:visible />
     </div>
 
     <h2>Examples</h2>
@@ -58,20 +58,20 @@ const thinkingSnippet = `<Composer
         description="Leading/trailing slots for attachments, a send button, anything else."
         code={actionsSnippet}
       >
-        <ComposerActionsExample client:load />
+        <ComposerActionsExample client:visible />
       </Example>
       <Example
         title="Thinking state"
         description="An animated border sweep signals an in-flight response and blocks submission. The submitted query stays visible."
         code={thinkingSnippet}
       >
-        <ComposerThinkingExample client:load />
+        <ComposerThinkingExample client:visible />
       </Example>
     </ExampleGrid>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
-    <ComposerPlayground client:load />
+    <ComposerPlayground client:visible />
 
     
     <h2>Props</h2>

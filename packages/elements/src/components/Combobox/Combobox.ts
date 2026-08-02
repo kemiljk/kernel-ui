@@ -44,6 +44,10 @@ export class KernelCombobox extends KernelElement {
 
   private inputEl!: HTMLInputElement;
   private listboxEl!: HTMLElement;
+  private readonly onDocumentPointerDown = (event: PointerEvent) => {
+    if (!this.open) return;
+    if (!this.contains(event.target as Node)) this.closeList();
+  };
 
   static get observedAttributes() {
     return ["label", "hide-label", "no-label-offset", "placeholder", "value"];
@@ -106,10 +110,7 @@ export class KernelCombobox extends KernelElement {
     });
     input.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
-    document.addEventListener("pointerdown", (event) => {
-      if (!this.open) return;
-      if (!root.contains(event.target as Node)) this.closeList();
-    });
+    document.addEventListener("pointerdown", this.onDocumentPointerDown);
 
     root.append(label, input);
     this.native = root;
@@ -234,6 +235,7 @@ export class KernelCombobox extends KernelElement {
   }
 
   disconnectedCallback() {
+    document.removeEventListener("pointerdown", this.onDocumentPointerDown);
     // Drops the fallback path's window scroll/resize listeners if the
     // combobox is removed while its listbox is open (otherwise they leak,
     // referencing a detached element, on browsers without CSS anchor

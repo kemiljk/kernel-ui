@@ -139,35 +139,19 @@
 }
 
 .kernel-ToolCall-content {
+  min-height: 0;
   padding-block-end: var(--kernel-space-2);
   padding-inline-start: calc(1rem + var(--kernel-space-2));
 }
 
 .kernel-ToolCall-root[data-state="opening"] .kernel-ToolCall-content,
 .kernel-ToolCall-root[data-state="closing"] .kernel-ToolCall-content {
+  overflow: clip;
   user-select: none;
-}
-
-@supports selector(::details-content) {
-  .kernel-ToolCall-root::details-content {
-    overflow: hidden;
-    height: 0;
-    transition:
-      height var(--kernel-duration-base) var(--kernel-ease-in-out),
-      content-visibility var(--kernel-duration-base) allow-discrete;
-  }
-
-  .kernel-ToolCall-root[open]::details-content {
-    height: auto;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kernel-ToolCall-chevron {
-    transition: none;
-  }
-
-  .kernel-ToolCall-root::details-content {
     transition: none;
   }
 

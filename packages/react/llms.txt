@@ -79,7 +79,7 @@ real underlying element, fully functional, just unstyled — never broken.
 ### Forms
 - **ColorPicker** — A real colour input, plus a typeable hex field on the same value.
 - **Combobox** — Filterable list with aria-activedescendant.
-- **FileUpload** — Drag-and-drop over a real file input, with optional square image preview moulding.
+- **FileUpload** — Drag-and-drop over a real file input, with optional square image preview moulding. `onError` fires with `type: "accept" | "max-size" | "max-files" | "directory"` when a pick or drop is rejected (including a dropped folder, which the platform surfaces as an unreadable 0-byte `File`).
 - **InputOTP** — One-time-code entry with roving focus.
 - **NumberField** — TextField's scaffold, specialised for numbers.
 - **Select** (+ `SelectOption`) — The platform's own picker UI, on every device.
@@ -134,6 +134,23 @@ real underlying element, fully functional, just unstyled — never broken.
 - **ThinkingIndicator** — The universal typing-indicator dots, next to real visible text.
 - **ToolCall** — Collapsible agent tool status with pending, running, complete, and error states.
 <!-- GENERATED:COMPONENTS:END -->
+
+## Utilities
+
+- **`useDetailsTransition()`** / **`DetailsPanelAnimator`** — The measured-height
+  open/close motion behind `Accordion`, `Reasoning` and `ToolCall`, exported for
+  building your own `<details>` disclosure with the same feel. The hook returns
+  `{ detailsRef, contentRef, open, setOpen }`: put `detailsRef` on a `<details>`,
+  `contentRef` on a single wrapper element holding everything except the
+  `<summary>`. Accepts `defaultOpen` / `open` / `onOpenChange` (controlled or
+  uncontrolled). It drives the panel from `click` on the `<summary>` rather than
+  the `toggle` event, because `toggle` is non-cancelable and fires only *after*
+  the browser has already painted the panel at full height. Honours
+  `prefers-reduced-motion` by snapping, and sets `data-state="opening"` /
+  `"closing"` on the `<details>` while in flight. Use `DetailsPanelAnimator`
+  directly outside React.
+- **`renderElement`**, **`resolveClassName`**, **`dataAttr`**, **`mergeRefs`** —
+  The polymorphic/`className` helpers the components themselves use.
 
 ## Where to look for exact prop types
 

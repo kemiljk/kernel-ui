@@ -70,10 +70,6 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item:not([open]) .kernel-Ac
 }
 
 .kernel-Accordion-content {
-  /* See the matching comment in @kernelui-lib/react's Accordion.module.css —
-     grid items default to `min-height: auto`, which floors them at their
-     own content height and defeats the `::details-content` row-track
-     animation below. */
   min-height: 0;
   padding: 0 var(--kernel-space-4) var(--kernel-space-4);
   color: var(--kernel-color-text-muted);
@@ -88,35 +84,12 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item[open] .kernel-Accordio
 
 .kernel-Accordion-item[data-state="opening"] .kernel-Accordion-content,
 .kernel-Accordion-item[data-state="closing"] .kernel-Accordion-content {
+  overflow: clip;
   user-select: none;
-}
-
-/* CSS grid `0fr` → `1fr` trick, not `height: 0` → `auto`: see the matching
-   comment in @kernelui-lib/react's Accordion.module.css for why — a grid
-   row track interpolates between `0fr` and `1fr` as ordinary numbers,
-   with no `interpolate-size` opt-in required, while still sizing itself
-   to the content's natural height at `1fr`. */
-@supports selector(::details-content) {
-  .kernel-Accordion-item::details-content {
-    display: grid;
-    grid-template-rows: 0fr;
-    overflow: hidden;
-    transition:
-      grid-template-rows var(--kernel-duration-base) var(--kernel-ease-in-out),
-      content-visibility var(--kernel-duration-base) allow-discrete;
-  }
-
-  .kernel-Accordion-item[open]::details-content {
-    grid-template-rows: 1fr;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kernel-Accordion-chevron {
-    transition: none;
-  }
-
-  .kernel-Accordion-item::details-content {
     transition: none;
   }
 }

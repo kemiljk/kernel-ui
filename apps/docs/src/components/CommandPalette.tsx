@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { navigate } from "astro:transitions/client";
 import { Button, CommandPalette as KernelCommandPalette } from "@kernelui-lib/react";
 import type { CommandPaletteItem } from "@kernelui-lib/react";
 import { components } from "../data/components";
@@ -28,7 +30,11 @@ function shortcutLabel() {
  * Sitewide search — wraps the shipped `@kernelui-lib/react` CommandPalette
  * (a real `<dialog>` with filter + listbox) rather than reimplementing the
  * same pattern with a hand-rolled `popover`. The trigger and ⌘K shortcut
- * stay site chrome; everything inside the panel is Kernel.
+ * stay site chrome; everything inside the panel is Kernel. The dialog
+ * is portaled to `document.body` so it can open from the mobile header
+ * menu even though the desktop trigger wrapper is `display: none`
+ * below 800px — a `<dialog>` inside a hidden ancestor cannot
+ * `showModal()` into the top layer.
  */
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -41,7 +47,8 @@ export default function CommandPalette() {
         label: page.name,
         description: page.summary,
         onSelect: () => {
-          window.location.assign(page.href);
+          setOpen(false);
+          void navigate(page.href);
         },
       })),
       ...components
@@ -51,7 +58,8 @@ export default function CommandPalette() {
           label: component.name,
           description: component.element,
           onSelect: () => {
-            window.location.assign(`/components/${component.slug}/`);
+            setOpen(false);
+            void navigate(`/components/${component.slug}/`);
           },
         })),
     ],
@@ -93,14 +101,19 @@ export default function CommandPalette() {
         Search
         <kbd className="command-palette-kbd">{kbdLabel}</kbd>
       </Button>
-      <KernelCommandPalette
-        open={open}
-        onOpenChange={setOpen}
-        items={items}
-        placeholder="Search components…"
-        emptyMessage="No components match."
-        blur
-      />
+      {typeof document !== "undefined"
+        ? createPortal(
+            <KernelCommandPalette
+              open={open}
+              onOpenChange={setOpen}
+              items={items}
+              placeholder="Search components…"
+              emptyMessage="No components match."
+              blur
+            />,
+            document.body,
+          )
+        : null}
     </>
   );
 }

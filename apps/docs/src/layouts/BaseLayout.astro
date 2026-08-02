@@ -1,7 +1,8 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import "@fontsource-variable/stack-sans-text";
-import "@fontsource-variable/lilex";
+import stackSansLatin from "@fontsource-variable/stack-sans-text/files/stack-sans-text-latin-wght-normal.woff2";
+import lilexLatin from "@fontsource-variable/lilex/files/lilex-latin-wght-normal.woff2";
+import "../styles/fonts-latin.css";
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -163,14 +164,41 @@ const pageTitle =
          no page CSS context, so a theme-reactive colour would just never
          resolve and fall back to nothing. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="preload"
+      href={stackSansLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href={lilexLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
     {
       import.meta.env.PROD && (
-        <script
-          is:inline
-          defer
-          src="https://analytics.karlkoch.me/script.js"
-          data-website-id="f4ad2f0d-e314-4dca-a2db-e120ab282e4b"
-        />
+        <script is:inline>
+          {`(function () {
+  var loaded = false;
+  function loadAnalytics() {
+    if (loaded) return;
+    loaded = true;
+    var s = document.createElement("script");
+    s.src = "https://analytics.karlkoch.me/script.js";
+    s.defer = true;
+    s.setAttribute("data-website-id", "f4ad2f0d-e314-4dca-a2db-e120ab282e4b");
+    document.head.appendChild(s);
+  }
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(loadAnalytics, { timeout: 4000 });
+  } else {
+    window.addEventListener("load", loadAnalytics, { once: true });
+  }
+})();`}
+        </script>
       )
     }
     <ClientRouter />
@@ -276,7 +304,7 @@ const pageTitle =
       <main class="docs-main" id="main">
         {
           withSidebar && (
-            <MobileNav client:load>
+            <MobileNav client:media="(max-width: 899px)">
               <DocsSidebarNav />
             </MobileNav>
           )

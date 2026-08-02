@@ -12,5 +12,5 @@ const { code, lang } = Astro.props;
 
 <div class="code-block">
   <Code code={code} lang={lang} theme="css-variables" />
-  <CopyButton client:load text={code} />
+  <CopyButton client:visible text={code} />
 </div>

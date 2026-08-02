@@ -82,9 +82,14 @@ const path = Astro.url.pathname;
   <div class="site-header-toggle-desktop">
     <GitHubHeaderLink />
     <NpmHeaderLink />
-    <CommandPalette client:load />
-    <ThemeMenu client:load />
-    <ThemeToggle client:load />
+    <CommandPalette client:idle />
+    <ThemeMenu client:media="(min-width: 800px)" />
+    <ThemeToggle client:media="(min-width: 800px)" />
   </div>
-  <MobileHeaderNav client:load items={items} currentPath={path} starCount={githubStars.stars} />
+  <MobileHeaderNav
+    client:media="(max-width: 799px)"
+    items={items}
+    currentPath={path}
+    starCount={githubStars.stars}
+  />
 </Header>

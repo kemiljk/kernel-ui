@@ -6,6 +6,12 @@
   --docs-content-width: 44rem;
   --docs-shell-width: 78rem;
 
+  /* Sticky docs chrome (sidebar, mobile nav trigger) sits above page
+     content but below the site header's --kernel-z-overlay (100).
+     tokens.css deliberately documents only the one shared overlay tier;
+     this is docs-site-local. */
+  --site-z-sticky: 50;
+
   /* Base radius only, deliberately NOT --kernel-radius-control here —
      read BaseLayout.astro's no-FOUC script before touching this.
      Kernel's own brand treatment is pill-shaped controls (the same
@@ -147,6 +153,7 @@ h3 {
   inset-block-start: calc(var(--kernel-space-unit) * 16);
   max-block-size: calc(100dvh - calc(var(--kernel-space-unit) * 16));
   overflow-y: auto;
+  z-index: var(--site-z-sticky);
 }
 
 @media (width < 900px) {
@@ -371,6 +378,7 @@ p.docs-sidebar-eyebrow:first-child {
   }
 }
 
+.toc-item a[aria-current="location"],
 .toc-item a[aria-current="page"] {
   color: var(--kernel-color-accent-text);
   border-inline-start-color: var(--kernel-color-accent);
@@ -394,6 +402,7 @@ p.docs-sidebar-eyebrow:first-child {
   position: sticky;
   inset-block-start: calc(calc(var(--kernel-space-unit) * 16) + var(--kernel-space-4));
   margin-block-end: var(--kernel-space-6);
+  z-index: var(--site-z-sticky);
 }
 
 @media (width < 900px) {
@@ -457,10 +466,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 2px;
   border-radius: var(--kernel-radius-sm);
-}
-
-body[data-with-sidebar="true"] .mobile-header-nav-trigger {
-  display: none;
 }
 
 .mobile-header-nav-registry-link {
@@ -1290,6 +1295,10 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
     );
   background-size: 18px 18px;
   overflow: visible;
+  /* Demo-local z-indexes on the draggable icons must not compete with
+     sticky docs chrome outside this box — tokens.css assumes component-
+     internal layering stays inside its own stacking context. */
+  isolation: isolate;
 }
 
 .file-upload-desktop-rail {
@@ -1462,6 +1471,7 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   align-items: center;
   text-align: center;
   padding-block: var(--kernel-space-12) var(--kernel-space-8);
+  isolation: isolate;
 
   opacity: 1;
   translate: 0 0;
@@ -2026,9 +2036,11 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
 }
 
 /* Mirrors packages/react's Accordion component smart defaults (same
-   chevron rotation, ::details-content height animation, select-none
-   summary text) so the docs shell's own disclosure widgets feel like
-   the library practicing what it ships, not a one-off. */
+   chevron rotation, select-none summary text) so the docs shell's own
+   disclosure widgets feel like the library practicing what it ships, not
+   a one-off. The open/close height itself is driven by the library's own
+   `useDetailsTransition` via `UsageDisclosure.tsx` — see the comment there
+   for why this isn't a `::details-content` CSS transition. */
 .usage-accordion {
   margin-block-start: var(--kernel-space-4);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
@@ -2109,26 +2121,15 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   margin: 0;
 }
 
-@supports selector(::details-content) {
-  .usage-accordion::details-content {
-    overflow: hidden;
-    height: 0;
-    transition:
-      height var(--kernel-duration-base) var(--kernel-ease-spring),
-      content-visibility var(--kernel-duration-base) allow-discrete;
-  }
-
-  .usage-accordion[open]::details-content {
-    height: auto;
-  }
+/* Selectable once fully open; disabled only while the panel is actively
+   resizing, matching the library Accordion's own rule. */
+.usage-accordion[data-state="opening"] .usage-accordion-content,
+.usage-accordion[data-state="closing"] .usage-accordion-content {
+  user-select: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .usage-accordion-chevron {
-    transition: none;
-  }
-
-  .usage-accordion::details-content {
     transition: none;
   }
 }

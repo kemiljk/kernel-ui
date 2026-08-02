@@ -67,6 +67,7 @@
 }
 
 .content {
+  min-height: 0;
   /* Same reasoning as .trigger: no horizontal box padding to remove, but
      a small bottom gap so the trace text doesn't sit flush against
      whatever follows it in the parent chat message. */
@@ -78,32 +79,12 @@
 
 .root[data-state="opening"] .content,
 .root[data-state="closing"] .content {
+  overflow: clip;
   user-select: none;
-}
-
-/* Identical technique to Accordion's own ::details-content block — kept as
-   its own six lines here rather than forcing a shared abstraction across
-   two small, independently-evolving components. */
-@supports selector(::details-content) {
-  .root::details-content {
-    overflow: hidden;
-    height: 0;
-    transition:
-      height var(--kernel-duration-base) var(--kernel-ease-in-out),
-      content-visibility var(--kernel-duration-base) allow-discrete;
-  }
-
-  .root[open]::details-content {
-    height: auto;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .chevron {
-    transition: none;
-  }
-
-  .root::details-content {
     transition: none;
   }
 }

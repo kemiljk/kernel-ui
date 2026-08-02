@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
+import { createContext, useContext, useId, useLayoutEffect, useRef, useState } from "react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode, RefObject } from "react";
 import { dataAttr, mergeRefs } from "../../utils/polymorphic";
 import {
@@ -69,9 +69,12 @@ export function NavigationMenuItem({
     align,
     offset,
   });
-  const floatingNode = floatingRef.current;
 
-  useEffect(() => {
+  // Read the ref inside the effect, not during render — on the first
+  // render `floatingRef.current` is always null, so capturing it in the
+  // dependency array meant the toggle listener never attached.
+  useLayoutEffect(() => {
+    const floatingNode = floatingRef.current;
     if (!floatingNode) return;
 
     function handleToggle(event: Event) {
@@ -80,8 +83,7 @@ export function NavigationMenuItem({
 
     floatingNode.addEventListener("toggle", handleToggle);
     return () => floatingNode.removeEventListener("toggle", handleToggle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [floatingNode]);
+  }, [floatingRef]);
 
   return (
     <NavigationMenuItemContext.Provider

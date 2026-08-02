@@ -31,7 +31,7 @@ const composerSnippet = `<Suggestion>
     </p>
 
     <div class="docs-example" style="flex-direction: column; align-items: stretch;">
-      <SuggestionDemo client:load />
+      <SuggestionDemo client:visible />
     </div>
 
     <h2>Examples</h2>
@@ -47,13 +47,13 @@ const composerSnippet = `<Suggestion>
         description="Selecting a chip fills the composer — the usual empty-state pattern for chat UIs."
         code={composerSnippet}
       >
-        <SuggestionDemo client:load />
+        <SuggestionDemo client:visible />
       </Example>
     </ExampleGrid>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
-    <SuggestionPlayground client:load />
+    <SuggestionPlayground client:visible />
 
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">

@@ -120,4 +120,7 @@ export { KernelFileUpload } from "./components/FileUpload/FileUpload";
 export { KernelTagInput } from "./components/TagInput/TagInput";
 export { KernelNumberField } from "./components/NumberField/NumberField";
 
+export { DetailsPanelAnimator } from "./utils/detailsTransition";
+export type { DetailsPanelAnimatorOptions } from "./utils/detailsTransition";
+
 export { KernelElement, kernelClass, dataAttr } from "./base";

@@ -4,7 +4,7 @@ import "./FileUpload.css";
 let fileUploadCounter = 0;
 
 export interface KernelFileUploadErrorDetail {
-  type: "max-files" | "max-size" | "accept";
+  type: "max-files" | "max-size" | "accept" | "directory";
   files: File[];
 }
 
@@ -62,6 +62,28 @@ function validateFiles(
   return { accepted: incoming };
 }
 
+/** A dropped folder still turns up in `dataTransfer.files`, as a 0-byte
+ * pseudo-`File` with an empty `type` that no reader can open — so without
+ * this it lists as a perfectly ordinary row that silently uploads nothing.
+ * Only the entry API can tell the two apart, and only synchronously: the
+ * `items` list is neutered the moment the drop handler yields. Mirrors
+ * `@kernelui-lib/react`'s `collectDroppedDirectories` 1:1. */
+function collectDroppedDirectories(dataTransfer: DataTransfer, files: File[]): File[] {
+  const items = dataTransfer.items;
+  if (!items) return [];
+  const directories: File[] = [];
+  // `items` also carries non-file entries (dragged text, URLs); only the
+  // `kind === "file"` ones line up, in order, with `dataTransfer.files`.
+  let fileIndex = 0;
+  for (const item of Array.from(items)) {
+    if (item.kind !== "file") continue;
+    const file = files[fileIndex];
+    fileIndex += 1;
+    if (file && item.webkitGetAsEntry?.()?.isDirectory) directories.push(file);
+  }
+  return directories;
+}
+
 function syncNativeFiles(input: HTMLInputElement, files: File[]) {
   const dataTransfer = new DataTransfer();
   for (const file of files) dataTransfer.items.add(file);
@@ -100,7 +122,9 @@ const PREVIEW_GRID_CAP = 4;
  * source of truth, so this element reads it directly after every
  * `change`/drop and re-renders its own file-list DOM from it. Validation
  * rejections dispatch a `kernel-file-upload-error` `CustomEvent` (there's
- * no prop-callback equivalent for a vanilla element).
+ * no prop-callback equivalent for a vanilla element) — including
+ * `type: "directory"` for a dropped folder, which the platform hands over
+ * as an unreadable 0-byte `File` rather than refusing outright.
  *
  * Attributes: `label` (required, still contributes to the dropzone's
  * accessible name even when `hide-label` is set), `hide-label`
@@ -131,7 +155,7 @@ export class KernelFileUpload extends KernelElement {
   private dragCounter = 0;
   private dragActive = false;
   private dragActiveTimeout: number | null = null;
-  private previewUrls: string[] = [];
+  private previewUrls = new Map<File, string>();
 
   /** Module-scoped across every `<kernel-file-upload>` instance (not
    * per-element) so overlapping drags — or an element unmounting mid-drag
@@ -273,10 +297,25 @@ export class KernelFileUpload extends KernelElement {
 
       const incoming = Array.from(event.dataTransfer?.files ?? []);
       if (incoming.length === 0) return;
-      const existing = Array.from(input.files ?? []);
+
+      const directories = event.dataTransfer
+        ? collectDroppedDirectories(event.dataTransfer, incoming)
+        : [];
+      if (directories.length > 0) {
+        this.dispatchEvent(
+          new CustomEvent("kernel-file-upload-error", {
+            detail: { type: "directory", files: directories } satisfies KernelFileUploadErrorDetail,
+          }),
+        );
+        return;
+      }
+
+      const allowMultiple = input.hasAttribute("multiple");
+      const existing = allowMultiple ? Array.from(input.files ?? []) : [];
+      const dropped = allowMultiple ? incoming : incoming.slice(0, 1);
       const result = validateFiles(
-        incoming,
-        existing.length,
+        dropped,
+        allowMultiple ? existing.length : 0,
         this.getAttribute("accept"),
         this.maxSize,
         this.maxFiles,
@@ -285,7 +324,7 @@ export class KernelFileUpload extends KernelElement {
         this.dispatchEvent(new CustomEvent("kernel-file-upload-error", { detail: result.error }));
         return;
       }
-      syncNativeFiles(input, [...existing, ...result.accepted]);
+      syncNativeFiles(input, allowMultiple ? [...existing, ...result.accepted] : result.accepted);
       this.renderFileList();
       this.renderPreview();
       this.dispatchEvent(new Event("change", { bubbles: true }));
@@ -374,8 +413,33 @@ export class KernelFileUpload extends KernelElement {
   }
 
   private revokePreviewUrls() {
-    for (const url of this.previewUrls) URL.revokeObjectURL(url);
-    this.previewUrls = [];
+    for (const url of this.previewUrls.values()) URL.revokeObjectURL(url);
+    this.previewUrls.clear();
+  }
+
+  /** Keyed on the `File` object, never on `name`/`size`/`lastModified`:
+   * two distinct files can share all three (the same photo dropped loose
+   * and again inside a folder), and they each need their own URL. Only the
+   * entries whose file has left the selection are revoked — re-creating
+   * every URL on each render, as this used to, made the browser re-decode
+   * every surviving thumbnail on any add or remove. */
+  private syncPreviewUrls(files: File[]) {
+    const live = new Set(files);
+    for (const [file, url] of this.previewUrls) {
+      if (!live.has(file)) {
+        URL.revokeObjectURL(url);
+        this.previewUrls.delete(file);
+      }
+    }
+  }
+
+  private previewUrlFor(file: File): string {
+    let url = this.previewUrls.get(file);
+    if (!url) {
+      url = URL.createObjectURL(file);
+      this.previewUrls.set(file, url);
+    }
+    return url;
   }
 
   private updateDescribedBy() {
@@ -458,7 +522,6 @@ export class KernelFileUpload extends KernelElement {
     const input = this.input;
     if (!dropzone || !input) return;
 
-    this.revokePreviewUrls();
     dropzone.querySelector(`.${kernelClass("FileUpload", "previewLabel")}`)?.remove();
 
     const files = Array.from(input.files ?? []);
@@ -476,6 +539,7 @@ export class KernelFileUpload extends KernelElement {
     }
 
     if (!previewEnabled) {
+      this.syncPreviewUrls([]);
       preview.setAttribute("hidden", "");
       preview.innerHTML = "";
       delete dropzone.dataset.hasPreview;
@@ -487,6 +551,7 @@ export class KernelFileUpload extends KernelElement {
     preview.removeAttribute("hidden");
 
     if (files.length === 0) {
+      this.syncPreviewUrls([]);
       delete dropzone.dataset.hasPreview;
       delete dropzone.dataset.previewLayout;
       preview.innerHTML = "";
@@ -508,11 +573,12 @@ export class KernelFileUpload extends KernelElement {
         : 0;
     const visibleFiles = gridOverflow > 0 ? files.slice(0, PREVIEW_GRID_CAP - 1) : files;
 
+    this.syncPreviewUrls(visibleFiles);
+
     preview.innerHTML = "";
     for (const file of visibleFiles) {
       if (isPreviewableImage(file)) {
-        const url = URL.createObjectURL(file);
-        this.previewUrls.push(url);
+        const url = this.previewUrlFor(file);
         const img = document.createElement("img");
         img.className = kernelClass("FileUpload", "previewImage");
         img.src = url;

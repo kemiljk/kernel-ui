@@ -266,6 +266,12 @@ export type { TagInputProps, TagInputState } from "./components/TagInput/TagInpu
 export { NumberField } from "./components/NumberField/NumberField";
 export type { NumberFieldProps, NumberFieldState } from "./components/NumberField/NumberField";
 
+export { DetailsPanelAnimator, useDetailsTransition } from "./utils/detailsTransition";
+export type {
+  DetailsPanelAnimatorOptions,
+  UseDetailsTransitionOptions,
+} from "./utils/detailsTransition";
+
 export {
   renderElement,
   resolveClassName,

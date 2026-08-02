@@ -35,12 +35,12 @@ import FileUploadPlayground from "../../components/demos/FileUploadPlayground";
     </p>
 
     <div class="docs-example">
-      <FileUploadDemo client:load />
+      <FileUploadDemo client:visible />
     </div>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
-    <FileUploadPlayground client:load />
+    <FileUploadPlayground client:visible />
 
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">
@@ -65,13 +65,13 @@ import FileUploadPlayground from "../../components/demos/FileUploadPlayground";
       </tbody>
     </table></div>
     <p>
-      Rejections (wrong type, over <code>maxSize</code>, or over{" "}
-      <code>maxFiles</code>) reject the whole attempted batch and call{" "}
-      <code>onError</code> rather than silently keeping only some of what
-      was dropped. Dropping accumulates onto the existing selection;
-      re-opening the OS picker still replaces it, the same as the native
-      element's own behaviour — that inconsistency comes from the browser,
-      not from this wrapper.
+      Rejections (wrong type, over <code>maxSize</code>, over{" "}
+      <code>maxFiles</code>, or a dropped folder rather than a file) reject
+      the whole attempted batch and call <code>onError</code> rather than
+      silently keeping only some of what was dropped. Dropping accumulates
+      onto the existing selection; re-opening the OS picker still replaces
+      it, the same as the native element's own behaviour — that
+      inconsistency comes from the browser, not from this wrapper.
     </p>
 
     <h2>Accessibility</h2>

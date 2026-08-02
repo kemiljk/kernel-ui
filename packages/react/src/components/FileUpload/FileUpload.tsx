@@ -4,8 +4,12 @@ import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../.
 import { useControllableState } from "../../utils/useControllableState";
 import styles from "./FileUpload.module.css";
 
-interface PreviewEntry {
+interface KeyedFile {
   file: File;
+  key: string;
+}
+
+interface PreviewEntry extends KeyedFile {
   url: string | null;
 }
 
@@ -17,7 +21,7 @@ export interface FileUploadState {
 }
 
 export interface FileUploadError {
-  type: "max-files" | "max-size" | "accept";
+  type: "max-files" | "max-size" | "accept" | "directory";
   files: File[];
 }
 
@@ -49,7 +53,8 @@ export interface FileUploadProps
   /** Max size per file, in bytes. */
   maxSize?: number;
   /** Fires whenever a pick or drop is rejected for exceeding `maxFiles`/
-   * `maxSize` or failing `accept`. Distinct from `invalid`/`errorMessage`,
+   * `maxSize`, failing `accept`, or being a dropped folder rather than a
+   * file (`type: "directory"`). Distinct from `invalid`/`errorMessage`,
    * which are for form-level validation state. */
   onError?: (error: FileUploadError) => void;
   /** When true, the dropzone moulds around the current selection:
@@ -84,6 +89,38 @@ function formatBytes(bytes: number): string {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
 }
 
+/** File identity has to come from the object, never from
+ * `name`/`size`/`lastModified`: two genuinely distinct `File`s can carry
+ * byte-identical metadata — the same photo dropped loose and again inside a
+ * folder is the everyday case — and keying React children on that metadata
+ * collapses them into one entry, so removing one row drops the wrong file or
+ * refuses to drop any. A `WeakMap` holds the id only as long as the caller
+ * holds the `File`. */
+let fileKeyCounter = 0;
+const fileKeys = new WeakMap<File, string>();
+
+function fileKey(file: File): string {
+  let key = fileKeys.get(file);
+  if (!key) {
+    key = `kernel-file-${++fileKeyCounter}`;
+    fileKeys.set(file, key);
+  }
+  return key;
+}
+
+/** Object identity alone still can't separate the one case where the SAME
+ * `File` is passed twice, so repeats get an occurrence suffix — that makes
+ * the keys unique unconditionally, whatever the caller hands us. */
+function keyFiles(files: File[]): KeyedFile[] {
+  const seen = new Map<string, number>();
+  return files.map((file) => {
+    const base = fileKey(file);
+    const occurrence = seen.get(base) ?? 0;
+    seen.set(base, occurrence + 1);
+    return { file, key: occurrence === 0 ? base : `${base}#${occurrence}` };
+  });
+}
+
 /** TIFF (and a few exotic image MIME types) report as `image/*` but
  * browsers won't paint them in an `<img>`, so preview treats them as
  * ordinary file chips instead of broken thumbnails. */
@@ -110,6 +147,29 @@ function matchesAccept(file: File, accept: string | undefined): boolean {
     if (pattern.endsWith("/*")) return file.type.toLowerCase().startsWith(pattern.slice(0, -1));
     return file.type.toLowerCase() === pattern;
   });
+}
+
+/** A dropped folder still turns up in `dataTransfer.files`, as a 0-byte
+ * pseudo-`File` with an empty `type` that no reader can open — so without
+ * this it lists as a perfectly ordinary row that silently uploads nothing.
+ * Only the entry API can tell the two apart, and only synchronously: the
+ * `items` list is neutered the moment the drop handler yields. Engines
+ * without the API report no directories, which is exactly the behaviour
+ * that shipped before. */
+function collectDroppedDirectories(dataTransfer: DataTransfer, files: File[]): File[] {
+  const items = dataTransfer.items;
+  if (!items) return [];
+  const directories: File[] = [];
+  // `items` also carries non-file entries (dragged text, URLs); only the
+  // `kind === "file"` ones line up, in order, with `dataTransfer.files`.
+  let fileIndex = 0;
+  for (const item of Array.from(items)) {
+    if (item.kind !== "file") continue;
+    const file = files[fileIndex];
+    fileIndex += 1;
+    if (file && item.webkitGetAsEntry?.()?.isDirectory) directories.push(file);
+  }
+  return directories;
 }
 
 function validateFiles(
@@ -215,7 +275,10 @@ const PREVIEW_GRID_CAP = 4;
  * `DataTransfer`, so it stays authoritative either way. The native input
  * itself has no drag-and-drop and no size/count limits at all — `accept`
  * only filters the OS dialog, never a drop — so all of that validation is
- * reimplemented once, in `validateFiles`, and reused by both paths.
+ * reimplemented once, in `validateFiles`, and reused by both paths. A
+ * dropped *folder* takes one further check that no amount of inspecting a
+ * `File` can do (`collectDroppedDirectories`), and is rejected outright
+ * rather than listed as a row that can never upload anything.
  *
  * Pass `preview` to mould the dropzone around the current selection:
  * displayable images become object-URL thumbnails (one fills the zone;
@@ -271,7 +334,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     const dropzoneRef = useRef<HTMLLabelElement>(null);
     const dragCounterRef = useRef(0);
     const dragActiveTimeoutRef = useRef<number | null>(null);
-    const previewUrlCacheRef = useRef(new Map<string, string>());
+    const previewUrlCacheRef = useRef(new Map<File, string>());
     const [dragActive, setDragActive] = useState(false);
 
     function clearDragActiveTimeout() {
@@ -296,16 +359,17 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       onChange: onFilesChange,
     });
 
+    const keyedFiles = keyFiles(currentFiles);
+
     const previewEntries: PreviewEntry[] = preview
-      ? currentFiles.map((file) => {
-          if (!isPreviewableImage(file)) return { file, url: null };
-          const key = `${file.name}-${file.size}-${file.lastModified}`;
-          let url = previewUrlCacheRef.current.get(key);
+      ? keyedFiles.map(({ file, key }) => {
+          if (!isPreviewableImage(file)) return { file, key, url: null };
+          let url = previewUrlCacheRef.current.get(file);
           if (!url) {
             url = URL.createObjectURL(file);
-            previewUrlCacheRef.current.set(key, url);
+            previewUrlCacheRef.current.set(file, url);
           }
-          return { file, url };
+          return { file, key, url };
         })
       : [];
 
@@ -314,17 +378,11 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     }, [currentFiles]);
 
     useLayoutEffect(() => {
-      const liveKeys = new Set(
-        preview
-          ? currentFiles
-              .filter(isPreviewableImage)
-              .map((file) => `${file.name}-${file.size}-${file.lastModified}`)
-          : [],
-      );
-      for (const [key, url] of previewUrlCacheRef.current) {
-        if (!liveKeys.has(key)) {
+      const live = new Set(preview ? currentFiles : []);
+      for (const [file, url] of previewUrlCacheRef.current) {
+        if (!live.has(file)) {
           URL.revokeObjectURL(url);
-          previewUrlCacheRef.current.delete(key);
+          previewUrlCacheRef.current.delete(file);
         }
       }
     }, [currentFiles, preview]);
@@ -404,14 +462,27 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       const incoming = Array.from(event.dataTransfer.files);
       if (incoming.length === 0) return;
 
-      const result = validateFiles(incoming, currentFiles.length, accept, maxSize, maxFiles);
+      const directories = collectDroppedDirectories(event.dataTransfer, incoming);
+      if (directories.length > 0) {
+        onError?.({ type: "directory", files: directories });
+        return;
+      }
+
+      const dropped = multiple ? incoming : incoming.slice(0, 1);
+      const result = validateFiles(
+        dropped,
+        multiple ? currentFiles.length : 0,
+        accept,
+        maxSize,
+        maxFiles,
+      );
       if ("error" in result) {
         onError?.(result.error);
         return;
       }
-      const combined = [...currentFiles, ...result.accepted];
-      setCurrentFiles(combined);
-      syncNativeFiles(inputRef.current, combined);
+      const next = multiple ? [...currentFiles, ...result.accepted] : result.accepted;
+      setCurrentFiles(next);
+      syncNativeFiles(inputRef.current, next);
     }
 
     function handleDragEnter(event: DragEvent<HTMLLabelElement>) {
@@ -538,19 +609,11 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
               data-layout={showMould ? previewLayout : undefined}
               aria-hidden="true"
             >
-              {visiblePreviewEntries.map((entry, index) =>
+              {visiblePreviewEntries.map((entry) =>
                 entry.url ? (
-                  <img
-                    key={`${entry.file.name}-${entry.file.size}-${entry.file.lastModified}-${index}`}
-                    className={styles.previewImage}
-                    src={entry.url}
-                    alt=""
-                  />
+                  <img key={entry.key} className={styles.previewImage} src={entry.url} alt="" />
                 ) : (
-                  <span
-                    key={`${entry.file.name}-${entry.file.size}-${entry.file.lastModified}-${index}`}
-                    className={styles.previewFile}
-                  >
+                  <span key={entry.key} className={styles.previewFile}>
                     <span className={styles.previewFileName}>{entry.file.name}</span>
                   </span>
                 ),
@@ -592,8 +655,8 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
             data-slot="file-upload-list"
             aria-label="Selected files"
           >
-            {currentFiles.map((file, index) => (
-              <li className={styles.fileItem} key={`${file.name}-${file.size}-${file.lastModified}`}>
+            {keyedFiles.map(({ file, key }, index) => (
+              <li className={styles.fileItem} key={key}>
                 <span className={styles.fileName}>{file.name}</span>
                 <span className={styles.fileSize}>{formatBytes(file.size)}</span>
                 <button

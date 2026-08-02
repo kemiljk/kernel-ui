@@ -1,10 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { useDetailsTransition } from "../../utils/detailsTransition";
 import styles from "./ToolCall.module.css";
-
-/** Same capability check as Accordion/Reasoning. */
-const supportsAnimatedDetails =
-  typeof CSS !== "undefined" && CSS.supports("selector(::details-content)");
 
 export type ToolCallStatus = "pending" | "running" | "complete" | "error";
 
@@ -106,34 +103,12 @@ export function ToolCall({
 }: ToolCallProps) {
   const hasResults = children != null && children !== false && children !== true;
   const initialOpen = defaultOpen ?? (status === "running" || status === "pending");
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen);
-  const isControlled = openProp !== undefined;
-  const open = isControlled ? openProp : uncontrolledOpen;
-  const [transitioning, setTransitioning] = useState(false);
-  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const { detailsRef, contentRef, open, setOpen } = useDetailsTransition({
+    defaultOpen: initialOpen,
+    open: openProp,
+    onOpenChange,
+  });
   const state: ToolCallState = { open, status };
-
-  function setOpen(next: boolean) {
-    if (!isControlled) setUncontrolledOpen(next);
-    onOpenChange?.(next);
-  }
-
-  useEffect(() => {
-    if (!transitioning) return;
-    const node = detailsRef.current;
-    if (!node) return;
-    const durationMs =
-      parseFloat(getComputedStyle(node).getPropertyValue("--kernel-duration-base")) || 200;
-    const timer = window.setTimeout(() => setTransitioning(false), durationMs);
-    function handleTransitionEnd(event: TransitionEvent) {
-      if (event.propertyName === "height") setTransitioning(false);
-    }
-    node.addEventListener("transitionend", handleTransitionEnd);
-    return () => {
-      window.clearTimeout(timer);
-      node.removeEventListener("transitionend", handleTransitionEnd);
-    };
-  }, [transitioning]);
 
   const summaryBody = <StatusLabel status={status} label={label} />;
 
@@ -155,13 +130,7 @@ export function ToolCall({
     <details
       ref={detailsRef}
       className={[styles.root, resolveClassName(className, state)].filter(Boolean).join(" ")}
-      open={open}
       data-status={status}
-      data-state={transitioning ? (open ? "opening" : "closing") : undefined}
-      onToggle={(event) => {
-        setOpen(event.currentTarget.open);
-        if (supportsAnimatedDetails) setTransitioning(true);
-      }}
     >
       <summary className={styles.trigger}>
         {status === "running" ? <span role="status">{summaryBody}</span> : summaryBody}
@@ -180,7 +149,9 @@ export function ToolCall({
           />
         </svg>
       </summary>
-      <div className={styles.content}>{children}</div>
+      <div ref={contentRef} className={styles.content}>
+        {children}
+      </div>
     </details>
   );
 }

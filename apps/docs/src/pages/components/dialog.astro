@@ -41,14 +41,14 @@ const [open, setOpen] = useState(false);
     </p>
 
     <div class="docs-example">
-      <DialogDemo client:load />
+      <DialogDemo client:visible />
     </div>
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
-    <DialogPlayground client:load />
+    <DialogPlayground client:visible />
 
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">

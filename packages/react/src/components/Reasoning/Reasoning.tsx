@@ -1,14 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { useDetailsTransition } from "../../utils/detailsTransition";
 import { ThinkingIndicator } from "../ThinkingIndicator/ThinkingIndicator";
 import styles from "./Reasoning.module.css";
-
-/** Same capability check as Accordion, same reason: only browsers that
- * actually animate `::details-content` should ever get the transient
- * data-state used to block text-selection mid-resize. */
-const supportsAnimatedDetails =
-  typeof CSS !== "undefined" && CSS.supports("selector(::details-content)");
 
 export interface ReasoningState {
   open: boolean;
@@ -41,9 +36,9 @@ export function Reasoning({
   children,
   className,
 }: ReasoningProps) {
-  const [open, setOpen] = useState(defaultOpen || streaming);
-  const [transitioning, setTransitioning] = useState(false);
-  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const { detailsRef, contentRef, open, setOpen } = useDetailsTransition({
+    defaultOpen: defaultOpen || streaming,
+  });
   const wasStreaming = useRef(streaming);
   const state: ReasoningState = { open, streaming };
 
@@ -69,35 +64,12 @@ export function Reasoning({
     }
     const timer = window.setTimeout(() => setOpen(false), 600);
     return () => window.clearTimeout(timer);
-  }, [streaming]);
-
-  useEffect(() => {
-    if (!transitioning) return;
-    const node = detailsRef.current;
-    if (!node) return;
-    const durationMs =
-      parseFloat(getComputedStyle(node).getPropertyValue("--kernel-duration-base")) || 200;
-    const timer = window.setTimeout(() => setTransitioning(false), durationMs);
-    function handleTransitionEnd(event: TransitionEvent) {
-      if (event.propertyName === "height") setTransitioning(false);
-    }
-    node.addEventListener("transitionend", handleTransitionEnd);
-    return () => {
-      window.clearTimeout(timer);
-      node.removeEventListener("transitionend", handleTransitionEnd);
-    };
-  }, [transitioning]);
+  }, [streaming, setOpen]);
 
   return (
     <details
       ref={detailsRef}
       className={[styles.root, resolveClassName(className, state)].filter(Boolean).join(" ")}
-      open={open}
-      data-state={transitioning ? (open ? "opening" : "closing") : undefined}
-      onToggle={(event) => {
-        setOpen(event.currentTarget.open);
-        if (supportsAnimatedDetails) setTransitioning(true);
-      }}
     >
       <summary className={styles.trigger}>
         {streaming ? (
@@ -136,7 +108,9 @@ export function Reasoning({
           />
         </svg>
       </summary>
-      <div className={styles.content}>{children}</div>
+      <div ref={contentRef} className={styles.content}>
+        {children}
+      </div>
     </details>
   );
 }

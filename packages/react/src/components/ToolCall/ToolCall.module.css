@@ -139,35 +139,19 @@
 }
 
 .content {
+  min-height: 0;
   padding-block-end: var(--kernel-space-2);
   padding-inline-start: calc(1rem + var(--kernel-space-2));
 }
 
 .root[data-state="opening"] .content,
 .root[data-state="closing"] .content {
+  overflow: clip;
   user-select: none;
-}
-
-@supports selector(::details-content) {
-  .root::details-content {
-    overflow: hidden;
-    height: 0;
-    transition:
-      height var(--kernel-duration-base) var(--kernel-ease-in-out),
-      content-visibility var(--kernel-duration-base) allow-discrete;
-  }
-
-  .root[open]::details-content {
-    height: auto;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .chevron {
-    transition: none;
-  }
-
-  .root::details-content {
     transition: none;
   }
 

@@ -99,41 +99,12 @@
    drag-select against a box that's still moving. */
 .item[data-state="opening"] .content,
 .item[data-state="closing"] .content {
+  overflow: clip;
   user-select: none;
-}
-
-/* Progressive enhancement: animate open/close where the browser supports
-   `::details-content`. Everywhere else, `<details>` still opens and
-   closes correctly, just without the transition.
-
-   This is the CSS grid `0fr` → `1fr` trick, not a `height: 0` → `auto`
-   transition: animating to `height: auto` only actually interpolates
-   (rather than snapping partway through) in browsers that also opt in
-   to `interpolate-size: allow-keywords`, which isn't universal yet. A
-   grid row track transitions between `0fr` and `1fr` as ordinary
-   numbers — no keyword-interpolation opt-in required — while still
-   sizing itself to the content's natural height at `1fr`. */
-@supports selector(::details-content) {
-  .item::details-content {
-    display: grid;
-    grid-template-rows: 0fr;
-    overflow: hidden;
-    transition:
-      grid-template-rows var(--kernel-duration-base) var(--kernel-ease-in-out),
-      content-visibility var(--kernel-duration-base) allow-discrete;
-  }
-
-  .item[open]::details-content {
-    grid-template-rows: 1fr;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .chevron {
-    transition: none;
-  }
-
-  .item::details-content {
     transition: none;
   }
 }

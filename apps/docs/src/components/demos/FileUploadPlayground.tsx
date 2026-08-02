@@ -151,6 +151,11 @@ function statusForError(error: FileUploadError, maxFiles: number, maxSizeMb: num
       ? `${names} are over the ${maxSizeMb}MB limit.`
       : `${names} is over the ${maxSizeMb}MB limit.`;
   }
+  if (error.type === "directory") {
+    return plural
+      ? `${names} are folders — drop individual files instead.`
+      : `${names} is a folder — drop individual files instead.`;
+  }
   return `Too many files — max is ${maxFiles}.`;
 }
 

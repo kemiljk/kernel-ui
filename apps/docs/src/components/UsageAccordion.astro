@@ -1,6 +1,7 @@
 ---
 import CodeBlock from "./CodeBlock.astro";
 import UsageToggle from "./UsageToggle";
+import UsageDisclosure from "./UsageDisclosure";
 
 interface Props {
   code: string;
@@ -15,24 +16,8 @@ const { code, elementsCode, lang } = Astro.props;
   elementsCode ? (
     <UsageToggle client:visible code={code} elementsCode={elementsCode} />
   ) : (
-    <details class="usage-accordion">
-      <summary class="usage-accordion-trigger">
-        <span>Usage</span>
-        <svg
-          class="usage-accordion-chevron"
-          viewBox="0 0 15 15"
-          fill="currentColor"
-          fill-rule="evenodd"
-          aria-hidden="true"
-        >
-          <path
-            d="M3.135 6.158a.5.5 0 0 1 .707-.023L7.5 9.565l3.658-3.43a.5.5 0 0 1 .684.73l-4 3.75a.5.5 0 0 1-.684 0l-4-3.75a.5.5 0 0 1-.023-.707Z"
-          />
-        </svg>
-      </summary>
-      <div class="usage-accordion-content">
-        <CodeBlock code={code} lang={lang} />
-      </div>
-    </details>
+    <UsageDisclosure client:visible>
+      <CodeBlock code={code} lang={lang} />
+    </UsageDisclosure>
   )
 }

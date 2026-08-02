@@ -1,9 +1,7 @@
 import { KernelElement, kernelClass } from "../../base";
+import { DetailsPanelAnimator } from "../../utils/detailsTransition";
 import "../ThinkingIndicator/ThinkingIndicator";
 import "./Reasoning.css";
-
-const supportsAnimatedDetails =
-  typeof CSS !== "undefined" && CSS.supports("selector(::details-content)");
 
 const CHEVRON_PATH = "M4 6L8 10L12 6";
 const REASONING_ICON_PATHS = [
@@ -41,7 +39,7 @@ function svg(paths: string[], className: string): SVGSVGElement {
 export class KernelReasoning extends KernelElement {
   private wasStreaming = false;
   private collapseTimer: ReturnType<typeof setTimeout> | undefined;
-  private transitionTimer: ReturnType<typeof setTimeout> | undefined;
+  private animator: DetailsPanelAnimator | undefined;
 
   static get observedAttributes() {
     return ["streaming", "duration-label"];
@@ -72,28 +70,17 @@ export class KernelReasoning extends KernelElement {
     this.native = details;
     this.append(details);
 
+    this.animator = new DetailsPanelAnimator(details, contentEl);
     this.wasStreaming = this.hasAttribute("streaming");
-    if (this.hasAttribute("default-open") || this.wasStreaming) details.open = true;
-
-    details.addEventListener("toggle", () => {
-      if (supportsAnimatedDetails) this.markTransitioning(details.open);
-    });
+    if (this.hasAttribute("default-open") || this.wasStreaming) this.animator.snapOpen(true);
 
     this.renderSummary();
   }
 
   disconnectedCallback() {
     clearTimeout(this.collapseTimer);
-    clearTimeout(this.transitionTimer);
-  }
-
-  private markTransitioning(opening: boolean) {
-    const details = this.native as HTMLDetailsElement;
-    details.setAttribute("data-state", opening ? "opening" : "closing");
-    clearTimeout(this.transitionTimer);
-    const durationMs =
-      parseFloat(getComputedStyle(details).getPropertyValue("--kernel-duration-base")) || 200;
-    this.transitionTimer = setTimeout(() => details.removeAttribute("data-state"), durationMs);
+    this.animator?.destroy();
+    this.animator = undefined;
   }
 
   private renderSummary() {
@@ -131,10 +118,10 @@ export class KernelReasoning extends KernelElement {
       this.wasStreaming = streaming;
       clearTimeout(this.collapseTimer);
       if (streaming) {
-        details.open = true;
+        void this.animator?.setOpen(true);
       } else {
         this.collapseTimer = setTimeout(() => {
-          details.open = false;
+          void this.animator?.setOpen(false);
         }, 600);
       }
     } else if (name === "duration-label") {

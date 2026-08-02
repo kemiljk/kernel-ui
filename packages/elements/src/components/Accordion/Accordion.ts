@@ -1,8 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
+import { DetailsPanelAnimator } from "../../utils/detailsTransition";
 import "./Accordion.css";
-
-const supportsAnimatedDetails =
-  typeof CSS !== "undefined" && CSS.supports("selector(::details-content)");
 
 let accordionCounter = 0;
 
@@ -29,17 +27,15 @@ export class KernelAccordion extends KernelElement {
 /**
  * `<kernel-accordion-item>` — a real `<details>`/`<summary>`; expand/
  * collapse, keyboard support, find-in-page, and print all come from the
- * browser. The open/close transition is progressive enhancement
- * (`::details-content`, animating a CSS grid row track between `0fr`
- * and `1fr` — see the CSS for why); browsers without it still
- * open/close correctly, just without the animation.
+ * browser. The open/close transition uses measured-height WAAPI on the
+ * content panel (see `DetailsPanelAnimator`).
  *
  * Attributes: `title` (the summary text — for richer markup, use a
  * child tagged `slot="title"` instead), `default-open` (boolean, read
  * once at connect).
  */
 export class KernelAccordionItem extends KernelElement {
-  private transitionTimer: ReturnType<typeof setTimeout> | undefined;
+  private animator: DetailsPanelAnimator | undefined;
 
   static get observedAttributes() {
     return ["title"];
@@ -62,7 +58,6 @@ export class KernelAccordionItem extends KernelElement {
     const group = this.closest("kernel-accordion") as KernelAccordion | null;
     const name = group?.resolvedName;
     if (name) details.setAttribute("name", name);
-    if (this.hasAttribute("default-open")) details.open = true;
 
     const summary = document.createElement("summary");
     summary.className = kernelClass("Accordion", "trigger");
@@ -92,21 +87,16 @@ export class KernelAccordionItem extends KernelElement {
     content.append(...rest);
 
     details.append(summary, content);
-    details.addEventListener("toggle", () => {
-      if (supportsAnimatedDetails) this.markTransitioning(details.open);
-    });
+    this.animator = new DetailsPanelAnimator(details, content);
+    if (this.hasAttribute("default-open")) this.animator.snapOpen(true);
 
     this.native = details;
     this.append(details);
   }
 
-  private markTransitioning(opening: boolean) {
-    const details = this.native as HTMLDetailsElement;
-    details.setAttribute("data-state", opening ? "opening" : "closing");
-    clearTimeout(this.transitionTimer);
-    const durationMs =
-      parseFloat(getComputedStyle(details).getPropertyValue("--kernel-duration-base")) || 200;
-    this.transitionTimer = setTimeout(() => details.removeAttribute("data-state"), durationMs);
+  disconnectedCallback() {
+    this.animator?.destroy();
+    this.animator = undefined;
   }
 
   protected syncAttr(name: string, value: string | null) {

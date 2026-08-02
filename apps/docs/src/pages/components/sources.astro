@@ -41,7 +41,7 @@ const inlineSnippet = `<p>
     </p>
 
     <div class="docs-example" style="flex-direction: column; align-items: stretch;">
-      <SourcesDemo client:load />
+      <SourcesDemo client:visible />
     </div>
 
     <h2>Examples</h2>
@@ -65,13 +65,13 @@ const inlineSnippet = `<p>
         description="Citation chips in the prose link to the same sources listed below."
         code={inlineSnippet}
       >
-        <SourcesDemo client:load />
+        <SourcesDemo client:visible />
       </Example>
     </ExampleGrid>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
-    <SourcesPlayground client:load />
+    <SourcesPlayground client:visible />
 
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">

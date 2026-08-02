@@ -11,6 +11,7 @@ import {
 } from "@kernelui-lib/react";
 import CopyButton from "./CopyButton";
 import { HighlightedCode } from "./HighlightedCode";
+import UsageDisclosure from "./UsageDisclosure";
 
 /** One adjustable prop. `prop` is the key handed back to `render`/`code`.
  * Enum (pick one), boolean (on/off), text (free string / children), and
@@ -199,66 +200,52 @@ export default function Playground({
       </div>
 
       {reactCode ? (
-        <details className="usage-accordion">
-          <summary className="usage-accordion-trigger">
-            <span>Usage</span>
-            <svg
-              className="usage-accordion-chevron"
-              viewBox="0 0 15 15"
-              fill="currentColor"
-              fillRule="evenodd"
-              aria-hidden="true"
-            >
-              <path d="M3.135 6.158a.5.5 0 0 1 .707-.023L7.5 9.565l3.658-3.43a.5.5 0 0 1 .684.73l-4 3.75a.5.5 0 0 1-.684 0l-4-3.75a.5.5 0 0 1-.023-.707Z" />
-            </svg>
-          </summary>
-          <div className="usage-accordion-content">
-            {elementsCodeValue ? (
-              <Tabs defaultValue="react" className="prop-playground-format-tabs">
-                <TabsList aria-label="Code format">
-                  <Tab value="react">React</Tab>
-                  <Tab value="elements">Web Components</Tab>
-                </TabsList>
-                <TabPanel value="react" className="prop-playground-format-panel">
-                  <div className="code-block">
-                    <pre>
-                      <code>
-                        <HighlightedCode code={reactCode} />
-                      </code>
-                    </pre>
-                    <CopyButton text={reactCode} />
-                  </div>
-                </TabPanel>
-                <TabPanel value="elements" className="prop-playground-format-panel">
-                  <div className="code-block">
-                    <pre>
-                      <code>
-                        <HighlightedCode code={elementsCodeValue} />
-                      </code>
-                    </pre>
-                    <CopyButton text={elementsCodeValue} />
-                  </div>
-                </TabPanel>
-              </Tabs>
-            ) : (
-              <div className="code-block">
-                <pre>
-                  <code>
-                    <HighlightedCode code={reactCode} />
-                  </code>
-                </pre>
-                <CopyButton text={reactCode} />
-              </div>
-            )}
-            {unstyled ? (
-              <p className="prop-playground-unstyled-note">
-                Omit <code>@kernelui-lib/react/styles.css</code> (or{" "}
-                <code>@kernelui-lib/elements/styles.css</code>) for the same DOM
-                without Kernel visuals — see <a href="/platforms/">Platforms</a>.
-              </p>
-            ) : null}
-          </div>
-        </details>
+        <UsageDisclosure>
+          {elementsCodeValue ? (
+            <Tabs defaultValue="react" className="prop-playground-format-tabs">
+              <TabsList aria-label="Code format">
+                <Tab value="react">React</Tab>
+                <Tab value="elements">Web Components</Tab>
+              </TabsList>
+              <TabPanel value="react" className="prop-playground-format-panel">
+                <div className="code-block">
+                  <pre>
+                    <code>
+                      <HighlightedCode code={reactCode} />
+                    </code>
+                  </pre>
+                  <CopyButton text={reactCode} />
+                </div>
+              </TabPanel>
+              <TabPanel value="elements" className="prop-playground-format-panel">
+                <div className="code-block">
+                  <pre>
+                    <code>
+                      <HighlightedCode code={elementsCodeValue} />
+                    </code>
+                  </pre>
+                  <CopyButton text={elementsCodeValue} />
+                </div>
+              </TabPanel>
+            </Tabs>
+          ) : (
+            <div className="code-block">
+              <pre>
+                <code>
+                  <HighlightedCode code={reactCode} />
+                </code>
+              </pre>
+              <CopyButton text={reactCode} />
+            </div>
+          )}
+          {unstyled ? (
+            <p className="prop-playground-unstyled-note">
+              Omit <code>@kernelui-lib/react/styles.css</code> (or{" "}
+              <code>@kernelui-lib/elements/styles.css</code>) for the same DOM
+              without Kernel visuals — see <a href="/platforms/">Platforms</a>.
+            </p>
+          ) : null}
+        </UsageDisclosure>
       ) : null}
     </div>
   );

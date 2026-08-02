@@ -7,6 +7,8 @@ import { HamburgerMenuIcon, MagnifyingGlassIcon } from "./icons";
 import { GITHUB_URL, NPM_REACT_URL } from "../lib/site";
 import { formatStarCount } from "../lib/formatStarCount";
 
+const POPOVER_EXIT_FALLBACK_MS = 200;
+
 interface MobileHeaderNavProps {
   items: { href: string; label: string }[];
   currentPath: string;
@@ -116,6 +118,16 @@ export default function MobileHeaderNav({ items, currentPath, starCount }: Mobil
         onClick={() => {
           openPaletteOnCloseRef.current = true;
           setOpen(false);
+          // Belt-and-suspenders: if the popover's `toggle` event never
+          // fires after programmatic `hidePopover()` (seen on some mobile
+          // WebKit builds), the palette would never open — this timeout
+          // matches the panel's exit duration and only runs when the ref
+          // is still set, so a normal `toggle` path clears it first.
+          window.setTimeout(() => {
+            if (!openPaletteOnCloseRef.current) return;
+            openPaletteOnCloseRef.current = false;
+            window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT));
+          }, POPOVER_EXIT_FALLBACK_MS);
         }}
       >
         Search components

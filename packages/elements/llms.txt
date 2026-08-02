@@ -45,7 +45,10 @@ separate "install this one component" step.
 - **Real elements, real events**: every component wraps a genuine native
   element or ARIA pattern internally and re-dispatches its real DOM
   events (`input`, `change`, `click`) — listen for those directly, no
-  proprietary event system.
+  proprietary event system. `<kernel-file-upload>` additionally
+  dispatches `kernel-file-upload-error` with
+  `detail: { type: "accept" | "max-size" | "max-files" | "directory", files }`
+  when a pick or drop is rejected.
 - **Compose with real children**: components that take structured content
   use real child elements or attributes on real children, not a JSON
   prop — e.g. `<kernel-select>` takes real `<option>`/`<optgroup>`
@@ -65,6 +68,23 @@ separate "install this one component" step.
 - Data Display: `kernel-accordion` (+ `kernel-accordion-item`), `kernel-carousel` (+ `kernel-carousel-slide`), `kernel-data-table`, `kernel-date-picker`, `kernel-date-range-picker`, `kernel-table` (+ `kernel-table-caption`/`kernel-table-header`/`kernel-table-body`/`kernel-table-row`/`kernel-table-head`/`kernel-table-cell`)
 - AI: `kernel-composer`, `kernel-reasoning`, `kernel-sources` (+ `kernel-source`/`kernel-citation`), `kernel-suggestion` (+ `kernel-suggestion-item`), `kernel-thinking-indicator`, `kernel-tool-call`
 <!-- GENERATED:COMPONENTS:END -->
+
+## Utilities
+
+- **`DetailsPanelAnimator`** — The measured-height open/close motion behind
+  `<kernel-accordion-item>`, `<kernel-reasoning>` and `<kernel-tool-call>`,
+  exported for building your own `<details>` disclosure with the same feel.
+  Construct it with `new DetailsPanelAnimator(detailsEl, contentEl, { onOpenChange })`,
+  where `contentEl` is a single wrapper holding everything except the
+  `<summary>`; call `setOpen(boolean)` to drive it programmatically,
+  `snapOpen(boolean)` to jump without animating, and `destroy()` to detach. It
+  drives the panel from `click` on the `<summary>` rather than the `toggle`
+  event, because `toggle` is non-cancelable and fires only *after* the browser
+  has already painted the panel at full height. Honours
+  `prefers-reduced-motion` by snapping, and sets `data-state="opening"` /
+  `"closing"` on the `<details>` while in flight.
+- **`KernelElement`**, **`kernelClass`**, **`dataAttr`** — The base class and
+  class-name helpers the elements themselves use.
 
 ## Where to look for exact attributes
 

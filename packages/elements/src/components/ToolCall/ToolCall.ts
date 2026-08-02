@@ -1,8 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
+import { DetailsPanelAnimator } from "../../utils/detailsTransition";
 import "./ToolCall.css";
-
-const supportsAnimatedDetails =
-  typeof CSS !== "undefined" && CSS.supports("selector(::details-content)");
 
 const CHEVRON = "M4 6L8 10L12 6";
 
@@ -80,7 +78,7 @@ function statusIcon(status: string): SVGSVGElement {
  * results panel; with no children, renders as a non-collapsible status row.
  */
 export class KernelToolCall extends KernelElement {
-  private transitionTimer: ReturnType<typeof setTimeout> | undefined;
+  private animator: DetailsPanelAnimator | undefined;
   private hasResults = false;
 
   static get observedAttributes() {
@@ -122,11 +120,12 @@ export class KernelToolCall extends KernelElement {
 
     const details = document.createElement("details");
     details.className = kernelClass("ToolCall");
-    if (this.hasAttribute("default-open")) details.open = true;
-    else {
-      const status = this.getAttribute("status") ?? "pending";
-      details.open = status === "running" || status === "pending";
-    }
+    const defaultOpen =
+      this.hasAttribute("default-open") ||
+      (() => {
+        const status = this.getAttribute("status") ?? "pending";
+        return status === "running" || status === "pending";
+      })();
 
     const summary = document.createElement("summary");
     summary.className = kernelClass("ToolCall", "trigger");
@@ -145,9 +144,8 @@ export class KernelToolCall extends KernelElement {
     contentEl.append(...content);
 
     details.append(summary, contentEl);
-    details.addEventListener("toggle", () => {
-      if (supportsAnimatedDetails) this.markTransitioning(details.open);
-    });
+    this.animator = new DetailsPanelAnimator(details, contentEl);
+    if (defaultOpen) this.animator.snapOpen(true);
 
     this.native = details;
     this.append(details);
@@ -155,16 +153,8 @@ export class KernelToolCall extends KernelElement {
   }
 
   disconnectedCallback() {
-    clearTimeout(this.transitionTimer);
-  }
-
-  private markTransitioning(opening: boolean) {
-    const details = this.native as HTMLDetailsElement;
-    details.setAttribute("data-state", opening ? "opening" : "closing");
-    clearTimeout(this.transitionTimer);
-    const durationMs =
-      parseFloat(getComputedStyle(details).getPropertyValue("--kernel-duration-base")) || 200;
-    this.transitionTimer = setTimeout(() => details.removeAttribute("data-state"), durationMs);
+    this.animator?.destroy();
+    this.animator = undefined;
   }
 
   private renderSummary() {
