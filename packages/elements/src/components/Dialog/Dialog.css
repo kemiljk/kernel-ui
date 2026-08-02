@@ -11,10 +11,12 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 
-  opacity: 0;
+  /* Opaque while exiting — fading the dialog surface mid-close lets the
+     page bleed through the panel. The scrim still fades on its own. Enter
+     fades in via `@starting-style`. */
+  opacity: 1;
   scale: var(--kernel-scale-enter);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -31,10 +33,9 @@
 }
 
 .kernel-Dialog-content[data-closing] {
-  opacity: 0;
+  opacity: 1;
   scale: var(--kernel-scale-enter);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -112,7 +113,6 @@
   scale: 1;
   translate: var(--kernel-dialog-translate);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -136,9 +136,9 @@
 .kernel-Dialog-content[data-closing][data-side="top"],
 .kernel-Dialog-content[data-closing][data-side="bottom"] {
   scale: 1;
+  opacity: 1;
   translate: var(--kernel-dialog-translate);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -235,7 +235,7 @@
 @media (prefers-reduced-motion: reduce) {
   .kernel-Dialog-content,
   .kernel-Dialog-content::backdrop {
-    transition: opacity var(--kernel-duration-fast) linear;
+    transition: none;
   }
 
   .kernel-Dialog-content {
@@ -246,12 +246,7 @@
   .kernel-Dialog-content[data-closing] {
     scale: 1;
     translate: 0 0;
-  transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
-}
+  }
 
   .kernel-Dialog-content[data-side="left"],
   .kernel-Dialog-content[data-side="right"],
@@ -262,6 +257,5 @@
   .kernel-Dialog-content[data-closing][data-side="top"],
   .kernel-Dialog-content[data-closing][data-side="bottom"] {
     translate: 0 0;
-    transition: opacity var(--kernel-duration-fast) linear;
   }
 }

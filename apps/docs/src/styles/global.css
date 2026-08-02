@@ -691,14 +691,13 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
   max-inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
 
   /* Drop Popover's scale settle in favour of a short vertical slide.
-     Split across the two states rather than declared once here, so the
-     exit stays faster than the entrance (motion baseline) instead of
-     both directions inheriting a single duration. */
+     Stay opaque on exit — fading mid-close lets the page bleed through
+     the panel. Enter still fades via `@starting-style`. Exit is
+     translate-only and faster than enter (motion baseline). */
   scale: 1;
-  opacity: 0;
+  opacity: 1;
   translate: 0 -8px;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-out),
     translate var(--kernel-duration-exit) var(--kernel-ease-out),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -723,7 +722,7 @@ body[data-with-sidebar="true"] .mobile-header-nav-trigger {
 
 @media (prefers-reduced-motion: reduce) {
   [data-slot="popover-content"].mobile-header-nav-panel {
-    transition: opacity var(--kernel-duration-fast) linear;
+    transition: none;
     translate: 0 0;
   }
 }

@@ -16,14 +16,17 @@ kernel-hover-card {
   inline-size: max-content;
   max-inline-size: 20rem;
 
-  opacity: 0;
+  /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
+     lets page content paint through a half-transparent panel — a flash
+     that looks like a compositing bug. Enter still fades in via
+     `@starting-style` below; exit is scale-only. */
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   /* Set by FloatingPositioner as an anchor-relative percentage — see
      that class's doc comment — so this scales in from the trigger
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -46,10 +49,9 @@ kernel-hover-card {
    is out of the top layer and can't be animated reliably (see the
    `overlay` note in @kernelui-lib/styles' reset). */
 .kernel-HoverCard-content[data-closing] {
-  opacity: 0;
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -64,6 +66,7 @@ kernel-hover-card {
 
 @media (prefers-reduced-motion: reduce) {
   .kernel-HoverCard-content {
-    transition: opacity var(--kernel-duration-fast) linear;
+    transition: none;
+    scale: 1;
   }
 }

@@ -11,14 +11,17 @@
   font-size: var(--kernel-font-size-sm);
   max-inline-size: 16rem;
 
-  opacity: 0;
+  /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
+     lets page content paint through a half-transparent panel — a flash
+     that looks like a compositing bug. Enter still fades in via
+     `@starting-style` below; exit is scale-only. */
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   /* Set by useFloatingPosition as an anchor-relative percentage — see
      that hook's doc comment — so this scales in from the trigger
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit-fast) allow-discrete,
     display var(--kernel-duration-exit-fast) allow-discrete;
@@ -35,10 +38,9 @@
 }
 
 .content[data-closing] {
-  opacity: 0;
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   transition:
-    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit-fast) allow-discrete,
     display var(--kernel-duration-exit-fast) allow-discrete;
@@ -86,6 +88,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .content {
-    transition: opacity var(--kernel-duration-fast) linear;
+    transition: none;
+    scale: 1;
   }
 }

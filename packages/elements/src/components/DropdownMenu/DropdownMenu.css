@@ -30,7 +30,9 @@ kernel-menu-separator {
   background-color: var(--kernel-color-surface-raised);
   box-shadow: var(--kernel-shadow-md);
 
-  opacity: 0;
+  /* Opaque on exit — fading opacity mid-close lets page content bleed
+     through the panel. Enter still fades via `@starting-style`. */
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   /* Set by FloatingPositioner as an anchor-relative percentage — see
      that class's doc comment — so this scales in from the trigger
@@ -39,7 +41,6 @@ kernel-menu-separator {
   /* Resting/closed uses exit timing so Chromium dismissals stay snappy;
      :popover-open overrides with enter timing (asymmetric enter/exit). */
   transition:
-    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit-fast) allow-discrete,
     display var(--kernel-duration-exit-fast) allow-discrete;

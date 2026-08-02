@@ -11,11 +11,13 @@
   inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));
   max-block-size: calc(100dvh - var(--kernel-space-12));
 
-  opacity: 0;
+  /* Stay opaque on the closed/exit end-state — fading the panel itself
+     mid-close lets page content bleed through it; only the backdrop
+     below fades. Enter still fades in via `@starting-style`. */
+  opacity: 1;
   scale: var(--kernel-scale-enter);
   translate: 0 0.5rem;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
@@ -36,11 +38,10 @@
 }
 
 .kernel-CommandPalette-content[data-closing] {
-  opacity: 0;
+  opacity: 1;
   scale: var(--kernel-scale-enter);
   translate: 0 0.5rem;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
@@ -154,7 +155,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kernel-CommandPalette-content,
   .kernel-CommandPalette-content::backdrop {
     transition: opacity var(--kernel-duration-fast) linear;
   }
@@ -163,11 +163,6 @@
   .kernel-CommandPalette-content[data-closing] {
     scale: 1;
     translate: 0 0;
-  transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
-}
+    transition: none;
+  }
 }

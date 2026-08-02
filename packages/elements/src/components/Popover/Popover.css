@@ -20,14 +20,17 @@ kernel-popover {
   overflow-y: auto;
   overscroll-behavior: contain;
 
-  opacity: 0;
+  /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
+     lets page content paint through a half-transparent panel — a flash
+     that looks like a compositing bug. Enter still fades in via
+     `@starting-style` below; exit is scale-only. */
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   /* Set by FloatingPositioner as an anchor-relative percentage — see
      that class's doc comment — so this scales in from the trigger
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
@@ -52,6 +55,7 @@ kernel-popover {
 
 @media (prefers-reduced-motion: reduce) {
   .kernel-Popover-content {
-    transition: opacity var(--kernel-duration-fast) linear;
+    transition: none;
+    scale: 1;
   }
 }

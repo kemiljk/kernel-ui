@@ -18,15 +18,16 @@ kernel-context-menu {
   background-color: var(--kernel-color-surface-raised);
   box-shadow: var(--kernel-shadow-md);
 
-  opacity: 0;
+  /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
+     lets page content paint through a half-transparent panel — a flash
+     that looks like a compositing bug. Enter still fades in via
+     `@starting-style` below; exit is scale-only. */
+  opacity: 1;
   scale: var(--kernel-scale-exit);
   /* Set in ContextMenu.ts as a cursor-relative percentage — so this
      scales in from wherever was right-clicked, not a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
-  /* opacity and scale share one duration so the open/close reads as one
-     coordinated motion. */
   transition:
-    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit-fast) allow-discrete,
     display var(--kernel-duration-exit-fast) allow-discrete;
@@ -52,6 +53,7 @@ kernel-context-menu {
 
 @media (prefers-reduced-motion: reduce) {
   .kernel-ContextMenu-content {
-    transition: opacity var(--kernel-duration-fast) linear;
+    transition: none;
+    scale: 1;
   }
 }
