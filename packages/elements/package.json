@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/elements",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Kernel's components as native Custom Elements — framework-agnostic, light DOM, zero runtime dependencies.",
   "license": "MIT",
   "author": "Karl Koch",
@@ -38,7 +38,7 @@
   ],
   "sideEffects": true,
   "dependencies": {
-    "@kernelui-lib/styles": "^1.0.0"
+    "@kernelui-lib/styles": "^1.1.0"
   },
   "publishConfig": {
     "access": "public"
