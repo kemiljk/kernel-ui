@@ -1,0 +1,103 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import CodeBlockDemo from "../../components/demos/CodeBlockDemo";
+import CodeBlockPlayground from "../../components/demos/CodeBlockPlayground";
+---
+
+<BaseLayout title="Code Block" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Code Block</h1>
+    <p>
+      A real <code>&lt;pre&gt;&lt;code&gt;</code> inside a
+      <code>&lt;figure&gt;</code>, with optional line numbers, emphasised
+      lines, copy, and stable streaming. It highlights nothing itself — you
+      hand it pre-tokenised lines — which is what keeps both packages
+      dependency-free and lets one component serve Shiki, Prism, a
+      server-side highlighter, or plain text.
+    </p>
+
+    <div class="docs-example">
+      <CodeBlockDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <CodeBlockPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Code Block.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>lines</code></td><td>CodeLine[]</td><td>—</td></tr>
+        <tr><td><code>code</code></td><td>string</td><td>""</td></tr>
+        <tr><td><code>language</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>label</code></td><td>ReactNode</td><td>from language</td></tr>
+        <tr><td><code>showLineNumbers</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>highlightLines</code></td><td>number[] (1-based)</td><td>—</td></tr>
+        <tr><td><code>streaming</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>copyable</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Bring your own tokens</h2>
+    <p>
+      A <code>CodeLine</code> is <code>{"{ tokens: CodeToken[] }"}</code>, and a
+      <code>CodeToken</code> is
+      <code>{"{ text, className?, color? }"}</code> — <code>className</code> for
+      highlighters that emit classes, <code>color</code> for the ones that emit
+      inline colours. Shiki's <code>codeToTokens</code> maps over directly:
+    </p>
+    <pre class="docs-pre"><code>{`import { codeToTokens } from "shiki";
+
+const { tokens } = await codeToTokens(source, { lang: "ts", theme: "github-dark" });
+const lines = tokens.map((line) => ({ tokens: line }));
+
+<CodeBlock lines={lines} language="ts" showLineNumbers />`}</code></pre>
+    <p>
+      That's documentation, not a dependency —
+      <code>@kernelui-lib/react</code> and
+      <code>@kernelui-lib/elements</code> ship with none. Skip it entirely and
+      pass <code>code</code> for unstyled source. In the elements package the
+      same data arrives as a DOM property (<code>el.lines = …</code> or
+      <code>el.code = …</code>), because structured data can't travel through
+      an attribute; light-DOM
+      <code>&lt;pre&gt;&lt;code&gt;</code> written inside the tag is read once
+      at connect, so the code is real page content before any script runs.
+    </p>
+
+    <h2>Stable streaming</h2>
+    <p>
+      Lines are keyed by index, so appending output re-renders only the last
+      line. Earlier lines aren't unmounted and re-created — which is what
+      causes the flicker and lost text selection you get from re-rendering a
+      growing block as one string. Following the last line reuses the same
+      <a href="/components/message-scroller/"><code>StickToBottomController</code></a>
+      that Message Scroller is built on, rather than a second scroll
+      implementation, and following is always instant: a smooth animation per
+      chunk would never catch up with the next one.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Line numbers are real text, but <code>aria-hidden</code> and
+        unselectable. A screen reader reading "one const two import three…" is
+        noise, and a copy that interleaves numbers with code is worse than no
+        copy button at all.
+      </li>
+      <li>
+        Copy feedback is a live region, not just a changed icon — a button's own
+        label changing is announced only if focus happens to be on it.
+      </li>
+      <li>
+        Denied clipboard access (insecure context, blocked permission) fails
+        silently on purpose: the code is on screen and selectable, so there's
+        nothing for the reader to act on.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

@@ -1,0 +1,171 @@
+.root {
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.root[data-complete] {
+  border-color: var(--kernel-color-success);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  cursor: pointer;
+  list-style: none;
+}
+
+.trigger::-webkit-details-marker {
+  display: none;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--kernel-radius-container);
+}
+
+.label {
+  font-weight: 500;
+}
+
+/* Tabular figures so a count ticking 9/12 → 10/12 doesn't shift the label
+   beside it — the one place in this component where digits change in place. */
+.count {
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--kernel-color-text-muted);
+}
+
+.root[data-complete] .count {
+  color: var(--kernel-color-success-text);
+}
+
+.metadata {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+/* Pushes the chevron to the far edge whatever else is on the summary line. */
+.chevron {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  margin-inline-start: auto;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.root[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.content {
+  padding-block-end: var(--kernel-space-2);
+}
+
+.list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-1) var(--kernel-space-3);
+  color: var(--kernel-color-text);
+  transition: color var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.item[data-status="pending"] {
+  color: var(--kernel-color-text-muted);
+}
+
+.item[data-status="done"] {
+  color: var(--kernel-color-text-muted);
+}
+
+.item[data-status="error"] {
+  color: var(--kernel-color-danger-text);
+}
+
+/* One box holding every mark, stacked. Cross-fading between them is what
+   makes a status change read as the same mark morphing rather than an icon
+   swap — and it keeps the whole transition in CSS, driven by one attribute. */
+.mark {
+  position: relative;
+  display: inline-block;
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+  /* Baseline alignment puts the mark on the text's first line, not centred
+     on a task that wraps to three. */
+  align-self: baseline;
+  transform: translateY(0.15em);
+}
+
+.markLayer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(var(--kernel-scale-exit));
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    transform var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.item[data-status="pending"] .markLayer[data-kind="pending"],
+.item[data-status="active"] .markLayer[data-kind="active"],
+.item[data-status="done"] .markLayer[data-kind="done"],
+.item[data-status="error"] .markLayer[data-kind="error"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.item[data-status="active"] .markLayer[data-kind="active"] {
+  color: var(--kernel-color-accent);
+}
+
+.item[data-status="done"] .markLayer[data-kind="done"] {
+  color: var(--kernel-color-success);
+}
+
+.item[data-status="error"] .markLayer[data-kind="error"] {
+  color: var(--kernel-color-danger);
+}
+
+.text {
+  min-inline-size: 0;
+  line-height: var(--kernel-line-height);
+}
+
+.item[data-status="done"] .text {
+  text-decoration: line-through;
+  text-decoration-thickness: from-font;
+  text-decoration-color: currentcolor;
+}
+
+.itemMetadata {
+  margin-inline-start: auto;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .chevron,
+  .item,
+  .markLayer {
+    transition: none;
+  }
+}

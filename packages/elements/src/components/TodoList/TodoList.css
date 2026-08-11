@@ -1,0 +1,181 @@
+/* Hand-written twin of TodoList.module.css from @kernelui-lib/react — same
+   rules, under the class names React's CSS Modules compile to (kernelClass()
+   in packages/elements/src/base.ts).
+
+   The item host is `display: contents` so its <li> is a direct child of the
+   list's <ol>; the list host is a plain block. */
+kernel-todo-item {
+  display: contents;
+}
+
+.kernel-TodoList-root {
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-TodoList-root[data-complete] {
+  border-color: var(--kernel-color-success);
+}
+
+.kernel-TodoList-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  cursor: pointer;
+  list-style: none;
+}
+
+.kernel-TodoList-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.kernel-TodoList-trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--kernel-radius-container);
+}
+
+.kernel-TodoList-label {
+  font-weight: 500;
+}
+
+/* Tabular figures so a count ticking 9/12 → 10/12 doesn't shift the label
+   beside it — the one place in this component where digits change in place. */
+.kernel-TodoList-count {
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-TodoList-root[data-complete] .kernel-TodoList-count {
+  color: var(--kernel-color-success-text);
+}
+
+.kernel-TodoList-metadata {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+/* Pushes the chevron to the far edge whatever else is on the summary line. */
+.kernel-TodoList-chevron {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  margin-inline-start: auto;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-TodoList-root[open] .kernel-TodoList-chevron {
+  transform: rotate(180deg);
+}
+
+.kernel-TodoList-content {
+  padding-block-end: var(--kernel-space-2);
+}
+
+.kernel-TodoList-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  list-style: none;
+}
+
+.kernel-TodoList-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-1) var(--kernel-space-3);
+  color: var(--kernel-color-text);
+  transition: color var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-TodoList-item[data-status="pending"] {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-TodoList-item[data-status="done"] {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-TodoList-item[data-status="error"] {
+  color: var(--kernel-color-danger-text);
+}
+
+/* One box holding every mark, stacked. Cross-fading between them is what
+   makes a status change read as the same mark morphing rather than an icon
+   swap — and it keeps the whole transition in CSS, driven by one attribute. */
+.kernel-TodoList-mark {
+  position: relative;
+  display: inline-block;
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+  /* Baseline alignment puts the mark on the text's first line, not centred
+     on a task that wraps to three. */
+  align-self: baseline;
+  transform: translateY(0.15em);
+}
+
+.kernel-TodoList-markLayer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(var(--kernel-scale-exit));
+  transition:
+    opacity var(--kernel-duration-base) var(--kernel-ease-out),
+    transform var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-TodoList-item[data-status="pending"] .kernel-TodoList-markLayer[data-kind="pending"],
+.kernel-TodoList-item[data-status="active"] .kernel-TodoList-markLayer[data-kind="active"],
+.kernel-TodoList-item[data-status="done"] .kernel-TodoList-markLayer[data-kind="done"],
+.kernel-TodoList-item[data-status="error"] .kernel-TodoList-markLayer[data-kind="error"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.kernel-TodoList-item[data-status="active"] .kernel-TodoList-markLayer[data-kind="active"] {
+  color: var(--kernel-color-accent);
+}
+
+.kernel-TodoList-item[data-status="done"] .kernel-TodoList-markLayer[data-kind="done"] {
+  color: var(--kernel-color-success);
+}
+
+.kernel-TodoList-item[data-status="error"] .kernel-TodoList-markLayer[data-kind="error"] {
+  color: var(--kernel-color-danger);
+}
+
+.kernel-TodoList-text {
+  min-inline-size: 0;
+  line-height: var(--kernel-line-height);
+}
+
+.kernel-TodoList-item[data-status="done"] .kernel-TodoList-text {
+  text-decoration: line-through;
+  text-decoration-thickness: from-font;
+  text-decoration-color: currentcolor;
+}
+
+.kernel-TodoList-itemMetadata {
+  margin-inline-start: auto;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-TodoList-root,
+  .kernel-TodoList-chevron,
+  .kernel-TodoList-item,
+  .kernel-TodoList-markLayer {
+    transition: none;
+  }
+}

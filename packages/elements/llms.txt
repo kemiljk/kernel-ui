@@ -66,7 +66,7 @@ separate "install this one component" step.
 - Overlays: `kernel-command-palette`, `kernel-context-menu`, `kernel-dialog`, `kernel-dropdown-menu` (+ `kernel-menu-item`/`kernel-menu-separator`), `kernel-hover-card`, `kernel-navigation-menu` (+ `kernel-nav-menu-item`/`kernel-nav-menu-link`/`kernel-nav-menu-trigger`/`kernel-nav-menu-content`), `kernel-popover`, `kernel-sheet`, `kernel-tooltip`
 - Navigation: `kernel-breadcrumbs` (+ `kernel-breadcrumb-item`), `kernel-pagination` (+ `kernel-pagination-item`/`kernel-pagination-previous`/`kernel-pagination-next`/`kernel-pagination-ellipsis`), `kernel-tabs` (+ `kernel-tabs-list`/`kernel-tab`/`kernel-tab-panel`)
 - Data Display: `kernel-accordion` (+ `kernel-accordion-item`), `kernel-carousel` (+ `kernel-carousel-slide`), `kernel-data-table`, `kernel-date-picker`, `kernel-date-range-picker`, `kernel-table` (+ `kernel-table-caption`/`kernel-table-header`/`kernel-table-body`/`kernel-table-row`/`kernel-table-head`/`kernel-table-cell`)
-- AI: `kernel-composer`, `kernel-reasoning`, `kernel-sources` (+ `kernel-source`/`kernel-citation`), `kernel-suggestion` (+ `kernel-suggestion-item`), `kernel-thinking-indicator`, `kernel-tool-call`
+- AI: `kernel-agent-activity` (+ `kernel-agent-activity-item`), `kernel-code-block`, `kernel-composer`, `kernel-file-diff`, `kernel-message-list` (+ `kernel-message`/`kernel-message-bubble`), `kernel-message-scroller`, `kernel-reasoning`, `kernel-sources` (+ `kernel-source`/`kernel-citation`), `kernel-suggestion` (+ `kernel-suggestion-item`), `kernel-thinking-indicator`, `kernel-todo-list` (+ `kernel-todo-item`), `kernel-tool-call`
 <!-- GENERATED:COMPONENTS:END -->
 
 ## Utilities

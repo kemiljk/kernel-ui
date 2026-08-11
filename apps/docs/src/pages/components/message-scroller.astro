@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import MessageScrollerDemo from "../../components/demos/MessageScrollerDemo";
+import MessageScrollerPlayground from "../../components/demos/MessageScrollerPlayground";
+---
+
+<BaseLayout title="Message Scroller" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Message Scroller</h1>
+    <p>
+      A conversation viewport that follows streamed output at the live edge,
+      and releases control the moment the reader scrolls away. It's a native
+      overflow container with <code>role="log"</code> and
+      <code>aria-live="polite"</code> — the standard chat-transcript pattern —
+      plus one behaviour that's tedious to get right by hand: knowing when
+      "keep up with the stream" should stop.
+    </p>
+
+    <div class="docs-example">
+      <MessageScrollerDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <MessageScrollerPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Message Scroller.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
+        <tr><td><code>defaultPinned</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>threshold</code></td><td>number</td><td>24</td></tr>
+        <tr><td><code>onPinnedChange</code></td><td>(pinned: boolean) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>showJumpToLatest</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>jumpLabel</code></td><td>ReactNode</td><td>"Jump to latest"</td></tr>
+        <tr><td><code>conversationKey</code></td><td>unknown</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Why pinning isn't a controlled prop</h2>
+    <p>
+      Pinning isn't application state. It's an answer to "is the reader
+      currently at the bottom?", which only the DOM knows. A controlled
+      <code>pinned</code> prop would let a parent assert
+      <em>pinned</em> while the reader is 400px up the transcript, and the
+      only way to honour it would be to yank them back down mid-read. So
+      <code>defaultPinned</code> seeds it, <code>onPinnedChange</code>
+      reports it, and the jump control (or scrolling back to the bottom)
+      re-pins it.
+    </p>
+    <p>
+      Pin state is derived from scroll position alone — no wheel, touch, or
+      key heuristics. Every scroll the controller performs itself is flagged,
+      so any unflagged scroll event is by definition the reader moving, and
+      "did they end up at the bottom?" answers both the unpin and the re-pin
+      case with one rule. Wheel and touch listeners would re-derive the same
+      answer less reliably, and would miss keyboard and scrollbar-drag
+      scrolling entirely.
+    </p>
+
+    <h2>Using the behaviour on its own</h2>
+    <p>
+      The core is exported for surfaces that scroll but aren't transcripts —
+      a streaming log, a terminal pane, <code>CodeBlock</code>'s own
+      following. <code>useStickToBottom()</code> returns
+      <code>{"{ viewportRef, contentRef, pinned, scrollToBottom }"}</code>;
+      <code>StickToBottomController</code> is the framework-free class both
+      packages share.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        <code>role="log"</code> with <code>aria-live="polite"</code> announces
+        appended messages without interrupting. It's deliberately verbose for
+        very long transcripts, so both attributes are overridable — pass
+        <code>aria-live="off"</code> when your app announces messages itself.
+      </li>
+      <li>
+        The viewport is focusable. An overflow container that isn't focusable
+        can't be scrolled by keyboard at all in Firefox or Safari, which
+        strands keyboard-only readers in a transcript they can see and can't
+        move.
+      </li>
+      <li>
+        The jump control is hidden with <code>visibility</code> rather than
+        <code>display</code>, so it leaves the tab order while hidden and both
+        its reveal and its dismissal can still transition.
+      </li>
+      <li>
+        Following the live edge is always instant, never smooth-scrolled: a
+        per-chunk animation would never catch up with the next chunk. Only the
+        explicit jump animates, and <code>prefers-reduced-motion</code> makes
+        that instant too.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

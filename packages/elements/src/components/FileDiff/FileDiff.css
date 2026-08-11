@@ -1,0 +1,161 @@
+/* Hand-written twin of FileDiff.module.css from @kernelui-lib/react — the same
+   rules under the class names React's CSS Modules compile to (kernelClass() in
+   packages/elements/src/base.ts). */
+kernel-file-diff {
+  display: block;
+}
+
+.kernel-FileDiff-root {
+  overflow: hidden;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+}
+
+.kernel-FileDiff-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  background-color: var(--kernel-color-surface-raised);
+  cursor: pointer;
+  list-style: none;
+}
+
+.kernel-FileDiff-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.kernel-FileDiff-trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.kernel-FileDiff-path {
+  min-inline-size: 0;
+  overflow: hidden;
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kernel-FileDiff-counts {
+  display: inline-flex;
+  gap: var(--kernel-space-1);
+  flex: none;
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.kernel-FileDiff-additions {
+  color: var(--kernel-color-success-text);
+}
+
+.kernel-FileDiff-deletions {
+  color: var(--kernel-color-danger-text);
+}
+
+.kernel-FileDiff-chevron {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-FileDiff-root[open] .kernel-FileDiff-chevron {
+  transform: rotate(180deg);
+}
+
+.kernel-FileDiff-content {
+  overflow-x: auto;
+}
+
+.kernel-FileDiff-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height);
+  tab-size: 2;
+}
+
+/* Rows animate in once, on insert — a streaming diff should read as lines
+   landing, and a keyframe animation on a fresh row can't re-run on a
+   re-render of the rows above it. */
+@keyframes kernel-diff-row-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.kernel-FileDiff-row {
+  animation: kernel-diff-row-enter var(--kernel-duration-fast) var(--kernel-ease-out) both;
+}
+
+.kernel-FileDiff-row[data-kind="add"] {
+  background-color: var(--kernel-color-success-subtle);
+}
+
+.kernel-FileDiff-row[data-kind="remove"] {
+  background-color: var(--kernel-color-danger-subtle);
+}
+
+.kernel-FileDiff-row[data-kind="hunk"] {
+  background-color: var(--kernel-color-surface-raised);
+  color: var(--kernel-color-text-muted);
+}
+
+/* Line numbers live in their own cells rather than in the content, so
+   selecting and copying a diff copies the code and not the gutter. */
+.kernel-FileDiff-number {
+  inline-size: 1%;
+  padding-inline: var(--kernel-space-2);
+  color: var(--kernel-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  vertical-align: top;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The +/− marker is real text, not a colour. Colour alone doesn't say whether
+   a line was added or removed. */
+.kernel-FileDiff-marker {
+  inline-size: 1%;
+  padding-inline-start: var(--kernel-space-2);
+  vertical-align: top;
+  white-space: pre;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kernel-FileDiff-row[data-kind="add"] .kernel-FileDiff-marker {
+  color: var(--kernel-color-success-text);
+}
+
+.kernel-FileDiff-row[data-kind="remove"] .kernel-FileDiff-marker {
+  color: var(--kernel-color-danger-text);
+}
+
+.kernel-FileDiff-code {
+  padding-inline: var(--kernel-space-2) var(--kernel-space-3);
+  vertical-align: top;
+  white-space: pre;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-FileDiff-chevron {
+    transition: none;
+  }
+
+  .kernel-FileDiff-row {
+    animation: none;
+  }
+}

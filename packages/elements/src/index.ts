@@ -122,6 +122,29 @@ export { KernelNumberField } from "./components/NumberField/NumberField";
 
 export { KernelSheet } from "./components/Sheet/Sheet";
 
+// Phase 5 — Agent UI (conversation surfaces)
+export { KernelMessageScroller } from "./components/MessageScroller/MessageScroller";
+export { StickToBottomController } from "./utils/stickToBottom";
+export { adoptLateChildren } from "./utils/lateChildren";
+export type { StickToBottomOptions } from "./utils/stickToBottom";
+export {
+  KernelMessageList,
+  KernelMessage,
+  KernelMessageBubble,
+} from "./components/Message/Message";
+
+export { KernelTodoList, KernelTodoItem } from "./components/TodoList/TodoList";
+export {
+  KernelAgentActivity,
+  KernelAgentActivityItem,
+} from "./components/AgentActivity/AgentActivity";
+
+export { KernelCodeBlock } from "./components/CodeBlock/CodeBlock";
+export { KernelFileDiff } from "./components/FileDiff/FileDiff";
+export type { DiffRow, DiffRowKind } from "./components/FileDiff/FileDiff";
+export { linesFromCode, lineText, linesText } from "./utils/codeTokens";
+export type { CodeToken, CodeLine } from "./utils/codeTokens";
+
 export { attachSheetDrag } from "./utils/sheetDrag";
 export type {
   SheetDragOptions,

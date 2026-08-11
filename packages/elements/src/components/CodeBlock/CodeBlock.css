@@ -1,0 +1,150 @@
+/* Hand-written twin of CodeBlock.module.css from @kernelui-lib/react — the same
+   rules under the class names React's CSS Modules compile to (kernelClass() in
+   packages/elements/src/base.ts). */
+kernel-code-block {
+  display: block;
+}
+
+.kernel-CodeBlock-root {
+  margin: 0;
+  overflow: hidden;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+}
+
+.kernel-CodeBlock-header {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-space-1) var(--kernel-space-2) var(--kernel-space-1) var(--kernel-space-3);
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  background-color: var(--kernel-color-surface-raised);
+}
+
+.kernel-CodeBlock-heading {
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--kernel-color-text-muted);
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kernel-CodeBlock-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  margin-inline-start: auto;
+  padding: var(--kernel-space-1) var(--kernel-space-2);
+  border: var(--kernel-border-width) solid transparent;
+  border-radius: var(--kernel-radius-control);
+  background: none;
+  color: var(--kernel-color-text-muted);
+  font: inherit;
+  font-size: var(--kernel-font-size-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-CodeBlock-copy:hover {
+  border-color: var(--kernel-color-border);
+  color: var(--kernel-color-text);
+}
+
+.kernel-CodeBlock-copy:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 1px;
+}
+
+.kernel-CodeBlock-copyIcon {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  flex: none;
+}
+
+.kernel-CodeBlock-viewport {
+  /* Set from the component's maxBlockSize prop; unset means "grow". */
+  max-block-size: var(--kernel-code-max-block-size);
+  overflow: auto;
+  overflow-anchor: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--kernel-color-border-interactive) transparent;
+}
+
+.kernel-CodeBlock-viewport::-webkit-scrollbar {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+}
+
+.kernel-CodeBlock-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kernel-CodeBlock-viewport::-webkit-scrollbar-thumb {
+  background-color: var(--kernel-color-border-interactive);
+  border-radius: var(--kernel-radius-full);
+}
+
+.kernel-CodeBlock-pre {
+  margin: 0;
+  padding-block: var(--kernel-space-2);
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height);
+  /* Tabs in source shouldn't render eight columns wide inside a narrow block. */
+  tab-size: 2;
+}
+
+.kernel-CodeBlock-code {
+  display: block;
+  font: inherit;
+}
+
+/* A line is a grid row so the numbers form a column of their own, without a
+   second scroll container or absolute positioning to keep in sync. */
+.kernel-CodeBlock-line {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  padding-inline: var(--kernel-space-3);
+  transition: background-color var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-CodeBlock-line:not(:has(> .kernel-CodeBlock-number)) {
+  grid-template-columns: 1fr;
+}
+
+.kernel-CodeBlock-line[data-highlight] {
+  background-color: var(--kernel-color-accent-subtle);
+  box-shadow: inset 2px 0 0 var(--kernel-color-accent);
+}
+
+/* Real text, but out of the accessibility tree and out of the selection: a
+   screen reader reading "one const two import" is noise, and a copy that
+   interleaves numbers with code is worse than no copy at all. */
+.kernel-CodeBlock-number {
+  padding-inline-end: var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kernel-CodeBlock-lineText {
+  min-inline-size: 0;
+  white-space: pre;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-CodeBlock-copy,
+  .kernel-CodeBlock-line {
+    transition: none;
+  }
+}

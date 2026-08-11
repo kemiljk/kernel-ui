@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-11T12:18:39.998Z",
+  "generatedAt": "2026-08-11T13:01:12.586Z",
   "components": [
     {
       "name": "Accordion",
@@ -30,6 +30,26 @@
         "Radix Accordion uses controlled value/onValueChange on the root; Kernel AccordionItem uses title + defaultOpen per item.",
         "No Radix-style AccordionTrigger/AccordionContent composition — pass title and children to AccordionItem."
       ]
+    },
+    {
+      "name": "Agent Activity",
+      "category": "AI",
+      "slug": "agent-activity",
+      "element": "<ol> of steps",
+      "summary": "One chronological stream of reasoning, searches, tool calls, and traces.",
+      "status": "available",
+      "reactExports": [
+        "AgentActivity",
+        "AgentActivityItem"
+      ],
+      "elementTag": "kernel-agent-activity",
+      "elementSubTags": [
+        "kernel-agent-activity-item"
+      ],
+      "docsUrl": "https://www.kernelui.com/components/agent-activity/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
     },
     {
       "name": "Avatar",
@@ -212,6 +232,25 @@
       "migrationCaveats": [
         "onCheckedChange naming matches Radix; value API uses checked/defaultChecked/onCheckedChange."
       ]
+    },
+    {
+      "name": "Code Block",
+      "category": "AI",
+      "slug": "code-block",
+      "element": "<figure> + <pre><code>",
+      "summary": "A code surface with line numbers, copy, and stable streaming.",
+      "status": "available",
+      "reactExports": [
+        "CodeBlock",
+        "linesFromCode",
+        "linesText"
+      ],
+      "elementTag": "kernel-code-block",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/code-block/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
     },
     {
       "name": "Color Picker",
@@ -435,6 +474,23 @@
       ]
     },
     {
+      "name": "File Diff",
+      "category": "AI",
+      "slug": "file-diff",
+      "element": "<details> + <table>",
+      "summary": "File changes as a real table, with live counts and progressive rows.",
+      "status": "available",
+      "reactExports": [
+        "FileDiff"
+      ],
+      "elementTag": "kernel-file-diff",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/file-diff/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "File Upload",
       "category": "Forms",
       "slug": "file-upload",
@@ -546,6 +602,47 @@
       "radixPackages": [
         "@radix-ui/react-label"
       ],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Message",
+      "category": "AI",
+      "slug": "message",
+      "element": "<ol> + <li> + <article>",
+      "summary": "Conversation rows: authored, grouped, aligned, optionally expandable.",
+      "status": "available",
+      "reactExports": [
+        "MessageList",
+        "Message",
+        "MessageBubble"
+      ],
+      "elementTag": "kernel-message-list",
+      "elementSubTags": [
+        "kernel-message",
+        "kernel-message-bubble"
+      ],
+      "docsUrl": "https://www.kernelui.com/components/message/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Message Scroller",
+      "category": "AI",
+      "slug": "message-scroller",
+      "element": "role=\"log\" overflow container",
+      "summary": "Follows streamed output at the live edge, and lets go when the reader scrolls away.",
+      "status": "available",
+      "reactExports": [
+        "MessageScroller",
+        "useStickToBottom",
+        "StickToBottomController"
+      ],
+      "elementTag": "kernel-message-scroller",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/message-scroller/",
+      "shadcnAliases": [],
+      "radixPackages": [],
       "migrationCaveats": []
     },
     {
@@ -1154,6 +1251,26 @@
         "@radix-ui/react-toggle",
         "@radix-ui/react-toggle-group"
       ],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Todo List",
+      "category": "AI",
+      "slug": "todo-list",
+      "element": "<details> + <ol>",
+      "summary": "An agent's task plan, with cross-fading status marks and a live completion count.",
+      "status": "available",
+      "reactExports": [
+        "TodoList",
+        "TodoItem"
+      ],
+      "elementTag": "kernel-todo-list",
+      "elementSubTags": [
+        "kernel-todo-item"
+      ],
+      "docsUrl": "https://www.kernelui.com/components/todo-list/",
+      "shadcnAliases": [],
+      "radixPackages": [],
       "migrationCaveats": []
     },
     {

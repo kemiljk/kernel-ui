@@ -1,0 +1,80 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import AgentActivityDemo from "../../components/demos/AgentActivityDemo";
+import AgentActivityPlayground from "../../components/demos/AgentActivityPlayground";
+---
+
+<BaseLayout title="Agent Activity" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Agent Activity</h1>
+    <p>
+      One chronological stream of what an agent did: reasoning, searches, tool
+      calls, structured traces, mixed freely. It's a real
+      <code>&lt;ol&gt;</code>, because a trace is the one thing where order
+      <em>is</em> the content — "it searched, then read the file, then edited
+      it" stops being true if the list reorders.
+    </p>
+
+    <div class="docs-example">
+      <AgentActivityDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <AgentActivityPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Agent Activity Item.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode</td><td>required</td></tr>
+        <tr><td><code>kind</code></td><td>"reasoning" | "search" | "tool" | "trace"</td><td>"trace"</td></tr>
+        <tr><td><code>status</code></td><td>"pending" | "running" | "complete" | "error"</td><td>"complete"</td></tr>
+        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>open</code> / <code>onOpenChange</code></td><td>boolean / (open) =&gt; void</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      <code>AgentActivity</code> itself takes only <code>label</code>, the
+      stream's accessible name (default "Activity").
+    </p>
+
+    <h2>It composes Reasoning and Tool Call, it doesn't replace them</h2>
+    <p>
+      A step with <code>kind="reasoning"</code> renders
+      <a href="/components/reasoning/">Reasoning</a> in its body; a step with
+      <code>kind="tool"</code> renders
+      <a href="/components/tool-call/">Tool Call</a>. Their disclosure,
+      streaming, and status behaviour isn't reimplemented here — there's one
+      source of truth for those states, and both components stay exactly as
+      they were for anyone using them standalone. <code>search</code> and
+      <code>trace</code> steps get this component's own
+      <code>&lt;details&gt;</code>, height-animated by the same
+      <code>DetailsPanelAnimator</code>. A step with no children is a plain
+      status line, not an empty disclosure.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        There's no connector rail down the stream. Reasoning and tool steps
+        render their own bordered surfaces, so a spine could only ever be drawn
+        beside some of the steps — and one that appears next to one row and not
+        the next reads as a rendering bug rather than a timeline. The kind icons
+        and the row rhythm carry the sequence.
+      </li>
+      <li>
+        A step whose status is <code>running</code> and which has no
+        disclosure announces itself through <code>role="status"</code>, so
+        progress reaches a screen reader without stealing focus.
+      </li>
+      <li>
+        Kind icons are <code>aria-hidden</code>. The step's meaning lives in
+        its label, which is real text.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

@@ -1,0 +1,86 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import FileDiffDemo from "../../components/demos/FileDiffDemo";
+import FileDiffPlayground from "../../components/demos/FileDiffPlayground";
+---
+
+<BaseLayout title="File Diff" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>File Diff</h1>
+    <p>
+      A file's changes as a real <code>&lt;table&gt;</code> inside a
+      <code>&lt;details&gt;</code>. A diff <em>is</em> tabular data — old line
+      number, new line number, change marker, content — so it's a table, which
+      is also what gives each row a readable structure instead of a wall of
+      pre-formatted text.
+    </p>
+
+    <div class="docs-example">
+      <FileDiffDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <FileDiffPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for File Diff.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>path</code></td><td>ReactNode</td><td>required</td></tr>
+        <tr><td><code>rows</code></td><td>DiffRow[]</td><td>required</td></tr>
+        <tr><td><code>streaming</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>showLineNumbers</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>collapseOnComplete</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>additions</code> / <code>deletions</code></td><td>number</td><td>derived</td></tr>
+      </tbody>
+    </table></div>
+
+    <p>
+      A <code>DiffRow</code> is
+      <code>{"{ kind, oldLine?, newLine?, content?, tokens? }"}</code>, where
+      <code>kind</code> is <code>"add"</code>, <code>"remove"</code>,
+      <code>"context"</code> or <code>"hunk"</code>, and <code>tokens</code> is
+      the same <code>CodeToken</code> shape
+      <a href="/components/code-block/">Code Block</a> takes — so one
+      highlighter serves both. Counts are derived from the rows; pass
+      <code>additions</code> and <code>deletions</code> yourself when
+      <code>rows</code> is a window onto a larger diff.
+    </p>
+
+    <h2>Motion</h2>
+    <p>
+      Rows fade in once, on insert, so a streaming diff reads as lines landing
+      — and because that's a keyframe animation on a freshly inserted row, it
+      can't re-run when the rows above it re-render. With
+      <code>collapseOnComplete</code>, the disclosure holds open while rows
+      arrive and settles closed a beat after they stop, so the finished change
+      registers before it folds away. That fires only on the streaming edge, so
+      a diff you reopened by hand is never slammed shut by the next re-render —
+      the same rule <a href="/components/reasoning/">Reasoning</a> uses.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        The <code>+</code>/<code>−</code> marker stays in the DOM as text.
+        Colour alone doesn't tell you whether a line was added or removed, and
+        a diff where that's ambiguous is a diff you can't read.
+      </li>
+      <li>
+        Line numbers live in their own cells rather than in the content, and are
+        unselectable, so selecting and copying a diff copies the code and not
+        the gutter.
+      </li>
+      <li>
+        The table carries a visually hidden caption naming the file and its
+        counts, and hidden column headers, so the row structure is announced
+        without printing a header row nobody needs to see.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

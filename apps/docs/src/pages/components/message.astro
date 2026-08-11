@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import MessageDemo from "../../components/demos/MessageDemo";
+import MessagePlayground from "../../components/demos/MessagePlayground";
+---
+
+<BaseLayout title="Message" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Message</h1>
+    <p>
+      A conversation is a real <code>&lt;ol&gt;</code>. Chat messages are
+      ordered — "the third thing said" is meaningful, and reordering them
+      changes the meaning — so the list element that encodes ordering is the
+      right one, and a stack of <code>&lt;div&gt;</code>s throws that away.
+      Each row is an <code>&lt;li&gt;</code> wrapping an
+      <code>&lt;article&gt;</code>, which puts every message in the screen
+      reader's article rotor: readers jump message to message instead of
+      arrowing through every line.
+    </p>
+
+    <div class="docs-example">
+      <MessageDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <MessagePlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Message.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>author</code></td><td>"user" | "assistant" | "system"</td><td>"assistant"</td></tr>
+        <tr><td><code>avatar</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>name</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>metadata</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>grouped</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>live</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>animateOnMount</code></td><td>boolean</td><td>true</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Message Bubble.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>tone</code></td><td>"neutral" | "accent" | "muted" | "danger"</td><td>"neutral"</td></tr>
+        <tr><td><code>align</code></td><td>"start" | "center" | "end"</td><td>"start"</td></tr>
+        <tr><td><code>expandable</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>expandLabel</code></td><td>ReactNode</td><td>"Show more"</td></tr>
+        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>false</td></tr>
+      </tbody>
+    </table></div>
+
+    <p>
+      <code>align</code> is independent of <code>author</code> on purpose: a
+      system notice on the assistant's side can still be centred, and a
+      quoted user message can be shown inline. <code>expandable</code>
+      renders a real <code>&lt;details&gt;</code>, height-animated by the
+      same <code>DetailsPanelAnimator</code> that drives Accordion and
+      Reasoning — not a <code>max-height</code> clamp, so a collapsed
+      message is still real content rather than visually cropped content.
+    </p>
+
+    <h2>Motion</h2>
+    <p>
+      New rows animate in once, on mount, and never again. That's a plain CSS
+      keyframe animation rather than a JS-driven transition, because "runs
+      once when inserted" is already what a keyframe animation on a fresh
+      element means — re-rendering a long transcript can't re-animate its
+      history. Set <code>animateOnMount</code> to <code>false</code> to opt
+      out, and <code>prefers-reduced-motion</code> removes it entirely.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Each message's <code>&lt;article&gt;</code> is labelled with the
+        author's name, which is why the avatar is <code>aria-hidden</code> —
+        a duplicated author reading is noise, not information.
+      </li>
+      <li>
+        A grouped row keeps the avatar's box and drops only its contents, so
+        messages in a run stay on one text column instead of stepping left.
+      </li>
+      <li>
+        The <code>live</code> marker renders the word "Writing", not a bare
+        coloured dot: a colour-only status is invisible to anyone who can't
+        see the colour and unreadable to a screen reader.
+      </li>
+      <li>
+        In <code>@kernelui-lib/elements</code> the three hosts are
+        <code>display: contents</code>, so the real
+        <code>&lt;ol&gt;</code>/<code>&lt;li&gt;</code> nest directly and the
+        list keeps its announced item count.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

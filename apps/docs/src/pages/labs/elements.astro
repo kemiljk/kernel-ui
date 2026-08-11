@@ -266,6 +266,63 @@ import "@kernelui-lib/elements/styles.css";
     <kernel-date-range-picker id="lab-date-range-picker"></kernel-date-range-picker>
 
     <kernel-data-table id="lab-data-table" page-size="2"></kernel-data-table>
+
+    <kernel-message-scroller id="lab-message-scroller" max-block-size="12rem">
+      <kernel-message-list>
+        <kernel-message author="assistant" name="Assistant">
+          <span data-slot="avatar">A</span>
+          <kernel-message-bubble>Appending messages below moves the live edge.</kernel-message-bubble>
+        </kernel-message>
+        <kernel-message author="user" name="You">
+          <span data-slot="avatar">Y</span>
+          <kernel-message-bubble tone="accent">Scroll up and the viewport lets go.</kernel-message-bubble>
+        </kernel-message>
+        <kernel-message author="assistant" grouped>
+          <kernel-message-bubble expandable expand-label="Show more">
+            A grouped row drops the repeated author line and keeps the text column.
+          </kernel-message-bubble>
+        </kernel-message>
+      </kernel-message-list>
+    </kernel-message-scroller>
+    <kernel-button id="lab-message-append" variant="secondary" size="sm">Append a message</kernel-button>
+
+    <kernel-todo-list id="lab-todo-list" label="Fix the failing motion check" metadata="sheetDrag.ts">
+      <kernel-todo-item status="done" metadata="0.4s">Read the failing test</kernel-todo-item>
+      <kernel-todo-item status="active">Trace the assertion</kernel-todo-item>
+      <kernel-todo-item>Fix the settle target</kernel-todo-item>
+      <kernel-todo-item>Re-run the motion checks</kernel-todo-item>
+    </kernel-todo-list>
+    <kernel-button id="lab-todo-advance" variant="secondary" size="sm">Advance the plan</kernel-button>
+
+    <kernel-agent-activity id="lab-agent-activity">
+      <kernel-agent-activity-item kind="reasoning" label="Thought for 3s">
+        The failing assertion is about the settle target.
+      </kernel-agent-activity-item>
+      <kernel-agent-activity-item kind="search" label="Searched the repo" default-open>
+        Three matches, all in packages/react/src/utils.
+      </kernel-agent-activity-item>
+      <kernel-agent-activity-item kind="tool" label="Ran the motion checks" status="complete">
+        4 passed, 0 failed.
+      </kernel-agent-activity-item>
+      <kernel-agent-activity-item kind="trace" label="Wrote the fix"></kernel-agent-activity-item>
+    </kernel-agent-activity>
+
+    <!-- Light-DOM source, read once at connect: the code is real page content
+         before any script sets a property. -->
+    <kernel-code-block
+      id="lab-code-block"
+      label="stickToBottom.ts"
+      language="ts"
+      show-line-numbers
+      highlight-lines="2"
+      max-block-size="10rem"
+    ><pre><code>const controller = new StickToBottomController(viewport, content);
+controller.scrollToBottom("instant");
+controller.destroy();</code></pre></kernel-code-block>
+    <kernel-button id="lab-code-tokens" variant="secondary" size="sm">Hand it tokens</kernel-button>
+
+    <kernel-file-diff id="lab-file-diff" path="packages/react/src/utils/stickToBottom.ts"></kernel-file-diff>
+    <kernel-button id="lab-diff-stream" variant="secondary" size="sm">Stream a row</kernel-button>
   </section>
 </BaseLayout>
 
@@ -329,4 +386,65 @@ import "@kernelui-lib/elements/styles.css";
   document.getElementById("lab-date-picker")?.addEventListener("valuechange", ((event: CustomEvent) => {
     console.log("date-picker valuechange:", event.detail.value);
   }) as EventListener);
+
+  // Appends to the scroller's own light DOM, not to its inner viewport: the
+  // element relocates late children itself, which is the whole point of a
+  // transcript that grows.
+  let appended = 0;
+  document.getElementById("lab-message-append")?.addEventListener("click", () => {
+    appended += 1;
+    const list = document.querySelector("#lab-message-scroller kernel-message-list");
+    const message = document.createElement("kernel-message");
+    message.setAttribute("author", appended % 2 === 0 ? "user" : "assistant");
+    message.setAttribute("name", appended % 2 === 0 ? "You" : "Assistant");
+    const bubble = document.createElement("kernel-message-bubble");
+    if (appended % 2 === 0) bubble.setAttribute("tone", "accent");
+    bubble.textContent = `Appended message ${appended}`;
+    message.append(bubble);
+    list?.append(message);
+  });
+  // Structured data arrives as a property, never an attribute.
+  document.getElementById("lab-code-tokens")?.addEventListener("click", () => {
+    (document.getElementById("lab-code-block") as any).lines = [
+      { tokens: [{ text: "const", color: "#c678dd" }, { text: " pinned = " }, { text: "true", color: "#d19a66" }] },
+      { tokens: [{ text: "// tokens came from a highlighter", color: "#7f848e" }] },
+    ];
+  });
+
+  const diffRows = [
+    { kind: "hunk", content: "@@ -80,3 +80,4 @@" },
+    { kind: "context", oldLine: 80, newLine: 80, content: "  scrollToBottom(behavior) {" },
+    { kind: "remove", oldLine: 81, content: "    this.viewport.scrollTo({ top: max });" },
+    { kind: "add", newLine: 81, content: "    this.viewport.scrollTop = max;" },
+    { kind: "context", oldLine: 82, newLine: 82, content: "  }" },
+  ];
+  let diffShown = 1;
+  const diffEl = document.getElementById("lab-file-diff") as any;
+  if (diffEl) diffEl.rows = diffRows.slice(0, diffShown);
+  document.getElementById("lab-diff-stream")?.addEventListener("click", () => {
+    diffShown = diffShown >= diffRows.length ? 1 : diffShown + 1;
+    diffEl.rows = diffRows.slice(0, diffShown);
+    diffEl.toggleAttribute("streaming", diffShown < diffRows.length);
+  });
+
+  // Only the item's own `status` attribute changes — the list recomputes its
+  // count from a MutationObserver, so there's no second thing to update.
+  document.getElementById("lab-todo-advance")?.addEventListener("click", () => {
+    const items = [...document.querySelectorAll("#lab-todo-list kernel-todo-item")];
+    const active = items.find((item) => item.getAttribute("status") === "active");
+    if (!active) {
+      for (const item of items) item.removeAttribute("status");
+      items[0]?.setAttribute("status", "active");
+      return;
+    }
+    active.setAttribute("status", "done");
+    const next = items[items.indexOf(active) + 1];
+    next?.setAttribute("status", "active");
+  });
+
+  document
+    .getElementById("lab-message-scroller")
+    ?.addEventListener("kernel-pinned-change", ((event: CustomEvent) => {
+      console.log("message-scroller pinned:", event.detail.pinned);
+    }) as EventListener);
 </script>

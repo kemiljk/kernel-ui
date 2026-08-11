@@ -282,6 +282,61 @@ export type {
   UseDetailsTransitionOptions,
 } from "./utils/detailsTransition";
 
+export { MessageScroller } from "./components/MessageScroller/MessageScroller";
+export type {
+  MessageScrollerProps,
+  MessageScrollerState,
+} from "./components/MessageScroller/MessageScroller";
+export { useStickToBottom, StickToBottomController } from "./utils/stickToBottom";
+export type {
+  StickToBottomOptions,
+  UseStickToBottomOptions,
+  StickToBottomApi,
+} from "./utils/stickToBottom";
+
+export { MessageList, Message, MessageBubble } from "./components/Message/Message";
+export type {
+  MessageListProps,
+  MessageProps,
+  MessageState,
+  MessageAuthor,
+  MessageBubbleProps,
+  MessageBubbleState,
+  MessageTone,
+} from "./components/Message/Message";
+
+export { TodoList, TodoItem } from "./components/TodoList/TodoList";
+export type {
+  TodoListProps,
+  TodoListState,
+  TodoItemProps,
+  TodoItemState,
+  TodoStatus,
+} from "./components/TodoList/TodoList";
+
+export { AgentActivity, AgentActivityItem } from "./components/AgentActivity/AgentActivity";
+export type {
+  AgentActivityProps,
+  AgentActivityItemProps,
+  AgentActivityItemState,
+  AgentActivityKind,
+  AgentActivityStatus,
+} from "./components/AgentActivity/AgentActivity";
+
+export { CodeBlock } from "./components/CodeBlock/CodeBlock";
+export type { CodeBlockProps, CodeBlockState } from "./components/CodeBlock/CodeBlock";
+
+export { FileDiff } from "./components/FileDiff/FileDiff";
+export type {
+  FileDiffProps,
+  FileDiffState,
+  DiffRow,
+  DiffRowKind,
+} from "./components/FileDiff/FileDiff";
+
+export { linesFromCode, lineText, linesText } from "./utils/codeTokens";
+export type { CodeToken, CodeLine } from "./utils/codeTokens";
+
 export {
   renderElement,
   resolveClassName,

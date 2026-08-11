@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import TodoListDemo from "../../components/demos/TodoListDemo";
+import TodoListPlayground from "../../components/demos/TodoListPlayground";
+---
+
+<BaseLayout title="Todo List" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Todo List</h1>
+    <p>
+      An agent's task plan: a <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>
+      wrapping a real <code>&lt;ol&gt;</code>. The plan is ordered work, so it's an
+      ordered list, and the disclosure is native — the browser owns
+      expand/collapse, keyboard support, and find-in-page expansion. The
+      summary carries the completion count, because a collapsed plan whose
+      progress you can't see is a plan you have to expand to learn anything
+      from.
+    </p>
+
+    <div class="docs-example">
+      <TodoListDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <TodoListPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Todo List.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>ReactNode</td><td>"Plan"</td></tr>
+        <tr><td><code>metadata</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>completed</code></td><td>number</td><td>derived</td></tr>
+        <tr><td><code>total</code></td><td>number</td><td>derived</td></tr>
+        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>open</code> / <code>onOpenChange</code></td><td>boolean / (open) =&gt; void</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Todo Item.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>status</code></td><td>"pending" | "active" | "done" | "error"</td><td>"pending"</td></tr>
+        <tr><td><code>metadata</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>statusLabel</code></td><td>string</td><td>from status</td></tr>
+      </tbody>
+    </table></div>
+
+    <p>
+      The completion count is derived from direct <code>TodoItem</code>
+      children. Only direct children are inspected — anything deeper is your
+      own structure, and guessing at it would print numbers that silently
+      disagree with the visible list. Pass <code>completed</code> and
+      <code>total</code> yourself in those cases. The custom element derives
+      the same count from a <code>MutationObserver</code> on its items'
+      <code>status</code> attributes, so updating one task's status updates the
+      summary with no extra bookkeeping.
+    </p>
+
+    <h2>Motion</h2>
+    <p>
+      All four status marks are rendered at once and cross-faded by CSS on
+      <code>data-status</code>. That's what makes a status change read as the
+      same mark morphing rather than one icon being swapped for another — and
+      it means a status update is a single attribute write, with no JavaScript
+      in the transition at all. The count uses tabular figures so ticking
+      9/12 → 10/12 doesn't shift the label beside it.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Every item carries its status as real, visually hidden text ("To do",
+        "In progress", "Done", "Failed"). A shape and a colour are not a
+        label — override the wording with <code>statusLabel</code>.
+      </li>
+      <li>
+        The disclosure is a native <code>&lt;summary&gt;</code>, so it's
+        focusable, operable with Enter and Space, and announced as expandable
+        without any ARIA.
+      </li>
+      <li>
+        Marks are aligned to the task's first line rather than centred on it,
+        so a task that wraps to three lines still reads as one item.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

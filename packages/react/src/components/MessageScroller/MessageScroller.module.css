@@ -1,0 +1,128 @@
+/* The root is a positioning context for the floating jump control only —
+   the scrolling itself belongs to .viewport, so the control can sit still
+   while the transcript moves under it. */
+.root {
+  position: relative;
+  display: flex;
+  min-block-size: 0;
+  flex-direction: column;
+}
+
+.viewport {
+  overflow-y: auto;
+  min-block-size: 0;
+  flex: 1;
+  /* Reserve the scrollbar track so the first streamed message that
+     overflows doesn't shift every line of the transcript sideways. */
+  scrollbar-gutter: stable;
+  /* Anchoring fights a controller that sets scrollTop deliberately:
+     the browser would compensate for growth we're already following. */
+  overflow-anchor: none;
+  border-radius: var(--kernel-radius-container);
+
+  /* Same custom scrollbar treatment as ScrollArea — one scrollbar look
+     across the library, rather than a second opinion here. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--kernel-color-border-interactive) transparent;
+}
+
+.viewport::-webkit-scrollbar {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+}
+
+.viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.viewport::-webkit-scrollbar-thumb {
+  background-color: var(--kernel-color-border-interactive);
+  border-radius: var(--kernel-radius-full);
+}
+
+.viewport:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-3);
+  /* Inline padding keeps messages off the reserved scrollbar gutter — an
+     end-aligned author name otherwise sits under the scrollbar — and the
+     block padding stops the first and last message butting the edges. */
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+}
+
+/* Floating over the live edge rather than displacing it, so revealing the
+   control never reflows the transcript the reader is looking at. */
+.jump {
+  position: absolute;
+  inset-block-end: var(--kernel-space-3);
+  inset-inline-start: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  padding: var(--kernel-space-1) var(--kernel-space-3);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+  color: var(--kernel-color-text);
+  font: inherit;
+  font-size: var(--kernel-font-size-sm);
+  cursor: pointer;
+
+  /* Hidden state. `visibility` (not `display`/`hidden`) so the reveal and
+     the dismissal both transition, and the control leaves the tab order
+     while hidden. */
+  visibility: hidden;
+  opacity: 0;
+  transform: translate(-50%, var(--kernel-space-2)) scale(var(--kernel-scale-exit));
+  transform-origin: bottom center;
+  /* `visibility` is discrete: transitioning it over a duration would flip it
+     at the halfway point, hiding the first half of the fade. Instead it's a
+     zero-duration change, *delayed* until the exit finishes on the way out
+     and applied immediately on the way in. */
+  transition:
+    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-out),
+    transform var(--kernel-duration-exit-fast) var(--kernel-ease-out),
+    visibility 0s linear var(--kernel-duration-exit-fast),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.jump[data-visible] {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    transform var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    visibility 0s linear,
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.jump[data-visible]:hover {
+  border-color: var(--kernel-color-border-hover);
+}
+
+.jump:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.jumpIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jump,
+  .jump[data-visible] {
+    transition: none;
+  }
+}

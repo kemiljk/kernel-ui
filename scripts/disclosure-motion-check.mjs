@@ -49,12 +49,33 @@ const BODY = `
     <p>Tool call output line one.</p>
     <p>Tool call output line two.</p>
   </kernel-tool-call>
+
+  <kernel-todo-list label="Plan" default-open="false">
+    <kernel-todo-item status="done">First task</kernel-todo-item>
+    <kernel-todo-item status="active">Second task</kernel-todo-item>
+    <kernel-todo-item>Third task</kernel-todo-item>
+  </kernel-todo-list>
+
+  <kernel-agent-activity>
+    <kernel-agent-activity-item kind="search" label="Searched the repo">
+      <p>Result line one.</p>
+      <p>Result line two.</p>
+    </kernel-agent-activity-item>
+  </kernel-agent-activity>
+
+  <kernel-message-bubble expandable expand-label="Show more">
+    <p>Expanded message paragraph one.</p>
+    <p>Expanded message paragraph two.</p>
+  </kernel-message-bubble>
 </main>`;
 
 const CASES = [
   { name: "Accordion item", selector: "details.kernel-Accordion-item" },
   { name: "Reasoning", selector: "details.kernel-Reasoning-root" },
   { name: "ToolCall", selector: "details.kernel-ToolCall-root" },
+  { name: "TodoList", selector: "details.kernel-TodoList-root" },
+  { name: "AgentActivity step", selector: "details.kernel-AgentActivity-disclosure" },
+  { name: "MessageBubble", selector: "details.kernel-Message-bubble" },
 ];
 
 function analyse(samples, expectOpen) {

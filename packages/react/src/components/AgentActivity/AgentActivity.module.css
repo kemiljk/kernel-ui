@@ -1,0 +1,113 @@
+.root {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kernel-space-2);
+  padding-block: var(--kernel-space-1);
+  color: var(--kernel-color-text);
+}
+
+/* No connector rail. A mixed stream puts reasoning and tool steps — which
+   render their own bordered surfaces — next to plain rows, so a spine could
+   only ever be drawn for some of the steps, and a rail that appears beside
+   one row and not the next reads as a rendering bug rather than a timeline.
+   The kind icons and the row rhythm carry the sequence instead. */
+.marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1.25rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.item[data-status="running"] .marker {
+  color: var(--kernel-color-accent);
+}
+
+.item[data-status="error"] .marker {
+  color: var(--kernel-color-danger);
+}
+
+.icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.label {
+  min-inline-size: 0;
+  line-height: var(--kernel-line-height-tight);
+  padding-block: 0.15rem;
+}
+
+.item[data-status="pending"] .label {
+  color: var(--kernel-color-text-muted);
+}
+
+.item[data-status="error"] .label {
+  color: var(--kernel-color-danger-text);
+}
+
+.disclosure {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  cursor: pointer;
+  list-style: none;
+}
+
+.trigger::-webkit-details-marker {
+  display: none;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
+.chevron {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.disclosure[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.content {
+  padding-block-start: var(--kernel-space-1);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+/* Delegated children own the full row width — Reasoning and ToolCall are
+   surfaces, not inline labels. */
+.item[data-delegated] > * {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}

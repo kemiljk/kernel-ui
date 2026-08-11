@@ -1,0 +1,123 @@
+/* Hand-written twin of AgentActivity.module.css from @kernelui-lib/react —
+   same rules, under the class names React's CSS Modules compile to
+   (kernelClass() in packages/elements/src/base.ts).
+
+   The item host is `display: contents` so its <li> is a direct child of the
+   stream's <ol>. */
+kernel-agent-activity-item {
+  display: contents;
+}
+
+.kernel-AgentActivity-root {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  list-style: none;
+}
+
+.kernel-AgentActivity-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kernel-space-2);
+  padding-block: var(--kernel-space-1);
+  color: var(--kernel-color-text);
+}
+
+/* No connector rail. A mixed stream puts reasoning and tool steps — which
+   render their own bordered surfaces — next to plain rows, so a spine could
+   only ever be drawn for some of the steps, and a rail that appears beside
+   one row and not the next reads as a rendering bug rather than a timeline.
+   The kind icons and the row rhythm carry the sequence instead. */
+.kernel-AgentActivity-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1.25rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-AgentActivity-item[data-status="running"] .kernel-AgentActivity-marker {
+  color: var(--kernel-color-accent);
+}
+
+.kernel-AgentActivity-item[data-status="error"] .kernel-AgentActivity-marker {
+  color: var(--kernel-color-danger);
+}
+
+.kernel-AgentActivity-icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.kernel-AgentActivity-label {
+  min-inline-size: 0;
+  line-height: var(--kernel-line-height-tight);
+  padding-block: 0.15rem;
+}
+
+.kernel-AgentActivity-item[data-status="pending"] .kernel-AgentActivity-label {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-AgentActivity-item[data-status="error"] .kernel-AgentActivity-label {
+  color: var(--kernel-color-danger-text);
+}
+
+.kernel-AgentActivity-disclosure {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.kernel-AgentActivity-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  cursor: pointer;
+  list-style: none;
+}
+
+.kernel-AgentActivity-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.kernel-AgentActivity-trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
+.kernel-AgentActivity-chevron {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  flex: none;
+  color: var(--kernel-color-text-muted);
+  transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-AgentActivity-disclosure[open] .kernel-AgentActivity-chevron {
+  transform: rotate(180deg);
+}
+
+.kernel-AgentActivity-content {
+  padding-block-start: var(--kernel-space-1);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+/* Delegated children own the full row width — Reasoning and ToolCall are
+   surfaces, not inline labels. */
+.kernel-AgentActivity-item[data-delegated] > * {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-AgentActivity-chevron {
+    transition: none;
+  }
+}
