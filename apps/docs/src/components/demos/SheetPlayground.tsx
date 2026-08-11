@@ -28,6 +28,7 @@ const controls = [
     options: ["none", "40,70,100", "25,55,92"],
     default: "none",
   },
+  { type: "boolean" as const, prop: "spring", default: true },
 ];
 
 /** `"none"` is the playground's way of saying "no snap points"; the prop itself
@@ -56,6 +57,7 @@ function attrsFor(values: PlaygroundValues, kebab: boolean) {
   bool("handleOnly", "handle-only", false);
   bool("dismissible", "dismissible", true);
   bool("inset", "inset", false);
+  bool("spring", "spring", true);
   bool("showCloseButton", "show-close-button", true);
   if (values.backdrop !== "default") attrs.push(`backdrop="${values.backdrop}"`);
   return attrs;
@@ -91,6 +93,7 @@ function Stage({ values }: { values: PlaygroundValues }) {
         description="Drag toward the edge it's anchored to."
         side={values.side as SheetSide}
         snapPoints={snapsFor(values)}
+        spring={Boolean(values.spring)}
         showHandle={Boolean(values.showHandle)}
         handleOnly={Boolean(values.handleOnly)}
         dismissible={Boolean(values.dismissible)}

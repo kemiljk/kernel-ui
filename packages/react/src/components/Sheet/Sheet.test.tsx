@@ -282,7 +282,9 @@ describe("Sheet", () => {
 
     it("lands on the nearest snap when released slowly", () => {
       const onSnapChange = vi.fn();
-      const { dialog, handle } = openSheet({ onSnapChange });
+      // `spring={false}` so the landing height is written synchronously; the
+      // spring's own arrival is covered separately.
+      const { dialog, handle } = openSheet({ onSnapChange, spring: false });
       // 828 → ~500 over 400ms: 0.8px/ms of travel but only 0.06 in the last
       // window, so this is a drop, not a flick.
       gesture(handle, [
@@ -291,19 +293,38 @@ describe("Sheet", () => {
         [420, 380],
         [428, 400],
       ]);
-      expect(dialog.style.height).toBe("55dvh");
       expect(onSnapChange).toHaveBeenCalledWith(55);
+      expect(dialog.style.height).toBe("55dvh");
     });
 
     it("steps exactly one snap on a flick, rather than to the nearest", () => {
-      const { dialog, handle } = openSheet({ defaultSnap: 55 });
-      // Barely moves — nearest is still 55 — but leaves fast.
+      const onSnapChange = vi.fn();
+      const { dialog, handle } = openSheet({ defaultSnap: 55, onSnapChange, spring: false });
+      // Only 60px of travel, so the nearest snap is still 55 — but it leaves at
+      // 3px/ms, and a flick is supposed to step regardless of distance.
       gesture(handle, [
         [100, 0],
         [130, 10],
         [160, 20],
       ]);
+      expect(onSnapChange).toHaveBeenCalledWith(25);
       expect(dialog.style.height).toBe("25dvh");
+    });
+
+    it("carries the release speed into the settle when springing", () => {
+      const onSnapChange = vi.fn();
+      const { dialog, handle } = openSheet({ defaultSnap: 55, onSnapChange });
+      gesture(handle, [
+        [100, 0],
+        [130, 10],
+        [160, 20],
+      ]);
+      // The spring owns the height frame by frame, so the landing snap is
+      // reported immediately while the height is still in transit — in px, not
+      // yet handed back to dvh.
+      expect(onSnapChange).toHaveBeenCalledWith(25);
+      expect(dialog.style.height).toMatch(/px$/);
+      expect(dialog).not.toHaveAttribute("data-snapping");
     });
 
     it("dismisses when a downward flick runs out of snaps below", () => {

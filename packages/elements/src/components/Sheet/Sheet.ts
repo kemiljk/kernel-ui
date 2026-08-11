@@ -4,7 +4,9 @@ import { kernelClass } from "../../base";
 // specificity-matched to Dialog's rather than escalated above them, so source
 // order is what decides them. Don't reorder these two imports.
 import { KernelDialog } from "../Dialog/Dialog";
+import { prefersReducedMotion } from "../../utils/exitTransition";
 import { parseSnapPoints } from "../../utils/snapPoints";
+import { parseSpring, runSpring } from "../../utils/spring";
 import {
   attachSheetDrag,
   DEFAULT_CLOSE_THRESHOLD,
@@ -41,7 +43,10 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * viewport percentages, e.g. `"25,55,92"` — a flick steps exactly one, a slower
  * release lands on the nearest, and dragging below the shortest dismisses;
  * `side="bottom"` only), `snap` (the resting snap, reflected as it changes; set
- * it to retarget the sheet, or call `snapTo()`).
+ * it to retarget the sheet, or call `snapTo()`), `spring` (on by default — a real
+ * spring carries the snap settle at the speed the finger was moving; set
+ * `"false"` for the stylesheet's transition, or `"0.065,0.3"` to tune attraction
+ * and friction).
  *
  * Part classes: everything `<kernel-dialog>` exposes, plus a
  * `data-slot="sheet-handle"` grabber, a `data-slot="sheet-body"` scroll region,
@@ -78,6 +83,7 @@ export class KernelSheet extends KernelDialog {
       "max-display-width",
       "snap-points",
       "snap",
+      "spring",
     ];
   }
 
@@ -168,6 +174,25 @@ export class KernelSheet extends KernelDialog {
       footer: this.footerElement,
       snapPoints: parseSnapPoints(this.getAttribute("snap-points")),
       snap: this.snapValue,
+      animate: (settle) => {
+        // Read at settle time, not cached: `prefers-reduced-motion` is a live
+        // query, so flipping the OS setting takes effect without a remount.
+        if (this.getAttribute("spring") === "false" || prefersReducedMotion()) {
+          settle.onFrame(settle.toPx);
+          settle.onDone();
+          return () => {};
+        }
+        return runSpring({
+          from: settle.fromPx,
+          to: settle.toPx,
+          // The gesture measures speed toward dismissal, which *shrinks* a
+          // bottom sheet, while the animated value is its height.
+          velocity: -settle.velocityY,
+          config: parseSpring(this.getAttribute("spring")),
+          onFrame: settle.onFrame,
+          onDone: settle.onDone,
+        });
+      },
       // Removing the attribute is the same path every other close takes:
       // KernelDialog's own `syncAttr` picks it up, runs the exit transition, and
       // only then calls the native `close()`.

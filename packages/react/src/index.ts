@@ -271,7 +271,10 @@ export type { SheetProps, SheetClassNames, SheetSide } from "./components/Sheet/
 export { useSheetDrag } from "./components/Sheet/useSheetDrag";
 export type { UseSheetDragOptions, SheetDragApi } from "./components/Sheet/useSheetDrag";
 export { attachSheetDrag } from "./utils/sheetDrag";
-export type { SheetDragOptions, SheetDragController } from "./utils/sheetDrag";
+export type { SheetDragOptions, SheetDragController, SettleSpec } from "./utils/sheetDrag";
+export { parseSnapPoints, resolveSnapTarget } from "./utils/snapPoints";
+export { runSpring, DEFAULT_SPRING } from "./utils/spring";
+export type { SpringConfig, SpringRunOptions } from "./utils/spring";
 
 export { DetailsPanelAnimator, useDetailsTransition } from "./utils/detailsTransition";
 export type {

@@ -381,7 +381,15 @@
        token (rather than deleting it and repointing every consumer to
        --kernel-ease-out directly) so a future real spring — or a
        consumer overriding just this one custom property — has
-       somewhere to land without touching every component that uses it. */
+       somewhere to land without touching every component that uses it.
+
+       That future arrived in exactly one place, and this token is not it:
+       Sheet's snap settle runs a real JS spring (`utils/spring.ts` in both
+       packages), because a snap target only exists in JS and a settle has
+       to leave at the speed the finger was moving — which no cubic-bezier
+       can express. Everything else, including everything reading this
+       token, is still a CSS transition on purpose. Read this as "spring-
+       flavoured easing", not "wherever Kernel does springs". */
     --kernel-ease-spring: var(--kernel-ease-out);
     --kernel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --kernel-ease-in: cubic-bezier(0.7, 0, 0.84, 0);

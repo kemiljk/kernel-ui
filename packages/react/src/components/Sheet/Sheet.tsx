@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useEffect, useMemo } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 // Import order is load-bearing: `Dialog` pulls in `Dialog.module.css`, and
 // `Sheet.module.css` has to land *after* it in the bundle. Sheet's per-side
@@ -12,8 +12,11 @@ import { parseSnapPoints } from "../../utils/snapPoints";
 import {
   DEFAULT_CLOSE_THRESHOLD,
   DEFAULT_VELOCITY_THRESHOLD,
+  type SheetDragOptions,
   type SheetSide,
 } from "../../utils/sheetDrag";
+import { prefersReducedMotion } from "../../utils/exitTransition";
+import { runSpring, type SpringConfig } from "../../utils/spring";
 import { useSheetDrag } from "./useSheetDrag";
 import styles from "./Sheet.module.css";
 
@@ -68,6 +71,15 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
    * surprising thing for a sheet that was just asked to appear. */
   defaultSnap?: number;
   onSnapChange?: (snap: number) => void;
+  /** How a snap settle is carried. `true` (the default) uses a real spring, so
+   * the sheet leaves at the speed the finger was actually moving — something a
+   * `cubic-bezier` can't express, since a curve has no notion of initial
+   * velocity. `false` falls back to the stylesheet's transition. Pass
+   * `{ attraction, friction }` to tune: higher attraction is springier, higher
+   * friction settles sooner and overshoots less.
+   *
+   * Ignored under `prefers-reduced-motion`, where the settle is instant. */
+  spring?: boolean | Partial<SpringConfig>;
   className?: string;
   classNames?: SheetClassNames;
   /** Fires on every drag frame with how far the sheet has travelled, 0–1. */
@@ -109,6 +121,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     snap,
     defaultSnap,
     onSnapChange,
+    spring = true,
     className,
     classNames,
     children,
@@ -133,6 +146,36 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
   }, [onOpenChange]);
 
   const snaps = useMemo(() => parseSnapPoints(snapPoints), [snapPoints]);
+
+  // Held in a ref and read at settle time, not captured: `prefersReducedMotion`
+  // is a live query, and a user flipping the OS setting mid-session shouldn't
+  // need the sheet remounted to respect it.
+  const springRef = useRef(spring);
+  springRef.current = spring;
+
+  const animate = useMemo<SheetDragOptions["animate"]>(() => {
+    return (settle) => {
+      const config = springRef.current;
+      // Reduced motion gets no settle animation at all — but note that dragging
+      // still tracks the finger, because direct manipulation is the user's own
+      // movement rather than decoration the component added.
+      if (config === false || prefersReducedMotion()) {
+        settle.onFrame(settle.toPx);
+        settle.onDone();
+        return () => {};
+      }
+      return runSpring({
+        from: settle.fromPx,
+        to: settle.toPx,
+        // The gesture measures speed toward dismissal, which *shrinks* a bottom
+        // sheet, while the value being animated is its height. Hence the flip.
+        velocity: -settle.velocityY,
+        config: config === true ? null : config,
+        onFrame: settle.onFrame,
+        onDone: settle.onDone,
+      });
+    };
+  }, []);
   const [activeSnap, setActiveSnap] = useControllableState<number | undefined>({
     value: snap,
     // The tallest snap: a sheet asked to appear should show as much of itself as
@@ -169,6 +212,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     onDrag,
     onRelease,
     onSnapChange: setActiveSnap,
+    animate,
   });
 
   // Only for a *later* change from the caller. The opening height comes from the

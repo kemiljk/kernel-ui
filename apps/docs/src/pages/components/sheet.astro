@@ -72,6 +72,7 @@ const [open, setOpen] = useState(false);
         <tr><td><code>snapPoints</code></td><td>number[] (dvh)</td><td>—</td></tr>
         <tr><td><code>snap</code> / <code>defaultSnap</code></td><td>number (dvh)</td><td>tallest snap</td></tr>
         <tr><td><code>onSnapChange</code></td><td>(snap: number) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>spring</code></td><td>boolean | &#123; attraction, friction &#125;</td><td>true</td></tr>
         <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
         <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
         <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
@@ -169,6 +170,33 @@ const [open, setOpen] = useState(false);
       This applies to <code>side="bottom"</code> only. A snap is a block size, so
       the other sides would need either the anchor mirrored or inline-size
       snapped instead; rather than ship three-quarters of that, they stay binary.
+    </p>
+
+    <h2>The spring</h2>
+    <p>
+      Kernel's motion baseline is CSS transitions, and that still holds for
+      everything reversible. A snap settle is the one case a curve can't express:
+      the sheet has to leave at the speed the finger was actually moving, and a{" "}
+      <code>cubic-bezier</code> has no notion of an initial velocity. So{" "}
+      <code>spring</code> is on by default for snap settles and nothing else
+      reaches for it — a binary sheet keeps its transition, because there's no
+      target the stylesheet doesn't already know.
+    </p>
+    <p>
+      The equation is solved once and then <em>evaluated</em> at elapsed time,
+      rather than integrated frame by frame. That's not premature precision: a
+      per-frame integrator makes the path depend on how the frames land, so a
+      120Hz display and a 60Hz display take measurably different routes and a
+      dropped frame stretches the motion. Solving it means frame rate and jitter
+      decide only when the movement is <em>sampled</em>, never what it is.
+    </p>
+    <p>
+      Pass <code>&#123; attraction, friction &#125;</code> to tune — higher
+      attraction is springier, higher friction settles sooner and overshoots
+      less — or <code>false</code> to hand the settle back to CSS. Under{" "}
+      <code>prefers-reduced-motion</code> the settle is instant regardless, while
+      dragging still tracks the finger: direct manipulation is the user's own
+      movement, not decoration the component added.
     </p>
 
     <h2>Footer</h2>

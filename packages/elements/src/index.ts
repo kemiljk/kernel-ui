@@ -123,7 +123,15 @@ export { KernelNumberField } from "./components/NumberField/NumberField";
 export { KernelSheet } from "./components/Sheet/Sheet";
 
 export { attachSheetDrag } from "./utils/sheetDrag";
-export type { SheetDragOptions, SheetDragController, SheetSide } from "./utils/sheetDrag";
+export type {
+  SheetDragOptions,
+  SheetDragController,
+  SheetSide,
+  SettleSpec,
+} from "./utils/sheetDrag";
+export { parseSnapPoints, resolveSnapTarget } from "./utils/snapPoints";
+export { runSpring, DEFAULT_SPRING } from "./utils/spring";
+export type { SpringConfig, SpringRunOptions } from "./utils/spring";
 
 export { DetailsPanelAnimator } from "./utils/detailsTransition";
 export type { DetailsPanelAnimatorOptions } from "./utils/detailsTransition";
