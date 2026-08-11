@@ -97,5 +97,19 @@ export function useSheetDrag({
     };
   }, [node, open]);
 
+  // `side` and `snapPoints` decide *which* CSS property a snap is written to, so
+  // changing either has to re-apply the resting size — and clear the axis it used
+  // to live on, since a stale inline `height` keeps pinning a sheet that now
+  // grows along its inline axis. `reset()` does both and is idempotent.
+  //
+  // Separate from the attach effect so a reconfiguration doesn't tear the pointer
+  // listeners down, and deliberately not keyed on `snap`: that changes on every
+  // settle, and retargeting is `snapTo`'s job, which animates rather than jumps.
+  const snapPointsKey = rest.snapPoints.join(",");
+  useEffect(() => {
+    if (!node || !open) return;
+    controllerRef.current?.reset();
+  }, [node, open, rest.side, snapPointsKey]);
+
   return { setNode, setHandle, setFooter, snapTo };
 }

@@ -41,12 +41,13 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * which the sheet closes itself, for a sheet on small screens and a centred
  * `<kernel-dialog>` on large ones), `snap-points` (comma or space separated
  * viewport percentages, e.g. `"25,55,92"` — a flick steps exactly one, a slower
- * release lands on the nearest, and dragging below the shortest dismisses;
- * `side="bottom"` only), `snap` (the resting snap, reflected as it changes; set
- * it to retarget the sheet, or call `snapTo()`), `spring` (on by default — a real
- * spring carries the snap settle at the speed the finger was moving; set
- * `"false"` for the stylesheet's transition, or `"0.065,0.3"` to tune attraction
- * and friction).
+ * release lands on the nearest, and dragging below the smallest dismisses.
+ * Percentages are of the extent the sheet grows along, so `dvh` for bottom and
+ * top and `dvw` for left and right), `snap` (the resting snap, reflected as it
+ * changes; set it to retarget the sheet, or call `snapTo()`), `spring` (on by
+ * default — a real spring carries the snap settle at the speed the finger was
+ * moving; set `"false"` for the stylesheet's transition, or `"0.065,0.3"` to
+ * tune attraction and friction).
  *
  * Part classes: everything `<kernel-dialog>` exposes, plus a
  * `data-slot="sheet-handle"` grabber, a `data-slot="sheet-body"` scroll region,
@@ -56,8 +57,8 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  *
  * Events: `close` (inherited), plus `sheetdrag` (`detail.percent`, 0–1, on
  * every drag frame), `sheetrelease` (`detail.open`, whether the sheet stayed
- * open), and `snapchange` (`detail.from` / `detail.to`, in `dvh`, once per
- * settle that actually moves). All bubble.
+ * open), and `snapchange` (`detail.from` / `detail.to`, once per settle that
+ * actually moves). All bubble.
  *
  * The handle is `aria-hidden` decoration — the sheet is already dismissable by
  * Escape, the close button, and the backdrop — which is why it can be
@@ -185,8 +186,8 @@ export class KernelSheet extends KernelDialog {
         return runSpring({
           from: settle.fromPx,
           to: settle.toPx,
-          // The gesture measures speed toward dismissal, which *shrinks* a
-          // bottom sheet, while the animated value is its height.
+          // The gesture measures speed toward dismissal, which always *shrinks*
+          // the sheet, while the animated value is the size being grown.
           velocity: -settle.velocityY,
           config: parseSpring(this.getAttribute("spring")),
           onFrame: settle.onFrame,
@@ -303,8 +304,18 @@ export class KernelSheet extends KernelDialog {
         // A sheet with no `side` is a bottom sheet, where a dialog with no
         // `side` is a centred card.
         dialog?.setAttribute("data-side", this.side);
+        // The side decides which CSS property a snap is written to, so switching
+        // it has to re-apply the resting size and clear the axis the snap used to
+        // live on — a stale inline `height` would keep pinning a sheet that now
+        // grows along its inline axis.
+        if (this.hasAttribute("open")) this.drag?.reset();
         break;
       }
+      case "snap-points":
+        // Same reasoning: gaining or losing snaps changes whether the sheet has a
+        // size of its own at all.
+        if (this.hasAttribute("open")) this.drag?.reset();
+        break;
       case "show-handle":
         this.syncHandle();
         break;

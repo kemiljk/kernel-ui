@@ -2,7 +2,7 @@ import { cleanup as cleanupRender, fireEvent, render, screen } from "@testing-li
 import { useState } from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { VelocityTracker } from "../../utils/sheetDrag";
-import { Sheet, type SheetProps } from "./Sheet";
+import { Sheet, type SheetProps, type SheetSide } from "./Sheet";
 
 /** jsdom lays nothing out, so every element measures 0 and the engine's
  * distance rules — all proportions of the sheet's own size — degenerate. A fixed
@@ -349,11 +349,55 @@ describe("Sheet", () => {
       expect(height).toBeLessThan(1000);
     });
 
-    it("ignores snap points on a side that can't express them", () => {
+    it("snaps the axis the sheet grows along, on every side", () => {
+      // A snap is "how much of the screen this takes up", so the side decides
+      // which property and unit express it. Asserting `style.height === ""` for a
+      // left/right sheet would pass whether snaps worked or not — the property
+      // that matters is `width` — so both are checked each time.
+      const cases = [
+        { side: "bottom", prop: "height", other: "width", unit: "dvh" },
+        { side: "top", prop: "height", other: "width", unit: "dvh" },
+        { side: "left", prop: "width", other: "height", unit: "dvw" },
+        { side: "right", prop: "width", other: "height", unit: "dvw" },
+      ] as const satisfies readonly {
+        side: SheetSide;
+        prop: "height" | "width";
+        other: "height" | "width";
+        unit: string;
+      }[];
+
+      for (const { side, prop, other, unit } of cases) {
+        cleanupRender();
+        render(<ControlledSheet snapPoints={SNAPS} side={side} />);
+        const dialog = screen.getByRole("dialog") as HTMLElement;
+        expect(dialog.style[prop], `${side} sizes its own axis`).toBe(`92${unit}`);
+        expect(dialog.style[other], `${side} leaves the cross axis alone`).toBe("");
+        // The hook that lifts the stylesheet's size cap, without which a snap
+        // above the cap is silently clamped to it.
+        expect(dialog.dataset.snap, `${side} reflects its snap`).toBe("92");
+      }
+    });
+
+    it("clears the old axis when the side changes under it", () => {
       window.innerHeight = 900;
-      render(<ControlledSheet snapPoints={SNAPS} side="right" />);
-      // No height is written at all: a right sheet stays binary.
-      expect((screen.getByRole("dialog") as HTMLElement).style.height).toBe("");
+      const { rerender } = render(<ControlledSheet snapPoints={SNAPS} side="bottom" />);
+      const dialog = screen.getByRole("dialog") as HTMLElement;
+      expect(dialog.style.height).toBe("92dvh");
+
+      // A snap left on the axis the sheet no longer grows along keeps applying,
+      // so a bottom-to-left switch would stay pinned to 92dvh tall.
+      rerender(<ControlledSheet snapPoints={SNAPS} side="left" />);
+      expect(dialog.style.width).toBe("92dvw");
+      expect(dialog.style.height).toBe("");
+    });
+
+    it("drops the snap hook when a sheet has no snap points", () => {
+      window.innerHeight = 900;
+      render(<ControlledSheet />);
+      const dialog = screen.getByRole("dialog") as HTMLElement;
+      expect(dialog.dataset.snap).toBeUndefined();
+      expect(dialog.style.height).toBe("");
+      expect(dialog.style.width).toBe("");
     });
   });
 

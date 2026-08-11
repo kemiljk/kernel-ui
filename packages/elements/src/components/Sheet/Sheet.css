@@ -121,17 +121,35 @@
   transition: none;
 }
 
-/* A snapping sheet's resting position is a height, which only JS knows, so the
-   settle is the one moment `height` needs a transition. Scoped to
-   `data-snapping` rather than added to the open rule: on the drag-dismiss path
-   the height is deliberately left pinned while `translate` carries the exit, and
-   a live height transition there would animate the sheet's size on the way out.
+/* A snap *is* the sheet's size, so the caps that keep a binary sheet clear of
+   the opposite screen edge have to stand aside — otherwise a `snapPoints`
+   entry above the cap is silently clamped to it, which looks like the snap
+   simply not working. Bottom and top snap the block axis, left and right the
+   inline axis, matching the engine's own per-side `sizeProp`. */
+.kernel-Sheet-sheet[data-snap][data-side="bottom"],
+.kernel-Sheet-sheet[data-snap][data-side="top"] {
+  max-block-size: none;
+}
+
+.kernel-Sheet-sheet[data-snap][data-side="left"],
+.kernel-Sheet-sheet[data-snap][data-side="right"] {
+  max-inline-size: none;
+}
+
+/* A snapping sheet's resting position is a size, which only JS knows, so the
+   settle is the one moment that size needs a transition. Both axes are listed
+   because which one a snap drives depends on the side; only ever one of them
+   changes. Scoped to `data-snapping` rather than added to the open rule: on the
+   drag-dismiss path the size is deliberately left pinned while `translate`
+   carries the exit, and a live size transition there would animate the sheet's
+   dimensions on the way out.
 
    Only present when the settle is *not* being driven by a spring — the animator
-   writes the height every frame and the two would fight over the property. */
+   writes the size every frame and the two would fight over the property. */
 .kernel-Sheet-sheet[open][data-snapping] {
   transition:
     height var(--kernel-duration-slow) var(--kernel-ease-out),
+    width var(--kernel-duration-slow) var(--kernel-ease-out),
     translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-enter) allow-discrete,
     display var(--kernel-duration-enter) allow-discrete;

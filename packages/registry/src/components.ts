@@ -538,7 +538,7 @@ export const components: RegistryEntry[] = [
     element: "<dialog> + pointer events",
     summary: "A Dialog anchored to an edge, with drag-to-dismiss.",
     llmsNote:
-      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (restricts dragging to the handle and footer; set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`, `inset` (detached and floating, all four corners rounded), `maxDisplayWidth` (closes itself above that viewport width), and `footer` (pinned below the scrolling body; it owns the bottom safe area and is a drag surface). A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. `snapPoints` (viewport percentages, `side=\"bottom\"` only) gives it resting heights with `snap`/`defaultSnap`/`onSnapChange`: a flick steps exactly one snap, a slower release lands on the nearest, and dragging below the shortest dismisses. Snap settles are carried by a real spring so they leave at the speed the finger was moving; pass `spring={false}` for a CSS transition, or `{ attraction, friction }` to tune.",
+      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (restricts dragging to the handle and footer; set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`, `inset` (detached and floating, all four corners rounded), `maxDisplayWidth` (closes itself above that viewport width), and `footer` (pinned below the scrolling body; it owns the bottom safe area and is a drag surface). A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. `snapPoints` (viewport percentages along the axis the sheet grows — dvh for bottom/top, dvw for left/right, and it works on every side) gives it resting sizes with `snap`/`defaultSnap`/`onSnapChange`: a flick steps exactly one snap, a slower release lands on the nearest, and dragging below the smallest dismisses. Snap settles are carried by a real spring so they leave at the speed the finger was moving; pass `spring={false}` for a CSS transition, or `{ attraction, friction }` to tune.",
     status: "available",
     reactExports: ["Sheet", "useSheetDrag"],
     elementTag: "kernel-sheet",
@@ -547,7 +547,7 @@ export const components: RegistryEntry[] = [
     radixPackages: ["vaul"],
     migrationCaveats: [
       "Replaces Vaul: Drawer.Root/Trigger/Portal/Overlay/Content/Handle collapse into one <Sheet> with open/onOpenChange, since a real <dialog> needs no portal and draws its own ::backdrop.",
-      "Vaul's snapPoints becomes snapPoints (viewport percentages) and activeSnapPoint becomes snap/defaultSnap/onSnapChange; snapping is side=\"bottom\" only.",
+      "Vaul's snapPoints becomes snapPoints (viewport percentages) and activeSnapPoint becomes snap/defaultSnap/onSnapChange; snapping works on every side, as a percentage of the axis the sheet grows along.",
       "direction becomes side; dismissible and handleOnly keep their names; closeThreshold keeps Vaul's 0.25, but velocityThreshold is 0.5 because release speed is measured over a window rather than the whole gesture.",
     ],
   },

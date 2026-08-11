@@ -57,17 +57,17 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
    * background runs under the home indicator instead of leaving a strip of
    * surface beneath it, and it's a drag surface like the handle. */
   footer?: ReactNode;
-  /** Resting heights as percentages of the viewport — `[25, 55, 92]` for the
-   * shape every maps app converges on. A flick steps exactly one snap; a slower
-   * release lands on the nearest; dragging below the shortest dismisses.
+  /** Resting sizes as percentages of the viewport — `[25, 55, 92]` for the shape
+   * every maps app converges on. A flick steps exactly one snap; a slower
+   * release lands on the nearest; dragging below the smallest dismisses.
    *
-   * `side="bottom"` only. A snap is a block size, so the other sides would need
-   * either the anchor mirrored or inline-size snapped instead; they stay binary
-   * rather than half-working. */
+   * Percentages of the extent the sheet grows along, so `dvh` for `bottom` and
+   * `top` and `dvw` for `left` and `right`. A snap means the same thing on every
+   * side: how much of the screen the sheet takes up. */
   snapPoints?: number[];
-  /** Controlled resting snap, in `dvh`. Must be one of `snapPoints`. */
+  /** Controlled resting snap. Must be one of `snapPoints`. */
   snap?: number;
-  /** Snap the sheet opens at. Defaults to the tallest, which is the least
+  /** Snap the sheet opens at. Defaults to the largest, which is the least
    * surprising thing for a sheet that was just asked to appear. */
   defaultSnap?: number;
   onSnapChange?: (snap: number) => void;
@@ -167,8 +167,8 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
       return runSpring({
         from: settle.fromPx,
         to: settle.toPx,
-        // The gesture measures speed toward dismissal, which *shrinks* a bottom
-        // sheet, while the value being animated is its height. Hence the flip.
+        // The gesture measures speed toward dismissal, which always *shrinks* the
+        // sheet, while the value being animated is the size it grows along.
         velocity: -settle.velocityY,
         config: config === true ? null : config,
         onFrame: settle.onFrame,
