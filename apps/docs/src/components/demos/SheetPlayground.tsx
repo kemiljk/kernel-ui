@@ -12,6 +12,7 @@ const controls = [
   { type: "boolean" as const, prop: "showHandle", default: true },
   { type: "boolean" as const, prop: "handleOnly", default: false },
   { type: "boolean" as const, prop: "dismissible", default: true },
+  { type: "boolean" as const, prop: "inset", default: false },
   { type: "boolean" as const, prop: "showCloseButton", default: true },
   {
     type: "enum" as const,
@@ -32,6 +33,7 @@ function attrsFor(values: PlaygroundValues, kebab: boolean) {
   bool("showHandle", "show-handle", true);
   bool("handleOnly", "handle-only", false);
   bool("dismissible", "dismissible", true);
+  bool("inset", "inset", false);
   bool("showCloseButton", "show-close-button", true);
   if (values.backdrop !== "default") attrs.push(`backdrop="${values.backdrop}"`);
   return attrs;
@@ -69,6 +71,7 @@ function Stage({ values }: { values: PlaygroundValues }) {
         showHandle={Boolean(values.showHandle)}
         handleOnly={Boolean(values.handleOnly)}
         dismissible={Boolean(values.dismissible)}
+        inset={Boolean(values.inset)}
         showCloseButton={Boolean(values.showCloseButton)}
         backdrop={values.backdrop as "default" | "blur" | "opaque" | "transparent"}
       >

@@ -164,6 +164,34 @@ describe("Sheet", () => {
     expect(dialog.style.translate).toBe("0 40px");
   });
 
+  it("marks the root when inset, since the variant is entirely CSS", () => {
+    const { rerender } = render(<ControlledSheet />);
+    const before = screen.getByRole("dialog").className;
+    rerender(<ControlledSheet inset />);
+    const after = screen.getByRole("dialog").className;
+    expect(after).not.toBe(before);
+    expect(after.split(" ").length).toBe(before.split(" ").length + 1);
+  });
+
+  it("closes itself when the viewport is wider than maxDisplayWidth", () => {
+    const onOpenChange = vi.fn();
+    // jsdom's default is 1024, so this sheet is already over its limit on open.
+    render(<ControlledSheet maxDisplayWidth={768} onOpenChange={onOpenChange} />);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("stays open below maxDisplayWidth until the window grows past it", () => {
+    const onOpenChange = vi.fn();
+    window.innerWidth = 600;
+    render(<ControlledSheet maxDisplayWidth={768} onOpenChange={onOpenChange} />);
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    window.innerWidth = 900;
+    fireEvent(window, new Event("resize"));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    window.innerWidth = 1024;
+  });
+
   it("never starts a drag from the backdrop, whose event target is the dialog", () => {
     render(<ControlledSheet />);
     const dialog = screen.getByRole("dialog") as HTMLDialogElement;

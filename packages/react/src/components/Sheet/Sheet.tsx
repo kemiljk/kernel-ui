@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useEffect, useMemo } from "react";
 // Import order is load-bearing: `Dialog` pulls in `Dialog.module.css`, and
 // `Sheet.module.css` has to land *after* it in the bundle. Sheet's per-side
 // rules are specificity-matched to Dialog's (`.sheet[open][data-side="bottom"]`
@@ -35,6 +35,15 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
   closeThreshold?: number;
   /** Dismiss velocity in px/ms, applied regardless of distance travelled. */
   velocityThreshold?: number;
+  /** Detach the sheet from the screen edges: a gap on three sides and all four
+   * corners rounded. Purely visual — the gesture is unchanged. Size the gap
+   * with `--kernel-sheet-inset-inline` / `--kernel-sheet-inset-block`. */
+  inset?: boolean;
+  /** Viewport width, in px, above which this sheet shouldn't exist. Opening
+   * wider than the limit closes it again immediately, and so does widening the
+   * window past it while open — for the common case of a sheet on small
+   * screens and a centred `Dialog` on large ones. */
+  maxDisplayWidth?: number;
   className?: string;
   classNames?: SheetClassNames;
   /** Fires on every drag frame with how far the sheet has travelled, 0–1. */
@@ -69,6 +78,8 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     dismissible = true,
     closeThreshold = DEFAULT_CLOSE_THRESHOLD,
     velocityThreshold = DEFAULT_VELOCITY_THRESHOLD,
+    inset = false,
+    maxDisplayWidth,
     className,
     classNames,
     children,
@@ -86,6 +97,19 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
   const handleDismiss = useCallback(() => {
     onOpenChange(false);
   }, [onOpenChange]);
+
+  // A width limit can't refuse to open — `open` is the caller's state, not
+  // ours — so it closes instead, which lands in the same place. Measured on
+  // every open as well as on resize, so a sheet opened wide never appears.
+  useEffect(() => {
+    if (!open || maxDisplayWidth === undefined) return;
+    const check = () => {
+      if (window.innerWidth > maxDisplayWidth) onOpenChange(false);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [open, maxDisplayWidth, onOpenChange]);
 
   const { setNode, setHandle } = useSheetDrag({
     side,
@@ -115,7 +139,12 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
       classNames={{
         ...dialogClassNames,
         root: (state) =>
-          [styles.sheet, className, resolveClassName(dialogClassNames.root, state)]
+          [
+            styles.sheet,
+            inset ? styles.inset : null,
+            className,
+            resolveClassName(dialogClassNames.root, state),
+          ]
             .filter(Boolean)
             .join(" "),
       }}

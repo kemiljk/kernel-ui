@@ -66,6 +66,8 @@ const [open, setOpen] = useState(false);
         <tr><td><code>dismissible</code></td><td>boolean</td><td>true</td></tr>
         <tr><td><code>closeThreshold</code></td><td>number</td><td>0.25</td></tr>
         <tr><td><code>velocityThreshold</code></td><td>number (px/ms)</td><td>0.5</td></tr>
+        <tr><td><code>inset</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>maxDisplayWidth</code></td><td>number (px)</td><td>—</td></tr>
         <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
         <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
         <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
@@ -110,6 +112,26 @@ const [open, setOpen] = useState(false);
       it on release. The resting position stays the stylesheet's, which is what
       lets a dismissal continue smoothly from wherever the finger left off
       instead of snapping back to the start of an animation first.
+    </p>
+
+    <h2>Variants</h2>
+    <p>
+      <code>inset</code> detaches the sheet from the screen: a gap on three
+      sides and all four corners rounded. It's entirely CSS — no JavaScript
+      branch reads it — and the gap sizes from{" "}
+      <code>--kernel-sheet-inset-inline</code> and{" "}
+      <code>--kernel-sheet-inset-block</code>. The off-screen resting position
+      grows by the same gap, so a detached sheet doesn't park with its edge
+      still showing, and the overdrag bleed is dropped, since a floating sheet
+      has real page on every side rather than a strip to cover.
+    </p>
+    <p>
+      <code>maxDisplayWidth</code> is for the common pairing of a sheet on
+      small screens and a centred <a href="/components/dialog/">Dialog</a> on
+      large ones. Above the limit the sheet closes itself — on open and on
+      resize alike. It can't refuse to open, since <code>open</code> is your
+      state rather than the component's, but closing immediately lands in the
+      same place.
     </p>
 
     <h2>Composition</h2>

@@ -16,6 +16,9 @@
   --kernel-sheet-max-inline-size: min(100vw, 48rem);
   --kernel-sheet-max-block-size: 90dvh;
   --kernel-sheet-inline-size: min(85vw, 24rem);
+  /* Gap between a detached sheet and the screen edges. */
+  --kernel-sheet-inset-inline: var(--kernel-space-3);
+  --kernel-sheet-inset-block: var(--kernel-space-3);
   /* Reserved room for the grabber, and the grabber's own box. Full-bleed along
      the free edge, so a 2rem band is a wide target even though it's shallow;
      `handleOnly` sheets that want a deeper grab area can raise it. */
@@ -146,6 +149,73 @@
 
 .sheet[data-side="right"]:dir(rtl) {
   --kernel-sheet-bleed-x: -50vw;
+}
+
+/* Inset — the sheet detaches from the screen and floats, rounded on all four
+   corners. Entirely declarative: no JS branch anywhere reads this.
+
+   A class rather than a `data-inset` attribute because `Dialog` takes a closed
+   set of props and doesn't spread unknown ones onto the element, so an
+   attribute passed from `Sheet` would simply be dropped — the same reason the
+   root hook is `.sheet` and not `data-sheet`.
+
+   The off-screen position is set by overriding Dialog's own
+   `--kernel-dialog-translate` rather than restating `translate`, so Dialog keeps
+   deciding *when* the sheet is off-screen and this only says *where* — the gap
+   has to be cleared too, or a detached sheet parks with its edge still showing.
+
+   The overdrag bleed shadow is dropped: on an attached sheet it fills the strip
+   the damping opens up beyond the screen edge, but a detached one has real page
+   showing on all sides, and a 50vh block of surface would fill it in. */
+.sheet.inset {
+  border-radius: var(--kernel-radius-sheet);
+  box-shadow: var(--kernel-shadow-lg);
+}
+
+.sheet.inset[data-side="bottom"],
+.sheet.inset[data-side="top"] {
+  /* Both inline insets set with `inline-size: auto` lets the sheet fill the gap
+     between them, and `margin-inline: auto` then centres it once the max width
+     takes over on a wide screen. */
+  inset-inline: var(--kernel-sheet-inset-inline);
+  inline-size: auto;
+  margin-inline: auto;
+}
+
+.sheet.inset[data-side="bottom"] {
+  inset-block-end: calc(var(--kernel-sheet-inset-block) + env(safe-area-inset-bottom, 0px));
+  /* The gap already clears the home indicator, so the padding must not add it a
+     second time. */
+  padding-block-end: var(--kernel-padding-sheet);
+  --kernel-dialog-translate: 0
+    calc(100% + var(--kernel-sheet-inset-block) + env(safe-area-inset-bottom, 0px));
+}
+
+.sheet.inset[data-side="top"] {
+  inset-block-start: calc(var(--kernel-sheet-inset-block) + env(safe-area-inset-top, 0px));
+  padding-block-start: var(--kernel-padding-sheet);
+  --kernel-dialog-translate: 0
+    calc(-100% - var(--kernel-sheet-inset-block) - env(safe-area-inset-top, 0px));
+}
+
+.sheet.inset[data-side="left"],
+.sheet.inset[data-side="right"] {
+  inset-block: calc(var(--kernel-sheet-inset-block) + env(safe-area-inset-top, 0px))
+    calc(var(--kernel-sheet-inset-block) + env(safe-area-inset-bottom, 0px));
+  block-size: auto;
+  max-block-size: none;
+}
+
+.sheet.inset[data-side="left"] {
+  inset-inline-start: var(--kernel-sheet-inset-inline);
+  padding-inline-start: var(--kernel-padding-sheet);
+  --kernel-dialog-translate: calc(-100% - var(--kernel-sheet-inset-inline)) 0;
+}
+
+.sheet.inset[data-side="right"] {
+  inset-inline-end: var(--kernel-sheet-inset-inline);
+  padding-inline-end: var(--kernel-padding-sheet);
+  --kernel-dialog-translate: calc(100% + var(--kernel-sheet-inset-inline)) 0;
 }
 
 /* The handle sits in the padding band reserved above, positioned against the

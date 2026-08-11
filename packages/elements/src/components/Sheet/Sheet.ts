@@ -32,7 +32,11 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * `show-handle` (default true — set `"false"` to omit the grabber),
  * `handle-only` (only the handle starts a drag; worth setting whenever the
  * body scrolls), `dismissible` (default true — `"false"` disables both dragging
- * and backdrop dismissal), `close-threshold`, `velocity-threshold`.
+ * and backdrop dismissal), `close-threshold`, `velocity-threshold`, `inset`
+ * (detach from the screen edges — all four corners rounded, a gap on three
+ * sides, no JavaScript involved), `max-display-width` (a viewport width above
+ * which the sheet closes itself, for a sheet on small screens and a centred
+ * `<kernel-dialog>` on large ones).
  *
  * Part classes: everything `<kernel-dialog>` exposes, plus a
  * `data-slot="sheet-handle"` grabber.
@@ -49,6 +53,7 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
 export class KernelSheet extends KernelDialog {
   private handleElement: HTMLElement | null = null;
   private drag: SheetDragController | null = null;
+  private resizeHandler: (() => void) | null = null;
 
   static get observedAttributes() {
     return [
@@ -58,6 +63,8 @@ export class KernelSheet extends KernelDialog {
       "dismissible",
       "close-threshold",
       "velocity-threshold",
+      "inset",
+      "max-display-width",
     ];
   }
 
@@ -87,12 +94,28 @@ export class KernelSheet extends KernelDialog {
 
     this.drag = attachSheetDrag(dialog, () => this.dragOptions());
     this.syncHandle();
+
+    // Unlike React's, this listener runs for the element's whole life rather
+    // than only while open: the attribute check is cheap, and a custom element
+    // has no render pass to hang an open-only effect from.
+    this.resizeHandler = () => this.enforceDisplayWidth();
+    window.addEventListener("resize", this.resizeHandler);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.drag?.detach();
     this.drag = null;
+    if (this.resizeHandler) window.removeEventListener("resize", this.resizeHandler);
+    this.resizeHandler = null;
+  }
+
+  /** A width limit closes the sheet rather than refusing to open it, so that
+   * opening wide and widening while open land in the same place. */
+  private enforceDisplayWidth() {
+    if (!this.hasAttribute("open")) return;
+    const limit = this.number("max-display-width", Number.POSITIVE_INFINITY);
+    if (window.innerWidth > limit) this.removeAttribute("open");
   }
 
   private get dismissible() {
@@ -175,16 +198,24 @@ export class KernelSheet extends KernelDialog {
 
     super.syncAttr(name, value);
 
+    const dialog = this.native as HTMLDialogElement | null;
+
     switch (name) {
       case "side": {
         // A sheet with no `side` is a bottom sheet, where a dialog with no
         // `side` is a centred card.
-        const dialog = this.native as HTMLDialogElement | null;
         dialog?.setAttribute("data-side", this.side);
         break;
       }
       case "show-handle":
         this.syncHandle();
+        break;
+      case "inset":
+        dialog?.classList.toggle(kernelClass("Sheet", "inset"), this.flag("inset"));
+        break;
+      case "open":
+      case "max-display-width":
+        this.enforceDisplayWidth();
         break;
     }
   }
