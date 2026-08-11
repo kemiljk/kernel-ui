@@ -65,8 +65,7 @@ const [open, setOpen] = useState(false);
         <tr><td><code>handleOnly</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>dismissible</code></td><td>boolean</td><td>true</td></tr>
         <tr><td><code>closeThreshold</code></td><td>number</td><td>0.25</td></tr>
-        <tr><td><code>velocityThreshold</code></td><td>number (px/ms)</td><td>0.11</td></tr>
-        <tr><td><code>scrollLockTimeout</code></td><td>number (ms)</td><td>500</td></tr>
+        <tr><td><code>velocityThreshold</code></td><td>number (px/ms)</td><td>0.5</td></tr>
         <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
         <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
         <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
@@ -78,18 +77,33 @@ const [open, setOpen] = useState(false);
       A drag dismisses when it either travels past{" "}
       <code>closeThreshold</code> of the sheet's own size or exceeds{" "}
       <code>velocityThreshold</code> — distance alone would reject a short,
-      fast flick that clearly meant "go away". Dragging the other way isn't
-      clamped at zero; it's compressed asymptotically, so the sheet keeps
-      answering the finger while never travelling further than its own size.
+      fast flick that clearly meant "go away". A distance dismissal is refused
+      if the finger was travelling back the other way at the moment it lifted:
+      position stays past the threshold through an entire reversal, so it's
+      intent that decides, not where the sheet happens to sit. Dragging the
+      other way isn't clamped at zero either; it's compressed asymptotically,
+      so the sheet keeps answering the finger while never travelling further
+      than its own size.
     </p>
     <p>
-      Dragging never fights scrolling. A gesture starting inside a scroll
-      container belongs to that container until it reaches the relevant edge,
-      and any scroll inside the sheet suppresses dragging for{" "}
-      <code>scrollLockTimeout</code> so the tail of a flick-scroll doesn't
-      read as a dismiss. Set <code>handleOnly</code> when the body scrolls and
-      you'd rather remove the contest entirely — the handle sits outside the
-      scroll container, so a handle drag is never ambiguous.
+      Release speed is measured over the last 100ms rather than averaged across
+      the whole gesture. Averaging gets two things visibly wrong: a drag that
+      travels a long way and then stops dead reads as a fast flick, and a drag
+      reversed before release keeps reporting the direction it came from — so
+      the sheet leaves in the opposite direction to the finger that pulled it
+      back. This is also why <code>velocityThreshold</code> is 0.5 rather than
+      Vaul's 0.11: the measure and the threshold only mean anything as a pair.
+    </p>
+    <p>
+      Dragging never fights scrolling, and the decision isn't made once. A
+      gesture starting inside a scroll container belongs to that container while
+      it has anywhere left to go; the sheet re-asks on every move, so pulling a
+      list to its top and continuing in the same motion hands the gesture over
+      mid-drag. It hands over without a jump, too — travel is measured from the
+      moment of handoff, not from where the finger first went down. Set{" "}
+      <code>handleOnly</code> when you'd rather remove the contest entirely: the
+      handle sits outside the scroll container, so a handle drag is never
+      ambiguous.
     </p>
     <p>
       The gesture only ever writes an inline <code>translate</code>, and clears

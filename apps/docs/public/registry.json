@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-11T10:07:23.556Z",
+  "generatedAt": "2026-08-11T10:32:37.961Z",
   "components": [
     {
       "name": "Accordion",
@@ -841,7 +841,7 @@
       "migrationCaveats": [
         "Replaces Vaul: Drawer.Root/Trigger/Portal/Overlay/Content/Handle collapse into one <Sheet> with open/onOpenChange, since a real <dialog> needs no portal and draws its own ::backdrop.",
         "Vaul's snapPoints/activeSnapPoint have no equivalent — a Sheet is either open or dismissed.",
-        "direction becomes side; dismissible and handleOnly keep their names; closeThreshold, velocityThreshold, and scrollLockTimeout keep Vaul's defaults."
+        "direction becomes side; dismissible and handleOnly keep their names; closeThreshold keeps Vaul's 0.25, but velocityThreshold is 0.5 because release speed is measured over a window rather than the whole gesture."
       ]
     },
     {

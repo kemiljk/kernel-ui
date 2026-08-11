@@ -8,7 +8,6 @@ import { Dialog, type DialogClassNames, type DialogProps } from "../Dialog/Dialo
 import { mergeRefs, resolveClassName } from "../../utils/polymorphic";
 import {
   DEFAULT_CLOSE_THRESHOLD,
-  DEFAULT_SCROLL_LOCK_TIMEOUT,
   DEFAULT_VELOCITY_THRESHOLD,
   type SheetSide,
 } from "../../utils/sheetDrag";
@@ -36,8 +35,6 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
   closeThreshold?: number;
   /** Dismiss velocity in px/ms, applied regardless of distance travelled. */
   velocityThreshold?: number;
-  /** How long after scrolling inside the sheet dragging stays suppressed. */
-  scrollLockTimeout?: number;
   className?: string;
   classNames?: SheetClassNames;
   /** Fires on every drag frame with how far the sheet has travelled, 0–1. */
@@ -72,7 +69,6 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     dismissible = true,
     closeThreshold = DEFAULT_CLOSE_THRESHOLD,
     velocityThreshold = DEFAULT_VELOCITY_THRESHOLD,
-    scrollLockTimeout = DEFAULT_SCROLL_LOCK_TIMEOUT,
     className,
     classNames,
     children,
@@ -98,7 +94,6 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     handleOnly,
     closeThreshold,
     velocityThreshold,
-    scrollLockTimeout,
     onDismiss: handleDismiss,
     onDrag,
     onRelease,

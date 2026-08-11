@@ -7,7 +7,6 @@ import { KernelDialog } from "../Dialog/Dialog";
 import {
   attachSheetDrag,
   DEFAULT_CLOSE_THRESHOLD,
-  DEFAULT_SCROLL_LOCK_TIMEOUT,
   DEFAULT_VELOCITY_THRESHOLD,
   type SheetDragController,
   type SheetDragOptions,
@@ -33,8 +32,7 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * `show-handle` (default true — set `"false"` to omit the grabber),
  * `handle-only` (only the handle starts a drag; worth setting whenever the
  * body scrolls), `dismissible` (default true — `"false"` disables both dragging
- * and backdrop dismissal), `close-threshold`, `velocity-threshold`,
- * `scroll-lock-timeout`.
+ * and backdrop dismissal), `close-threshold`, `velocity-threshold`.
  *
  * Part classes: everything `<kernel-dialog>` exposes, plus a
  * `data-slot="sheet-handle"` grabber.
@@ -60,7 +58,6 @@ export class KernelSheet extends KernelDialog {
       "dismissible",
       "close-threshold",
       "velocity-threshold",
-      "scroll-lock-timeout",
     ];
   }
 
@@ -130,7 +127,6 @@ export class KernelSheet extends KernelDialog {
       handleOnly: this.flag("handle-only"),
       closeThreshold: this.number("close-threshold", DEFAULT_CLOSE_THRESHOLD),
       velocityThreshold: this.number("velocity-threshold", DEFAULT_VELOCITY_THRESHOLD),
-      scrollLockTimeout: this.number("scroll-lock-timeout", DEFAULT_SCROLL_LOCK_TIMEOUT),
       handle: this.handleElement,
       // Removing the attribute is the same path every other close takes:
       // KernelDialog's own `syncAttr` picks it up, runs the exit transition, and

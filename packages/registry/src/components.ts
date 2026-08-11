@@ -538,7 +538,7 @@ export const components: RegistryEntry[] = [
     element: "<dialog> + pointer events",
     summary: "A Dialog anchored to an edge, with drag-to-dismiss.",
     llmsNote:
-      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `scrollLockTimeout`, `onDrag`, `onRelease`. There are no snap points — a Sheet is open or dismissed.",
+      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`. A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. There are no snap points — a Sheet is open or dismissed.",
     status: "available",
     reactExports: ["Sheet", "useSheetDrag"],
     elementTag: "kernel-sheet",
@@ -548,7 +548,7 @@ export const components: RegistryEntry[] = [
     migrationCaveats: [
       "Replaces Vaul: Drawer.Root/Trigger/Portal/Overlay/Content/Handle collapse into one <Sheet> with open/onOpenChange, since a real <dialog> needs no portal and draws its own ::backdrop.",
       "Vaul's snapPoints/activeSnapPoint have no equivalent — a Sheet is either open or dismissed.",
-      "direction becomes side; dismissible and handleOnly keep their names; closeThreshold, velocityThreshold, and scrollLockTimeout keep Vaul's defaults.",
+      "direction becomes side; dismissible and handleOnly keep their names; closeThreshold keeps Vaul's 0.25, but velocityThreshold is 0.5 because release speed is measured over a window rather than the whole gesture.",
     ],
   },
   {
