@@ -168,6 +168,24 @@
   border-radius: var(--kernel-radius-full);
 }
 
+/* Padding that scales with the corner it sits inside, derived from the radius
+   this box actually uses rather than a global — override --kernel-radius-lg and
+   the padding follows. The coefficients are the same shape as
+   --kernel-padding-container-curve's: nothing extra at --kernel-radius-base: 0,
+   and roughly +60% inline at Round, where a 30px corner otherwise crops the
+   first and last line of a wrapped message.
+
+   Only the wrapped and expandable cases get it. A single-line bubble is a pill,
+   and a pill's curve only eats the space above and below a vertically centred
+   line — a few pixels of the text's own leading — so the flat padding is
+   already clear of it there, and adding to it would just make short messages
+   fat. */
+.bubble[data-lines="multi"],
+.bubble[data-expandable] {
+  padding-block: calc(var(--kernel-space-2) + var(--kernel-radius-lg) * 0.15);
+  padding-inline: calc(var(--kernel-space-3) + var(--kernel-radius-lg) * 0.25);
+}
+
 .bubble[data-tone="neutral"] {
   border-color: var(--kernel-color-border);
 }

@@ -41,3 +41,8 @@ sat 8px from a 36px curve at Round and visibly collided with it. Every box that
 *meets* a rounded corner — a header bar's top and inline edges, a summary row,
 the last row of a panel, all four sides of a scroll container — now takes the
 curve padding, while interior edges stay tight.
+
+A message bubble's own padding scales with its own corner too, derived from
+`--kernel-radius-lg` rather than a global, and only for the wrapped and
+expandable cases — a single-line pill's curve only eats the space above and
+below a centred line, so the flat padding is already clear of it there.
