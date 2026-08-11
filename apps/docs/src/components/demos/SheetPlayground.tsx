@@ -113,7 +113,7 @@ function Stage({ values }: { values: PlaygroundValues }) {
         }
         backdrop={values.backdrop as "default" | "blur" | "opaque" | "transparent"}
       >
-        <ol style={{ display: "grid", gap: "0.75rem", margin: 0, paddingInlineStart: "1.75rem" }}>
+        <ol style={{ display: "grid", gap: "0.75rem", margin: 0, paddingInlineStart: "2.25rem" }}>
           {rows.map((row) => (
             <li key={row}>{row}</li>
           ))}

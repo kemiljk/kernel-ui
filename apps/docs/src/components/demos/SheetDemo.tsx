@@ -29,9 +29,11 @@ export default function SheetDemo() {
         description="Drag the sheet down, or grab the handle, to dismiss it."
         handleOnly
       >
-        {/* Wide enough for a two-digit marker: the sheet clips its own overflow
-            for the rounded corners, so a marker outside the padding is cut. */}
-        <ol style={{ display: "grid", gap: "0.75rem", margin: 0, paddingInlineStart: "1.75rem" }}>
+        {/* The scrolling body clips at its inline edge, and an `outside` marker
+            paints beyond the list's own box, so the padding has to cover the
+            widest marker — "10." is 23px at this size. 2.25rem leaves room for
+            three digits too. */}
+        <ol style={{ display: "grid", gap: "0.75rem", margin: 0, paddingInlineStart: "2.25rem" }}>
           {tracks.map((track) => (
             <li key={track}>{track}</li>
           ))}

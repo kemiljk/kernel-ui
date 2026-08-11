@@ -415,6 +415,15 @@
        resizing element like Accordion's height overshoots visually,
        which a clipped `height` can't actually do. */
     --kernel-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    /* For a scrim's opacity, and opacity alone. The overlay curve is
+       deliberately front-loaded — over 200ms it reaches 40% by 20ms and
+       96% by 100ms — which is what makes a *moving* surface feel like it
+       arrives and settles. Applied to opacity the same curve reads as a
+       flash: the eye has no sense of "distance travelled" to interpret,
+       so a scrim that is 2/3 opaque within two frames simply appears.
+       Fading linearly over the same duration is what looks smooth, and
+       is what the platforms' own scrims do. */
+    --kernel-ease-scrim: linear;
 
     /* ---------------------------------------------------------------- */
     /* Elevation                                                        */

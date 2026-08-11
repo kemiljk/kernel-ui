@@ -162,7 +162,7 @@
   backdrop-filter: var(--kernel-dialog-backdrop-filter, none);
   opacity: 0;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
 }
@@ -170,7 +170,7 @@
 .kernel-Dialog-content[open]::backdrop {
   opacity: 1;
   transition:
-    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    opacity var(--kernel-duration-enter) var(--kernel-ease-scrim),
     overlay var(--kernel-duration-enter) allow-discrete,
     display var(--kernel-duration-enter) allow-discrete;
 }
@@ -178,7 +178,7 @@
 .kernel-Dialog-content[data-closing]::backdrop {
   opacity: 0;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim),
     overlay var(--kernel-duration-exit) allow-discrete,
     display var(--kernel-duration-exit) allow-discrete;
 }

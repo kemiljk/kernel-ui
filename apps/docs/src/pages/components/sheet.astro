@@ -219,6 +219,17 @@ const [open, setOpen] = useState(false);
 
     <h2>Composition</h2>
     <p>
+      The body scrolls, which makes it a scroll container in both axes —{" "}
+      <code>overflow-y: auto</code> forces <code>overflow-x</code> to match, as
+      CSS has no way to scroll one axis and overflow the other. Content that
+      paints outside its own box at the sheet's inline edge is therefore clipped,
+      with no way to scroll to it: an <code>&lt;ol&gt;</code>'s default{" "}
+      <code>list-style-position: outside</code> marker, a focus ring on a control
+      flush to the edge, a child's box-shadow. Give a numbered list enough{" "}
+      <code>padding-inline-start</code> for its widest marker — a two-digit{" "}
+      <code>"10."</code> is about 23px at the default size.
+    </p>
+    <p>
       Every Dialog <code>data-slot</code> hook, plus{" "}
       <code>sheet-handle</code>, <code>sheet-body</code>, and{" "}
       <code>sheet-footer</code>. During a drag the dialog carries{" "}

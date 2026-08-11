@@ -69,6 +69,15 @@
   overscroll-behavior: contain;
   -webkit-user-select: text;
   user-select: text;
+
+  /* Note for anyone tempted to widen the scrollport here with a negative margin
+     plus matching padding: it does nothing. `overflow-y: auto` forces
+     `overflow-x` to `auto` as well, so this box does clip horizontally — but the
+     column above it is `overflow: hidden` at the dialog's padding edge and clips
+     first. Content that paints outside its own box at the sheet's inline edge —
+     an `<ol>`'s `list-style-position: outside` marker, a focus ring, a shadow —
+     is therefore cut off, and the fix belongs with the content: give a list
+     enough `padding-inline-start` for its widest marker. */
 }
 
 /* Cancels the dialog's inline padding so the footer's background reaches the
