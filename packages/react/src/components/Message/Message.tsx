@@ -6,8 +6,14 @@ import type {
   ReactNode,
   Ref,
 } from "react";
-import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import {
+  dataAttr,
+  mergeRefs,
+  resolveClassName,
+  type ClassNameValue,
+} from "../../utils/polymorphic";
 import { useDetailsTransition } from "../../utils/detailsTransition";
+import { useLineFit } from "../../utils/lineFit";
 import styles from "./Message.module.css";
 
 export interface MessageListProps
@@ -186,6 +192,10 @@ export const MessageBubble = forwardRef<HTMLElement, MessageBubbleProps>(
     forwardedRef,
   ) {
     const { detailsRef, contentRef, open } = useDetailsTransition({ defaultOpen });
+    // Only the plain bubble's radius is line-dependent. An expandable one is a
+    // <details> whose height is its summary plus whatever is disclosed, which
+    // says nothing about how many lines the message runs to.
+    const lineFitRef = useLineFit<HTMLDivElement>();
     const state: MessageBubbleState = { tone, open: expandable ? open : true };
     const rootClassName = [styles.bubble, resolveClassName(className, state)]
       .filter(Boolean)
@@ -195,7 +205,7 @@ export const MessageBubble = forwardRef<HTMLElement, MessageBubbleProps>(
       return (
         <div
           {...rest}
-          ref={forwardedRef as Ref<HTMLDivElement>}
+          ref={mergeRefs(forwardedRef as Ref<HTMLDivElement>, lineFitRef)}
           data-tone={tone}
           data-align={align}
           className={rootClassName}

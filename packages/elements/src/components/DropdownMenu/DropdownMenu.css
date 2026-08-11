@@ -89,6 +89,8 @@ kernel-menu-separator {
 
 a.kernel-DropdownMenu-item {
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .kernel-DropdownMenu-item[data-highlighted] {

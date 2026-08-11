@@ -67,6 +67,42 @@ new component done, grep both `packages/react/src/index.ts` and
 - Icons are hand-authored inline `<svg>` with `stroke="currentColor"`
   (see `Toast.tsx`'s close icon or `Checkbox.tsx`'s checkmark) — no icon
   library dependency in either package.
+- **Shape baseline — a radius is never picked on its own.** Every corner
+  radius in the library has a padding it must be paired with, because
+  `--kernel-radius-container`/`-sheet` are *derived from* the padding
+  tokens (`radius-md + padding-*`), so the radius grows with a consumer's
+  `--kernel-radius-base` while a hand-picked `var(--kernel-space-3)`
+  doesn't. That's the drift: it looks fine at the default radius and reads
+  as cramped text jammed into a giant curve at Round. The pairings, all
+  three mandatory:
+
+  | `border-radius` | padding it must use |
+  | --- | --- |
+  | `--kernel-radius-container` | `--kernel-padding-container-curve` |
+  | `--kernel-radius-sheet` | `--kernel-padding-sheet-curve` |
+  | `--kernel-radius-control` / `-md` / `-lg` | any `--kernel-space-*` |
+
+  Only the third row is free, because those radii don't scale off a
+  padding token. Concretely: if a rule sets
+  `border-radius: var(--kernel-radius-container)`, every rule that pads
+  *against that box's edge* — its own `padding`, a header bar inside it, a
+  row's outermost cells — uses `--kernel-padding-container-curve`, not a
+  raw space token. `CodeBlock`, `FileDiff`, `TodoList` and `Toast` are the
+  worked examples.
+
+  A text box is not a container. `Composer`, `Textarea` and
+  `MessageBubble` read `--kernel-radius-md`/`-lg` deliberately: at
+  `-container` a two-line box rounds hard enough to read as an accidental
+  pill. If you want a real pill on one line and a large corner on many,
+  the height is not knowable in CSS — use `utils/lineFit.ts`, which marks
+  the element `data-lines="single" | "multi"` (see `MessageBubble`).
+- **Anything you click needs `user-select: none`.** Triggers, summaries,
+  menu items, tabs, chips, segment buttons, the lot — a double-click on a
+  disclosure otherwise selects its label, which is never what the click
+  was for, and a drag from a control selects text across the page. Pair it
+  with `-webkit-user-select: none` for Safari. Same rule for gutters that
+  aren't content: line numbers and diff markers are `user-select: none` so
+  a copy contains code, not decoration.
 - **Motion baseline** (tokens in `packages/styles/src/tokens.css`, craft
   bar from [transitions.dev](https://transitions.dev/) + Emil): enter with
   `--kernel-ease-overlay` / `--kernel-ease-out`, never `ease-in` on
@@ -114,5 +150,13 @@ new component done, grep both `packages/react/src/index.ts` and
 - `bun run typecheck` in both `packages/react` and `packages/elements`.
 - `bun run build` in both (docs won't see the change otherwise).
 - `astro check` in `apps/docs` (`bun run typecheck` there).
+- `bun run test:shape` (`scripts/check-shape-pairing.mjs`) — fails on any rule that adopts
+  `--kernel-radius-container`/`-sheet` without its paired padding token,
+  and on any `cursor: pointer` block with no `user-select: none`. Both are
+  the mistakes the Shape and select-none rules above exist to stop, and
+  both are invisible until someone switches the theme to Round or
+  double-clicks a disclosure.
 - Actually open the docs page in a browser and interact with it — typecheck
-  passing proves the types line up, not that the feature works.
+  passing proves the types line up, not that the feature works. Switch the
+  docs site's radius to **Round** while you're there: it's the setting that
+  exposes a wrong radius/padding pairing immediately.

@@ -82,6 +82,20 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       button nested inside a card shares a concentric corner with it instead
       of just looking independently rounded.
     </p>
+    <p>
+      Because those tiers are derived from padding, the radius grows with{" "}
+      <code>--kernel-radius-base</code> while a flat padding value doesn't —
+      so a surface that pads with a raw space token looks right at the
+      default and reads as text crammed into a big curve once you turn
+      rounding up. Each container tier therefore has a padding token to pair
+      with: <code>--kernel-padding-container-curve</code> for{" "}
+      <code>--kernel-radius-container</code>, and{" "}
+      <code>--kernel-padding-sheet-curve</code> for{" "}
+      <code>--kernel-radius-sheet</code>. Both are the flat padding plus the
+      same proportional term the radius already has — nothing extra at
+      Sharp, +50% at Round. Use them for anything you build on top of these
+      tokens, and switch the rounding control above to Round to check it.
+    </p>
 
     <h2>Space</h2>
     <p>

@@ -19,6 +19,7 @@
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun run --cwd packages/react test && bun run --cwd packages/cli test",
     "test:motion": "node scripts/disclosure-motion-check.mjs",
+    "test:shape": "node scripts/check-shape-pairing.mjs",
     "test:motion:docs": "node scripts/disclosure-docs-check.mjs",
     "test:motion:filmstrip": "node scripts/disclosure-filmstrip.mjs",
     "registry:check": "bun run --cwd packages/registry check",

@@ -78,6 +78,8 @@ kernel-agent-activity-item {
   align-items: center;
   gap: var(--kernel-space-1);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   list-style: none;
 }
 

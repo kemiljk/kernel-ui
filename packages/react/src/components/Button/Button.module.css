@@ -25,6 +25,8 @@
    guessing from props. */
 .root:is(a) {
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .root:active:not(:disabled, [aria-disabled="true"]) {

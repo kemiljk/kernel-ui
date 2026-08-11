@@ -85,6 +85,8 @@
 
 a.item {
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .item[data-highlighted] {

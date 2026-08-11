@@ -41,6 +41,8 @@ kernel-pagination-ellipsis {
 
 .kernel-Pagination-item {
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .kernel-Pagination-control {

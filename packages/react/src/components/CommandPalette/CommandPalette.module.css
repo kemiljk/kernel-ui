@@ -15,7 +15,11 @@
   gap: var(--kernel-space-2);
   border: none;
   border-radius: var(--kernel-radius-sheet);
-  padding: var(--kernel-space-4);
+  /* Paired with the radius above rather than the flat space-4 this used
+     to hand-pick: -sheet is derived from --kernel-padding-sheet, so at a
+     large --kernel-radius-base the old value left the input crammed
+     into the corner. */
+  padding: var(--kernel-padding-sheet-curve);
   background-color: var(--kernel-color-surface-raised);
   color: var(--kernel-color-text);
   box-shadow: var(--kernel-shadow-lg);

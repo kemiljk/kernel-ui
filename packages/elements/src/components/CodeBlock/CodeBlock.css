@@ -18,7 +18,10 @@ kernel-code-block {
   display: flex;
   align-items: center;
   gap: var(--kernel-space-2);
-  padding: var(--kernel-space-1) var(--kernel-space-2) var(--kernel-space-1) var(--kernel-space-3);
+  /* Paired with .root's --kernel-radius-container. Trailing edge stays
+     tighter because the copy control's own padding already provides it. */
+  padding-block: var(--kernel-space-1);
+  padding-inline: var(--kernel-padding-container-curve) var(--kernel-space-2);
   border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
   background-color: var(--kernel-color-surface-raised);
 }
@@ -46,6 +49,8 @@ kernel-code-block {
   font: inherit;
   font-size: var(--kernel-font-size-sm);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),
@@ -93,7 +98,7 @@ kernel-code-block {
 
 .kernel-CodeBlock-pre {
   margin: 0;
-  padding-block: var(--kernel-space-2);
+  padding-block: var(--kernel-padding-container-curve);
   font-family: var(--kernel-font-mono);
   font-size: var(--kernel-font-size-sm);
   line-height: var(--kernel-line-height);
@@ -112,7 +117,7 @@ kernel-code-block {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: baseline;
-  padding-inline: var(--kernel-space-3);
+  padding-inline: var(--kernel-padding-container-curve);
   transition: background-color var(--kernel-duration-base) var(--kernel-ease-out);
 }
 

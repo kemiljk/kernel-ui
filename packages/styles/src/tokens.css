@@ -278,6 +278,30 @@
     --kernel-radius-container: calc(var(--kernel-radius-md) + var(--kernel-padding-container));
     --kernel-radius-sheet: calc(var(--kernel-radius-md) + var(--kernel-padding-sheet));
 
+    /* The padding a surface should actually use once it has adopted one of
+       those radii. The concentric formula above makes the *radius* grow with
+       --kernel-radius-base while --kernel-padding-* stays flat, so at a large
+       base radius the content ends up crowding a much bigger curve — visible
+       as text that looks cramped into a rounded corner. These add the missing
+       proportional term: nothing extra at --kernel-radius-base: 0 (Sharp),
+       and +50% of the container padding at 1.25rem (Round).
+
+       So the pairing a component reaches for is:
+
+         border-radius: var(--kernel-radius-container)
+           → padding: var(--kernel-padding-container-curve)
+         border-radius: var(--kernel-radius-sheet)
+           → padding: var(--kernel-padding-sheet-curve)
+
+       Picking a radius without its paired padding is the drift this whole
+       block exists to prevent — see AGENTS.md, which states it as a rule. */
+    --kernel-padding-container-curve: calc(
+      var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4
+    );
+    --kernel-padding-sheet-curve: calc(
+      var(--kernel-padding-sheet) + var(--kernel-radius-base) * 0.4
+    );
+
     /* Matches the fixed inline padding every text-bearing field already
        uses for its own value/placeholder text (TextField, Textarea,
        Select, Combobox, TagInput all pad with --kernel-space-3), so a

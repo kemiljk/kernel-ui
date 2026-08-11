@@ -13,6 +13,10 @@
   /* The scroll container itself is the thing that should show a focus
      ring (it's the tabbable element, see the tabIndex note in
      Carousel.tsx), not any element inside it. */
+  /* shape-pairing-ok: nothing is padded against this edge — the radius
+     exists only so the scroll container's focus ring follows the
+     slides' own corners, and padding the track would inset the
+     scroll-snap area itself. */
   border-radius: var(--kernel-radius-container);
 }
 

@@ -17,9 +17,12 @@ kernel-file-diff {
   display: flex;
   align-items: center;
   gap: var(--kernel-space-2);
-  padding: var(--kernel-space-2) var(--kernel-space-3);
+  /* Paired with .root's --kernel-radius-container. */
+  padding: var(--kernel-space-2) var(--kernel-padding-container-curve);
   background-color: var(--kernel-color-surface-raised);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   list-style: none;
 }
 
@@ -144,8 +147,15 @@ kernel-file-diff {
   color: var(--kernel-color-danger-text);
 }
 
+/* The row's outermost cells are the ones that meet the panel's rounded
+   corners, so they carry the curve padding; the tints still run full-bleed
+   across the row, which is what makes a diff scannable. */
+.kernel-FileDiff-row > :first-child {
+  padding-inline-start: var(--kernel-padding-container-curve);
+}
+
 .kernel-FileDiff-code {
-  padding-inline: var(--kernel-space-2) var(--kernel-space-3);
+  padding-inline: var(--kernel-space-2) var(--kernel-padding-container-curve);
   vertical-align: top;
   white-space: pre;
 }

@@ -17,7 +17,7 @@
   gap: var(--kernel-space-3);
   /* Same "Round" fix as `@kernelui-lib/react`'s own Toast — see its
      Toast.module.css for the full rationale. */
-  padding: calc(var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4);
+  padding: var(--kernel-padding-container-curve);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-container);
   background-color: var(--kernel-color-surface-raised);

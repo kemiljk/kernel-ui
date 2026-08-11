@@ -288,6 +288,7 @@ export type {
   MessageScrollerState,
 } from "./components/MessageScroller/MessageScroller";
 export { useStickToBottom, StickToBottomController } from "./utils/stickToBottom";
+export { useLineFit, observeLineFit } from "./utils/lineFit";
 export type {
   StickToBottomOptions,
   UseStickToBottomOptions,

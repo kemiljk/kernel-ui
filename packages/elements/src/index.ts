@@ -126,6 +126,7 @@ export { KernelSheet } from "./components/Sheet/Sheet";
 export { KernelMessageScroller } from "./components/MessageScroller/MessageScroller";
 export { StickToBottomController } from "./utils/stickToBottom";
 export { adoptLateChildren } from "./utils/lateChildren";
+export { observeLineFit } from "./utils/lineFit";
 export type { StickToBottomOptions } from "./utils/stickToBottom";
 export {
   KernelMessageList,

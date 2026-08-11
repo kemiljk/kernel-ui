@@ -24,8 +24,12 @@ kernel-todo-item {
   display: flex;
   align-items: center;
   gap: var(--kernel-space-2);
-  padding: var(--kernel-space-2) var(--kernel-space-3);
+  /* Paired with .root's --kernel-radius-container: the curve term is what
+     keeps the summary off the corner at a large --kernel-radius-base. */
+  padding: var(--kernel-space-2) var(--kernel-padding-container-curve);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   list-style: none;
 }
 
@@ -75,7 +79,7 @@ kernel-todo-item {
 }
 
 .kernel-TodoList-content {
-  padding-block-end: var(--kernel-space-2);
+  padding-block-end: var(--kernel-space-3);
 }
 
 .kernel-TodoList-list {
@@ -90,7 +94,7 @@ kernel-todo-item {
   display: flex;
   align-items: baseline;
   gap: var(--kernel-space-2);
-  padding: var(--kernel-space-1) var(--kernel-space-3);
+  padding: var(--kernel-space-1) var(--kernel-padding-container-curve);
   color: var(--kernel-color-text);
   transition: color var(--kernel-duration-base) var(--kernel-ease-out);
 }

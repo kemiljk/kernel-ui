@@ -243,6 +243,8 @@
   background: none;
   color: var(--kernel-color-text-muted);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out);

@@ -52,7 +52,7 @@
   /* Inline padding keeps messages off the reserved scrollbar gutter — an
      end-aligned author name otherwise sits under the scrollbar — and the
      block padding stops the first and last message butting the edges. */
-  padding: var(--kernel-space-2) var(--kernel-space-3);
+  padding: var(--kernel-space-2) var(--kernel-padding-container-curve);
 }
 
 /* Floating over the live edge rather than displacing it, so revealing the
@@ -73,6 +73,8 @@
   font: inherit;
   font-size: var(--kernel-font-size-sm);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 
   /* Hidden state. `visibility` (not `display`/`hidden`) so the reveal and
      the dismissal both transition, and the control leaves the tab order

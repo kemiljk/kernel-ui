@@ -144,7 +144,17 @@
   max-inline-size: 100%;
   padding: var(--kernel-space-2) var(--kernel-space-3);
   border: var(--kernel-border-width) solid transparent;
-  border-radius: var(--kernel-radius-container);
+  /* --kernel-radius-lg, not --kernel-radius-container: a bubble is a text box,
+     not a padded container, and -container is derived as base + a container's
+     padding — used here it made a two-line bubble read as an accidental pill.
+     Same call, and the same reason, as Composer's own note on this.
+
+     One line gets the real pill, because that's what a single-line bubble
+     wants and what every chat surface does; more than one gets the large
+     corner instead, since a stadium around a paragraph looks like a mistake.
+     `data-lines` comes from utils/lineFit.ts — CSS can't ask how many lines
+     an element rendered on. */
+  border-radius: var(--kernel-radius-lg);
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
   line-height: var(--kernel-line-height);
@@ -152,6 +162,10 @@
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.bubble[data-lines="single"] {
+  border-radius: var(--kernel-radius-full);
 }
 
 .bubble[data-tone="neutral"] {
@@ -197,6 +211,8 @@
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   list-style: none;
 }
 

@@ -1,6 +1,7 @@
 import { KernelElement, kernelClass } from "../../base";
 import { DetailsPanelAnimator } from "../../utils/detailsTransition";
 import { adoptLateChildren } from "../../utils/lateChildren";
+import { observeLineFit } from "../../utils/lineFit";
 import "./Message.css";
 
 const CHEVRON_PATH = "M4 6L8 10L12 6";
@@ -217,6 +218,7 @@ export class KernelMessage extends KernelElement {
  */
 export class KernelMessageBubble extends KernelElement {
   private animator: DetailsPanelAnimator | undefined;
+  private lineFit: (() => void) | undefined;
 
   static get observedAttributes() {
     return ["tone", "align", "expand-label"];
@@ -237,6 +239,9 @@ export class KernelMessageBubble extends KernelElement {
       this.native = box;
       this.append(box);
       this.syncAllAttrs();
+      // Only the plain bubble's radius is line-dependent — see the React
+      // component for why an expandable one is excluded.
+      this.lineFit = observeLineFit(box);
       return;
     }
 
@@ -282,6 +287,8 @@ export class KernelMessageBubble extends KernelElement {
   disconnectedCallback() {
     this.animator?.destroy();
     this.animator = undefined;
+    this.lineFit?.();
+    this.lineFit = undefined;
   }
 
   protected syncAttr(name: string, value: string | null) {

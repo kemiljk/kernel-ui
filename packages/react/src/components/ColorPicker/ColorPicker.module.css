@@ -35,6 +35,8 @@
   block-size: calc(var(--kernel-space-unit) * 10);
   border-radius: var(--kernel-radius-control);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .swatch {

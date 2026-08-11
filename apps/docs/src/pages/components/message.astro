@@ -65,6 +65,26 @@ import MessagePlayground from "../../components/demos/MessagePlayground";
       message is still real content rather than visually cropped content.
     </p>
 
+    <h2>Shape</h2>
+    <p>
+      A bubble reads <code>--kernel-radius-lg</code>, not{" "}
+      <code>--kernel-radius-container</code>: it's a text box rather than a
+      padded container, and the container tier — derived as base radius plus a
+      container's padding — rounded a two-line bubble hard enough to look like
+      an accidental pill. Same call, and the same reason, as Composer's.
+    </p>
+    <p>
+      A bubble that fits on one line gets a real pill instead, because that's
+      what a single-line bubble wants and what every chat surface does; more
+      than one line keeps the large corner, since a stadium around a paragraph
+      looks like a mistake. CSS can't ask how many lines an element rendered
+      on, so a <code>ResizeObserver</code> marks the bubble{" "}
+      <code>data-lines="single"</code> or <code>"multi"</code> and the radius
+      follows from there. Expandable bubbles are left out of it: a{" "}
+      <code>&lt;details&gt;</code>'s height is its summary plus whatever is
+      disclosed, which says nothing about the message's own line count.
+    </p>
+
     <h2>Motion</h2>
     <p>
       New rows animate in once, on mount, and never again. That's a plain CSS

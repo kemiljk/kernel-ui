@@ -37,6 +37,8 @@
    Button.module.css for the same reasoning. */
 .item {
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .control {
