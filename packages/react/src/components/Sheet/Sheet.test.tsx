@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup as cleanupRender, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { VelocityTracker } from "../../utils/sheetDrag";
@@ -215,6 +215,125 @@ describe("Sheet", () => {
     fireEvent(window, new Event("resize"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
     window.innerWidth = 1024;
+  });
+
+  describe("snap points", () => {
+    // 900px viewport, so [25, 55, 92] is [225, 495, 828].
+    const SNAPS = [25, 55, 92];
+
+    /** The engine reads the painted height, which jsdom won't compute, so
+     * `getBoundingClientRect` is stubbed to resolve the inline height the way a
+     * browser would — including turning `dvh` into pixels, which is the whole
+     * reason the engine measures rather than parsing the style itself. */
+    function trackInlineHeight(dialog: HTMLElement) {
+      Object.defineProperty(dialog, "getBoundingClientRect", {
+        configurable: true,
+        value: () => {
+          const raw = dialog.style.height;
+          const value = parseFloat(raw);
+          if (!Number.isFinite(value)) return { height: 0 } as DOMRect;
+          const height = raw.endsWith("dvh") ? (value / 100) * window.innerHeight : value;
+          return { height } as DOMRect;
+        },
+      });
+    }
+
+    /** Drives a gesture with a clock we control, since velocity is the whole
+     * point of these cases and jsdom's timers advance by nothing. */
+    function gesture(el: Element, steps: [y: number, atMs: number][]) {
+      const now = vi.spyOn(performance, "now");
+      let i = 0;
+      now.mockImplementation(() => steps[Math.min(i, steps.length - 1)]![1]);
+      fireEvent.pointerDown(el, { pointerId: 1, pointerType: "touch", clientY: steps[0]![0] });
+      for (i = 1; i < steps.length; i++) {
+        fireEvent.pointerMove(el, { pointerId: 1, clientY: steps[i]![0] });
+      }
+      i = steps.length - 1;
+      fireEvent.pointerUp(el, { pointerId: 1, clientY: steps[steps.length - 1]![0] });
+      now.mockRestore();
+    }
+
+    function openSheet(props: Partial<SheetProps> = {}) {
+      window.innerHeight = 900;
+      render(<ControlledSheet snapPoints={SNAPS} {...props} />);
+      const dialog = screen.getByRole("dialog") as HTMLDialogElement;
+      trackInlineHeight(dialog);
+      return { dialog, handle: document.querySelector('[data-slot="sheet-handle"]')! };
+    }
+
+    it("opens at the tallest snap, and honours defaultSnap for a peek", () => {
+      const { dialog } = openSheet();
+      expect(dialog.style.height).toBe("92dvh");
+
+      cleanupRender();
+      const peek = openSheet({ defaultSnap: 25 });
+      expect(peek.dialog.style.height).toBe("25dvh");
+    });
+
+    it("drives height while dragging, not translate", () => {
+      const { dialog, handle } = openSheet();
+      fireEvent.pointerDown(handle, { pointerId: 1, pointerType: "touch", clientY: 100 });
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 400 });
+
+      // 828 - 300 of travel, still inside the snap range.
+      expect(dialog.style.height).toBe("528px");
+      expect(dialog.style.translate).toBe("");
+    });
+
+    it("lands on the nearest snap when released slowly", () => {
+      const onSnapChange = vi.fn();
+      const { dialog, handle } = openSheet({ onSnapChange });
+      // 828 → ~500 over 400ms: 0.8px/ms of travel but only 0.06 in the last
+      // window, so this is a drop, not a flick.
+      gesture(handle, [
+        [100, 0],
+        [300, 200],
+        [420, 380],
+        [428, 400],
+      ]);
+      expect(dialog.style.height).toBe("55dvh");
+      expect(onSnapChange).toHaveBeenCalledWith(55);
+    });
+
+    it("steps exactly one snap on a flick, rather than to the nearest", () => {
+      const { dialog, handle } = openSheet({ defaultSnap: 55 });
+      // Barely moves — nearest is still 55 — but leaves fast.
+      gesture(handle, [
+        [100, 0],
+        [130, 10],
+        [160, 20],
+      ]);
+      expect(dialog.style.height).toBe("25dvh");
+    });
+
+    it("dismisses when a downward flick runs out of snaps below", () => {
+      const onOpenChange = vi.fn();
+      const { handle } = openSheet({ defaultSnap: 25, onOpenChange });
+      gesture(handle, [
+        [100, 0],
+        [130, 10],
+        [160, 20],
+      ]);
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("resists past the tallest snap instead of tracking the finger", () => {
+      const { dialog, handle } = openSheet();
+      fireEvent.pointerDown(handle, { pointerId: 1, pointerType: "touch", clientY: 400 });
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 100 });
+
+      // 300px of upward pull past a 828px snap, damped well short of 1128.
+      const height = parseFloat(dialog.style.height);
+      expect(height).toBeGreaterThan(828);
+      expect(height).toBeLessThan(1000);
+    });
+
+    it("ignores snap points on a side that can't express them", () => {
+      window.innerHeight = 900;
+      render(<ControlledSheet snapPoints={SNAPS} side="right" />);
+      // No height is written at all: a right sheet stays binary.
+      expect((screen.getByRole("dialog") as HTMLElement).style.height).toBe("");
+    });
   });
 
   it("never starts a drag from the backdrop, whose event target is the dialog", () => {

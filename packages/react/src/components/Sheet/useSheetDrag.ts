@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { attachSheetDrag, type SheetDragOptions } from "../../utils/sheetDrag";
+import {
+  attachSheetDrag,
+  type SheetDragController,
+  type SheetDragOptions,
+} from "../../utils/sheetDrag";
 
 export interface UseSheetDragOptions
   extends Omit<SheetDragOptions, "handle" | "footer" | "enabled"> {
@@ -18,6 +22,9 @@ export interface SheetDragApi {
    * never in competition with a scroller and is all `handleOnly` permits. */
   setHandle: (node: HTMLElement | null) => void;
   setFooter: (node: HTMLElement | null) => void;
+  /** Move to a snap from outside a gesture. Stable across renders, so it's safe
+   * in an effect's dependency list. */
+  snapTo: (snap: number) => void;
 }
 
 /**
@@ -64,9 +71,18 @@ export function useSheetDrag({
     footerRef.current = next;
   }, []);
 
+  // Held in a ref so `snapTo` can keep a stable identity across renders: it
+  // ends up in a consumer effect's dependency list, and a fresh function each
+  // render would re-run that effect on every render.
+  const controllerRef = useRef<SheetDragController | null>(null);
+  const snapTo = useCallback((next: number) => {
+    controllerRef.current?.snapTo(next);
+  }, []);
+
   useEffect(() => {
     if (!node) return;
     const controller = attachSheetDrag(node, () => optionsRef.current);
+    controllerRef.current = controller;
     // A drag that ended in dismissal leaves its translate behind on purpose so
     // the exit transition can continue from it. Clear it once the sheet is
     // asked to open again, or it would start off-screen and jump.
@@ -77,8 +93,9 @@ export function useSheetDrag({
       // sheet back to its resting position for one frame before the exit slides
       // it out. Styles are cleared on the next open instead.
       controller.detach();
+      controllerRef.current = null;
     };
   }, [node, open]);
 
-  return { setNode, setHandle, setFooter };
+  return { setNode, setHandle, setFooter, snapTo };
 }

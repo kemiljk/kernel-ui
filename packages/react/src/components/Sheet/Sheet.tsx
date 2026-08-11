@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 // decides them. Don't reorder these two imports.
 import { Dialog, type DialogClassNames, type DialogProps } from "../Dialog/Dialog";
 import { mergeRefs, resolveClassName } from "../../utils/polymorphic";
+import { useControllableState } from "../../utils/useControllableState";
+import { parseSnapPoints } from "../../utils/snapPoints";
 import {
   DEFAULT_CLOSE_THRESHOLD,
   DEFAULT_VELOCITY_THRESHOLD,
@@ -52,6 +54,20 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
    * background runs under the home indicator instead of leaving a strip of
    * surface beneath it, and it's a drag surface like the handle. */
   footer?: ReactNode;
+  /** Resting heights as percentages of the viewport — `[25, 55, 92]` for the
+   * shape every maps app converges on. A flick steps exactly one snap; a slower
+   * release lands on the nearest; dragging below the shortest dismisses.
+   *
+   * `side="bottom"` only. A snap is a block size, so the other sides would need
+   * either the anchor mirrored or inline-size snapped instead; they stay binary
+   * rather than half-working. */
+  snapPoints?: number[];
+  /** Controlled resting snap, in `dvh`. Must be one of `snapPoints`. */
+  snap?: number;
+  /** Snap the sheet opens at. Defaults to the tallest, which is the least
+   * surprising thing for a sheet that was just asked to appear. */
+  defaultSnap?: number;
+  onSnapChange?: (snap: number) => void;
   className?: string;
   classNames?: SheetClassNames;
   /** Fires on every drag frame with how far the sheet has travelled, 0–1. */
@@ -89,6 +105,10 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     inset = false,
     maxDisplayWidth,
     footer,
+    snapPoints,
+    snap,
+    defaultSnap,
+    onSnapChange,
     className,
     classNames,
     children,
@@ -112,6 +132,17 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     onOpenChange(false);
   }, [onOpenChange]);
 
+  const snaps = useMemo(() => parseSnapPoints(snapPoints), [snapPoints]);
+  const [activeSnap, setActiveSnap] = useControllableState<number | undefined>({
+    value: snap,
+    // The tallest snap: a sheet asked to appear should show as much of itself as
+    // it's allowed to, and `defaultSnap` is there for the peek case.
+    defaultValue: defaultSnap ?? snaps[snaps.length - 1],
+    onChange: (next) => {
+      if (next !== undefined) onSnapChange?.(next);
+    },
+  });
+
   // A width limit can't refuse to open — `open` is the caller's state, not
   // ours — so it closes instead, which lands in the same place. Measured on
   // every open as well as on resize, so a sheet opened wide never appears.
@@ -125,17 +156,28 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     return () => window.removeEventListener("resize", check);
   }, [open, maxDisplayWidth, onOpenChange]);
 
-  const { setNode, setHandle, setFooter } = useSheetDrag({
+  const { setNode, setHandle, setFooter, snapTo } = useSheetDrag({
     side,
     open,
     enabled: dismissible,
     handleOnly,
     closeThreshold,
     velocityThreshold,
+    snapPoints: snaps,
+    snap: activeSnap ?? null,
     onDismiss: handleDismiss,
     onDrag,
     onRelease,
+    onSnapChange: setActiveSnap,
   });
+
+  // Only for a *later* change from the caller. The opening height comes from the
+  // `snap` option instead, read when the engine resets: calling in here on mount
+  // would race the engine's own attach, which happens a render later because the
+  // node arrives through a callback ref.
+  useEffect(() => {
+    if (activeSnap !== undefined) snapTo(activeSnap);
+  }, [activeSnap, snapTo]);
 
   // Must be memoised. `mergeRefs` returns a fresh callback each call, and React
   // detaches and reattaches a callback ref whose identity changed — which tears

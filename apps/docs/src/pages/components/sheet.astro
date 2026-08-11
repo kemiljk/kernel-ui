@@ -69,6 +69,9 @@ const [open, setOpen] = useState(false);
         <tr><td><code>inset</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>maxDisplayWidth</code></td><td>number (px)</td><td>—</td></tr>
         <tr><td><code>footer</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>snapPoints</code></td><td>number[] (dvh)</td><td>—</td></tr>
+        <tr><td><code>snap</code> / <code>defaultSnap</code></td><td>number (dvh)</td><td>tallest snap</td></tr>
+        <tr><td><code>onSnapChange</code></td><td>(snap: number) =&gt; void</td><td>—</td></tr>
         <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
         <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
         <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
@@ -133,6 +136,39 @@ const [open, setOpen] = useState(false);
       resize alike. It can't refuse to open, since <code>open</code> is your
       state rather than the component's, but closing immediately lands in the
       same place.
+    </p>
+
+    <h2>Snap points</h2>
+    <p>
+      <code>snapPoints</code> gives the sheet resting heights as percentages of
+      the viewport — <code>[25, 55, 92]</code> is the shape every maps app
+      converges on: a peek, a half, and nearly full. A flick steps exactly one
+      snap in its own direction, which is what makes the sheet feel detented
+      rather than momentum-driven; a slower release lands on whichever snap is
+      nearest. Dragging below the shortest snap dismisses, so "flick down from
+      the peek" and "drag it off the bottom" are one gesture.
+    </p>
+    <p>
+      Snapping sheets are driven by <code>height</code> rather than{" "}
+      <code>translate</code>, because a snap <em>is</em> a height: that's what
+      keeps a pinned footer pinned and sizes the scroll region to what's actually
+      on screen. A translate-based peek would lay its content out for the full
+      sheet and push the footer off the bottom. Below the shortest snap the
+      height pins and travel moves back onto <code>translate</code>, so
+      dismissal is the same code path as a binary sheet's.
+    </p>
+    <p>
+      Snaps are stored in <code>dvh</code>, never pixels, which is what makes a
+      viewport resize free — <code>55dvh</code> still means the same thing
+      afterwards, so there's nothing to recompute. Dragging up past the tallest
+      snap resists rather than tracking the finger, and{" "}
+      <code>snap</code>/<code>defaultSnap</code>/<code>onSnapChange</code> follow
+      Kernel's usual controlled/uncontrolled split.
+    </p>
+    <p>
+      This applies to <code>side="bottom"</code> only. A snap is a block size, so
+      the other sides would need either the anchor mirrored or inline-size
+      snapped instead; rather than ship three-quarters of that, they stay binary.
     </p>
 
     <h2>Footer</h2>

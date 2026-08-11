@@ -109,6 +109,22 @@
   transition: none;
 }
 
+/* A snapping sheet's resting position is a height, which only JS knows, so the
+   settle is the one moment `height` needs a transition. Scoped to
+   `data-snapping` rather than added to the open rule: on the drag-dismiss path
+   the height is deliberately left pinned while `translate` carries the exit, and
+   a live height transition there would animate the sheet's size on the way out.
+
+   Only present when the settle is *not* being driven by a spring — the animator
+   writes the height every frame and the two would fight over the property. */
+.sheet[open][data-snapping] {
+  transition:
+    height var(--kernel-duration-slow) var(--kernel-ease-out),
+    translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-enter) allow-discrete,
+    display var(--kernel-duration-enter) allow-discrete;
+}
+
 /* `::backdrop` inherits custom properties from its originating element, which is
    how a value written onto the dialog reaches it — no overlay node, and no
    second element to keep in sync. `:not([data-closing])` matters: without it
@@ -333,6 +349,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .handleBar {
+    transition: none;
+  }
+
+  /* Dragging still tracks the finger under reduced motion — direct manipulation
+     isn't decoration — but the settle afterwards shouldn't animate. */
+  .sheet[open][data-snapping] {
     transition: none;
   }
 }

@@ -4,6 +4,7 @@ import { kernelClass } from "../../base";
 // specificity-matched to Dialog's rather than escalated above them, so source
 // order is what decides them. Don't reorder these two imports.
 import { KernelDialog } from "../Dialog/Dialog";
+import { parseSnapPoints } from "../../utils/snapPoints";
 import {
   attachSheetDrag,
   DEFAULT_CLOSE_THRESHOLD,
@@ -36,7 +37,11 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * (detach from the screen edges — all four corners rounded, a gap on three
  * sides, no JavaScript involved), `max-display-width` (a viewport width above
  * which the sheet closes itself, for a sheet on small screens and a centred
- * `<kernel-dialog>` on large ones).
+ * `<kernel-dialog>` on large ones), `snap-points` (comma or space separated
+ * viewport percentages, e.g. `"25,55,92"` — a flick steps exactly one, a slower
+ * release lands on the nearest, and dragging below the shortest dismisses;
+ * `side="bottom"` only), `snap` (the resting snap, reflected as it changes; set
+ * it to retarget the sheet, or call `snapTo()`).
  *
  * Part classes: everything `<kernel-dialog>` exposes, plus a
  * `data-slot="sheet-handle"` grabber, a `data-slot="sheet-body"` scroll region,
@@ -45,8 +50,9 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * surface in its own right.
  *
  * Events: `close` (inherited), plus `sheetdrag` (`detail.percent`, 0–1, on
- * every drag frame) and `sheetrelease` (`detail.open`, whether the sheet stayed
- * open). Both bubble.
+ * every drag frame), `sheetrelease` (`detail.open`, whether the sheet stayed
+ * open), and `snapchange` (`detail.from` / `detail.to`, in `dvh`, once per
+ * settle that actually moves). All bubble.
  *
  * The handle is `aria-hidden` decoration — the sheet is already dismissable by
  * Escape, the close button, and the backdrop — which is why it can be
@@ -58,6 +64,7 @@ export class KernelSheet extends KernelDialog {
   private footerElement: HTMLElement | null = null;
   private drag: SheetDragController | null = null;
   private resizeHandler: (() => void) | null = null;
+  private reflectingSnap = false;
 
   static get observedAttributes() {
     return [
@@ -69,6 +76,8 @@ export class KernelSheet extends KernelDialog {
       "velocity-threshold",
       "inset",
       "max-display-width",
+      "snap-points",
+      "snap",
     ];
   }
 
@@ -157,6 +166,8 @@ export class KernelSheet extends KernelDialog {
       velocityThreshold: this.number("velocity-threshold", DEFAULT_VELOCITY_THRESHOLD),
       handle: this.handleElement,
       footer: this.footerElement,
+      snapPoints: parseSnapPoints(this.getAttribute("snap-points")),
+      snap: this.snapValue,
       // Removing the attribute is the same path every other close takes:
       // KernelDialog's own `syncAttr` picks it up, runs the exit transition, and
       // only then calls the native `close()`.
@@ -165,7 +176,27 @@ export class KernelSheet extends KernelDialog {
         this.dispatchEvent(new CustomEvent("sheetdrag", { detail: { percent }, bubbles: true })),
       onRelease: (open) =>
         this.dispatchEvent(new CustomEvent("sheetrelease", { detail: { open }, bubbles: true })),
+      onSnapChange: (snap) => {
+        const from = this.snapValue;
+        // Flagged so this write isn't read back as an author retargeting the
+        // sheet — that would supersede the settle that just reported it.
+        this.reflectingSnap = true;
+        this.setAttribute("snap", String(snap));
+        this.reflectingSnap = false;
+        if (from !== snap) {
+          this.dispatchEvent(
+            new CustomEvent("snapchange", { detail: { from, to: snap }, bubbles: true }),
+          );
+        }
+      },
     };
+  }
+
+  private get snapValue(): number | null {
+    const raw = this.getAttribute("snap");
+    if (raw === null || raw.trim() === "") return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   /**
@@ -259,7 +290,28 @@ export class KernelSheet extends KernelDialog {
       case "max-display-width":
         this.enforceDisplayWidth();
         break;
+      case "snap": {
+        // Only an author's write retargets the sheet; the reflection above is
+        // this component reporting where a settle already went.
+        if (this.reflectingSnap) break;
+        const next = this.snapValue;
+        if (next !== null) this.drag?.snapTo(next);
+        break;
+      }
     }
+  }
+
+  /** Moves the sheet to a snap, the scripted equivalent of setting `snap`. */
+  snapTo(snap: number) {
+    this.drag?.snapTo(snap);
+  }
+
+  get snap(): number | null {
+    return this.drag?.currentSnap() ?? this.snapValue;
+  }
+
+  get snapPoints(): number[] {
+    return parseSnapPoints(this.getAttribute("snap-points"));
   }
 }
 

@@ -14,6 +14,8 @@
  * it, rather than snapping back to a keyframe's starting position first.
  */
 
+import { parseSnapPoints, resolveSnapTarget, snapsToPx, SNAP_EPSILON } from "./snapPoints";
+
 export type SheetSide = "bottom" | "top" | "left" | "right";
 
 /** Fraction of the sheet that must be travelled to dismiss on distance alone.
@@ -201,15 +203,50 @@ export interface SheetDragOptions {
    * restricts dragging to exactly these. */
   handle: HTMLElement | null;
   footer: HTMLElement | null;
+  /** Resting heights as percentages of the viewport, ascending. Empty means the
+   * sheet is binary — open or dismissed, driven by `translate`.
+   *
+   * Only honoured for `side: "bottom"`. A snap is a block size, so top would
+   * need the anchor mirrored and left/right would have to snap inline-size
+   * instead; rather than ship three-quarters of that, the other sides stay
+   * binary and say so in the docs. */
+  snapPoints: number[];
+  /** The snap the sheet should be resting at, in `dvh`. Read fresh on every
+   * open, which is what makes the opening height correct without the caller
+   * having to reach in and set it: an imperative `snapTo` after mount would
+   * race the engine's own attach. Null falls back to the tallest snap — a sheet
+   * asked to appear should show as much of itself as it's allowed to. */
+  snap: number | null;
   onDismiss: () => void;
   onDrag?: (percent: number) => void;
   onRelease?: (open: boolean) => void;
+  /** Fires once per settle with the snap actually landed on, in `dvh`. */
+  onSnapChange?: (snap: number) => void;
+  /** Optional animator for the settle onto a snap. Without one the engine writes
+   * the target height and lets the stylesheet's transition carry it, which is
+   * correct but can't start from the speed the finger was moving. */
+  animate?: (spec: SettleSpec) => () => void;
+}
+
+export interface SettleSpec {
+  fromPx: number;
+  toPx: number;
+  /** px/ms, positive toward dismissal — so a *shrinking* sheet is positive. */
+  velocityY: number;
+  onFrame: (px: number) => void;
+  onDone: () => void;
 }
 
 export interface SheetDragController {
   /** Clear any inline transform and drag state, returning the element to the
-   * position its stylesheet gives it. */
+   * position its stylesheet gives it — or, for a snapping sheet, to its resting
+   * snap, which is the only position the stylesheet doesn't know. */
   reset(): void;
+  /** Animate to a snap from outside a gesture. Ignored when the sheet has no
+   * snap points, or when it's already there. */
+  snapTo(snap: number): void;
+  /** The snap the sheet currently rests on, in `dvh`, or null when binary. */
+  currentSnap(): number | null;
   /** Remove every listener. Deliberately does *not* reset styles — see the
    * comment at the call site. */
   detach(): void;
@@ -233,6 +270,17 @@ export function attachSheetDrag(
   let scroller: Element | null = null;
   let suppressClick = false;
   let fromChrome = false;
+  /** The sheet's painted height when the panel took the gesture over. Snapping
+   * drives height, so every frame is measured from here. */
+  let startHeight = 0;
+  /** How far below the shortest snap the sheet has been pulled, in px. Past that
+   * point a snapping sheet stops resizing and moves on `translate`, which is the
+   * binary dismissal path — so both modes end the same way. */
+  let belowLowest = 0;
+  /** Last committed snap in `dvh`, so a settle knows where it started and
+   * `snapTo` knows whether there's anything to do. */
+  let activeSnap: number | null = null;
+  let cancelSettle: (() => void) | null = null;
 
   function clearDragState() {
     dragging = false;
@@ -241,17 +289,147 @@ export function attachSheetDrag(
     scroller = null;
     offset = 0;
     claimOffset = 0;
+    belowLowest = 0;
+    delete node.dataset.dragging;
   }
 
   function reset() {
+    cancelSettle?.();
+    cancelSettle = null;
     clearDragState();
     node.style.translate = "";
     node.style.removeProperty("--kernel-sheet-drag-progress");
-    delete node.dataset.dragging;
+    delete node.dataset.snapping;
+    // A snapping sheet's resting height is its snap, so `reset` restores that
+    // rather than clearing the property outright — a binary sheet has no height
+    // of its own and gets the stylesheet's back.
+    const opts = readOptions();
+    const snaps = parseSnapPoints(opts.side === "bottom" ? opts.snapPoints : []);
+    if (snaps.length) {
+      const wanted = opts.snap;
+      const resting = wanted !== null && snaps.includes(wanted) ? wanted : snaps[snaps.length - 1]!;
+      activeSnap = resting;
+      node.style.height = `${resting}dvh`;
+    } else {
+      activeSnap = null;
+      node.style.removeProperty("height");
+    }
   }
 
   function extentOf(axis: "x" | "y") {
     return axis === "y" ? node.offsetHeight : node.offsetWidth;
+  }
+
+  /** Snaps in px, or empty when this sheet is binary. Recomputed rather than
+   * cached: snaps are stored in `dvh`, so a viewport resize needs no
+   * invalidation — the next read is simply correct. */
+  function snapsPxNow(opts: SheetDragOptions) {
+    if (opts.side !== "bottom") return [];
+    return snapsToPx(parseSnapPoints(opts.snapPoints), window.innerHeight);
+  }
+
+  /** Resistance past the tallest snap: the same asymptotic curve the binary
+   * overdrag uses, so the two modes feel like one component. */
+  function dampPastTop(overshoot: number, extent: number) {
+    return damp(overshoot, extent);
+  }
+
+  /** Progress for the scrim. Inside the snap range the sheet is fully present,
+   * so the scrim stays put; only travel below the shortest snap fades it. */
+  function setDragProgress(fraction: number) {
+    node.style.setProperty("--kernel-sheet-drag-progress", String(Math.max(0, Math.min(1, fraction))));
+  }
+
+  function applySnapHeight(travel: number, opts: SheetDragOptions, snapsPx: number[]) {
+    const minPx = snapsPx[0]!;
+    const maxPx = snapsPx[snapsPx.length - 1]!;
+    const height = startHeight - travel;
+
+    if (height > maxPx) {
+      // Past the tallest snap the sheet stops tracking the finger one-for-one.
+      node.style.height = `${maxPx + dampPastTop(height - maxPx, maxPx)}px`;
+      node.style.translate = "";
+      belowLowest = 0;
+      setDragProgress(1);
+      opts.onDrag?.(0);
+      return;
+    }
+
+    if (height < minPx) {
+      // Below the shortest snap this stops being a resize and becomes the
+      // dismiss gesture, on the same translate path a binary sheet uses.
+      belowLowest = minPx - height;
+      node.style.height = `${minPx}px`;
+      node.style.translate = `0 ${belowLowest}px`;
+      const percent = minPx > 0 ? belowLowest / minPx : 0;
+      setDragProgress(1 - percent);
+      opts.onDrag?.(percent);
+      return;
+    }
+
+    node.style.height = `${height}px`;
+    node.style.translate = "";
+    belowLowest = 0;
+    setDragProgress(1);
+    opts.onDrag?.(0);
+  }
+
+  /** Animates (or jumps) to a snap and reports it. `velocityY` is positive
+   * toward dismissal, so a growing sheet arrives with a negative value. */
+  function settleTo(snapDvh: number, opts: SheetDragOptions, velocityY: number) {
+    cancelSettle?.();
+    cancelSettle = null;
+
+    const targetPx = (snapDvh / 100) * window.innerHeight;
+    const fromPx = node.getBoundingClientRect().height;
+    const previous = activeSnap;
+    activeSnap = snapDvh;
+
+    node.style.translate = "";
+    setDragProgress(1);
+
+    const finish = () => {
+      // Handing the height back to `dvh` is what keeps a later viewport resize
+      // free; leaving it in px would freeze the sheet at today's pixel count.
+      node.style.height = `${snapDvh}dvh`;
+      delete node.dataset.snapping;
+      cancelSettle = null;
+    };
+
+    if (opts.animate && Math.abs(fromPx - targetPx) > SNAP_EPSILON) {
+      // An animator writes the height itself, frame by frame, so the CSS
+      // transition has to stay off or the two fight over the same property.
+      delete node.dataset.snapping;
+      node.style.height = `${fromPx}px`;
+      cancelSettle = opts.animate({
+        fromPx,
+        toPx: targetPx,
+        velocityY,
+        onFrame: (px) => {
+          node.style.height = `${px}px`;
+        },
+        onDone: finish,
+      });
+    } else {
+      // `data-snapping` is what arms the height transition; it's scoped to a
+      // settle so it can't also speed up a drag-dismissal's exit.
+      node.dataset.snapping = "";
+      node.style.height = `${snapDvh}dvh`;
+      // The transition end is the stylesheet's business, but the attribute has
+      // to come off eventually or the next drag inherits it.
+      const clear = () => {
+        delete node.dataset.snapping;
+        node.removeEventListener("transitionend", onEnd);
+        cancelSettle = null;
+      };
+      const onEnd = (event: TransitionEvent) => {
+        if (event.propertyName === "height") clear();
+      };
+      node.addEventListener("transitionend", onEnd);
+      cancelSettle = clear;
+    }
+
+    if (previous !== snapDvh) opts.onSnapChange?.(snapDvh);
   }
 
   /** `travel` is in screen coordinates, already signed for the side. */
@@ -389,6 +567,14 @@ export function attachSheetDrag(
       if (Math.abs(claimedTravel) < DRAG_START_THRESHOLD) return;
       dragging = true;
       node.dataset.dragging = "";
+      // A settle still running owns the height; the finger takes it back.
+      cancelSettle?.();
+      cancelSettle = null;
+      // Pinned here rather than at pointerdown, so a tap never freezes the
+      // height at all. `getBoundingClientRect` because a mid-settle grab has to
+      // start from where the sheet is *painted*, not from its declared `dvh`.
+      startHeight = node.getBoundingClientRect().height;
+      delete node.dataset.snapping;
       // Captured only now, so a tap that never became a drag doesn't swallow
       // the click. Once captured, tracking survives the pointer leaving the
       // sheet entirely.
@@ -396,10 +582,87 @@ export function attachSheetDrag(
     }
 
     if (event.cancelable) event.preventDefault();
+
+    const snapsPx = snapsPxNow(opts);
+    if (snapsPx.length) {
+      offset = claimedTravel;
+      applySnapHeight(claimedTravel, opts, snapsPx);
+      return;
+    }
+
     const extent = extentOf(axis);
     const travel = claimedTravel >= 0 ? claimedTravel : -damp(-claimedTravel, extent);
     offset = travel;
     applyOffset(travel * sign, axis, opts.onDrag);
+  }
+
+  /**
+   * A snapping sheet's release. Below the shortest snap the binary dismissal
+   * rules apply verbatim, including the reversal guard — `belowLowest` is a
+   * position, so it stays past the threshold through an entire reversal and only
+   * the release direction can tell that the finger changed its mind.
+   */
+  function releaseToSnap(
+    opts: SheetDragOptions,
+    snapsPx: number[],
+    velocity: number,
+    cancelled: boolean,
+  ) {
+    const snaps = parseSnapPoints(opts.snapPoints);
+    const lowest = snaps[0]!;
+
+    // A cancelled gesture is not a decision: put the sheet back.
+    if (cancelled) {
+      settleTo(activeSnap ?? lowest, opts, 0);
+      clearDragState();
+      opts.onRelease?.(true);
+      return;
+    }
+
+    if (belowLowest > 0) {
+      const dismiss =
+        velocity > opts.velocityThreshold ||
+        (belowLowest / snapsPx[0]! > opts.closeThreshold && velocity > -REVERSAL_VELOCITY);
+      if (dismiss) {
+        // Height stays where it is; the exit is a translate, exactly as in the
+        // binary path, so `Dialog`'s closing rule can carry it the rest of the way.
+        delete node.dataset.dragging;
+        void node.offsetHeight;
+        node.style.translate = `0 ${snapsPx[0]!}px`;
+        setDragProgress(0);
+        opts.onDrag?.(1);
+        clearDragState();
+        opts.onRelease?.(false);
+        opts.onDismiss();
+        return;
+      }
+      settleTo(lowest, opts, velocity);
+      clearDragState();
+      opts.onRelease?.(true);
+      return;
+    }
+
+    const targetPx = resolveSnapTarget({
+      currentPx: node.getBoundingClientRect().height,
+      velocityY: velocity,
+      snapsPx,
+      flickVelocity: opts.velocityThreshold,
+    });
+
+    if (targetPx === null) {
+      delete node.dataset.dragging;
+      void node.offsetHeight;
+      node.style.translate = `0 ${node.getBoundingClientRect().height}px`;
+      setDragProgress(0);
+      clearDragState();
+      opts.onRelease?.(false);
+      opts.onDismiss();
+      return;
+    }
+
+    settleTo(snaps[snapsPx.indexOf(targetPx)]!, opts, velocity);
+    clearDragState();
+    opts.onRelease?.(true);
   }
 
   function handlePointerUp(event: PointerEvent) {
@@ -425,6 +688,13 @@ export function attachSheetDrag(
     // motion and a gesture that ended stationary still reads as a full flick.
     tracker.add((current - startCoord) * sign, performance.now());
     const velocity = tracker.velocity;
+
+    const snapsPx = snapsPxNow(opts);
+    if (snapsPx.length) {
+      releaseToSnap(opts, snapsPx, velocity, event.type === "pointercancel");
+      return;
+    }
+
     const percent = extent > 0 ? travel / extent : 0;
     // Velocity, not distance alone — a short fast flick should dismiss even
     // though it never travelled 25% of the sheet. And distance alone must not
@@ -464,7 +734,18 @@ export function attachSheetDrag(
 
   return {
     reset,
+    currentSnap: () => activeSnap,
+    snapTo(snap: number) {
+      const opts = readOptions();
+      const snaps = parseSnapPoints(opts.side === "bottom" ? opts.snapPoints : []);
+      if (!snaps.includes(snap) || snap === activeSnap) return;
+      // No release velocity to inherit — this is a programmatic move, so it
+      // starts from rest.
+      settleTo(snap, opts, 0);
+    },
     detach() {
+      cancelSettle?.();
+      cancelSettle = null;
       node.removeEventListener("pointerdown", handlePointerDown);
       node.removeEventListener("pointermove", handlePointerMove);
       node.removeEventListener("pointerup", handlePointerUp);

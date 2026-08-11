@@ -22,11 +22,32 @@ const controls = [
   },
   { type: "boolean" as const, prop: "scrollingBody", default: true },
   { type: "boolean" as const, prop: "footer", default: false },
+  {
+    type: "enum" as const,
+    prop: "snapPoints",
+    options: ["none", "40,70,100", "25,55,92"],
+    default: "none",
+  },
 ];
+
+/** `"none"` is the playground's way of saying "no snap points"; the prop itself
+ * just takes an empty list. */
+function snapsFor(values: PlaygroundValues) {
+  return values.snapPoints === "none"
+    ? []
+    : String(values.snapPoints)
+        .split(",")
+        .map((n) => Number(n));
+}
 
 function attrsFor(values: PlaygroundValues, kebab: boolean) {
   const attrs: string[] = [];
   if (values.side !== "bottom") attrs.push(`side="${values.side}"`);
+  if (values.snapPoints !== "none") {
+    attrs.push(
+      kebab ? `snap-points="${values.snapPoints}"` : `snapPoints={[${values.snapPoints}]}`,
+    );
+  }
   const bool = (prop: string, attr: string, on: boolean) => {
     if (values[prop] === on) return;
     attrs.push(kebab ? `${attr}="${String(values[prop])}"` : `${prop}={${String(values[prop])}}`);
@@ -69,6 +90,7 @@ function Stage({ values }: { values: PlaygroundValues }) {
         title="Recently played"
         description="Drag toward the edge it's anchored to."
         side={values.side as SheetSide}
+        snapPoints={snapsFor(values)}
         showHandle={Boolean(values.showHandle)}
         handleOnly={Boolean(values.handleOnly)}
         dismissible={Boolean(values.dismissible)}
