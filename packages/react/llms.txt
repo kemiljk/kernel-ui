@@ -111,6 +111,7 @@ real underlying element, fully functional, just unstyled — never broken.
 - **HoverCard** — Rich hover preview, a heavier Tooltip.
 - **NavigationMenu** (+ `NavigationMenuItem`, `NavigationMenuLink`, `NavigationMenuTrigger`, `NavigationMenuContent`) — Multi-level site navigation, mega-menu via popover.
 - **Popover** — Anchor-positioned floating panel.
+- **Sheet** (+ `useSheetDrag`) — A Dialog anchored to an edge, with drag-to-dismiss. Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `"bottom"`. Adds `showHandle`, `handleOnly` (set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `scrollLockTimeout`, `onDrag`, `onRelease`. There are no snap points — a Sheet is open or dismissed.
 - **Tooltip** — Hover/focus hints via the Popover API.
 
 ### Navigation

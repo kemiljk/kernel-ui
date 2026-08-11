@@ -18,6 +18,24 @@ if (!HTMLDialogElement.prototype.close) {
   };
 }
 
+// jsdom ships no `PointerEvent`, so Testing Library's `fireEvent.pointerDown`
+// silently degrades to a bare `Event` and drops `clientX`/`clientY` — a
+// gesture test would then read every coordinate as `undefined`. Subclassing
+// `MouseEvent` is enough: it already carries the coordinates, and the pointer
+// fields Kernel's gestures read are the two added here.
+if (typeof globalThis.PointerEvent === "undefined") {
+  class PointerEventShim extends MouseEvent {
+    readonly pointerId: number;
+    readonly pointerType: string;
+    constructor(type: string, init: PointerEventInit = {}) {
+      super(type, init);
+      this.pointerId = init.pointerId ?? 0;
+      this.pointerType = init.pointerType ?? "mouse";
+    }
+  }
+  globalThis.PointerEvent = PointerEventShim as unknown as typeof PointerEvent;
+}
+
 Object.defineProperty(HTMLDialogElement.prototype, "open", {
   get(this: HTMLDialogElement) {
     return this.hasAttribute("open");

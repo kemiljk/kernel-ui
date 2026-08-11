@@ -260,11 +260,11 @@ export const components: RegistryEntry[] = [
     reactExports: ["Dialog"],
     elementTag: "kernel-dialog",
     docsUrl: docs("dialog"),
-    shadcnAliases: ["dialog", "alert-dialog", "sheet"],
+    shadcnAliases: ["dialog", "alert-dialog"],
     radixPackages: ["@radix-ui/react-dialog", "@radix-ui/react-alert-dialog"],
     migrationCaveats: [
       "Kernel Dialog is a single component with title/description/children props — not Dialog.Root/Trigger/Portal/Content.",
-      "shadcn Sheet and Alert Dialog both collapse into one Kernel Dialog with different props.",
+      "shadcn Alert Dialog is this component with closeOnBackdropClick={false}. shadcn Sheet is Kernel Sheet, which adds drag-to-dismiss on top of this.",
     ],
   },
   {
@@ -530,6 +530,26 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("separator"),
     shadcnAliases: ["separator"],
     radixPackages: ["@radix-ui/react-separator"],
+  },
+  {
+    name: "Sheet",
+    category: "Overlays",
+    slug: "sheet",
+    element: "<dialog> + pointer events",
+    summary: "A Dialog anchored to an edge, with drag-to-dismiss.",
+    llmsNote:
+      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `scrollLockTimeout`, `onDrag`, `onRelease`. There are no snap points — a Sheet is open or dismissed.",
+    status: "available",
+    reactExports: ["Sheet", "useSheetDrag"],
+    elementTag: "kernel-sheet",
+    docsUrl: docs("sheet"),
+    shadcnAliases: ["sheet", "drawer"],
+    radixPackages: ["vaul"],
+    migrationCaveats: [
+      "Replaces Vaul: Drawer.Root/Trigger/Portal/Overlay/Content/Handle collapse into one <Sheet> with open/onOpenChange, since a real <dialog> needs no portal and draws its own ::backdrop.",
+      "Vaul's snapPoints/activeSnapPoint have no equivalent — a Sheet is either open or dismissed.",
+      "direction becomes side; dismissible and handleOnly keep their names; closeThreshold, velocityThreshold, and scrollLockTimeout keep Vaul's defaults.",
+    ],
   },
   {
     name: "Sidebar",

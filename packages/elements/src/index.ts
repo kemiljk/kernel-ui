@@ -120,6 +120,11 @@ export { KernelFileUpload } from "./components/FileUpload/FileUpload";
 export { KernelTagInput } from "./components/TagInput/TagInput";
 export { KernelNumberField } from "./components/NumberField/NumberField";
 
+export { KernelSheet } from "./components/Sheet/Sheet";
+
+export { attachSheetDrag } from "./utils/sheetDrag";
+export type { SheetDragOptions, SheetDragController, SheetSide } from "./utils/sheetDrag";
+
 export { DetailsPanelAnimator } from "./utils/detailsTransition";
 export type { DetailsPanelAnimatorOptions } from "./utils/detailsTransition";
 

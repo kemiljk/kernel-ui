@@ -266,6 +266,13 @@ export type { TagInputProps, TagInputState } from "./components/TagInput/TagInpu
 export { NumberField } from "./components/NumberField/NumberField";
 export type { NumberFieldProps, NumberFieldState } from "./components/NumberField/NumberField";
 
+export { Sheet } from "./components/Sheet/Sheet";
+export type { SheetProps, SheetClassNames, SheetSide } from "./components/Sheet/Sheet";
+export { useSheetDrag } from "./components/Sheet/useSheetDrag";
+export type { UseSheetDragOptions, SheetDragApi } from "./components/Sheet/useSheetDrag";
+export { attachSheetDrag } from "./utils/sheetDrag";
+export type { SheetDragOptions, SheetDragController } from "./utils/sheetDrag";
+
 export { DetailsPanelAnimator, useDetailsTransition } from "./utils/detailsTransition";
 export type {
   DetailsPanelAnimatorOptions,

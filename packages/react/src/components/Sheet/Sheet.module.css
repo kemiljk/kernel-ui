@@ -1,0 +1,227 @@
+/* Sheet — Dialog's side variant plus the drag layer.
+   ------------------------------------------------------------------
+   Every rule here overrides one of Dialog's, so specificity is matched
+   deliberately rather than escalated: Dialog's per-side rules are
+   `.content[data-side="bottom"]` (0,2,0) and its open rules are
+   `.content[open][data-side="bottom"]` (0,3,0). The rules below tie those and
+   win on source order, which is guaranteed because `Sheet.tsx` imports `Dialog`
+   (and so `Dialog.module.css`) before this file. Escalating instead — `!important`,
+   doubled classes — would make Dialog's own reduced-motion and closing rules
+   unreachable, which is exactly what should still apply. */
+
+.sheet {
+  /* Overridable geometry. A sheet's size is the thing consumers most often need
+     to change, and per-side custom properties beat asking them to re-declare
+     four `inset`/`size` rules. */
+  --kernel-sheet-max-inline-size: min(100vw, 48rem);
+  --kernel-sheet-max-block-size: 90dvh;
+  --kernel-sheet-inline-size: min(85vw, 24rem);
+  /* Reserved room for the grabber, and the grabber's own box. Full-bleed along
+     the free edge, so a 2rem band is a wide target even though it's shallow;
+     `handleOnly` sheets that want a deeper grab area can raise it. */
+  --kernel-sheet-handle-space: var(--kernel-space-8);
+
+  /* The gesture needs the whole surface. This does *not* disable scrolling
+     inside the sheet: `touch-action` is intersected from the touched element up
+     to the scroll container that would handle the pan, so a descendant
+     `overflow-y: auto` region still scrolls normally. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+
+  /* Rounded corners have to clip, and the body — not the dialog — is what
+     scrolls, so the handle and header stay pinned while content moves. */
+  overflow: hidden;
+}
+
+/* `display` stays out of the closed state on purpose. Setting it unconditionally
+   would override the UA's `dialog:not([open]) { display: none }` and leave a
+   dismissed sheet in the layout and the accessibility tree. Dialog holds the
+   `open` attribute through the whole exit transition, so keying off `[open]`
+   still covers the closing frames. */
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Body copy in a sheet is real content worth selecting — a whole article, a
+   list of tracks. Only the chrome needs to resist the gesture. */
+.sheet [data-slot="dialog-content"] {
+  flex: 1;
+  /* Without this a flex item refuses to shrink below its content height and the
+     sheet grows past its own max-block-size instead of scrolling. */
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* While the finger is down the sheet is positioned frame by frame from JS, so
+   the transition has to be out of the way or the surface trails the pointer.
+   `data-dragging` is the attribute Toast and Resizable already use for this. */
+.sheet[open][data-dragging],
+.sheet[open][data-dragging]::backdrop {
+  transition: none;
+}
+
+/* `::backdrop` inherits custom properties from its originating element, which is
+   how a value written onto the dialog reaches it — no overlay node, and no
+   second element to keep in sync. `:not([data-closing])` matters: without it
+   this would outrank Dialog's closing rule and hold the scrim at the drag's
+   opacity for the whole exit instead of fading it out. */
+.sheet[open]:not([data-closing])::backdrop {
+  opacity: var(--kernel-sheet-drag-progress, 1);
+}
+
+/* `overlay ... allow-discrete` is what lets the exit animate at all, but it also
+   keeps the dialog — and its viewport-sized backdrop — in the top layer for the
+   full exit duration. Left interactive, that backdrop silently eats every click
+   on the page until the transition ends, so closing and immediately reopening
+   does nothing. Fading out is the only job it has left. */
+.sheet[data-closing],
+.sheet[data-closing]::backdrop {
+  pointer-events: none;
+}
+
+/* Bottom and top: centred, capped, and full-bleed to the viewport below that
+   cap. Dialog's side variant is edge-to-edge with square corners, which is
+   right for a nav drawer and wrong for a sheet. */
+.sheet[data-side="bottom"],
+.sheet[data-side="top"] {
+  inline-size: var(--kernel-sheet-max-inline-size);
+  max-inline-size: var(--kernel-sheet-max-inline-size);
+  margin-inline: auto;
+  block-size: auto;
+  max-block-size: var(--kernel-sheet-max-block-size);
+}
+
+/* The second, spread-only shadow is the overdrag bleed. Damping lets the sheet
+   sit a little past its resting edge, which would otherwise open a gap onto the
+   page behind it. A solid offset shadow covers that and — unlike the extra
+   pseudo-element the same trick usually uses — isn't clipped by the
+   `overflow: hidden` the rounded corners require. */
+.sheet[data-side="bottom"] {
+  border-radius: var(--kernel-radius-sheet) var(--kernel-radius-sheet) 0 0;
+  padding-block: calc(var(--kernel-padding-sheet) + var(--kernel-sheet-handle-space))
+    calc(var(--kernel-padding-sheet) + env(safe-area-inset-bottom, 0px));
+  box-shadow: var(--kernel-shadow-lg), 0 50vh 0 var(--kernel-color-surface-raised);
+}
+
+.sheet[data-side="top"] {
+  border-radius: 0 0 var(--kernel-radius-sheet) var(--kernel-radius-sheet);
+  padding-block: calc(var(--kernel-padding-sheet) + env(safe-area-inset-top, 0px))
+    calc(var(--kernel-padding-sheet) + var(--kernel-sheet-handle-space));
+  box-shadow: var(--kernel-shadow-lg), 0 -50vh 0 var(--kernel-color-surface-raised);
+}
+
+.sheet[data-side="left"],
+.sheet[data-side="right"] {
+  inline-size: var(--kernel-sheet-inline-size);
+  max-inline-size: var(--kernel-sheet-inline-size);
+  box-shadow: var(--kernel-shadow-lg),
+    var(--kernel-sheet-bleed-x) 0 0 var(--kernel-color-surface-raised);
+}
+
+.sheet[data-side="left"] {
+  border-radius: 0 var(--kernel-radius-sheet) var(--kernel-radius-sheet) 0;
+  padding-inline: calc(var(--kernel-padding-sheet) + env(safe-area-inset-left, 0px))
+    calc(var(--kernel-padding-sheet) + var(--kernel-sheet-handle-space));
+  /* `box-shadow` offsets are physical, so the one property that can't be written
+     logically has to be flipped by hand. `data-side="left"` is Dialog's
+     `inset-inline-start`, which is the right-hand edge under RTL. */
+  --kernel-sheet-bleed-x: -50vw;
+}
+
+.sheet[data-side="right"] {
+  border-radius: var(--kernel-radius-sheet) 0 0 var(--kernel-radius-sheet);
+  padding-inline: calc(var(--kernel-padding-sheet) + var(--kernel-sheet-handle-space))
+    calc(var(--kernel-padding-sheet) + env(safe-area-inset-right, 0px));
+  --kernel-sheet-bleed-x: 50vw;
+}
+
+.sheet[data-side="left"]:dir(rtl) {
+  --kernel-sheet-bleed-x: 50vw;
+}
+
+.sheet[data-side="right"]:dir(rtl) {
+  --kernel-sheet-bleed-x: -50vw;
+}
+
+/* The handle sits in the padding band reserved above, positioned against the
+   dialog rather than flowing in the content wrapper — see the component's
+   JSDoc for why it can't simply be the first child. Its box stops at the band
+   so it never overlays the header's close button. */
+.handle {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  /* The content wrapper re-enables text selection for body copy. Left
+     selectable, a press-and-drag on the handle starts a native selection and
+     the browser fires `pointercancel`, killing the gesture mid-drag. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.sheet[data-side="bottom"] .handle {
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: var(--kernel-sheet-handle-space);
+}
+
+.sheet[data-side="top"] .handle {
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--kernel-sheet-handle-space);
+}
+
+.sheet[data-side="left"] .handle {
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: var(--kernel-sheet-handle-space);
+}
+
+.sheet[data-side="right"] .handle {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--kernel-sheet-handle-space);
+}
+
+.handleBar {
+  display: block;
+  background: var(--kernel-color-border-strong);
+  border-radius: var(--kernel-radius-full);
+  opacity: 0.7;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.sheet[data-side="bottom"] .handleBar,
+.sheet[data-side="top"] .handleBar {
+  inline-size: var(--kernel-space-8);
+  block-size: 4px;
+}
+
+.sheet[data-side="left"] .handleBar,
+.sheet[data-side="right"] .handleBar {
+  inline-size: 4px;
+  block-size: var(--kernel-space-8);
+}
+
+.handle:hover .handleBar,
+.sheet[data-dragging] .handleBar {
+  opacity: 1;
+}
+
+.sheet[data-dragging] .handle {
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .handleBar {
+    transition: none;
+  }
+}

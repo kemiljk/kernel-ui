@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-02T11:31:21.567Z",
+  "generatedAt": "2026-08-11T10:07:23.556Z",
   "components": [
     {
       "name": "Accordion",
@@ -393,8 +393,7 @@
       "docsUrl": "https://www.kernelui.com/components/dialog/",
       "shadcnAliases": [
         "dialog",
-        "alert-dialog",
-        "sheet"
+        "alert-dialog"
       ],
       "radixPackages": [
         "@radix-ui/react-dialog",
@@ -402,7 +401,7 @@
       ],
       "migrationCaveats": [
         "Kernel Dialog is a single component with title/description/children props — not Dialog.Root/Trigger/Portal/Content.",
-        "shadcn Sheet and Alert Dialog both collapse into one Kernel Dialog with different props."
+        "shadcn Alert Dialog is this component with closeOnBackdropClick={false}. shadcn Sheet is Kernel Sheet, which adds drag-to-dismiss on top of this."
       ]
     },
     {
@@ -817,6 +816,33 @@
         "@radix-ui/react-separator"
       ],
       "migrationCaveats": []
+    },
+    {
+      "name": "Sheet",
+      "category": "Overlays",
+      "slug": "sheet",
+      "element": "<dialog> + pointer events",
+      "summary": "A Dialog anchored to an edge, with drag-to-dismiss.",
+      "status": "available",
+      "reactExports": [
+        "Sheet",
+        "useSheetDrag"
+      ],
+      "elementTag": "kernel-sheet",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/sheet/",
+      "shadcnAliases": [
+        "sheet",
+        "drawer"
+      ],
+      "radixPackages": [
+        "vaul"
+      ],
+      "migrationCaveats": [
+        "Replaces Vaul: Drawer.Root/Trigger/Portal/Overlay/Content/Handle collapse into one <Sheet> with open/onOpenChange, since a real <dialog> needs no portal and draws its own ::backdrop.",
+        "Vaul's snapPoints/activeSnapPoint have no equivalent — a Sheet is either open or dismissed.",
+        "direction becomes side; dismissible and handleOnly keep their names; closeThreshold, velocityThreshold, and scrollLockTimeout keep Vaul's defaults."
+      ]
     },
     {
       "name": "Sidebar",

@@ -1,0 +1,131 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import SheetDemo from "../../components/demos/SheetDemo";
+import SheetPlayground from "../../components/demos/SheetPlayground";
+
+const usageSnippet = `import { useState } from "react";
+import { Button, Sheet } from "@kernelui-lib/react";
+
+const [open, setOpen] = useState(false);
+
+<Button onClick={() => setOpen(true)}>Recently played</Button>
+<Sheet
+  open={open}
+  onOpenChange={setOpen}
+  title="Recently played"
+  description="Drag it down to dismiss."
+  handleOnly
+>
+  <ol>{/* a long, scrolling list */}</ol>
+</Sheet>`;
+---
+
+<BaseLayout title="Sheet" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Sheet</h1>
+    <p>
+      <a href="/components/dialog/">Dialog</a> anchored to an edge, plus the
+      gesture layer it doesn't have. Everything modal about it is still the
+      platform's: it's a real <code>&lt;dialog&gt;</code> opened with{" "}
+      <code>showModal()</code>, so the focus trap, top-layer stacking,
+      Escape handling, <code>::backdrop</code>, and focus restoration are
+      native rather than reimplemented — no portal, no scroll-lock hack, no{" "}
+      <code>aria-modal</code>. What Sheet adds is drag-to-dismiss with
+      velocity detection, damped overdrag, and a backdrop that fades in step
+      with the drag.
+    </p>
+
+    <div class="docs-example">
+      <SheetDemo client:visible />
+    </div>
+
+    <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <SheetPlayground client:visible />
+
+    <h2>Props</h2>
+    <p>
+      Every <a href="/components/dialog/">Dialog</a> prop applies, with{" "}
+      <code>side</code> narrowed to the four edges and defaulting to{" "}
+      <code>"bottom"</code>. On top of those:
+    </p>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props Sheet adds to Dialog.</caption>
+      <thead>
+        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>side</code></td><td>"bottom" | "top" | "left" | "right"</td><td>"bottom"</td></tr>
+        <tr><td><code>showHandle</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>handleOnly</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>dismissible</code></td><td>boolean</td><td>true</td></tr>
+        <tr><td><code>closeThreshold</code></td><td>number</td><td>0.25</td></tr>
+        <tr><td><code>velocityThreshold</code></td><td>number (px/ms)</td><td>0.11</td></tr>
+        <tr><td><code>scrollLockTimeout</code></td><td>number (ms)</td><td>500</td></tr>
+        <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Gestures</h2>
+    <p>
+      A drag dismisses when it either travels past{" "}
+      <code>closeThreshold</code> of the sheet's own size or exceeds{" "}
+      <code>velocityThreshold</code> — distance alone would reject a short,
+      fast flick that clearly meant "go away". Dragging the other way isn't
+      clamped at zero; it's compressed asymptotically, so the sheet keeps
+      answering the finger while never travelling further than its own size.
+    </p>
+    <p>
+      Dragging never fights scrolling. A gesture starting inside a scroll
+      container belongs to that container until it reaches the relevant edge,
+      and any scroll inside the sheet suppresses dragging for{" "}
+      <code>scrollLockTimeout</code> so the tail of a flick-scroll doesn't
+      read as a dismiss. Set <code>handleOnly</code> when the body scrolls and
+      you'd rather remove the contest entirely — the handle sits outside the
+      scroll container, so a handle drag is never ambiguous.
+    </p>
+    <p>
+      The gesture only ever writes an inline <code>translate</code>, and clears
+      it on release. The resting position stays the stylesheet's, which is what
+      lets a dismissal continue smoothly from wherever the finger left off
+      instead of snapping back to the start of an animation first.
+    </p>
+
+    <h2>Composition</h2>
+    <p>
+      Every Dialog <code>data-slot</code> hook, plus{" "}
+      <code>sheet-handle</code>. During a drag the dialog carries{" "}
+      <code>data-dragging</code> and a{" "}
+      <code>--kernel-sheet-drag-progress</code> custom property counting from
+      1 down to 0 — <code>::backdrop</code> inherits custom properties from
+      its originating element, which is how the scrim tracks the drag with no
+      overlay node to keep in sync. Size is overridable per side via{" "}
+      <code>--kernel-sheet-max-inline-size</code>,{" "}
+      <code>--kernel-sheet-max-block-size</code>,{" "}
+      <code>--kernel-sheet-inline-size</code>, and{" "}
+      <code>--kernel-sheet-handle-space</code>.
+    </p>
+    <p>
+      The body — Dialog's <code>dialog-content</code> slot — is the scroll
+      container, so the handle and header stay pinned while content moves.
+      <code>useSheetDrag</code> is exported too, for dragging a surface that
+      isn't a Sheet.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The handle is <code>aria-hidden</code> decoration. Dragging is never the only way out: Escape, the close button, and the backdrop all still work, so a keyboard or screen-reader user never needs the gesture.</li>
+      <li>That's also why the handle can be positioned at the anchored edge rather than coming first in the DOM — the <code>&lt;header&gt;</code> and its title stay the first thing in reading order.</li>
+      <li><code>dismissible={"{false}"}</code> disables dragging and backdrop dismissal together, but deliberately leaves Escape alone; provide your own explicit close control.</li>
+      <li><code>prefers-reduced-motion</code> drops the slide transition. Dragging still tracks the finger — it's direct manipulation, not decoration.</li>
+      <li>Body copy inside the sheet stays selectable; only the chrome and the handle opt out, since a native text selection starting on the handle cancels the gesture.</li>
+    </ul>
+  </div>
+</BaseLayout>
