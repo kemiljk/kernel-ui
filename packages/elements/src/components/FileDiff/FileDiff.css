@@ -17,8 +17,10 @@ kernel-file-diff {
   display: flex;
   align-items: center;
   gap: var(--kernel-space-2);
-  /* Paired with .root's --kernel-radius-container. */
-  padding: var(--kernel-space-2) var(--kernel-padding-container-curve);
+  /* Clearance for the panel's top corners, which this summary sits in — see
+     CodeBlock's header for the nesting arithmetic. block-end is an interior
+     edge against the table, so it stays tight. */
+  padding: var(--kernel-padding-container-curve) var(--kernel-padding-container-curve) var(--kernel-space-2);
   background-color: var(--kernel-color-surface-raised);
   cursor: pointer;
   -webkit-user-select: none;

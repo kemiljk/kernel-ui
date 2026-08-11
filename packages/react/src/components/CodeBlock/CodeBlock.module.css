@@ -11,10 +11,15 @@
   display: flex;
   align-items: center;
   gap: var(--kernel-space-2);
-  /* Paired with .root's --kernel-radius-container. Trailing edge stays
-     tighter because the copy control's own padding already provides it. */
-  padding-block: var(--kernel-space-1);
-  padding-inline: var(--kernel-padding-container-curve) var(--kernel-space-2);
+  /* Clearance where this box actually meets the panel's rounded corners:
+     both top corners, so inline on both sides and block-start. A nested
+     control only reads as nested when its inset is at least
+     (outer radius - its own radius) — for the pill copy button inside
+     --kernel-radius-container that's ~22px at Round, which is what the curve
+     padding provides and what 8px did not. block-end is interior edge, so it
+     stays tight. */
+  padding: var(--kernel-padding-container-curve) var(--kernel-padding-container-curve)
+    var(--kernel-space-2);
   border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
   background-color: var(--kernel-color-surface-raised);
 }
@@ -102,6 +107,12 @@
 .code {
   display: block;
   font: inherit;
+}
+
+/* With a header above it, the first line's clearance from the top corners is
+   already the header's job — only the bottom corners are still this box's. */
+.root:has(> .header:not([hidden])) .pre {
+  padding-block-start: var(--kernel-space-2);
 }
 
 /* A line is a grid row so the numbers form a column of their own, without a

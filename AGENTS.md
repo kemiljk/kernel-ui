@@ -90,6 +90,19 @@ new component done, grep both `packages/react/src/index.ts` and
   raw space token. `CodeBlock`, `FileDiff`, `TodoList` and `Toast` are the
   worked examples.
 
+  **A nested control needs clearance, not just padding.** A rounded thing
+  inside a rounded thing only *reads* as nested when its inset is at least
+  `outer radius − its own radius`. A pill button (≈15px radius at a 30px
+  control height) inside `--kernel-radius-container` at Round needs ~20px,
+  so 8px leaves it visibly colliding with the curve — which is exactly
+  what shipped and had to be fixed. `--kernel-padding-container-curve`
+  clears that bound at every rounding, so use it wherever a box **meets a
+  corner**: both inline edges plus `block-start` for a header bar,
+  `block-end` for the last row, all four for a scroll container. Interior
+  edges (a header's underside against the content below it) stay tight —
+  clearance is a corner problem, not a general "more padding" one. Check
+  it by eye at Round, or measure: `inset >= outerRadius - innerRadius`.
+
   A text box is not a container. `Composer`, `Textarea` and
   `MessageBubble` read `--kernel-radius-md`/`-lg` deliberately: at
   `-container` a two-line box rounds hard enough to read as an accidental

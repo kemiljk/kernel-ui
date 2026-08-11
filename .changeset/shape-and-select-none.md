@@ -34,3 +34,10 @@ selects their labels.
 
 Both conventions are now stated as rules in `AGENTS.md` and enforced by
 `bun run test:shape`.
+
+Corner clearance, not just padding: a rounded control only reads as nested when
+its inset is at least `outer radius − its own radius`. `CodeBlock`'s copy button
+sat 8px from a 36px curve at Round and visibly collided with it. Every box that
+*meets* a rounded corner — a header bar's top and inline edges, a summary row,
+the last row of a panel, all four sides of a scroll container — now takes the
+curve padding, while interior edges stay tight.

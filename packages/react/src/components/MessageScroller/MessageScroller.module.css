@@ -49,10 +49,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--kernel-space-3);
-  /* Inline padding keeps messages off the reserved scrollbar gutter — an
-     end-aligned author name otherwise sits under the scrollbar — and the
-     block padding stops the first and last message butting the edges. */
-  padding: var(--kernel-space-2) var(--kernel-padding-container-curve);
+  /* Every edge of this box meets the viewport's rounded corners, and the
+     messages inside it are pills — so all four sides get the clearance a
+     nested rounded surface needs (see CodeBlock's header). The inline half
+     also keeps an end-aligned author name off the reserved scrollbar gutter. */
+  padding: var(--kernel-padding-container-curve);
 }
 
 /* Floating over the live edge rather than displacing it, so revealing the
