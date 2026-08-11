@@ -29,7 +29,7 @@
         "@astrojs/check": "^0.9.9",
         "@types/react": "^19.1.0",
         "@types/react-dom": "^19.1.0",
-        "node-html-parser": "^8.0.4",
+        "node-html-parser": "^9.0.1",
         "typescript": "^5.7.3",
       },
     },
@@ -50,9 +50,9 @@
     },
     "packages/elements": {
       "name": "@kernelui-lib/elements",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "dependencies": {
-        "@kernelui-lib/styles": "^1.0.0",
+        "@kernelui-lib/styles": "^1.1.0",
       },
       "devDependencies": {
         "typescript": "^5.7.3",
@@ -62,9 +62,9 @@
     },
     "packages/react": {
       "name": "@kernelui-lib/react",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "dependencies": {
-        "@kernelui-lib/styles": "^1.0.0",
+        "@kernelui-lib/styles": "^1.1.0",
       },
       "devDependencies": {
         "@testing-library/jest-dom": "^6.9.1",
@@ -95,7 +95,7 @@
     },
     "packages/styles": {
       "name": "@kernelui-lib/styles",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "devDependencies": {
         "culori": "^4.0.2",
       },
@@ -1032,7 +1032,7 @@
 
     "node-fetch-native": ["node-fetch-native@1.6.7", "", {}, "sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q=="],
 
-    "node-html-parser": ["node-html-parser@8.0.4", "", { "dependencies": { "css-select": "^5.1.0", "entities": "^8.0.0" } }, "sha512-w2YxujN/TqrSIWGVNW/fVgKKfAyQeHMXCvnKZI0owLnfP0tfjdLecUoy9zhOMZGoEFk6eP5qSDyvUarjPl3bwQ=="],
+    "node-html-parser": ["node-html-parser@9.0.1", "", { "dependencies": { "css-select": "^5.1.0", "entities": "^8.0.0" } }, "sha512-QrdiYYm1NnLRXsMXThUgVcF/syWfWIgHFmy8hylWMGFbHFtnRuXLBxxGQvIm3xaIJMUDJ0ayOmT/FGJYT3pZIw=="],
 
     "node-mock-http": ["node-mock-http@1.0.4", "", {}, "sha512-8DY+kFsDkNXy1sJglUfuODx1/opAGJGyrTuFqEoN90oRc2Vk0ZbD4K2qmKXBBEhZQzdKHIVfEJpDU8Ak2NJEvQ=="],
 
