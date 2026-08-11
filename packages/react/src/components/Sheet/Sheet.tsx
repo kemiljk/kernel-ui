@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useEffect, useMemo } from "react";
+import type { ReactNode } from "react";
 // Import order is load-bearing: `Dialog` pulls in `Dialog.module.css`, and
 // `Sheet.module.css` has to land *after* it in the bundle. Sheet's per-side
 // rules are specificity-matched to Dialog's (`.sheet[open][data-side="bottom"]`
@@ -18,6 +19,8 @@ export type { SheetSide };
 
 export interface SheetClassNames extends DialogClassNames {
   handle?: string;
+  body?: string;
+  footer?: string;
 }
 
 export interface SheetProps extends Omit<DialogProps, "side" | "className" | "classNames"> {
@@ -44,6 +47,11 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
    * window past it while open — for the common case of a sheet on small
    * screens and a centred `Dialog` on large ones. */
   maxDisplayWidth?: number;
+  /** Pinned below the scrolling body — an action row, a total, a Checkout
+   * button. It takes over the safe-area padding from the sheet so its own
+   * background runs under the home indicator instead of leaving a strip of
+   * surface beneath it, and it's a drag surface like the handle. */
+  footer?: ReactNode;
   className?: string;
   classNames?: SheetClassNames;
   /** Fires on every drag frame with how far the sheet has travelled, 0–1. */
@@ -80,6 +88,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     velocityThreshold = DEFAULT_VELOCITY_THRESHOLD,
     inset = false,
     maxDisplayWidth,
+    footer,
     className,
     classNames,
     children,
@@ -92,7 +101,12 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
   },
   forwardedRef,
 ) {
-  const { handle: handleClassName, ...dialogClassNames } = classNames ?? {};
+  const {
+    handle: handleClassName,
+    body: bodyClassName,
+    footer: footerClassName,
+    ...dialogClassNames
+  } = classNames ?? {};
 
   const handleDismiss = useCallback(() => {
     onOpenChange(false);
@@ -111,7 +125,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     return () => window.removeEventListener("resize", check);
   }, [open, maxDisplayWidth, onOpenChange]);
 
-  const { setNode, setHandle } = useSheetDrag({
+  const { setNode, setHandle, setFooter } = useSheetDrag({
     side,
     open,
     enabled: dismissible,
@@ -160,7 +174,22 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
           <span className={styles.handleBar} />
         </div>
       ) : null}
-      {children}
+      {/* Dialog gives one content wrapper for all children, so a footer put
+          among them would scroll away with the rest. Sheet splits that wrapper
+          into a scrolling body and a pinned footer instead, which is also what
+          lets the footer own the safe-area padding. */}
+      <div className={[styles.body, bodyClassName].filter(Boolean).join(" ")} data-slot="sheet-body">
+        {children}
+      </div>
+      {footer !== undefined ? (
+        <div
+          ref={setFooter}
+          data-slot="sheet-footer"
+          className={[styles.footer, footerClassName].filter(Boolean).join(" ")}
+        >
+          {footer}
+        </div>
+      ) : null}
     </Dialog>
   );
 });

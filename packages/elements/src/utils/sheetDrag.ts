@@ -188,16 +188,19 @@ export interface SheetDragOptions {
   side: SheetSide;
   /** When false the sheet can't be dragged at all. */
   enabled: boolean;
-  /** Only the handle may start a drag. Worth setting whenever the sheet's body
-   * scrolls, since it removes any contest between the two gestures. */
+  /** Only the sheet's own chrome — the handle and the footer — may start a
+   * drag. Worth setting whenever the body scrolls, since it removes any contest
+   * between the two gestures. */
   handleOnly: boolean;
   /** Fraction of the sheet's own size that must be travelled to dismiss. */
   closeThreshold: number;
   /** Dismiss velocity in px/ms, applied regardless of distance travelled. */
   velocityThreshold: number;
-  /** The handle element, when there is one, so `handleOnly` can tell a handle
-   * drag from a body drag and so a handle drag can claim immediately. */
+  /** Chrome that is a dedicated drag surface: never in competition with a
+   * scroller, so a gesture starting here claims immediately. `handleOnly`
+   * restricts dragging to exactly these. */
   handle: HTMLElement | null;
+  footer: HTMLElement | null;
   onDismiss: () => void;
   onDrag?: (percent: number) => void;
   onRelease?: (open: boolean) => void;
@@ -229,7 +232,7 @@ export function attachSheetDrag(
   let claimOffset = 0;
   let scroller: Element | null = null;
   let suppressClick = false;
-  let fromHandle = false;
+  let fromChrome = false;
 
   function clearDragState() {
     dragging = false;
@@ -323,20 +326,22 @@ export function attachSheetDrag(
     // release would land as a backdrop click and close it anyway.
     if (target === node) return;
 
-    const handle = opts.handle;
-    fromHandle = !!handle && !!target && handle.contains(target);
-    if (opts.handleOnly && !fromHandle) return;
+    fromChrome =
+      !!target &&
+      ((!!opts.handle && opts.handle.contains(target)) ||
+        (!!opts.footer && opts.footer.contains(target)));
+    if (opts.handleOnly && !fromChrome) return;
 
     const { axis } = AXES[opts.side];
-    // A drag from the handle is never in competition with scrolling — the
-    // handle is absolutely positioned outside the scroll container.
-    scroller = fromHandle ? null : findScrollable(target, node, axis);
+    // Chrome is never in competition with scrolling: the handle is positioned
+    // outside the scroll container and the footer is its sibling.
+    scroller = fromChrome ? null : findScrollable(target, node, axis);
 
     pointerId = event.pointerId;
     // With nothing to contend with, the panel owns the gesture from the first
     // pixel. Deferring the claim to the first move would put `claimOffset` a few
     // pixels in and give every drag a small dead zone at the start.
-    claimed = fromHandle || scroller === null;
+    claimed = fromChrome || scroller === null;
     claimOffset = 0;
     startCoord = axis === "y" ? event.clientY : event.clientX;
     lastCoord = startCoord;

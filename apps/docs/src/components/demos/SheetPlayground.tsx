@@ -21,6 +21,7 @@ const controls = [
     default: "default",
   },
   { type: "boolean" as const, prop: "scrollingBody", default: true },
+  { type: "boolean" as const, prop: "footer", default: false },
 ];
 
 function attrsFor(values: PlaygroundValues, kebab: boolean) {
@@ -73,6 +74,18 @@ function Stage({ values }: { values: PlaygroundValues }) {
         dismissible={Boolean(values.dismissible)}
         inset={Boolean(values.inset)}
         showCloseButton={Boolean(values.showCloseButton)}
+        footer={
+          values.footer ? (
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Clear
+              </Button>
+              <Button variant="primary" onClick={() => setOpen(false)}>
+                Checkout
+              </Button>
+            </div>
+          ) : undefined
+        }
         backdrop={values.backdrop as "default" | "blur" | "opaque" | "transparent"}
       >
         <ol style={{ display: "grid", gap: "0.75rem", margin: 0, paddingInlineStart: "1.75rem" }}>

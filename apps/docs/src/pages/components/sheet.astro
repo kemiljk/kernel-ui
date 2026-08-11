@@ -68,6 +68,7 @@ const [open, setOpen] = useState(false);
         <tr><td><code>velocityThreshold</code></td><td>number (px/ms)</td><td>0.5</td></tr>
         <tr><td><code>inset</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>maxDisplayWidth</code></td><td>number (px)</td><td>—</td></tr>
+        <tr><td><code>footer</code></td><td>ReactNode</td><td>—</td></tr>
         <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
         <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
         <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
@@ -134,10 +135,29 @@ const [open, setOpen] = useState(false);
       same place.
     </p>
 
+    <h2>Footer</h2>
+    <p>
+      <code>footer</code> pins a row below the scrolling body — an action bar, a
+      total, a Checkout button. Dialog gives one content wrapper for all
+      children, so a footer placed among them would scroll away with the rest;
+      Sheet splits that wrapper into a <code>sheet-body</code> that scrolls and a{" "}
+      <code>sheet-footer</code> that doesn't.
+    </p>
+    <p>
+      The footer, not the sheet, then owns the bottom safe area, and cancels the
+      sheet's inline padding so its background reaches both edges. Both matter
+      for the same reason: a footer inset from the bottom leaves a strip of bare
+      surface between it and the home indicator. An <code>inset</code> sheet is
+      the exception — its gap already clears the indicator, so the footer doesn't
+      add it twice. Like the handle, the footer is a drag surface, and it's what{" "}
+      <code>handleOnly</code> permits alongside the handle.
+    </p>
+
     <h2>Composition</h2>
     <p>
       Every Dialog <code>data-slot</code> hook, plus{" "}
-      <code>sheet-handle</code>. During a drag the dialog carries{" "}
+      <code>sheet-handle</code>, <code>sheet-body</code>, and{" "}
+      <code>sheet-footer</code>. During a drag the dialog carries{" "}
       <code>data-dragging</code> and a{" "}
       <code>--kernel-sheet-drag-progress</code> custom property counting from
       1 down to 0 — <code>::backdrop</code> inherits custom properties from
@@ -149,8 +169,6 @@ const [open, setOpen] = useState(false);
       <code>--kernel-sheet-handle-space</code>.
     </p>
     <p>
-      The body — Dialog's <code>dialog-content</code> slot — is the scroll
-      container, so the handle and header stay pinned while content moves.
       <code>useSheetDrag</code> is exported too, for dragging a surface that
       isn't a Sheet.
     </p>

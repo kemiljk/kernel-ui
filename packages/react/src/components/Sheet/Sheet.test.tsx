@@ -164,6 +164,31 @@ describe("Sheet", () => {
     expect(dialog.style.translate).toBe("0 40px");
   });
 
+  it("splits the content wrapper into a scrolling body and a pinned footer", () => {
+    render(<ControlledSheet footer={<button type="button">Checkout</button>} />);
+    const content = screen.getByRole("dialog").querySelector('[data-slot="dialog-content"]')!;
+    const parts = Array.from(content.children).map((el) => el.getAttribute("data-slot"));
+
+    // The handle comes first but is positioned, not flowed; the footer must come
+    // after the body or it would scroll away with the content.
+    expect(parts).toEqual(["sheet-handle", "sheet-body", "sheet-footer"]);
+    expect(screen.getByRole("button", { name: "Inside" }).closest('[data-slot="sheet-body"]')).not.toBeNull();
+  });
+
+  it("omits the footer slot entirely when no footer is given", () => {
+    render(<ControlledSheet />);
+    expect(document.querySelector('[data-slot="sheet-footer"]')).toBeNull();
+    expect(document.querySelector('[data-slot="sheet-body"]')).not.toBeNull();
+  });
+
+  it("lets handleOnly drags start from the footer, which is chrome too", () => {
+    render(<ControlledSheet handleOnly footer={<button type="button">Checkout</button>} />);
+    const dialog = screen.getByRole("dialog") as HTMLDialogElement;
+
+    drag(screen.getByRole("button", { name: "Checkout" }), 100, 200);
+    expect(dialog).toHaveAttribute("data-dragging");
+  });
+
   it("marks the root when inset, since the variant is entirely CSS", () => {
     const { rerender } = render(<ControlledSheet />);
     const before = screen.getByRole("dialog").className;

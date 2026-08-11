@@ -50,17 +50,58 @@
   flex-direction: column;
 }
 
-/* Body copy in a sheet is real content worth selecting — a whole article, a
-   list of tracks. Only the chrome needs to resist the gesture. */
+/* Dialog's content wrapper is Sheet's layout column, holding the scrolling body
+   and — when there is one — the pinned footer. It must not scroll itself, or the
+   footer scrolls away with the content it's meant to sit below. */
 .kernel-Sheet-sheet [data-slot="dialog-content"] {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   /* Without this a flex item refuses to shrink below its content height and the
      sheet grows past its own max-block-size instead of scrolling. */
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+/* Body copy in a sheet is real content worth selecting — a whole article, a
+   list of tracks. Only the chrome needs to resist the gesture. */
+.kernel-Sheet-body {
+  flex: 1;
   min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* Cancels the dialog's inline padding so the footer's background reaches the
+   sheet's edges, then re-applies it as the footer's own. Only a full-bleed
+   footer can run its background under the home indicator; an inset one leaves a
+   strip of bare surface below it. */
+.kernel-Sheet-footer {
+  flex-shrink: 0;
+  touch-action: none;
+  margin-inline: calc(-1 * var(--kernel-padding-sheet));
+  padding: var(--kernel-padding-sheet);
+  background: var(--kernel-sheet-footer-bg, var(--kernel-color-surface-raised));
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+/* With a footer, *it* owns the bottom inset rather than the sheet. Leaving the
+   padding on the dialog would put the safe-area gap below the footer's
+   background instead of inside it, which is exactly the strip this avoids. */
+.kernel-Sheet-sheet[data-side="bottom"]:has([data-slot="sheet-footer"]) {
+  padding-block-end: 0;
+}
+
+.kernel-Sheet-sheet[data-side="bottom"] .kernel-Sheet-footer {
+  padding-block-end: calc(var(--kernel-padding-sheet) + env(safe-area-inset-bottom, 0px));
+}
+
+/* A detached sheet's gap already clears the home indicator, so adding the inset
+   again here would double it. */
+.kernel-Sheet-sheet.kernel-Sheet-inset[data-side="bottom"] .kernel-Sheet-footer {
+  padding-block-end: var(--kernel-padding-sheet);
 }
 
 /* While the finger is down the sheet is positioned frame by frame from JS, so

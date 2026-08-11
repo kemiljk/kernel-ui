@@ -538,7 +538,7 @@ export const components: RegistryEntry[] = [
     element: "<dialog> + pointer events",
     summary: "A Dialog anchored to an edge, with drag-to-dismiss.",
     llmsNote:
-      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`. A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. There are no snap points — a Sheet is open or dismissed.",
+      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (restricts dragging to the handle and footer; set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`, `inset` (detached and floating, all four corners rounded), `maxDisplayWidth` (closes itself above that viewport width), and `footer` (pinned below the scrolling body; it owns the bottom safe area and is a drag surface). A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. There are no snap points — a Sheet is open or dismissed.",
     status: "available",
     reactExports: ["Sheet", "useSheetDrag"],
     elementTag: "kernel-sheet",

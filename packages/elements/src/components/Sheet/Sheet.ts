@@ -39,7 +39,10 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * `<kernel-dialog>` on large ones).
  *
  * Part classes: everything `<kernel-dialog>` exposes, plus a
- * `data-slot="sheet-handle"` grabber.
+ * `data-slot="sheet-handle"` grabber, a `data-slot="sheet-body"` scroll region,
+ * and — when a child carries `slot="footer"` — a pinned
+ * `data-slot="sheet-footer"` that owns the bottom safe area and is a drag
+ * surface in its own right.
  *
  * Events: `close` (inherited), plus `sheetdrag` (`detail.percent`, 0–1, on
  * every drag frame) and `sheetrelease` (`detail.open`, whether the sheet stayed
@@ -52,6 +55,7 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  */
 export class KernelSheet extends KernelDialog {
   private handleElement: HTMLElement | null = null;
+  private footerElement: HTMLElement | null = null;
   private drag: SheetDragController | null = null;
   private resizeHandler: (() => void) | null = null;
 
@@ -94,6 +98,7 @@ export class KernelSheet extends KernelDialog {
 
     this.drag = attachSheetDrag(dialog, () => this.dragOptions());
     this.syncHandle();
+    this.restructureContent();
 
     // Unlike React's, this listener runs for the element's whole life rather
     // than only while open: the attribute check is cheap, and a custom element
@@ -151,6 +156,7 @@ export class KernelSheet extends KernelDialog {
       closeThreshold: this.number("close-threshold", DEFAULT_CLOSE_THRESHOLD),
       velocityThreshold: this.number("velocity-threshold", DEFAULT_VELOCITY_THRESHOLD),
       handle: this.handleElement,
+      footer: this.footerElement,
       // Removing the attribute is the same path every other close takes:
       // KernelDialog's own `syncAttr` picks it up, runs the exit transition, and
       // only then calls the native `close()`.
@@ -160,6 +166,42 @@ export class KernelSheet extends KernelDialog {
       onRelease: (open) =>
         this.dispatchEvent(new CustomEvent("sheetrelease", { detail: { open }, bubbles: true })),
     };
+  }
+
+  /**
+   * Splits Dialog's single content wrapper into a scrolling body and, when the
+   * author supplied `slot="footer"`, a pinned footer — the same two slots
+   * React's `Sheet` renders, so one stylesheet serves both.
+   *
+   * Runs after `super.connectedCallback()`, which means `syncHandle` may already
+   * have prepended the handle in there; it's excluded explicitly rather than
+   * relying on call order, since the handle must stay outside the scroller.
+   */
+  private restructureContent() {
+    const dialog = this.native as HTMLDialogElement | null;
+    const content = dialog?.querySelector('[data-slot="dialog-content"]');
+    if (!content || content.querySelector('[data-slot="sheet-body"]')) return;
+
+    const footerSource = content.querySelector(':scope > [slot="footer"]');
+    const body = document.createElement("div");
+    body.className = kernelClass("Sheet", "body");
+    body.setAttribute("data-slot", "sheet-body");
+
+    for (const node of Array.from(content.childNodes)) {
+      if (node === footerSource || node === this.handleElement) continue;
+      body.append(node);
+    }
+    content.append(body);
+
+    if (footerSource) {
+      const footer = document.createElement("div");
+      footer.className = kernelClass("Sheet", "footer");
+      footer.setAttribute("data-slot", "sheet-footer");
+      footer.append(...Array.from(footerSource.childNodes));
+      footerSource.remove();
+      content.append(footer);
+      this.footerElement = footer;
+    }
   }
 
   private syncHandle() {
