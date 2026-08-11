@@ -103,12 +103,15 @@ new component done, grep both `packages/react/src/index.ts` and
   clearance is a corner problem, not a general "more padding" one. Check
   it by eye at Round, or measure: `inset >= outerRadius - innerRadius`.
 
-  A text box is not a container. `Composer`, `Textarea` and
-  `MessageBubble` read `--kernel-radius-md`/`-lg` deliberately: at
-  `-container` a two-line box rounds hard enough to read as an accidental
-  pill. If you want a real pill on one line and a large corner on many,
-  the height is not knowable in CSS — use `utils/lineFit.ts`, which marks
-  the element `data-lines="single" | "multi"` (see `MessageBubble`).
+  A text box is not a container: `Textarea` and `MessageBubble` read
+  `--kernel-radius-md`/`-lg` deliberately, because at `-container` a
+  two-line box rounds hard enough to read as an accidental pill. But a box
+  that *holds* controls is a container however text-like it looks —
+  `Composer` is on `-container` for exactly that reason, since its send
+  button has to nest in its corner. If you want a real pill on one line
+  and a large corner on many, the height is not knowable in CSS — use
+  `utils/lineFit.ts`, which marks the element
+  `data-lines="single" | "multi"` (see `MessageBubble`).
 - **Anything you click needs `user-select: none`.** Triggers, summaries,
   menu items, tabs, chips, segment buttons, the lot — a double-click on a
   disclosure otherwise selects its label, which is never what the click
@@ -128,6 +131,16 @@ new component done, grep both `packages/react/src/index.ts` and
   `hidePopover()`; `popover="auto"` exits rely on Chromium's `overlay`
   transition, with Safari guarded in `reset.css`. Prefer shared tokens
   over per-component duration/easing literals.
+- **Only `display` may live in a `:popover-open` rule.** `:popover-open`
+  stops matching the moment a popover starts closing, but the panel is
+  still on screen for the whole exit — `display` survives that because
+  it's transitioned with `allow-discrete`, and *nothing else does*. Put
+  `flex-direction`, `gap`, `padding`, or any other layout property in
+  that rule and it reverts at the start of the exit, so the panel's
+  contents re-lay-out while animating away. The docs site's theme menu
+  had exactly this: two stacked sections collapsing into a gapless row
+  for the length of every close. Style the panel unconditionally; scope
+  only `display` to `:popover-open`.
 
 ## Known gotchas (hit these once already; don't re-hit them)
 

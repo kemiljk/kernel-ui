@@ -17,15 +17,17 @@
      100% is the right default, not something every consumer should have
      to opt into by hand. */
   inline-size: 100%;
-  padding: var(--kernel-space-3);
-  /* --kernel-radius-md, not -container/-sheet: this box is categorically
-     an input control (same tier as Textarea/TextField), not a padded
-     card. The container/sheet tiers add a large fixed padding term on
-     top of the base radius specifically for that reason — used here, it
-     made a modest single/two-line box round enough to look like a full
-     stadium pill at the "Round" preset, which read as a shape bug rather
-     than an intentional design. */
-  border-radius: var(--kernel-radius-md);
+  /* --kernel-radius-container with its paired padding, not --kernel-radius-md.
+     This box isn't really the Textarea tier: it *contains* controls — a send
+     button, attachment and model actions — and a container that holds pill
+     controls has to be concentric with them or they read as bulging out of its
+     corners. At -md the composer's own curvature was close enough to the send
+     button's that the two corners fought at Round.
+     -container is only safe here because the curve padding comes with it: it's
+     what stops a modest two-line box reading as a stadium pill, which is what
+     went wrong the first time this tier was tried. */
+  padding: var(--kernel-padding-container-curve);
+  border-radius: var(--kernel-radius-container);
   background-color: var(--kernel-color-surface);
   font-family: var(--kernel-font-sans);
 }

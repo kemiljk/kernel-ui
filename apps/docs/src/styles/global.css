@@ -592,12 +592,21 @@ dialog.mobile-nav-panel[data-side="left"] {
   max-inline-size: min(22rem, calc(100vw - var(--kernel-space-8)));
   box-shadow: var(--kernel-shadow-lg);
   transform-origin: var(--kernel-transform-origin, center);
+  /* Layout lives here, unconditionally, and NOT in the :popover-open rule
+     below. `:popover-open` stops matching the instant the popover starts
+     closing, but the panel is still on screen for the whole exit transition —
+     Popover transitions `display` with allow-discrete, which holds `display`
+     until the end but does nothing for anything else. So `flex-direction` and
+     `gap` declared under :popover-open reverted at the *start* of the exit,
+     collapsing these two stacked sections into a gapless row and shifting
+     every control in the panel while it animated out. Only `display` belongs
+     in that rule, because `display` is the one property the transition keeps. */
+  flex-direction: column;
+  gap: var(--kernel-space-4);
 }
 
 [data-slot="popover-content"].theme-menu-panel:popover-open {
   display: flex;
-  flex-direction: column;
-  gap: var(--kernel-space-4);
 }
 
 .site-footer-brand {
