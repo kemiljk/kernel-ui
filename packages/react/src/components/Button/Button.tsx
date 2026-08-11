@@ -33,6 +33,14 @@ export interface ButtonProps
   /** Render as a different element, e.g. an anchor styled as a button.
    * The default is a real `<button type="button">`. */
   render?: RenderProp<ButtonState>;
+  /** Overrides the default `data-slot="button"` composition hook. A component
+   * that renders a Button as one of its own named parts sets this so its slot
+   * name is the one consumers can select (`Dialog`'s close control is
+   * `dialog-close`, not `button`) — matching what the same component's Custom
+   * Element already emits. Declared explicitly because it can't just ride in
+   * with the rest of the props: the default below is applied after the spread,
+   * so it would otherwise win. */
+  "data-slot"?: string;
 }
 
 /**
@@ -54,6 +62,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       render,
       type = "button",
       children,
+      "data-slot": dataSlot = "button",
       ...rest
     },
     ref,
@@ -98,7 +107,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className: [styles.root, resolveClassName(className, state)]
           .filter(Boolean)
           .join(" "),
-        "data-slot": "button",
+        "data-slot": dataSlot,
         "data-variant": variant,
         "data-size": size,
         "data-loading": dataAttr(loading),

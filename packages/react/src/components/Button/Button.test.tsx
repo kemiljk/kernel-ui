@@ -17,4 +17,14 @@ describe("Button", () => {
       "primary",
     );
   });
+
+  it("defaults its slot hook to button but lets a composing component rename it", () => {
+    const { rerender } = render(<Button>Save</Button>);
+    expect(screen.getByRole("button")).toHaveAttribute("data-slot", "button");
+
+    // Dialog renders its close control as a Button and needs the slot to stay
+    // `dialog-close`, matching what `<kernel-dialog>` emits.
+    rerender(<Button data-slot="dialog-close">Save</Button>);
+    expect(screen.getByRole("button")).toHaveAttribute("data-slot", "dialog-close");
+  });
 });
