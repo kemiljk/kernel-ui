@@ -13,14 +13,16 @@ const START = "<!-- GENERATED:COMPONENTS:START -->";
 const END = "<!-- GENERATED:COMPONENTS:END -->";
 
 function formatReactComponentLine(entry) {
-  const exports = entry.reactExports.join(" (+ `");
-  const suffix = entry.reactExports.length > 1 ? "`)" : "";
   const primary = entry.reactExports[0];
   const exportText =
     entry.reactExports.length === 1
       ? `**${primary}**`
       : `**${primary}** (+ \`${entry.reactExports.slice(1).join("`, `")}\`)`;
-  return `- ${exportText} — ${entry.summary}`;
+  // `llmsNote` is the only place long-form prose about a component can live and
+  // survive: this whole section is regenerated from the registry on every build,
+  // so anything hand-written into llms.txt between the markers gets deleted.
+  const detail = entry.llmsNote ? `${entry.summary} ${entry.llmsNote}` : entry.summary;
+  return `- ${exportText} — ${detail}`;
 }
 
 function formatElementsTagLine(entry) {

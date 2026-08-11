@@ -288,6 +288,8 @@ export const components: RegistryEntry[] = [
     slug: "file-upload",
     element: '<label> + <input type="file">',
     summary: "Drag-and-drop over a real file input, with optional square image preview moulding.",
+    llmsNote:
+      '`onError` fires with `type: "accept" | "max-size" | "max-files" | "directory"` when a pick or drop is rejected (including a dropped folder, which the platform surfaces as an unreadable 0-byte `File`).',
     status: "available",
     reactExports: ["FileUpload"],
     elementTag: "kernel-file-upload",
