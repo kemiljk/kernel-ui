@@ -38,13 +38,36 @@
 }
 
 /* `display` stays out of the closed state on purpose. Setting it unconditionally
-   would override the UA's `dialog:not([open]) { display: none }` and leave a
-   dismissed sheet in the layout and the accessibility tree. Dialog holds the
-   `open` attribute through the whole exit transition, so keying off `[open]`
-   still covers the closing frames. */
+   would beat the UA's `dialog:not([open]) { display: none }` — author styles win
+   over UA styles regardless of specificity — and leave a dismissed sheet in the
+   layout and the accessibility tree. Dialog holds the `open` attribute through
+   the whole exit transition, so keying off `[open]` still covers the closing
+   frames. */
 .sheet[open] {
   display: flex;
   flex-direction: column;
+}
+
+/* …but the exit must not *transition* `display`, and this is the one place in
+   Kernel where that distinction bites.
+
+   Dialog's transitions list `display ... allow-discrete` so a surface stays
+   rendered while it animates out. Dialog itself never sets `display`, so there's
+   nothing to interpolate and the entry is inert. Sheet does set it, above — so on
+   close the property really does change, `flex` to `none`, and `allow-discrete`
+   defers that flip to the end of the transition. For that whole window the sheet
+   has already left the top layer while still being `display: flex`, so it lays
+   out in the document instead of against the viewport: it reappears part-way down
+   the page, scrimless, with its flex column collapsed because the height no
+   longer resolves against a viewport-sized box.
+
+   Dropping `display` from the closing transition makes the flip immediate. The
+   exit still plays in full, because Dialog only removes `[open]` *after* the
+   transition finishes — by which point there is nothing left to watch. */
+.sheet[data-closing][data-side] {
+  transition:
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete;
 }
 
 /* Dialog's content wrapper is Sheet's layout column, holding the scrolling body
