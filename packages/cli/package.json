@@ -38,9 +38,9 @@
     "@kernelui-lib/registry": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10",
+    "@types/node": "^26.2.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.4"
+    "vitest": "^3.2.7"
   },
   "scripts": {
     "build": "tsc",
