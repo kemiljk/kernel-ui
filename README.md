@@ -74,6 +74,16 @@ bun run docs:build     # build docs site
 
 See [`AGENTS.md`](./AGENTS.md) and [`CONTRIBUTING.md`](./CONTRIBUTING.md) for conventions and contribution workflow.
 
+## Releases
+
+Releases are automated with Changesets via [`.github/workflows/release.yml`](.github/workflows/release.yml).
+
+- On every push to `main`, the workflow will either:
+  - open/update a `Version Packages` pull request with version bumps and changelogs, or
+  - publish to npm and create GitHub Releases when a version PR has just been merged.
+- Publishing requires a repository secret named `NPM_TOKEN` with publish access to the `@kernelui-lib/*` packages.
+- Version bumps are driven by `.changeset/*.md` files. Include one with package-impacting PRs so the next release increments versions automatically.
+
 ## Status
 
 53 components are documented and available today across React and Custom Elements. Browse the [component catalog](https://www.kernelui.com/components/).
