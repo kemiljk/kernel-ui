@@ -30,7 +30,7 @@
     "smoke:consumer": "node scripts/smoke-test-consumer.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
+    "@changesets/cli": "^2.31.1",
     "playwright": "^1.62.1"
   }
 }
