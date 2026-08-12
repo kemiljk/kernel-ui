@@ -51,7 +51,7 @@
 }
 
 .kernel-DateRangePicker-navButton:active {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-DateRangePicker-navButton:focus-visible {
@@ -105,7 +105,7 @@
 }
 
 .kernel-DateRangePicker-dayButton:active:not(:disabled) {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 @media (hover: hover) and (pointer: fine) {

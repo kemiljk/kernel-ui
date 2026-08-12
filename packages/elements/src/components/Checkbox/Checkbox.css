@@ -50,7 +50,7 @@
 }
 
 .kernel-Checkbox-input:active:not(:disabled) + .kernel-Checkbox-control {
-  scale: 0.97;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-Checkbox-input:checked + .kernel-Checkbox-control,
@@ -75,18 +75,33 @@
   overflow: visible;
 }
 
+/* Draws on rather than popping/scaling in — the path already carries
+   `pathLength="1"` (see Checkbox.ts), which normalizes its length to
+   the 0-1 range `stroke-dasharray`/`stroke-dashoffset` below read
+   without needing the path's actual pixel length. transitions.dev's
+   "checkbox check" recipe. Enter and exit are asymmetric on purpose:
+   this rule (resting/unchecked) only fades opacity, fast, with no
+   transition on `stroke-dashoffset` — so unchecking snaps the dash
+   back instantly instead of visibly un-drawing the stroke backwards.
+   The checked rule below is the one that supplies the slow, delayed
+   draw; it only plays going forward. */
 .kernel-Checkbox-checkmark {
   opacity: 0;
-  scale: 0.6;
-  transform-origin: center;
-  transition:
-    scale var(--kernel-duration-base) var(--kernel-ease-spring),
-    opacity var(--kernel-duration-fast) linear;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: opacity var(--kernel-duration-fast) linear;
 }
 
 .kernel-Checkbox-input:checked + .kernel-Checkbox-control .kernel-Checkbox-checkmark {
-  scale: 1;
   opacity: 1;
+  stroke-dashoffset: 0;
+  /* Delayed by --kernel-duration-fast so the box's own background-color
+     fill (also --kernel-duration-fast, on .kernel-Checkbox-control
+     above) reads as "the box fills, then the check draws" rather than
+     both firing at once. */
+  transition:
+    stroke-dashoffset var(--kernel-duration-slow) var(--kernel-ease-out) var(--kernel-duration-fast),
+    opacity var(--kernel-duration-fast) linear;
 }
 
 .kernel-Checkbox-dash {
@@ -111,7 +126,8 @@
     transition: none;
   }
 
-  .kernel-Checkbox-checkmark {
+  .kernel-Checkbox-checkmark,
+  .kernel-Checkbox-input:checked + .kernel-Checkbox-control .kernel-Checkbox-checkmark {
     transition: opacity var(--kernel-duration-fast) linear;
   }
 

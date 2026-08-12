@@ -62,6 +62,49 @@ kernel-message-bubble {
   animation: kernel-message-enter var(--kernel-duration-enter) var(--kernel-ease-overlay) both;
 }
 
+/* Staggers an initial batch (a transcript's history mounting all at
+   once) into a cascade instead of one uniform pop. Capped at 8 — see
+   Message.module.css's matching comment for why.
+   `:nth-child` targets the `<kernel-message>` HOST, not
+   `.kernel-Message-item`: each `<li>` is the sole child of its own
+   `display: contents` `<kernel-message>` wrapper (see this file's own
+   opening comment), so `.kernel-Message-item:nth-child(N)` would only
+   ever match N=1 — it has no `<li>` siblings under the same parent.
+   The wrapper elements are the real positioned siblings inside the
+   `<ol>`; `display: contents` doesn't change that for selector
+   matching, only for layout. */
+kernel-message:nth-child(2) .kernel-Message-item[data-animate] {
+  animation-delay: var(--kernel-duration-stagger);
+}
+
+kernel-message:nth-child(3) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 2);
+}
+
+kernel-message:nth-child(4) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 3);
+}
+
+kernel-message:nth-child(5) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 4);
+}
+
+kernel-message:nth-child(6) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 5);
+}
+
+kernel-message:nth-child(7) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 6);
+}
+
+kernel-message:nth-child(8) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 7);
+}
+
+kernel-message:nth-child(n + 9) .kernel-Message-item[data-animate] {
+  animation-delay: calc(var(--kernel-duration-stagger) * 8);
+}
+
 .kernel-Message-item[data-author="user"][data-animate] {
   transform-origin: bottom right;
 }

@@ -89,6 +89,7 @@ export { KernelTooltip } from "./components/Tooltip/Tooltip";
 export { KernelHoverCard } from "./components/HoverCard/HoverCard";
 export {
   KernelDropdownMenu,
+  KernelDropdownMenuMorph,
   KernelMenuItem,
   KernelMenuSeparator,
 } from "./components/DropdownMenu/DropdownMenu";

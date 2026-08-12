@@ -167,6 +167,8 @@ export class KernelCommandPalette extends KernelElement {
   private async finishClose(dialog: HTMLDialogElement) {
     if (!dialog.open || this.closing) return;
     this.closing = true;
+    dialog.removeAttribute("data-open");
+    dialog.setAttribute("data-closing", "");
     dialog.setAttribute("data-state", "closing");
 
     if (!prefersReducedMotion()) {
@@ -182,6 +184,7 @@ export class KernelCommandPalette extends KernelElement {
 
     this.skipCloseEvent = true;
     dialog.close();
+    dialog.removeAttribute("data-closing");
     dialog.removeAttribute("data-state");
     this.closing = false;
   }
@@ -319,6 +322,8 @@ export class KernelCommandPalette extends KernelElement {
           this.inputEl.value = "";
           this.renderOptions();
           dialog.showModal();
+          dialog.setAttribute("data-open", "");
+          dialog.removeAttribute("data-closing");
           dialog.setAttribute("data-state", "open");
           requestAnimationFrame(() => this.inputEl.focus());
         }

@@ -4,6 +4,16 @@ import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import DropdownMenuDemo from "../../components/demos/DropdownMenuDemo";
 import DropdownMenuPlayground from "../../components/demos/DropdownMenuPlayground";
+import DropdownMenuMorphDemo from "../../components/demos/DropdownMenuMorphDemo";
+
+const morphSnippet = `import { DropdownMenuMorph, MenuItem, MenuSeparator } from "@kernelui-lib/react";
+
+<DropdownMenuMorph render={<PlusTrigger />}>
+  <MenuItem onSelect={() => {}}>New file</MenuItem>
+  <MenuItem onSelect={() => {}}>New folder</MenuItem>
+  <MenuSeparator />
+  <MenuItem onSelect={() => {}}>Upload</MenuItem>
+</DropdownMenuMorph>`;
 
 const usageSnippet = `import { Button, DropdownMenu, MenuChevron, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 
@@ -35,7 +45,9 @@ function ActionsMenu() {
       Outside-click and Escape dismissal come free from the popover.
       Arrow-key roving between items is the one part of the WAI-ARIA menu
       pattern that has to be wired up by hand, there's no native menu
-      element yet.
+      element yet. A <a href="#morph-variant">morph variant</a> further
+      down grows the panel out of its own trigger instead of fading in
+      place.
     </p>
 
     <div class="docs-example">
@@ -64,8 +76,46 @@ function ActionsMenu() {
         <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
         <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
         <tr><td><code>MenuChevron</code></td><td>—</td><td>no props — drop into a trigger's <code>iconEnd</code>; rotates via <code>aria-expanded</code></td></tr>
+        <tr><td><code>DropdownMenuMorph</code></td><td><code>render</code></td><td>the trigger (required) — same shape as <code>DropdownMenu</code>'s</td></tr>
+        <tr><td><code>DropdownMenuMorph</code></td><td><code>renderContent</code></td><td>RenderProp — replace the popup</td></tr>
+        <tr><td><code>DropdownMenuMorph</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
+        <tr><td><code>DropdownMenuMorph</code></td><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td></tr>
+        <tr><td><code>DropdownMenuMorph</code></td><td><code>align</code></td><td>"start" | "center" | "end"</td></tr>
+        <tr><td><code>DropdownMenuMorph</code></td><td><code>offset</code></td><td>number (px)</td></tr>
       </tbody>
     </table></div>
+
+    <h2 id="morph-variant">Morph variant</h2>
+    <p>
+      <code>DropdownMenuMorph</code> is the same menu — it shares
+      <code>MenuItem</code>/<code>MenuSeparator</code> directly — with a
+      different opening move: the panel's own box grows out of the
+      trigger's exact footprint (width, height, and corner radius all
+      animate) instead of scaling and fading in place.
+    </p>
+    <p>
+      That one visual difference forces a mechanical one: a popover's
+      hide can't be deferred, so there's no way to let the shrink-back-
+      to-the-trigger animation finish before the panel actually
+      disappears while staying <code>popover="auto"</code>. This variant
+      is <code>popover="manual"</code> instead, with its own outside-
+      click and Escape dismissal wired up by hand — the same tradeoff
+      <code>ContextMenu</code> and <code>Combobox</code> already make for
+      their own manual popovers. Selecting an item still plays the full
+      shrink animation before the menu closes.
+    </p>
+    <p>
+      The trigger's own icon rotation/cross-fade (the <code>+</code> that
+      becomes a <code>×</code> below) is authored in the demo, not baked
+      into the component — same convention as <code>MenuChevron</code>:
+      what renders is always visible at the call site.
+    </p>
+
+    <div class="docs-example">
+      <DropdownMenuMorphDemo client:visible />
+    </div>
+
+    <UsageAccordion code={morphSnippet} lang="tsx" />
 
     <h2>Accessibility</h2>
     <p>

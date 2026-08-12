@@ -124,7 +124,14 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       <code>--kernel-duration-fast/base/slow</code> and{" "}
       <code>--kernel-ease-spring/out/in</code> drive every transition the
       same way: change the curve once, every hover, open, and close
-      animation on the page moves the same way.
+      animation on the page moves the same way.{" "}
+      <code>--kernel-scale-press</code> is press feedback for anything
+      clickable, <code>--kernel-blur-xs/sm/md/backdrop</code> is motion
+      blur for entering/exiting content and glass surfaces, and{" "}
+      <code>--kernel-ease-overshoot</code> is a deliberate exception —
+      the only token that overshoots past 1 — reserved for a one-shot
+      size or shape change like a morphing container, never for
+      reversible overlay motion.
     </p>
   </div>
 </BaseLayout>

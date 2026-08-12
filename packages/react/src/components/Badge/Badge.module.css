@@ -10,6 +10,10 @@
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+  /* Badges commonly carry a count (unread, notifications) that
+     increments in place — equal-width digits keep the badge from
+     jittering width every time a count crosses a digit boundary. */
+  font-variant-numeric: tabular-nums;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out);

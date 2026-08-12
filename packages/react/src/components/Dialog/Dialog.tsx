@@ -99,6 +99,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       opening,
       closing,
     };
+    const dataState = closing ? "closing" : open || internalRef.current?.open ? "open" : undefined;
 
     useEffect(() => {
       const node = internalRef.current;
@@ -218,6 +219,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         data-slot="dialog"
+        data-state={dataState}
         data-open={dataAttr((open || closing) && !opening)}
         data-opening={dataAttr(opening)}
         data-closing={dataAttr(closing)}

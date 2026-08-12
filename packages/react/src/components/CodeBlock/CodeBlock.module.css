@@ -65,10 +65,54 @@
   outline-offset: 1px;
 }
 
-.copyIcon {
+/* Icon and label stacks: both states render at once (see CodeBlock.tsx's
+   comment), each layer in the same CSS grid cell so the stack's own size
+   is the larger of the two — the label stack needs this since "Copied"
+   and "Copy" aren't the same width, and sizing off only the active one
+   would shift the button's own width on every toggle. */
+.copyIconStack {
+  display: grid;
   inline-size: 0.875rem;
   block-size: 0.875rem;
   flex: none;
+}
+
+.copyLabelStack {
+  display: grid;
+}
+
+.copyIconLayer,
+.copyLabelLayer {
+  grid-area: 1 / 1;
+}
+
+.copyIconLayer {
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  filter: blur(var(--kernel-blur-sm));
+  transition:
+    opacity var(--kernel-duration-fast) linear,
+    scale var(--kernel-duration-base) var(--kernel-ease-out),
+    filter var(--kernel-duration-fast) linear;
+}
+
+.copyLabelLayer {
+  opacity: 0;
+  filter: blur(var(--kernel-blur-sm));
+  transition:
+    opacity var(--kernel-duration-fast) linear,
+    filter var(--kernel-duration-fast) linear;
+}
+
+/* dataAttr() omits the attribute entirely rather than writing
+   data-copied="false" — :not([data-copied]) is the "copy" state. */
+.copy:not([data-copied]) .copyIconLayer[data-kind="copy"],
+.copy[data-copied] .copyIconLayer[data-kind="copied"],
+.copy:not([data-copied]) .copyLabelLayer[data-kind="copy"],
+.copy[data-copied] .copyLabelLayer[data-kind="copied"] {
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
 }
 
 .viewport {
@@ -155,5 +199,10 @@
   .copy,
   .line {
     transition: none;
+  }
+
+  .copyIconLayer,
+  .copyLabelLayer {
+    transition: opacity var(--kernel-duration-fast) linear;
   }
 }

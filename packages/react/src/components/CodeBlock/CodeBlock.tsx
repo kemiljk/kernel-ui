@@ -113,9 +113,51 @@ export function CodeBlock({
         <figcaption className={styles.header}>
           {heading ? <span className={styles.heading}>{heading}</span> : null}
           {copyable ? (
-            <button type="button" className={styles.copy} onClick={copy}>
-              <svg className={styles.copyIcon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                {copied ? (
+            <button
+              type="button"
+              className={styles.copy}
+              onClick={copy}
+              data-copied={dataAttr(copied)}
+              aria-label={copied ? "Copied" : "Copy"}
+            >
+              {/* Both icon and label render both states at once, stacked,
+                  and cross-fade on data-copied — same convention as
+                  TodoList's status marks, so a copy reads as the icon
+                  morphing rather than one being swapped for another, and
+                  the transition is one attribute change with no JS.
+                  aria-hidden on every layer: the button's own aria-label
+                  above is the single source of truth for the accessible
+                  name, so a screen reader doesn't announce two
+                  simultaneously-present strings. */}
+              <span className={styles.copyIconStack} aria-hidden="true">
+                <svg
+                  className={styles.copyIconLayer}
+                  data-kind="copy"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <rect
+                    x="5.75"
+                    y="5.75"
+                    width="7.5"
+                    height="7.5"
+                    rx="1.75"
+                    stroke="currentColor"
+                    strokeWidth="1.25"
+                  />
+                  <path
+                    d="M10.25 5.5v-1a1.75 1.75 0 0 0-1.75-1.75h-4A1.75 1.75 0 0 0 2.75 4.5v4c0 .97.78 1.75 1.75 1.75h1"
+                    stroke="currentColor"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <svg
+                  className={styles.copyIconLayer}
+                  data-kind="copied"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
                   <path
                     d="M3.5 8.5 6.5 11.5 12.5 5"
                     stroke="currentColor"
@@ -123,27 +165,16 @@ export function CodeBlock({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                ) : (
-                  <>
-                    <rect
-                      x="5.75"
-                      y="5.75"
-                      width="7.5"
-                      height="7.5"
-                      rx="1.75"
-                      stroke="currentColor"
-                      strokeWidth="1.25"
-                    />
-                    <path
-                      d="M10.25 5.5v-1a1.75 1.75 0 0 0-1.75-1.75h-4A1.75 1.75 0 0 0 2.75 4.5v4c0 .97.78 1.75 1.75 1.75h1"
-                      stroke="currentColor"
-                      strokeWidth="1.25"
-                      strokeLinecap="round"
-                    />
-                  </>
-                )}
-              </svg>
-              {copied ? "Copied" : "Copy"}
+                </svg>
+              </span>
+              <span className={styles.copyLabelStack} aria-hidden="true">
+                <span className={styles.copyLabelLayer} data-kind="copy">
+                  Copy
+                </span>
+                <span className={styles.copyLabelLayer} data-kind="copied">
+                  Copied
+                </span>
+              </span>
             </button>
           ) : null}
         </figcaption>

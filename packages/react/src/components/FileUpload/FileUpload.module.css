@@ -85,7 +85,7 @@
     var(--kernel-drop-origin-x)
     var(--kernel-drop-origin-y);
   scale: var(--kernel-drop-reveal-scale);
-  filter: blur(6px);
+  filter: blur(var(--kernel-blur-md));
   transition:
     --kernel-drop-reveal-scale var(--kernel-duration-slow) var(--kernel-ease-spring),
     filter var(--kernel-duration-base) var(--kernel-ease-out);
@@ -147,7 +147,7 @@
   justify-content: center;
   opacity: 0;
   scale: var(--kernel-scale-exit);
-  filter: blur(2px);
+  filter: blur(var(--kernel-blur-sm));
   pointer-events: none;
 }
 
@@ -184,6 +184,29 @@
 
 .root[data-invalid] .dropzone {
   border-color: var(--kernel-color-danger);
+  animation: kernel-fileupload-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+/* transitions.dev's "error state shake" — see TextField.module.css's
+   longer comment on the same recipe for why this is one-shot without
+   an explicit iteration-count/fill-mode. */
+@keyframes kernel-fileupload-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
 }
 
 .error {
@@ -294,7 +317,7 @@
   transform-origin: var(--kernel-drop-origin-x, 50%) var(--kernel-drop-origin-y, 50%);
   opacity: 0;
   scale: var(--kernel-scale-enter);
-  filter: blur(2px);
+  filter: blur(var(--kernel-blur-sm));
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
     scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
@@ -331,6 +354,9 @@
   /* Concentric with the sheet frame: md = sheet − padding-sheet. */
   border-radius: var(--kernel-radius-md);
   background-color: var(--kernel-color-surface-raised);
+  /* A photo thumbnail sitting on the dropzone's own surface needs its
+     own defined edge, same hairline as Avatar. */
+  box-shadow: var(--kernel-shadow-edge);
   opacity: 0;
   transition: opacity var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
@@ -343,7 +369,7 @@
   .dropzone[data-has-preview] .preview {
     opacity: 0;
     scale: var(--kernel-scale-enter);
-    filter: blur(2px);
+    filter: blur(var(--kernel-blur-sm));
   }
 
   .dropzone[data-has-preview] .previewImage,
@@ -443,5 +469,9 @@
   .preview {
     filter: none;
     scale: 1;
+  }
+
+  .root[data-invalid] .dropzone {
+    animation: none;
   }
 }

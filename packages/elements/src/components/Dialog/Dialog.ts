@@ -133,6 +133,7 @@ export class KernelDialog extends KernelElement {
     this.closing = true;
     dialog.removeAttribute("data-opening");
     dialog.removeAttribute("data-open");
+    dialog.setAttribute("data-state", "closing");
     dialog.setAttribute("data-closing", "");
 
     if (!prefersReducedMotion()) {
@@ -148,6 +149,7 @@ export class KernelDialog extends KernelElement {
 
     this.skipCloseEvent = true;
     dialog.close();
+    dialog.removeAttribute("data-state");
     dialog.removeAttribute("data-closing");
     this.closing = false;
     this.dispatchEvent(new Event("close", { bubbles: true }));
@@ -163,8 +165,10 @@ export class KernelDialog extends KernelElement {
           this.exitAbort?.abort();
           this.closing = false;
           dialog.removeAttribute("data-closing");
+          dialog.removeAttribute("data-state");
           dialog.setAttribute("data-opening", "");
           dialog.showModal();
+          dialog.setAttribute("data-state", "open");
           dialog.setAttribute("data-open", "");
           requestAnimationFrame(() => dialog.removeAttribute("data-opening"));
         }

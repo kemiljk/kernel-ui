@@ -49,7 +49,7 @@
 }
 
 .navButton:active {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 .navButton:focus-visible {
@@ -106,7 +106,7 @@
 }
 
 .dayButton:active:not(:disabled) {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 .dayButton:focus-visible {

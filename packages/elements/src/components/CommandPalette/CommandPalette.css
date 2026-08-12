@@ -23,12 +23,11 @@
   flex-direction: column;
   gap: var(--kernel-space-2);
   border: none;
-  border-radius: var(--kernel-radius-sheet);
-  /* Paired with the radius above rather than the flat space-4 this used
-     to hand-pick: -sheet is derived from --kernel-padding-sheet, so at a
-     large --kernel-radius-base the old value left the input crammed
-     into the corner. */
-  padding: var(--kernel-padding-sheet-curve);
+  border-radius: var(--kernel-radius-container);
+  /* Command Palette reads as a compact action surface, not a full dialog
+    sheet, so it uses the container tier's radius/padding pair to keep
+    Round mode from over-inflating edge padding. */
+  padding: var(--kernel-padding-container-curve);
   background-color: var(--kernel-color-surface-raised);
   color: var(--kernel-color-text);
   box-shadow: var(--kernel-shadow-lg);
@@ -48,9 +47,8 @@
 }
 
 /* Never scale(0) — nothing in the real world appears from nothing.
-   Opacity stays 1 through both states deliberately: fading the panel
-   itself mid-close lets page content bleed through it, only the
-   backdrop below fades. Enter still fades in via `@starting-style`. */
+  Exit also fades so dismiss reads as one coherent motion, not a
+  two-phase shrink then hard cut. */
 .kernel-CommandPalette-content[data-state="open"] {
   opacity: 1;
   scale: 1;
@@ -58,21 +56,17 @@
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
     scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    translate var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
 
 .kernel-CommandPalette-content[data-state="closing"] {
-  opacity: 1;
+  opacity: 0;
   scale: var(--kernel-scale-enter);
   translate: 0 0.5rem;
   transition:
     opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
 @starting-style {
@@ -102,17 +96,13 @@
 .kernel-CommandPalette-content[data-state="open"]::backdrop {
   opacity: 1;
   transition:
-    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
 
 .kernel-CommandPalette-content[data-state="closing"]::backdrop {
   opacity: 0;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
 @starting-style {
@@ -148,6 +138,10 @@
   padding: var(--kernel-space-1);
 }
 
+.kernel-CommandPalette-listbox > [role="group"] + [role="group"] {
+  margin-block-start: var(--kernel-space-3);
+}
+
 .kernel-CommandPalette-option {
   display: flex;
   flex-direction: column;
@@ -165,6 +159,16 @@
 
 .kernel-CommandPalette-option[data-active] {
   background-color: var(--kernel-color-accent-subtle);
+}
+
+.kernel-CommandPalette-groupLabel {
+  padding-block: var(--kernel-space-2) 0;
+  padding-inline: var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .kernel-CommandPalette-optionLabel {

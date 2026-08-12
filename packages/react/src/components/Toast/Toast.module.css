@@ -97,14 +97,14 @@
   --y: -20px;
   scale: 0.92;
   opacity: 0.55;
-  filter: blur(0.5px);
+  filter: blur(var(--kernel-blur-xs));
 }
 
 .toast[data-depth="3"] {
   --y: -30px;
   scale: 0.92;
   opacity: 0;
-  filter: blur(0.5px);
+  filter: blur(var(--kernel-blur-xs));
   pointer-events: none;
 }
 
@@ -189,6 +189,34 @@
   border-radius: var(--kernel-radius-full);
   font-size: 0.6875rem;
   font-weight: 700;
+  /* transitions.dev's "success check" idiom (blur + a settle), adapted
+     for a filled glyph badge rather than a stroked SVG path — Toast's
+     status glyphs are plain characters shared with Callout's icon
+     language, not hand-drawn paths, so there's no stroke to draw on.
+     One-shot and unclipped (`.toast` has no `overflow: hidden`), so
+     --kernel-ease-overshoot is in scope here the way it isn't for the
+     toast's own reversible slide-in above. `@starting-style` (not a
+     toggled class/attribute) because every toast that appears is a
+     freshly-mounted element, not an existing one flipping state —
+     the same reasoning as a newly-opened popover, just without a
+     popover. Delayed slightly past the toast's own entrance so the
+     badge reads as settling into an already-arrived toast, not
+     arriving in the same beat. */
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--kernel-duration-fast) linear var(--kernel-duration-exit-fast),
+    scale var(--kernel-duration-base) var(--kernel-ease-overshoot) var(--kernel-duration-exit-fast),
+    filter var(--kernel-duration-fast) linear var(--kernel-duration-exit-fast);
+}
+
+@starting-style {
+  .icon {
+    opacity: 0;
+    scale: var(--kernel-scale-enter);
+    filter: blur(var(--kernel-blur-sm));
+  }
 }
 
 .toast[data-variant="success"] .icon {
@@ -307,6 +335,10 @@
     /* Position, scale, and depth still resolve correctly (CSS recomputes
        `--y` from the same custom properties) — reduced motion only drops
        the animated glide between the collapsed and expanded values. */
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .icon {
     transition: opacity var(--kernel-duration-fast) linear;
   }
 }

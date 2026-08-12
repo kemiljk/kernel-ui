@@ -33,6 +33,9 @@ kernel-pagination-ellipsis {
   color: var(--kernel-color-text);
   text-decoration: none;
   font: inherit;
+  /* Page numbers are digits, so equal-width figures keep every item
+     the same size instead of "1" reading narrower than "10". */
+  font-variant-numeric: tabular-nums;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   user-select: none;

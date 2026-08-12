@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-11T13:01:12.586Z",
+  "generatedAt": "2026-08-12T11:50:11.708Z",
   "components": [
     {
       "name": "Accordion",
@@ -452,11 +452,13 @@
       "status": "available",
       "reactExports": [
         "DropdownMenu",
+        "DropdownMenuMorph",
         "MenuItem",
         "MenuSeparator"
       ],
       "elementTag": "kernel-dropdown-menu",
       "elementSubTags": [
+        "kernel-dropdown-menu-morph",
         "kernel-menu-item",
         "kernel-menu-separator"
       ],

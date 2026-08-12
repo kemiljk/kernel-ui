@@ -67,10 +67,46 @@
 /* Native, live validation styling: no blur-tracking JS required. */
 .input:user-invalid {
   border-color: var(--kernel-color-danger);
+  animation: kernel-textfield-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
 }
 
 .root[data-invalid] .input {
   border-color: var(--kernel-color-danger);
+  animation: kernel-textfield-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+/* transitions.dev's "error state shake". One-shot by construction, not
+   by an explicit iteration-count/fill-mode: the animation only starts
+   the instant one of the selectors above begins matching (invalid
+   becoming true), and staying invalid across a re-render doesn't
+   remove-then-reapply the attribute, so it never replays while the
+   field stays invalid — only when it becomes invalid again after
+   returning to valid. --kernel-ease-in-out because this moves the
+   input between visible positions, not entering/exiting one. */
+@keyframes kernel-textfield-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input:user-invalid,
+  .root[data-invalid] .input {
+    animation: none;
+  }
 }
 
 .input:disabled {

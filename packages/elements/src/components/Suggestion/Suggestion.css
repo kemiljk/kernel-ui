@@ -56,7 +56,7 @@
 }
 
 .kernel-Suggestion-button:active:not(:disabled) {
-  scale: 0.98;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-Suggestion-button:focus-visible {

@@ -40,9 +40,7 @@
      fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit-fast) allow-discrete,
-    display var(--kernel-duration-exit-fast) allow-discrete;
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
 .content:popover-open {
@@ -51,9 +49,7 @@
   scale: 1;
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay);
 }
 
 /* Same specificity as the `:popover-open` rule above and ordered after
@@ -64,9 +60,7 @@
   scale: var(--kernel-scale-exit);
   pointer-events: none;
   transition:
-    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit-fast) allow-discrete,
-    display var(--kernel-duration-exit-fast) allow-discrete;
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
 @starting-style {

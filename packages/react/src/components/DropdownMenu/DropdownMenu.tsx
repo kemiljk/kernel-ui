@@ -26,6 +26,7 @@ import {
   type FloatingAlign,
   type FloatingPlacement,
 } from "../../utils/useFloatingPosition";
+import { useMenuMorph } from "../../utils/useMenuMorph";
 import styles from "./DropdownMenu.module.css";
 
 interface MenuContextValue {
@@ -35,6 +36,39 @@ interface MenuContextValue {
 /** Exported so other menu-shaped triggers (ContextMenu) can share
  * MenuItem/MenuSeparator without duplicating them. */
 export const MenuContext = createContext<MenuContextValue | null>(null);
+
+/** Arrow-key/Home/End roving between a menu's items — shared between
+ * `DropdownMenu` and `DropdownMenuMorph` since both use the same
+ * `role="menu"` of `role="menuitem"` shape and differ only in how the
+ * panel itself opens and closes. */
+function roveMenuItems(menu: HTMLElement | null, event: KeyboardEvent<HTMLElement>) {
+  const items = Array.from(
+    menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])') ?? [],
+  );
+  if (items.length === 0) return;
+  const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+  let nextIndex: number | null = null;
+
+  switch (event.key) {
+    case "ArrowDown":
+      nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
+      break;
+    case "ArrowUp":
+      nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
+      break;
+    case "Home":
+      nextIndex = 0;
+      break;
+    case "End":
+      nextIndex = items.length - 1;
+      break;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  items[nextIndex]?.focus();
+}
 
 export interface DropdownMenuState {
   open: boolean;
@@ -108,32 +142,7 @@ export function DropdownMenu({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const items = Array.from(
-      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])') ?? [],
-    );
-    if (items.length === 0) return;
-    const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-    let nextIndex: number | null = null;
-
-    switch (event.key) {
-      case "ArrowDown":
-        nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
-        break;
-      case "ArrowUp":
-        nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
-        break;
-      case "Home":
-        nextIndex = 0;
-        break;
-      case "End":
-        nextIndex = items.length - 1;
-        break;
-      default:
-        return;
-    }
-
-    event.preventDefault();
-    items[nextIndex]?.focus();
+    roveMenuItems(menuRef.current, event);
   }
 
   const trigger = renderElement(
@@ -303,5 +312,181 @@ export function MenuChevron() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+export interface DropdownMenuMorphProps {
+  render: RenderProp<{ open: boolean }>;
+  children: ReactNode;
+  placement?: FloatingPlacement;
+  align?: FloatingAlign;
+  /** Gap between the trigger and the menu, in pixels. */
+  offset?: number;
+  /** Classes for the menu popup. */
+  className?: ClassNameValue<DropdownMenuState>;
+  /** Replace the popup element (e.g. wrap with Motion). */
+  renderContent?: RenderProp<DropdownMenuState>;
+}
+
+/**
+ * `DropdownMenu`'s trigger-morphs-into-menu variant — transitions.dev's
+ * "plus menu morph" recipe: the panel's own container animates
+ * width/height/border-radius out from the trigger's exact footprint
+ * (see `useMenuMorph`'s FLIP technique) instead of scaling/fading in
+ * place the way `DropdownMenu` does.
+ *
+ * That one difference forces a second one: `DropdownMenu` is
+ * `popover="auto"` and lets the platform's own light-dismiss close it,
+ * which is why it never calls `showPopover()`/`hidePopover()` itself —
+ * but a popover's hide is deliberately not cancelable, so there's no
+ * way to defer it long enough for the shrink-back-to-the-trigger
+ * animation to play first. This is `popover="manual"` instead, with its
+ * own outside-click/Escape dismissal wired up by hand — the same
+ * tradeoff `ContextMenu` and `Combobox` already make for their own
+ * manual popovers, and the reason this is a separate export rather than
+ * a prop on `DropdownMenu` itself: the two don't just look different,
+ * they're built on a different popover mode.
+ *
+ * Shares `MenuItem`/`MenuSeparator`/`MenuContext` with `DropdownMenu` —
+ * only the trigger/panel open-close mechanism differs, same as
+ * `ContextMenu`'s own relationship to those exports.
+ */
+export function DropdownMenuMorph({
+  render,
+  children,
+  placement = "bottom",
+  align = "center",
+  offset = 8,
+  className,
+  renderContent,
+}: DropdownMenuMorphProps) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { anchorRef, floatingRef } = useFloatingPosition<HTMLElement, HTMLDivElement>({
+    open,
+    placement,
+    align,
+    offset,
+  });
+  const { playMorphOpen, playMorphClose, cancelMorph } = useMenuMorph(anchorRef, menuRef);
+
+  const state: DropdownMenuState = { open, placement, align };
+
+  function openMenu() {
+    cancelMorph();
+    setClosing(false);
+    setOpen(true);
+    const menu = menuRef.current;
+    // Written directly rather than left to React's own re-render:
+    // playMorphOpen below needs `[data-open]`'s transition rule already
+    // active the instant it shows the popover, and React wouldn't
+    // commit this attribute until after this synchronous handler
+    // returns — the same reason useFloatingPosition writes
+    // --kernel-transform-origin straight to the DOM instead of through
+    // state. Removing data-closing matters too, not just tidiness: a
+    // reopen that lands mid-close would otherwise leave both attributes
+    // set at once, and [data-closing]'s rule — declared later in the
+    // stylesheet — would win the tie on equal specificity, keeping the
+    // calmer close timing active for what should be the bouncier open.
+    menu?.removeAttribute("data-closing");
+    menu?.setAttribute("data-open", "");
+    playMorphOpen(() => {
+      // A reopen landing mid-close cancels that close's wait (above)
+      // before it ever calls hidePopover(), so the popover can still be
+      // showing here — showPopover() throws on an already-shown one.
+      try {
+        menu?.showPopover();
+      } catch {
+        /* already showing */
+      }
+    });
+    requestAnimationFrame(() => {
+      menuRef.current
+        ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
+        ?.focus();
+    });
+  }
+
+  /** `open` flips immediately so the dismissal listeners below tear down
+   * at once; the morph-close animation plays independently and hides
+   * the popover itself once it finishes (see `useMenuMorph`). `data-*`
+   * is written straight to the DOM, same reasoning as `openMenu`'s own
+   * direct write: `playMorphClose` sets its footprint override
+   * synchronously, right below, and needs `[data-closing]`'s calmer
+   * transition already active at that moment — if `[data-open]` (set
+   * by a still-uncommitted React render) were still the only attribute
+   * present, the shrink would play on the bouncier open timing instead. */
+  function close() {
+    if (!open) return;
+    setOpen(false);
+    setClosing(true);
+    const menu = menuRef.current;
+    menu?.removeAttribute("data-open");
+    menu?.setAttribute("data-closing", "");
+    void playMorphClose().then(() => setClosing(false));
+  }
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !anchorRef.current?.contains(target)) close();
+    }
+    function handleEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") close();
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  function handleMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    roveMenuItems(menuRef.current, event);
+  }
+
+  const trigger = renderElement(
+    render,
+    "button",
+    {
+      ref: anchorRef,
+      "aria-haspopup": "menu",
+      "aria-expanded": open,
+      onClick: () => (open ? close() : openMenu()),
+    },
+    { open },
+  );
+
+  const popupProps: Record<string, unknown> = {
+    ref: mergeRefs(menuRef, floatingRef),
+    id,
+    role: "menu",
+    popover: "manual",
+    onKeyDown: handleMenuKeyDown,
+    "data-slot": "dropdown-menu-morph-content",
+    "data-placement": placement,
+    "data-align": align,
+    "data-open": dataAttr(open),
+    "data-closing": dataAttr(closing),
+    className: [styles.morphContent, resolveClassName(className, state)]
+      .filter(Boolean)
+      .join(" "),
+    children,
+  };
+
+  const popup = renderElement(renderContent, "div", popupProps, state);
+
+  return (
+    <MenuContext.Provider value={{ close }}>
+      {trigger}
+      {popup}
+    </MenuContext.Provider>
   );
 }

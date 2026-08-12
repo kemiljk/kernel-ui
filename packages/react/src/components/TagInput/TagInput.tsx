@@ -2,6 +2,7 @@ import { forwardRef, useId, useRef, useState } from "react";
 import type { ClipboardEvent, InputHTMLAttributes, KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { Badge } from "../Badge/Badge";
 import styles from "./TagInput.module.css";
 
@@ -104,6 +105,41 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Dissolve-then-remove, not instant: a tag stays in the DOM through its
+  // own exit transition, so removing it reads as the chip fading away
+  // rather than the row snapping shorter. Keyed by the tag's own string
+  // value, same identity `key={tag}` below already uses — index would
+  // drift if a second removal starts (and finishes) before the first
+  // one's deferred setTags runs, silently removing the wrong tag once
+  // the array had already shortened underneath it.
+  const [removingTags, setRemovingTags] = useState<Set<string>>(new Set());
+  const tagsRef = useRef(tags);
+  tagsRef.current = tags;
+  const tagNodesRef = useRef(new Map<string, HTMLElement>());
+
+  function removeTag(tag: string) {
+    inputRef.current?.focus();
+    const node = tagNodesRef.current.get(tag);
+    if (!node || prefersReducedMotion()) {
+      setTags(tagsRef.current.filter((t) => t !== tag));
+      return;
+    }
+    setRemovingTags((prev) => {
+      const next = new Set(prev);
+      next.add(tag);
+      return next;
+    });
+    void waitForExitTransition(node).then(() => {
+      setTags(tagsRef.current.filter((t) => t !== tag));
+      setRemovingTags((prev) => {
+        if (!prev.has(tag)) return prev;
+        const next = new Set(prev);
+        next.delete(tag);
+        return next;
+      });
+    });
+  }
+
   const delimiterPattern = delimiters.map(escapeRegExp).join("|");
   const delimiterRegex = new RegExp(delimiterPattern);
   const splitRegex = new RegExp(`${delimiterPattern}|\\r?\\n`);
@@ -156,11 +192,6 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     if (next !== tags) setTags(next);
   }
 
-  function removeTag(index: number) {
-    setTags(tags.filter((_, i) => i !== index));
-    inputRef.current?.focus();
-  }
-
   function handleChange(next: string) {
     if (delimiterRegex.test(next)) {
       const parts = next.split(delimiterRegex);
@@ -177,7 +208,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       event.preventDefault();
       commitDraft(draft);
     } else if (event.key === "Backspace" && draft === "" && tags.length > 0) {
-      removeTag(tags.length - 1);
+      removeTag(tags[tags.length - 1]!);
     }
   }
 
@@ -222,8 +253,18 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
         aria-labelledby={labelId}
         onClick={() => inputRef.current?.focus()}
       >
-        {tags.map((tag, index) => (
-          <Badge key={tag} role="listitem" variant="neutral" className={styles.tag}>
+        {tags.map((tag) => (
+          <Badge
+            key={tag}
+            ref={(node) => {
+              if (node) tagNodesRef.current.set(tag, node);
+              else tagNodesRef.current.delete(tag);
+            }}
+            role="listitem"
+            variant="neutral"
+            className={styles.tag}
+            data-removing={dataAttr(removingTags.has(tag))}
+          >
             <span>{tag}</span>
             <button
               type="button"
@@ -232,7 +273,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
               aria-label={`Remove ${tag}`}
               onClick={(event) => {
                 event.stopPropagation();
-                removeTag(index);
+                removeTag(tag);
               }}
             >
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12">

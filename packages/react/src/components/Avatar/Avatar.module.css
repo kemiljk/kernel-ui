@@ -8,6 +8,14 @@
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-gray-4);
   flex-shrink: 0;
+  /* A photo dropped straight onto any background needs a defined edge —
+     the same hairline the elevation system already uses for cards
+     (`--kernel-shadow-edge`), not a new one-off outline color. A
+     `box-shadow` rather than `outline` because it composites with any
+     future `box-shadow` this component gains, and isn't clipped by
+     this element's own `overflow: hidden` (that governs the image
+     inside, not the box's own shadow). */
+  box-shadow: var(--kernel-shadow-edge);
 }
 
 .image {

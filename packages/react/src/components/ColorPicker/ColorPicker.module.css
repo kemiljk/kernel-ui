@@ -96,6 +96,34 @@
 
 .hexInput[aria-invalid="true"] {
   border-color: var(--kernel-color-danger);
+  animation: kernel-colorpicker-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+/* transitions.dev's "error state shake" — see TextField.module.css's
+   longer comment on the same recipe for why this is one-shot without
+   an explicit iteration-count/fill-mode. Two independent triggers
+   here, deliberately: `aria-invalid` on .hexInput is live, local hex-
+   parsing validity while typing, while `data-invalid` on .root (below)
+   is the external `invalid` prop — so a bad hex shakes just the text
+   field, while a parent form's validation failure shakes the swatch,
+   the part that represents the whole field. */
+@keyframes kernel-colorpicker-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
 }
 
 .hexInput:disabled {
@@ -122,6 +150,14 @@
 
 .root[data-invalid] .swatch {
   border-color: var(--kernel-color-danger);
+  animation: kernel-colorpicker-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hexInput[aria-invalid="true"],
+  .root[data-invalid] .swatch {
+    animation: none;
+  }
 }
 
 .description {

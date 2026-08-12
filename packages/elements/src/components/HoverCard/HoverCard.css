@@ -27,9 +27,7 @@ kernel-hover-card {
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
 .kernel-HoverCard-content:popover-open {
@@ -37,9 +35,7 @@ kernel-hover-card {
   scale: 1;
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    scale var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
 
 /* Same specificity as the `:popover-open` rule above and deliberately
@@ -52,9 +48,7 @@ kernel-hover-card {
   opacity: 1;
   scale: var(--kernel-scale-exit);
   transition:
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
 @starting-style {

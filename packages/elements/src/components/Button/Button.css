@@ -20,7 +20,7 @@
 }
 
 .kernel-Button-root:active:not(:disabled, [aria-disabled="true"]) {
-  scale: 0.97;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-Button-root:focus-visible {

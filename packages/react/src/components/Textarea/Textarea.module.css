@@ -49,10 +49,41 @@
 
 .input:user-invalid {
   border-color: var(--kernel-color-danger);
+  animation: kernel-textarea-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
 }
 
 .root[data-invalid] .input {
   border-color: var(--kernel-color-danger);
+  animation: kernel-textarea-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+/* transitions.dev's "error state shake" — see TextField.module.css's
+   longer comment on the same recipe for why this is one-shot without
+   an explicit iteration-count/fill-mode. */
+@keyframes kernel-textarea-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input:user-invalid,
+  .root[data-invalid] .input {
+    animation: none;
+  }
 }
 
 .input:disabled {

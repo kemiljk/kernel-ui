@@ -44,6 +44,29 @@
 
 .root[data-invalid] .field {
   border-color: var(--kernel-color-danger);
+  animation: kernel-taginput-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+/* transitions.dev's "error state shake" — see TextField.module.css's
+   longer comment on the same recipe for why this is one-shot without
+   an explicit iteration-count/fill-mode. */
+@keyframes kernel-taginput-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
 }
 
 .root[data-disabled] .field {
@@ -54,6 +77,25 @@
 
 .tag {
   padding-inline-end: var(--kernel-space-1);
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--kernel-duration-exit-fast) linear,
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    filter var(--kernel-duration-exit-fast) linear;
+}
+
+/* transitions.dev's "input clear dissolve", one tag at a time: the
+   remove button's click handler keeps the tag mounted through this
+   transition (see TagInput.tsx's removeTag) instead of filtering it
+   out of state immediately, so removal reads as the chip dissolving
+   rather than the row snapping one chip shorter. */
+.tag[data-removing] {
+  opacity: 0;
+  scale: var(--kernel-scale-exit);
+  filter: blur(var(--kernel-blur-sm));
+  pointer-events: none;
 }
 
 .tagRemove {
@@ -79,7 +121,7 @@
 }
 
 .tagRemove:active {
-  scale: 0.9;
+  scale: var(--kernel-scale-press);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -97,6 +139,14 @@
   color: var(--kernel-color-text);
   font: inherit;
   padding-block: 0.15em;
+}
+
+/* .field:has(.input:focus-visible) above already rings the whole pill —
+   without this, the browser's own default outline draws a second,
+   rectangular ring tight around just the input, nested inside the
+   first. Same fix as Composer.module.css's .input:focus-visible. */
+.input:focus-visible {
+  outline: none;
 }
 
 .input:disabled {
@@ -124,5 +174,9 @@
 
   .tagRemove:active {
     scale: 1;
+  }
+
+  .root[data-invalid] .field {
+    animation: none;
   }
 }

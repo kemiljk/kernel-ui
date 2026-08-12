@@ -117,14 +117,6 @@ export function CommandPalette({
 
     void (async () => {
       if (!prefersReducedMotion()) {
-        // `setClosing(true)` above hasn't committed to the DOM yet — this
-        // is still the same synchronous tick. Reading the exit
-        // transition's duration right now would see the pre-close
-        // (`data-state="open"`) styles and wait on the *enter* duration
-        // instead. A double rAF guarantees `data-state="closing"` has
-        // actually painted before waitForExitTransition inspects it.
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        if (cancelled || controller.signal.aborted) return;
         await waitForExitTransition(node, { signal: controller.signal });
       }
       if (cancelled || controller.signal.aborted) return;
@@ -221,13 +213,16 @@ export function CommandPalette({
   }
 
   const activeEntry = filtered.entries[activeIndex];
+  const dataState = closing ? "closing" : open || dialogRef.current?.open ? "open" : undefined;
 
   return (
     <dialog
       ref={dialogRef}
       className={styles.content}
       aria-label="Command palette"
-      data-state={open ? "open" : closing ? "closing" : undefined}
+      data-state={dataState}
+      data-open={dataAttr(open && !closing)}
+      data-closing={dataAttr(closing)}
       data-blur={dataAttr(blur)}
       onClick={(event) => {
         if (event.target === dialogRef.current) requestClose();

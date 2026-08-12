@@ -13,5 +13,5 @@
   inset-block-start: 0;
   z-index: var(--kernel-z-overlay);
   background-color: color-mix(in oklch, var(--kernel-color-surface) 85%, transparent);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--kernel-blur-backdrop));
 }

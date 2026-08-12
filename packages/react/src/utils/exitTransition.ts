@@ -44,31 +44,56 @@ export function waitForExitTransition(
   const { signal } = options;
   if (prefersReducedMotion() || signal?.aborted) return Promise.resolve();
 
-  const seconds = maxTransitionSeconds(node);
-  if (seconds <= 0) return Promise.resolve();
-
-  const timeoutMs = options.timeoutMs ?? Math.ceil(seconds * 1000) + 50;
-
   return new Promise((resolve) => {
     let settled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let expectedEndMs = 0;
+    let startedAt = 0;
+
     const finish = () => {
       if (settled) return;
       settled = true;
       node.removeEventListener("transitionend", onEnd);
       node.removeEventListener("animationend", onEnd);
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       signal?.removeEventListener("abort", finish);
       resolve();
     };
 
     const onEnd = (event: Event) => {
       if (event.target !== node) return;
+      // Some transitioning properties (notably discrete ones) can emit an
+      // earlier transitionend than the visual exit's real end. Ignore end
+      // events until we're near the computed max-duration boundary.
+      if (expectedEndMs > 0 && performance.now() - startedAt < expectedEndMs - 20) return;
       finish();
     };
 
-    const timer = setTimeout(finish, timeoutMs);
-    node.addEventListener("transitionend", onEnd);
-    node.addEventListener("animationend", onEnd);
     signal?.addEventListener("abort", finish);
+
+    // Closing attributes/classes are commonly set in this same tick.
+    // Wait two frames so computed styles reflect the *exit* state before
+    // deriving timeout duration.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (settled || signal?.aborted) {
+          finish();
+          return;
+        }
+
+        const seconds = maxTransitionSeconds(node);
+        if (seconds <= 0) {
+          finish();
+          return;
+        }
+
+        startedAt = performance.now();
+        expectedEndMs = seconds * 1000;
+        const timeoutMs = options.timeoutMs ?? Math.ceil(seconds * 1000) + 50;
+        timer = setTimeout(finish, timeoutMs);
+        node.addEventListener("transitionend", onEnd);
+        node.addEventListener("animationend", onEnd);
+      });
+    });
   });
 }

@@ -168,26 +168,64 @@ export class KernelCodeBlock extends KernelElement {
     }
   }
 
+  /**
+   * Builds both icon and label states once, stacked, and leaves them in
+   * the DOM permanently — `copy()` below only ever toggles `data-copied`
+   * and the button's own `aria-label` after this. Same convention as
+   * `<kernel-todo-item>`'s status marks: a copy reads as the icon
+   * morphing rather than one being swapped for another, driven by CSS on
+   * one attribute instead of replacing children on every toggle.
+   * aria-hidden on every layer: the button's own aria-label is the single
+   * source of truth for the accessible name, so a screen reader doesn't
+   * announce two simultaneously-present strings.
+   */
   private renderCopyButton(button: HTMLButtonElement) {
     button.replaceChildren();
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 16 16");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("aria-hidden", "true");
-    svg.setAttribute("class", kernelClass("CodeBlock", "copyIcon"));
-    const shapes = this.copied
-      ? [{ tag: "path" as const, attrs: { d: COPIED_PATH } }]
-      : COPY_PATHS;
-    for (const shape of shapes) {
-      const el = document.createElementNS("http://www.w3.org/2000/svg", shape.tag);
-      for (const [key, value] of Object.entries(shape.attrs)) el.setAttribute(key, value);
-      el.setAttribute("stroke", "currentColor");
-      el.setAttribute("stroke-width", this.copied ? "1.5" : "1.25");
-      el.setAttribute("stroke-linecap", "round");
-      el.setAttribute("stroke-linejoin", "round");
-      svg.append(el);
+    button.setAttribute("aria-label", this.copied ? "Copied" : "Copy");
+    if (this.copied) button.setAttribute("data-copied", "");
+    else button.removeAttribute("data-copied");
+
+    const iconStack = document.createElement("span");
+    iconStack.className = kernelClass("CodeBlock", "copyIconStack");
+    iconStack.setAttribute("aria-hidden", "true");
+
+    const makeIcon = (kind: "copy" | "copied", shapes: typeof COPY_PATHS) => {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 16 16");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("class", kernelClass("CodeBlock", "copyIconLayer"));
+      svg.setAttribute("data-kind", kind);
+      for (const shape of shapes) {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", shape.tag);
+        for (const [key, value] of Object.entries(shape.attrs)) el.setAttribute(key, value);
+        el.setAttribute("stroke", "currentColor");
+        el.setAttribute("stroke-width", kind === "copied" ? "1.5" : "1.25");
+        el.setAttribute("stroke-linecap", "round");
+        el.setAttribute("stroke-linejoin", "round");
+        svg.append(el);
+      }
+      return svg;
+    };
+    iconStack.append(
+      makeIcon("copy", COPY_PATHS),
+      makeIcon("copied", [{ tag: "path" as const, attrs: { d: COPIED_PATH } }]),
+    );
+
+    const labelStack = document.createElement("span");
+    labelStack.className = kernelClass("CodeBlock", "copyLabelStack");
+    labelStack.setAttribute("aria-hidden", "true");
+    for (const [kind, text] of [
+      ["copy", "Copy"],
+      ["copied", "Copied"],
+    ] as const) {
+      const label = document.createElement("span");
+      label.className = kernelClass("CodeBlock", "copyLabelLayer");
+      label.setAttribute("data-kind", kind);
+      label.textContent = text;
+      labelStack.append(label);
     }
-    button.append(svg, document.createTextNode(this.copied ? "Copied" : "Copy"));
+
+    button.append(iconStack, labelStack);
   }
 
   private async copy() {
@@ -203,7 +241,10 @@ export class KernelCodeBlock extends KernelElement {
     const button = this.headerEl?.querySelector<HTMLButtonElement>(
       `.${kernelClass("CodeBlock", "copy")}`,
     );
-    if (button) this.renderCopyButton(button);
+    if (button) {
+      button.setAttribute("aria-label", "Copied");
+      button.setAttribute("data-copied", "");
+    }
     clearTimeout(this.copyTimer);
     this.copyTimer = setTimeout(() => {
       this.copied = false;
@@ -211,7 +252,10 @@ export class KernelCodeBlock extends KernelElement {
       const current = this.headerEl?.querySelector<HTMLButtonElement>(
         `.${kernelClass("CodeBlock", "copy")}`,
       );
-      if (current) this.renderCopyButton(current);
+      if (current) {
+        current.setAttribute("aria-label", "Copy");
+        current.removeAttribute("data-copied");
+      }
     }, 2000);
   }
 

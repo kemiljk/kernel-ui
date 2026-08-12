@@ -18,7 +18,7 @@
 }
 
 .root:active:not(:disabled) {
-  scale: 0.97;
+  scale: var(--kernel-scale-press);
 }
 
 /* min-inline-size, not inline-size: Toggle's own doc comment gives "a

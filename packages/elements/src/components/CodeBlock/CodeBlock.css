@@ -72,10 +72,52 @@ kernel-code-block {
   outline-offset: 1px;
 }
 
-.kernel-CodeBlock-copyIcon {
+/* Icon and label stacks: both states render at once (see CodeBlock.ts's
+   comment), each layer in the same CSS grid cell so the stack's own size
+   is the larger of the two — the label stack needs this since "Copied"
+   and "Copy" aren't the same width, and sizing off only the active one
+   would shift the button's own width on every toggle. */
+.kernel-CodeBlock-copyIconStack {
+  display: grid;
   inline-size: 0.875rem;
   block-size: 0.875rem;
   flex: none;
+}
+
+.kernel-CodeBlock-copyLabelStack {
+  display: grid;
+}
+
+.kernel-CodeBlock-copyIconLayer,
+.kernel-CodeBlock-copyLabelLayer {
+  grid-area: 1 / 1;
+}
+
+.kernel-CodeBlock-copyIconLayer {
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  filter: blur(var(--kernel-blur-sm));
+  transition:
+    opacity var(--kernel-duration-fast) linear,
+    scale var(--kernel-duration-base) var(--kernel-ease-out),
+    filter var(--kernel-duration-fast) linear;
+}
+
+.kernel-CodeBlock-copyLabelLayer {
+  opacity: 0;
+  filter: blur(var(--kernel-blur-sm));
+  transition:
+    opacity var(--kernel-duration-fast) linear,
+    filter var(--kernel-duration-fast) linear;
+}
+
+.kernel-CodeBlock-copy:not([data-copied]) .kernel-CodeBlock-copyIconLayer[data-kind="copy"],
+.kernel-CodeBlock-copy[data-copied] .kernel-CodeBlock-copyIconLayer[data-kind="copied"],
+.kernel-CodeBlock-copy:not([data-copied]) .kernel-CodeBlock-copyLabelLayer[data-kind="copy"],
+.kernel-CodeBlock-copy[data-copied] .kernel-CodeBlock-copyLabelLayer[data-kind="copied"] {
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
 }
 
 .kernel-CodeBlock-viewport {
@@ -162,5 +204,10 @@ kernel-code-block {
   .kernel-CodeBlock-copy,
   .kernel-CodeBlock-line {
     transition: none;
+  }
+
+  .kernel-CodeBlock-copyIconLayer,
+  .kernel-CodeBlock-copyLabelLayer {
+    transition: opacity var(--kernel-duration-fast) linear;
   }
 }

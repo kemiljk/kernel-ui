@@ -11,38 +11,34 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 
-  /* Opaque while exiting — fading the dialog surface mid-close lets the
-     page bleed through the panel. The scrim still fades on its own. Enter
-     fades in via `@starting-style`. */
-  opacity: 1;
+  /* Exit fades with motion so dismiss reads as one phase instead of a
+     two-step "shrink then disappear". Enter still starts at 0 via
+     `@starting-style` below. */
+  opacity: 0;
   scale: var(--kernel-scale-enter);
   transition:
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
-.kernel-Dialog-content[open] {
+.kernel-Dialog-content[data-state="open"] {
   opacity: 1;
   scale: 1;
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    scale var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
 
-.kernel-Dialog-content[data-closing] {
-  opacity: 1;
+.kernel-Dialog-content[data-state="closing"] {
+  opacity: 0;
   scale: var(--kernel-scale-enter);
   transition:
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
 @starting-style {
-  .kernel-Dialog-content[open] {
+  .kernel-Dialog-content[data-state="open"] {
     opacity: 0;
     scale: var(--kernel-scale-enter);
   }
@@ -114,41 +110,37 @@
   translate: var(--kernel-dialog-translate);
   transition:
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
-.kernel-Dialog-content[open][data-side="left"],
-.kernel-Dialog-content[open][data-side="right"],
-.kernel-Dialog-content[open][data-side="top"],
-.kernel-Dialog-content[open][data-side="bottom"] {
+.kernel-Dialog-content[data-state="open"][data-side="left"],
+.kernel-Dialog-content[data-state="open"][data-side="right"],
+.kernel-Dialog-content[data-state="open"][data-side="top"],
+.kernel-Dialog-content[data-state="open"][data-side="bottom"] {
   scale: 1;
   translate: 0 0;
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    translate var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
 
-.kernel-Dialog-content[data-closing][data-side="left"],
-.kernel-Dialog-content[data-closing][data-side="right"],
-.kernel-Dialog-content[data-closing][data-side="top"],
-.kernel-Dialog-content[data-closing][data-side="bottom"] {
+.kernel-Dialog-content[data-state="closing"][data-side="left"],
+.kernel-Dialog-content[data-state="closing"][data-side="right"],
+.kernel-Dialog-content[data-state="closing"][data-side="top"],
+.kernel-Dialog-content[data-state="closing"][data-side="bottom"] {
   scale: 1;
-  opacity: 1;
+  opacity: 0;
   translate: var(--kernel-dialog-translate);
   transition:
-    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
 @starting-style {
-  .kernel-Dialog-content[open][data-side="left"],
-  .kernel-Dialog-content[open][data-side="right"],
-  .kernel-Dialog-content[open][data-side="top"],
-  .kernel-Dialog-content[open][data-side="bottom"] {
+  .kernel-Dialog-content[data-state="open"][data-side="left"],
+  .kernel-Dialog-content[data-state="open"][data-side="right"],
+  .kernel-Dialog-content[data-state="open"][data-side="top"],
+  .kernel-Dialog-content[data-state="open"][data-side="bottom"] {
     opacity: 0;
     /* The center variant's starting style still matches a side sheet and
        would otherwise hand it a scaled first frame that snaps to 1. */
@@ -162,30 +154,24 @@
   backdrop-filter: var(--kernel-dialog-backdrop-filter, none);
   opacity: 0;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim);
 }
 
-.kernel-Dialog-content[open]::backdrop {
+.kernel-Dialog-content[data-state="open"]::backdrop {
   opacity: 1;
   transition:
-    opacity var(--kernel-duration-enter) var(--kernel-ease-scrim),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    opacity var(--kernel-duration-enter) var(--kernel-ease-scrim);
 }
 
-.kernel-Dialog-content[data-closing]::backdrop {
+.kernel-Dialog-content[data-state="closing"]::backdrop {
   opacity: 0;
   transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim);
 }
 
 .kernel-Dialog-content[data-backdrop="blur"]::backdrop {
   --kernel-dialog-backdrop-bg: color-mix(in oklab, var(--kernel-color-scrim) 70%, transparent);
-  --kernel-dialog-backdrop-filter: blur(8px);
+  --kernel-dialog-backdrop-filter: blur(var(--kernel-blur-backdrop));
 }
 
 .kernel-Dialog-content[data-backdrop="opaque"]::backdrop {
@@ -200,7 +186,7 @@
 }
 
 @starting-style {
-  .kernel-Dialog-content[open]::backdrop {
+  .kernel-Dialog-content[data-state="open"]::backdrop {
     opacity: 0;
   }
 }
@@ -243,7 +229,8 @@
     translate: 0 0;
   }
 
-  .kernel-Dialog-content[data-closing] {
+  .kernel-Dialog-content[data-state="open"],
+  .kernel-Dialog-content[data-state="closing"] {
     scale: 1;
     translate: 0 0;
   }
@@ -252,10 +239,10 @@
   .kernel-Dialog-content[data-side="right"],
   .kernel-Dialog-content[data-side="top"],
   .kernel-Dialog-content[data-side="bottom"],
-  .kernel-Dialog-content[data-closing][data-side="left"],
-  .kernel-Dialog-content[data-closing][data-side="right"],
-  .kernel-Dialog-content[data-closing][data-side="top"],
-  .kernel-Dialog-content[data-closing][data-side="bottom"] {
+  .kernel-Dialog-content[data-state="closing"][data-side="left"],
+  .kernel-Dialog-content[data-state="closing"][data-side="right"],
+  .kernel-Dialog-content[data-state="closing"][data-side="top"],
+  .kernel-Dialog-content[data-state="closing"][data-side="bottom"] {
     translate: 0 0;
   }
 }

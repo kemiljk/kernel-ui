@@ -130,7 +130,18 @@ new component done, grep both `packages/react/src/index.ts` and
   surfaces exit via `usePopoverExit` + `[data-closing]` *before*
   `hidePopover()`; `popover="auto"` exits rely on Chromium's `overlay`
   transition, with Safari guarded in `reset.css`. Prefer shared tokens
-  over per-component duration/easing literals.
+  over per-component duration/easing literals — this includes press
+  feedback (`--kernel-scale-press`, 0.96 — don't hand-pick a value) and
+  `filter: blur()` (`--kernel-blur-xs/sm/md` for content,
+  `--kernel-blur-backdrop` for a scrim/glass surface behind it).
+  `--kernel-ease-overshoot` is the one place a genuine overshoot
+  (past 1, back to 1) is allowed — scoped to a one-shot, unclipped
+  size/shape change (a morphing container, a badge pop), never to
+  reversible overlay enter/exit; see its comment in `tokens.css` for
+  why that's not the no-overshoot rule above contradicting itself.
+  `--kernel-duration-stagger` + `--kernel-translate-enter` are for a
+  staggered list/line entrance — multiply the duration by an index at
+  the call site rather than hand-picking a delay per component.
 - **Only `display` may live in a `:popover-open` rule.** `:popover-open`
   stops matching the moment a popover starts closing, but the panel is
   still on screen for the whole exit — `display` survives that because

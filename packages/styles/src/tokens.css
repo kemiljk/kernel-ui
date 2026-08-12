@@ -376,6 +376,12 @@
      *  7. Respect prefers-reduced-motion: keep opacity/color, drop
      *     movement. Safari without `overlay` skips closed-popover
      *     exits (see reset.css) so panels don't jump-then-fade.
+     *  8. Press feedback uses --kernel-scale-press (0.96), not a
+     *     hand-picked value.
+     *  9. --kernel-ease-overshoot is the one exception to "never
+     *     scale past 1" — reserved for one-shot, unclipped size/shape
+     *     changes only (see its own comment for why that's not rule 3
+     *     contradicting itself).
      *
      * Tier map: fast = micro (press, color, small menus enter);
      * enter/base = overlay enter (popover, dialog); exit = overlay
@@ -392,6 +398,15 @@
 
     --kernel-scale-enter: 0.96;
     --kernel-scale-exit: 0.99;
+    /* Press feedback on anything clickable. Was drifting to eight
+       different hand-picked values across components (0.90–0.99) with
+       no shared token — converge on one. 0.96 is deliberate, not
+       rounded for looks: below 0.95 the dip reads as exaggerated
+       rather than tactile. A component may still override this for a
+       documented reason (a very small hit target reading over-
+       squashed at the shared value), but that's an exception to call
+       out in-comment, not a default. */
+    --kernel-scale-press: 0.96;
 
     /* Was a `linear()`-approximated spring with a genuine overshoot
        (past 1 and back). Replaced with the same strong deceleration
@@ -413,7 +428,16 @@
        to leave at the speed the finger was moving — which no cubic-bezier
        can express. Everything else, including everything reading this
        token, is still a CSS transition on purpose. Read this as "spring-
-       flavoured easing", not "wherever Kernel does springs". */
+       flavoured easing", not "wherever Kernel does springs".
+
+       --kernel-ease-overshoot below looks like it contradicts this
+       decision — it isn't. The reasoning here is specifically about
+       *reversible, interruptible* UI (menus, toasts, toggles), where a
+       CSS-approximated bounce can't retarget mid-flight the way a real
+       spring would if the user reopens or re-triggers it mid-animation.
+       A one-shot morph that runs to completion and clips nothing has no
+       such retargeting to get wrong, so an overshoot there costs
+       nothing a real spring would have bought back. */
     --kernel-ease-spring: var(--kernel-ease-out);
     --kernel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --kernel-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
@@ -448,6 +472,40 @@
        Fading linearly over the same duration is what looks smooth, and
        is what the platforms' own scrims do. */
     --kernel-ease-scrim: linear;
+    /* transitions.dev's `--ease-bounce` — a genuine overshoot (past 1,
+       back to 1). Scoped deliberately narrow: only for a one-shot
+       size/shape change that runs to completion and clips nothing (a
+       morphing container's width/height/border-radius, a badge's pop-
+       in). Never on overlay enter/exit or anything reversible — see
+       the long comment on --kernel-ease-spring above for why those two
+       cases are different, not contradictory. Their
+       `--ease-bounce-strong` (mass 3.85) is excluded; it reads as
+       cartoonish rather than snappy at Kernel's scale. */
+    --kernel-ease-overshoot: cubic-bezier(0.34, 1.25, 0.64, 1);
+
+    /* transitions.dev's stagger unit — the gap between successive
+       items in a split/staggered entrance (a list of messages, tool
+       call lines, source chips). Multiply at the call site
+       (`calc(var(--kernel-duration-stagger) * var(--index))`) rather
+       than hand-picking a delay per component. */
+    --kernel-duration-stagger: 40ms;
+    /* Small entrance travel for surfaces that should arrive from a
+       short distance rather than only scaling/fading in place (a
+       staggered list item, a toast). Kept small on purpose — anything
+       larger reads as sliding rather than arriving. */
+    --kernel-translate-enter: 6px;
+
+    /* Motion blur — filter: blur() on entering/exiting content, kept
+       as tokens so it converges instead of drifting to per-component
+       literals (this replaced raw 0.5px/2px/6px/8px values scattered
+       across FileUpload, Toast, Dialog, CommandPalette and Header).
+       -xs/-sm/-md scale with how far a thing is travelling or how much
+       it's changing; -backdrop is for a scrim/glass surface behind
+       content, not for the content itself. */
+    --kernel-blur-xs: 0.5px;
+    --kernel-blur-sm: 2px;
+    --kernel-blur-md: 6px;
+    --kernel-blur-backdrop: 8px;
 
     /* ---------------------------------------------------------------- */
     /* Elevation                                                        */

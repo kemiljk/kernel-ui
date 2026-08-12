@@ -94,7 +94,7 @@ a.item {
 }
 
 .item:active:not(:disabled) {
-  scale: 0.98;
+  scale: var(--kernel-scale-press);
 }
 
 .item:focus-visible {
@@ -168,6 +168,103 @@ a.item {
   }
 
   .content {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+/* --------------------------------------------------------------- */
+/* DropdownMenuMorph                                                */
+/* --------------------------------------------------------------- */
+/* transitions.dev's "plus menu morph": the panel's own box animates
+   width/height/border-radius out from the trigger's exact footprint
+   (`useMenuMorph`'s FLIP technique sets/clears an inline override —
+   width/height/border-radius here are only ever declared as
+   *transition properties*, never given a concrete value, so the
+   panel's own intrinsic size from min-inline-size + padding + content
+   is always what a morph settles into).
+
+   `display` is the one property gated to `:popover-open`, same rule
+   as `.content` above and for the same reason — but note this popover
+   is `popover="manual"`, and `DropdownMenuMorph.close()` never calls
+   `hidePopover()` until the shrink animation has already finished (see
+   `useMenuMorph.playMorphClose`), so in practice `:popover-open` stays
+   true for the whole visible lifetime of a close, not just the open
+   one. Everything else still keys off `[data-open]`/`[data-closing]`
+   rather than relying on that — it's this component's own JS keeping
+   the popover open through the animation, not a platform guarantee,
+   and the attribute-driven version is the one that stays correct if
+   that ever changes. */
+.morphContent {
+  display: none;
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: 1px;
+  /* Deliberately no min-inline-size floor, unlike .content above: the
+     whole point of this variant is a box that's genuinely as small as
+     the trigger at rest. A `min-inline-size` here would clamp the box
+     above that no matter what width useMenuMorph's FLIP override sets
+     — content (MenuItem's own padding) is what should size this, not
+     a floor fighting the shrink. */
+  max-block-size: calc(100dvh - var(--kernel-space-8));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-space-1);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-md);
+  transform-origin: var(--kernel-transform-origin, center);
+
+  opacity: 0;
+  filter: blur(var(--kernel-blur-sm));
+
+  /* Resting/closed uses overlay timing so an interrupted open (opened,
+     then immediately closed before it finished) retargets calmly;
+     [data-open] below overrides with the bouncier, slower open-only
+     timing. */
+  transition:
+    width var(--kernel-duration-base) var(--kernel-ease-overlay),
+    height var(--kernel-duration-base) var(--kernel-ease-overlay),
+    border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
+    opacity var(--kernel-duration-fast) linear,
+    filter var(--kernel-duration-fast) linear;
+}
+
+.morphContent:popover-open {
+  display: flex;
+}
+
+.morphContent[data-open] {
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    width var(--kernel-duration-slow) var(--kernel-ease-overshoot),
+    height var(--kernel-duration-slow) var(--kernel-ease-overshoot),
+    border-radius var(--kernel-duration-slow) var(--kernel-ease-overshoot),
+    opacity var(--kernel-duration-fast) linear,
+    filter var(--kernel-duration-fast) linear;
+}
+
+.morphContent[data-closing] {
+  opacity: 0;
+  filter: blur(var(--kernel-blur-sm));
+  transition:
+    width var(--kernel-duration-base) var(--kernel-ease-overlay),
+    height var(--kernel-duration-base) var(--kernel-ease-overlay),
+    border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
+    opacity var(--kernel-duration-fast) linear,
+    filter var(--kernel-duration-fast) linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .morphContent {
+    transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  .morphContent[data-open],
+  .morphContent[data-closing] {
     transition: opacity var(--kernel-duration-fast) linear;
   }
 }

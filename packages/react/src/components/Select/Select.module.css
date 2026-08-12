@@ -52,7 +52,7 @@
 }
 
 .select:active:not(:disabled) {
-  scale: 0.99;
+  scale: var(--kernel-scale-press);
 }
 
 .select:focus-visible {
@@ -67,6 +67,31 @@
 
 .root[data-invalid] .select {
   border-color: var(--kernel-color-danger);
+  animation: kernel-select-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+/* transitions.dev's "error state shake" — see TextField.module.css's
+   longer comment on the same recipe for why this is one-shot without
+   an explicit iteration-count/fill-mode. No `:user-invalid` variant
+   here: a native `<select>` is always a valid choice among its own
+   options, so `invalid` can only ever be set explicitly via the prop. */
+@keyframes kernel-select-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
 }
 
 .chevron {
@@ -101,5 +126,9 @@
 
   .select:active:not(:disabled) {
     scale: 1;
+  }
+
+  .root[data-invalid] .select {
+    animation: none;
   }
 }

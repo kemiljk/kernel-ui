@@ -107,7 +107,7 @@ real underlying element, fully functional, just unstyled — never broken.
 - **CommandPalette** — A searchable, keyboard-driven action list.
 - **ContextMenu** — Right-click menu, same primitives as Dropdown Menu.
 - **Dialog** — showModal(): focus trap, top layer, and ::backdrop, free.
-- **DropdownMenu** (+ `MenuItem`, `MenuSeparator`) — Anchor-positioned menu with arrow-key navigation.
+- **DropdownMenu** (+ `DropdownMenuMorph`, `MenuItem`, `MenuSeparator`) — Anchor-positioned menu with arrow-key navigation. DropdownMenuMorph is an opt-in variant sharing MenuItem/MenuSeparator/MenuContext: the panel's own box animates width/height/border-radius out from the trigger's exact footprint (transitions.dev's "plus menu morph") instead of scaling/fading in place. It's popover="manual" rather than "auto" — a popover's hide can't be deferred, so the shrink-back-to-the-trigger close animation needs full manual control, with its own outside-click/Escape dismissal (same tradeoff ContextMenu/Combobox make). Elements: <kernel-dropdown-menu-morph>, same child shape as <kernel-dropdown-menu>.
 - **HoverCard** — Rich hover preview, a heavier Tooltip.
 - **NavigationMenu** (+ `NavigationMenuItem`, `NavigationMenuLink`, `NavigationMenuTrigger`, `NavigationMenuContent`) — Multi-level site navigation, mega-menu via popover.
 - **Popover** — Anchor-positioned floating panel.

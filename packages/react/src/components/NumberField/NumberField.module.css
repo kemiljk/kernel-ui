@@ -37,6 +37,9 @@
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
   padding-inline: var(--kernel-space-3) calc(var(--kernel-space-unit) * 7);
+  /* Equal-width digits, so a stepper click that changes digit count
+     (9 -> 10) doesn't shift the field's own width or nudge the caret. */
+  font-variant-numeric: tabular-nums;
   transition:
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),
     box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
@@ -86,6 +89,37 @@
   border-color: var(--kernel-color-danger);
 }
 
+/* transitions.dev's "error state shake" — see TextField.module.css's
+   longer comment on the same recipe for why this is one-shot without
+   an explicit iteration-count/fill-mode. Shakes `.root` rather than
+   just `.input`, so the stepper buttons move with the field instead
+   of sitting still next to a shaking input — `:has()` reaches the
+   parent from the input's own `:user-invalid` state without a second,
+   duplicated selector. */
+.root[data-invalid],
+.root:has(.input:user-invalid) {
+  animation: kernel-numberfield-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
+}
+
+@keyframes kernel-numberfield-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -4px 0;
+  }
+  40% {
+    translate: 3px 0;
+  }
+  60% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 1px 0;
+  }
+}
+
 .input:disabled {
   cursor: not-allowed;
   opacity: 0.6;
@@ -127,7 +161,7 @@
 }
 
 .stepperButton:active:not(:disabled) {
-  scale: 0.92;
+  scale: var(--kernel-scale-press);
 }
 
 .stepperButton:first-child {
@@ -186,5 +220,10 @@
 
   .stepperButton:active:not(:disabled) {
     scale: 1;
+  }
+
+  .root[data-invalid],
+  .root:has(.input:user-invalid) {
+    animation: none;
   }
 }

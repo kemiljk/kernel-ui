@@ -48,6 +48,46 @@
   animation: kernel-message-enter var(--kernel-duration-enter) var(--kernel-ease-overlay) both;
 }
 
+/* Staggers an initial batch (a transcript's history mounting all at
+   once) into a cascade instead of one uniform pop. Capped at 8: a
+   long history shouldn't take seconds to finish appearing, and by
+   the 9th message the cascade has already read as "settling in" —
+   same reasoning ThinkingIndicator's dot bounce caps its own stagger.
+   A single message streaming in live has no siblings mounting
+   alongside it, so this is invisible in that case — :nth-child(1)'s
+   zero delay is what it already gets. */
+.list .item[data-animate]:nth-child(2) {
+  animation-delay: var(--kernel-duration-stagger);
+}
+
+.list .item[data-animate]:nth-child(3) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 2);
+}
+
+.list .item[data-animate]:nth-child(4) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 3);
+}
+
+.list .item[data-animate]:nth-child(5) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 4);
+}
+
+.list .item[data-animate]:nth-child(6) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 5);
+}
+
+.list .item[data-animate]:nth-child(7) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 6);
+}
+
+.list .item[data-animate]:nth-child(8) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 7);
+}
+
+.list .item[data-animate]:nth-child(n + 9) {
+  animation-delay: calc(var(--kernel-duration-stagger) * 8);
+}
+
 .item[data-author="user"][data-animate] {
   transform-origin: bottom right;
 }

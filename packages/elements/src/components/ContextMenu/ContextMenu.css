@@ -28,9 +28,7 @@ kernel-context-menu {
      scales in from wherever was right-clicked, not a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit-fast) allow-discrete,
-    display var(--kernel-duration-exit-fast) allow-discrete;
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
 .kernel-ContextMenu-content:popover-open {
@@ -39,9 +37,7 @@ kernel-context-menu {
   scale: 1;
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay);
 }
 
 @starting-style {

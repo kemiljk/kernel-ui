@@ -66,7 +66,7 @@
 }
 
 .kernel-RadioGroup-input:active:not(:disabled) + .kernel-RadioGroup-control {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-RadioGroup-control::after {

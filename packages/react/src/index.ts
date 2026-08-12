@@ -339,6 +339,9 @@ export type {
 export { linesFromCode, lineText, linesText } from "./utils/codeTokens";
 export type { CodeToken, CodeLine } from "./utils/codeTokens";
 
+export { DropdownMenuMorph } from "./components/DropdownMenu/DropdownMenu";
+export type { DropdownMenuMorphProps } from "./components/DropdownMenu/DropdownMenu";
+
 export {
   renderElement,
   resolveClassName,

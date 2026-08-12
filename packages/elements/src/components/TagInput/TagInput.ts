@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./TagInput.css";
 
 let tagInputCounter = 0;
@@ -91,7 +92,7 @@ export class KernelTagInput extends KernelElement {
         this.commitDraft(input.value);
         input.value = "";
       } else if (event.key === "Backspace" && input.value === "" && this.currentTags.length > 0) {
-        this.removeTagAt(this.currentTags.length - 1);
+        this.removeTag(this.currentTags[this.currentTags.length - 1]!);
       }
     });
     input.addEventListener("paste", (event) => {
@@ -164,12 +165,41 @@ export class KernelTagInput extends KernelElement {
     this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }));
   }
 
-  private removeTagAt(index: number) {
-    this.currentTags = this.currentTags.filter((_, i) => i !== index);
-    this.renderTags();
-    this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
-    this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }));
+  /**
+   * Dissolve-then-remove, not instant: a tag's chip stays in the DOM
+   * through its own exit transition (see `TagInput.css`'s matching
+   * comment), so removal reads as the chip fading away rather than the
+   * row snapping shorter. `renderTags()` unconditionally wipes and
+   * rebuilds every chip, so this is deliberately NOT called until the
+   * transition finishes — the other tags' chip nodes stay untouched in
+   * the meantime, only this one gets `data-removing` set directly.
+   *
+   * Keyed by the tag's own string value, not index: two removals can
+   * be in flight at once (a user clicking two remove buttons before
+   * the first one's timer fires), and by the time the first one's
+   * deferred filter runs, `currentTags` has already shortened — a
+   * captured index would then point at the wrong tag for whichever
+   * removal resolves second.
+   */
+  private removeTag(tag: string) {
     this.input?.focus();
+    const chip = this.field?.querySelector<HTMLElement>(
+      `.${kernelClass("TagInput", "tag")}[data-tag="${CSS.escape(tag)}"]`,
+    );
+    const finish = () => {
+      this.currentTags = this.currentTags.filter((t) => t !== tag);
+      this.renderTags();
+      this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
+      this.dispatchEvent(
+        new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }),
+      );
+    };
+    if (!chip || prefersReducedMotion()) {
+      finish();
+      return;
+    }
+    chip.setAttribute("data-removing", "");
+    void waitForExitTransition(chip).then(finish);
   }
 
   private emitError(error: { type: "duplicate" | "max" | "empty"; value: string }) {
@@ -224,10 +254,13 @@ export class KernelTagInput extends KernelElement {
     if (!field || !input) return;
     field.querySelectorAll(`.${kernelClass("TagInput", "tag")}`).forEach((node) => node.remove());
 
-    this.currentTags.forEach((tag, index) => {
+    this.currentTags.forEach((tag) => {
       const chip = document.createElement("span");
       chip.className = kernelClass("TagInput", "tag");
       chip.setAttribute("role", "listitem");
+      // Lets removeTag() find this exact chip by value later, the same
+      // stable identity React's version keys its chips on.
+      chip.dataset.tag = tag;
 
       const text = document.createElement("span");
       text.textContent = tag;
@@ -241,7 +274,7 @@ export class KernelTagInput extends KernelElement {
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>';
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
-        this.removeTagAt(index);
+        this.removeTag(tag);
       });
 
       chip.append(text, remove);

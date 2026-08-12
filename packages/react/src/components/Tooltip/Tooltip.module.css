@@ -10,6 +10,9 @@
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   max-inline-size: 16rem;
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
 
   /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
      lets page content paint through a half-transparent panel — a flash
@@ -22,9 +25,7 @@
      instead of a fixed center. */
   transform-origin: var(--kernel-transform-origin, center);
   transition:
-    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit-fast) allow-discrete,
-    display var(--kernel-duration-exit-fast) allow-discrete;
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
 .content:popover-open {
@@ -32,18 +33,14 @@
   scale: 1;
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-fast) allow-discrete,
-    display var(--kernel-duration-fast) allow-discrete;
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay);
 }
 
 .content[data-closing] {
   opacity: 1;
   scale: var(--kernel-scale-exit);
   transition:
-    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit-fast) allow-discrete,
-    display var(--kernel-duration-exit-fast) allow-discrete;
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
 @starting-style {

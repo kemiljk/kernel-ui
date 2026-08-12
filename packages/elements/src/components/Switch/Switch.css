@@ -34,7 +34,7 @@
 }
 
 .kernel-Switch-control:active:not(:disabled) {
-  scale: 0.97;
+  scale: var(--kernel-scale-press);
 }
 
 @media (hover: hover) and (pointer: fine) {

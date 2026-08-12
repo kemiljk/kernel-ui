@@ -51,7 +51,7 @@
 }
 
 .kernel-DatePicker-navButton:active {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-DatePicker-navButton:focus-visible {
@@ -110,7 +110,7 @@
 }
 
 .kernel-DatePicker-dayButton:active:not(:disabled) {
-  scale: 0.94;
+  scale: var(--kernel-scale-press);
 }
 
 .kernel-DatePicker-dayButton:focus-visible {
