@@ -117,6 +117,14 @@ export function CommandPalette({
 
     void (async () => {
       if (!prefersReducedMotion()) {
+        // `setClosing(true)` above hasn't committed to the DOM yet — this
+        // is still the same synchronous tick. Reading the exit
+        // transition's duration right now would see the pre-close
+        // (`[open]`-only) styles and wait on the *enter* duration
+        // instead. A double rAF guarantees `data-closing` has actually
+        // painted before waitForExitTransition inspects it.
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        if (cancelled || controller.signal.aborted) return;
         await waitForExitTransition(node, { signal: controller.signal });
       }
       if (cancelled || controller.signal.aborted) return;

@@ -51,6 +51,16 @@ export function usePopoverExit(ref: RefObject<HTMLElement | null>) {
       const controller = new AbortController();
       abortRef.current?.abort();
       abortRef.current = controller;
+
+      // `setClosing(true)` hasn't committed to the DOM yet — this is
+      // still the same synchronous tick. Reading the exit transition's
+      // duration right now would see the pre-close (`[open]`-only)
+      // styles and wait on the *enter* duration instead. A double rAF
+      // guarantees the `data-closing` attribute has actually painted
+      // before waitForExitTransition inspects it.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      if (controller.signal.aborted) return;
+
       await waitForExitTransition(node, { signal: controller.signal });
       if (controller.signal.aborted) return;
       abortRef.current = null;
