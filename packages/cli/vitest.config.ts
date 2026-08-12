@@ -5,9 +5,4 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
   },
-  resolve: {
-    alias: {
-      "@kernelui-lib/registry": new URL("../registry/dist/index.js", import.meta.url).pathname,
-    },
-  },
 });

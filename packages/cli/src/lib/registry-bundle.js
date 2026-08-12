@@ -1,0 +1,1 @@
+export { components, getComponentBySlug } from "../dist/registry-bundle.js";

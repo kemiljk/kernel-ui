@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Integration CLI for Kernel UI — install, diagnose, and look up components.",
   "license": "MIT",
   "author": "Karl Koch",
@@ -34,16 +34,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "@kernelui-lib/registry": "workspace:*"
-  },
   "devDependencies": {
     "@types/node": "^26.2.0",
     "typescript": "^5.7.3",
     "vitest": "^3.2.7"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "bun run --cwd ../registry build && bun scripts/bundle-registry.mjs && tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepublishOnly": "npm run build"

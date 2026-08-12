@@ -35,12 +35,9 @@
     },
     "packages/cli": {
       "name": "@kernelui-lib/cli",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "bin": {
         "kernel": "./dist/index.js",
-      },
-      "dependencies": {
-        "@kernelui-lib/registry": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^26.2.0",
@@ -50,7 +47,7 @@
     },
     "packages/elements": {
       "name": "@kernelui-lib/elements",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "dependencies": {
         "@kernelui-lib/styles": "^1.1.0",
       },
@@ -62,7 +59,7 @@
     },
     "packages/react": {
       "name": "@kernelui-lib/react",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "dependencies": {
         "@kernelui-lib/styles": "^1.1.0",
       },
@@ -95,7 +92,7 @@
     },
     "packages/styles": {
       "name": "@kernelui-lib/styles",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "devDependencies": {
         "culori": "^4.0.2",
       },
