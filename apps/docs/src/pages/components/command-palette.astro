@@ -5,6 +5,7 @@ import UsageAccordion from "../../components/UsageAccordion.astro";
 import CommandPaletteDemo from "../../components/demos/CommandPaletteDemo";
 import CommandPaletteGroupsDemo from "../../components/demos/CommandPaletteGroupsDemo";
 import CommandPalettePlayground from "../../components/demos/CommandPalettePlayground";
+import CommandPaletteCompositionDemo from "../../components/demos/CommandPaletteCompositionDemo";
 
 const usageSnippet = `import { useState } from "react";
 import { Button, CommandPalette } from "@kernelui-lib/react";
@@ -62,6 +63,26 @@ function App() {
     />
   );
 }`;
+
+const compositionSnippet = `import { CommandPalette, Combobox } from "@kernelui-lib/react";
+
+<CommandPalette open={open} onOpenChange={setOpen} shouldFilter={false}>
+  <CommandPalette.Input value={query} onValueChange={setQuery} />
+  <CommandPalette.List>
+    {isLoading && <CommandPalette.Loading>Searching...</CommandPalette.Loading>}
+    {!isLoading && error && <CommandPalette.Empty>{error}</CommandPalette.Empty>}
+    <CommandPalette.Group heading="Engineering Track">
+      <CommandPalette.Item id="lesson-flexbox" value={lesson.searchText} onSelect={goToLesson}>
+        {({ active }) => <LessonRow lesson={lesson} active={active} />}
+      </CommandPalette.Item>
+      <CommandPalette.Item id="section-flexbox-layout" value={section.searchText} onSelect={goToSection}>
+        {({ active }) => <SectionRow section={section} active={active} />}
+      </CommandPalette.Item>
+    </CommandPalette.Group>
+  </CommandPalette.List>
+</CommandPalette>
+
+`;
 ---
 
 <BaseLayout title="Command Palette" withSidebar>
@@ -109,6 +130,20 @@ function App() {
     </div>
 
     <UsageAccordion code={groupsSnippet} lang="tsx" />
+
+    <h2>Composable async results</h2>
+    <p>
+      The compound API keeps one focused input while your product owns the
+      result model. This example combines controlled query state, external
+      filtering, grouped lesson and section rows, active render state,
+      disabled results, loading, empty, error, and asynchronous replacement.
+    </p>
+
+    <div class="docs-example">
+      <CommandPaletteCompositionDemo client:visible />
+    </div>
+
+    <UsageAccordion code={compositionSnippet} lang="tsx" />
 
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">

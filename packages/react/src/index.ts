@@ -153,7 +153,14 @@ export type {
 } from "./components/DropdownMenu/DropdownMenu";
 
 export { Combobox } from "./components/Combobox/Combobox";
-export type { ComboboxProps, ComboboxOption, ComboboxGroup } from "./components/Combobox/Combobox";
+export type {
+  ComboboxProps,
+  ComboboxOption,
+  ComboboxGroup,
+  ComboboxInputProps,
+  ComboboxItemProps,
+  ComboboxGroupProps,
+} from "./components/Combobox/Combobox";
 
 export { ToastViewport, toast } from "./components/Toast/Toast";
 export type {
@@ -167,6 +174,9 @@ export type {
   CommandPaletteProps,
   CommandPaletteItem,
   CommandPaletteGroup,
+  CommandPaletteInputProps,
+  CommandPaletteItemProps,
+  CommandPaletteGroupProps,
 } from "./components/CommandPalette/CommandPalette";
 
 export {

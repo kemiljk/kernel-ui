@@ -77,6 +77,10 @@
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
+.listbox > [role="group"] + [role="group"] {
+  margin-block-start: var(--kernel-space-3);
+}
+
 .listbox:popover-open {
   opacity: 1;
   scale: 1;
@@ -128,9 +132,9 @@
   padding-block: var(--kernel-space-2) 0;
   padding-inline: var(--kernel-space-3);
   color: var(--kernel-color-text-muted);
-  font-size: var(--kernel-font-size-xs);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 

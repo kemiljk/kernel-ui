@@ -118,6 +118,7 @@
 }
 
 .kernel-Checkbox-label {
+  -webkit-user-select: none;
   user-select: none;
 }
 
