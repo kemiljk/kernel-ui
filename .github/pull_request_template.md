@@ -8,5 +8,5 @@
 - [ ] `bun run typecheck` passes
 - [ ] `bun run build` passes for changed packages
 - [ ] Docs page, demo, and playground added or updated when applicable
-- [ ] Changeset added if this should trigger a release
+- [ ] Changeset added for publishable package changes (`bunx changeset`), or this PR is docs-only/non-publishable
 - [ ] You can explain the change and stand behind it (LLM-assisted work is fine; untested spam is not)
