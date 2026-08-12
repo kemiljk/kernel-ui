@@ -28,6 +28,8 @@
   /* Command Palette reads as a compact action surface, not a full dialog
     sheet, so it uses the container tier's radius/padding pair to keep
     Round mode from over-inflating edge padding. */
+  /* The fully rounded palette stays compact: 16px on every edge. */
+  --kernel-padding-container-curve: var(--kernel-space-4);
   padding: var(--kernel-padding-container-curve);
   background-color: var(--kernel-color-surface-raised);
   color: var(--kernel-color-text);
@@ -116,8 +118,7 @@
   flex-shrink: 0;
   inline-size: 100%;
   block-size: calc(var(--kernel-space-unit) * 12);
-  border: none;
-  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-control);
   background-color: transparent;
   color: var(--kernel-color-text);
@@ -132,7 +133,6 @@
 }
 
 .listbox {
-  overflow-y: auto;
   overscroll-behavior: contain;
   scroll-padding-block: var(--kernel-space-1);
   max-block-size: 20rem;

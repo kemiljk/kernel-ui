@@ -17,6 +17,7 @@ import {
 } from "../../utils/sheetDrag";
 import { prefersReducedMotion } from "../../utils/exitTransition";
 import { runSpring, type SpringConfig } from "../../utils/spring";
+import { ScrollArea } from "../ScrollArea/ScrollArea";
 import { useSheetDrag } from "./useSheetDrag";
 import styles from "./Sheet.module.css";
 
@@ -264,9 +265,13 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
           among them would scroll away with the rest. Sheet splits that wrapper
           into a scrolling body and a pinned footer instead, which is also what
           lets the footer own the safe-area padding. */}
-      <div className={[styles.body, bodyClassName].filter(Boolean).join(" ")} data-slot="sheet-body">
+      <ScrollArea
+        edgeShadow
+        className={[styles.body, bodyClassName].filter(Boolean).join(" ")}
+        data-slot="sheet-body"
+      >
         {children}
-      </div>
+      </ScrollArea>
       {footer !== undefined ? (
         <div
           ref={setFooter}

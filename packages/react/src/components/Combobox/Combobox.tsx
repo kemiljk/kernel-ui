@@ -1,5 +1,5 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { KeyboardEvent, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
+import type { InputHTMLAttributes, KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
 import {
@@ -37,6 +37,7 @@ export interface ComboboxProps {
   onValueChange?: (value: string) => void;
   placeholder?: string;
   emptyMessage?: ReactNode;
+  shouldFilter?: boolean;
   /** Which side of the field the listbox opens on. */
   placement?: FloatingPlacement;
   /** Cross-axis alignment relative to the field. */
@@ -47,7 +48,149 @@ export interface ComboboxProps {
     option: ComboboxOption,
     state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number },
   ) => ReactNode;
+  children?: ReactNode;
 }
+
+export interface ComboboxInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
+  value?: string;
+  onValueChange?: (value: string) => void;
+}
+
+export interface ComboboxItemProps {
+  id?: string;
+  value: string;
+  keywords?: string[];
+  disabled?: boolean;
+  onSelect?: () => void;
+  children: ReactNode | ((state: { active: boolean; selected: boolean }) => ReactNode);
+}
+
+export interface ComboboxGroupProps {
+  id?: string;
+  heading?: ReactNode;
+  children: ReactNode;
+}
+
+interface RegisteredOption {
+  id: string;
+  value: string;
+  keywords: string[];
+  disabled: boolean;
+  onSelect?: () => void;
+  group?: ComboboxGroup;
+}
+
+interface CompoundComboboxContext {
+  listboxId: string;
+  query: string;
+  selectedValue: string;
+  activeId: string | null;
+  options: RegisteredOption[];
+  shouldFilter: boolean;
+  setQuery: (value: string) => void;
+  registerOption: (option: RegisteredOption) => () => void;
+  setActiveId: (id: string) => void;
+  selectOption: (option: RegisteredOption) => void;
+  isVisible: (option: RegisteredOption) => boolean;
+  openList: () => void;
+  closeList: () => void;
+  setInputElement: (element: HTMLInputElement | null) => void;
+  setListboxElement: (element: HTMLDivElement | null) => void;
+}
+
+const CompoundComboboxContext = createContext<CompoundComboboxContext | null>(null);
+const CompoundComboboxGroupContext = createContext<ComboboxGroup | undefined>(undefined);
+const noKeywords: string[] = [];
+
+function useCompoundCombobox() {
+  const context = useContext(CompoundComboboxContext);
+  if (!context) throw new Error("Combobox compound components must be used inside Combobox");
+  return context;
+}
+
+function compoundMatches(option: RegisteredOption, query: string) {
+  const normalized = query.trim().toLowerCase();
+  return !normalized || [option.value, ...option.keywords].some((text) => text.toLowerCase().includes(normalized));
+}
+
+function CompoundComboboxInput({ value, onValueChange, ...props }: ComboboxInputProps) {
+  const context = useCompoundCombobox();
+  const selectable = context.options.filter((option) => !option.disabled && context.isVisible(option));
+  const activeIndex = selectable.findIndex((option) => option.id === context.activeId);
+  useEffect(() => {
+    if (value !== undefined) context.setQuery(value);
+  }, [context, value]);
+  return (
+    <input
+      {...props}
+      ref={context.setInputElement}
+      type={props.type ?? "text"}
+      role="combobox"
+      aria-expanded="true"
+      aria-controls={context.listboxId}
+      aria-autocomplete="list"
+      aria-activedescendant={context.activeId ?? undefined}
+      value={value ?? context.query}
+      autoComplete="off"
+      onFocus={context.openList}
+      onChange={(event) => { context.setQuery(event.target.value); onValueChange?.(event.target.value); context.openList(); }}
+      onKeyDown={(event) => {
+        props.onKeyDown?.(event);
+        if (event.defaultPrevented) return;
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          const nextIndex = event.key === "ArrowDown"
+            ? Math.min(activeIndex + 1, selectable.length - 1)
+            : Math.max(activeIndex - 1, 0);
+          context.setActiveId(selectable[nextIndex]?.id ?? "");
+        } else if (event.key === "Enter") {
+          const active = selectable[activeIndex];
+          if (active) { event.preventDefault(); context.selectOption(active); }
+        } else if (event.key === "Escape") context.closeList();
+      }}
+      className={[styles.input, props.className].filter(Boolean).join(" ")}
+    />
+  );
+}
+
+function CompoundComboboxItem({ id, value, keywords, disabled = false, onSelect, children }: ComboboxItemProps) {
+  const context = useCompoundCombobox();
+  const group = useContext(CompoundComboboxGroupContext);
+  const generated = useId();
+  const optionId = id ?? `${context.listboxId}-option-${generated.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const normalizedKeywords = keywords ?? noKeywords;
+  const option = useMemo(() => ({ id: optionId, value, keywords: normalizedKeywords, disabled, onSelect, group }), [disabled, group, normalizedKeywords, onSelect, optionId, value]);
+  useEffect(() => context.registerOption(option), [context.registerOption, option]);
+  if (!context.isVisible(option)) return null;
+  const active = context.activeId === optionId;
+  const selected = context.selectedValue === value;
+  return (
+    <div id={optionId} role="option" aria-selected={selected} aria-disabled={disabled || undefined} data-active={dataAttr(active)} className={styles.option}
+      onPointerDown={(event) => event.preventDefault()}
+      onPointerMove={() => { if (!disabled) context.setActiveId(optionId); }}
+      onClick={() => { if (!disabled) context.selectOption(option); }}>
+      {typeof children === "function" ? children({ active, selected }) : children}
+    </div>
+  );
+}
+
+function CompoundComboboxGroup({ id, heading, children }: ComboboxGroupProps) {
+  const context = useCompoundCombobox();
+  const generated = useId();
+  const groupId = id ?? `${context.listboxId}-group-${generated.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const headingId = `${groupId}-heading`;
+  const group = useMemo(() => ({ id: groupId, label: typeof heading === "string" ? heading : undefined, items: [] }), [groupId, heading]);
+  return <CompoundComboboxGroupContext.Provider value={group}><div role="group" aria-labelledby={heading !== undefined ? headingId : undefined}>{heading !== undefined ? <div id={headingId} role="presentation" className={styles.groupLabel}>{heading}</div> : null}{children}</div></CompoundComboboxGroupContext.Provider>;
+}
+
+function CompoundComboboxList({ children }: { children: ReactNode }) {
+  const context = useCompoundCombobox();
+  return <div ref={context.setListboxElement} id={context.listboxId} role="listbox" popover="manual" data-slot="combobox-listbox" className={styles.listbox}>{children}</div>;
+}
+
+function CompoundComboboxEmpty({ children }: { children: ReactNode }) { return <div className={styles.empty}>{children}</div>; }
+function CompoundComboboxLoading({ children }: { children: ReactNode }) { return <div role="status" className={styles.empty}>{children}</div>; }
 
 /**
  * The WAI-ARIA 1.2 combobox pattern: a real `<input role="combobox">`
@@ -70,10 +213,12 @@ export function Combobox({
   onValueChange,
   placeholder,
   emptyMessage = "No results",
+  shouldFilter = true,
   placement = "bottom",
   align = "center",
   offset = 8,
   renderOption,
+  children,
 }: ComboboxProps) {
   const [selectedValue, setSelectedValue] = useControllableState({
     value,
@@ -89,6 +234,9 @@ export function Combobox({
   const [inputText, setInputText] = useState(selectedOption?.label ?? "");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [compoundQuery, setCompoundQuery] = useState("");
+  const [compoundOptions, setCompoundOptions] = useState<RegisteredOption[]>([]);
+  const [compoundActiveId, setCompoundActiveId] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
@@ -103,7 +251,7 @@ export function Combobox({
     const filteredGroups = sourceGroups
       .map((group) => ({
         ...group,
-        items: group.items.filter((option) => option.label.toLowerCase().includes(inputText.toLowerCase())),
+        items: group.items.filter((option) => !shouldFilter || option.label.toLowerCase().includes(inputText.toLowerCase())),
       }))
       .filter((group) => group.items.length > 0);
 
@@ -115,7 +263,7 @@ export function Combobox({
     }
 
     return { filteredGroups, entries, isGrouped };
-  }, [groups, inputText, options]);
+  }, [groups, inputText, options, shouldFilter]);
 
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLInputElement, HTMLDivElement>({
     open,
@@ -125,6 +273,28 @@ export function Combobox({
   });
 
   const { closing, playExit, cancelExit } = usePopoverExit(listboxRef);
+
+  const registerOption = useCallback((option: RegisteredOption) => {
+    setCompoundOptions((current) => [...current.filter((entry) => entry.id !== option.id), option]);
+    return () => setCompoundOptions((current) => current.filter((entry) => entry.id !== option.id));
+  }, []);
+  const compoundVisible = useCallback(
+    (option: RegisteredOption) => !shouldFilter || compoundMatches(option, compoundQuery),
+    [compoundQuery, shouldFilter],
+  );
+  const compoundSelectable = useMemo(
+    () => compoundOptions.filter((option) => !option.disabled && compoundVisible(option)),
+    [compoundOptions, compoundVisible],
+  );
+  const compoundSetActiveId = useCallback((nextId: string) => setCompoundActiveId(nextId || null), []);
+  const setInputElement = useCallback((element: HTMLInputElement | null) => {
+    inputRef.current = element;
+    anchorRef.current = element;
+  }, [anchorRef]);
+  const setListboxElement = useCallback((element: HTMLDivElement | null) => {
+    listboxRef.current = element;
+    floatingRef.current = element;
+  }, [floatingRef]);
 
   function openList() {
     cancelExit();
@@ -149,6 +319,13 @@ export function Combobox({
     setInputText(option.label);
     closeList();
   }
+
+  const selectCompoundOption = useCallback((option: RegisteredOption) => {
+    setSelectedValue(option.value);
+    setCompoundQuery(option.value);
+    option.onSelect?.();
+    closeList();
+  }, [closeList, setSelectedValue]);
 
   useEffect(() => {
     if (!open) return;
@@ -177,8 +354,32 @@ export function Combobox({
     if (activeIndex < 0) return;
     listboxRef.current
       ?.querySelector(`[id="${listboxId}-option-${activeIndex}"]`)
-      ?.scrollIntoView({ block: "nearest" });
+      ?.scrollIntoView?.({ block: "nearest" });
   }, [activeIndex, listboxId]);
+
+  useEffect(() => {
+    setCompoundActiveId((current) => compoundSelectable.some((option) => option.id === current)
+      ? current
+      : compoundSelectable[0]?.id ?? null);
+  }, [compoundSelectable]);
+
+  const compoundContext = useMemo<CompoundComboboxContext>(() => ({
+    listboxId,
+    query: compoundQuery,
+    selectedValue,
+    activeId: compoundActiveId,
+    options: compoundOptions,
+    shouldFilter,
+    setQuery: setCompoundQuery,
+    registerOption,
+    setActiveId: compoundSetActiveId,
+    selectOption: selectCompoundOption,
+    isVisible: compoundVisible,
+    openList,
+    closeList,
+    setInputElement,
+    setListboxElement,
+  }), [closeList, compoundActiveId, compoundOptions, compoundQuery, compoundSetActiveId, compoundVisible, listboxId, openList, registerOption, selectCompoundOption, selectedValue, setInputElement, setListboxElement, shouldFilter]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     const maxIndex = filtered.entries.length - 1;
@@ -217,6 +418,7 @@ export function Combobox({
   const activeEntry = filtered.entries[activeIndex];
 
   return (
+    <CompoundComboboxContext.Provider value={compoundContext}>
     <div
       className={styles.root}
       ref={rootRef}
@@ -230,7 +432,7 @@ export function Combobox({
       >
         {label}
       </label>
-      <input
+      {children ? children : <input
         ref={mergeRefs(inputRef, anchorRef)}
         id={id}
         role="combobox"
@@ -249,8 +451,8 @@ export function Combobox({
         }}
         onKeyDown={handleKeyDown}
         className={styles.input}
-      />
-      <div
+      />}
+      {children ? null : <div
         ref={mergeRefs(listboxRef, floatingRef)}
         id={listboxId}
         role="listbox"
@@ -317,7 +519,17 @@ export function Combobox({
             return nodes;
           })()
         )}
-      </div>
+      </div>}
     </div>
+    </CompoundComboboxContext.Provider>
   );
+}
+
+export namespace Combobox {
+  export const Input = CompoundComboboxInput;
+  export const List = CompoundComboboxList;
+  export const Group = CompoundComboboxGroup;
+  export const Item = CompoundComboboxItem;
+  export const Empty = CompoundComboboxEmpty;
+  export const Loading = CompoundComboboxLoading;
 }

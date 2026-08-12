@@ -100,6 +100,20 @@
   background-color: var(--kernel-color-accent-subtle);
 }
 
+.kernel-Combobox-listbox > [role="group"] + [role="group"] {
+  margin-block-start: var(--kernel-space-3);
+}
+
+.kernel-Combobox-groupLabel {
+  padding-block: var(--kernel-space-2) 0;
+  padding-inline: var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .kernel-Combobox-option[aria-selected="true"] {
   font-weight: 600;
 }

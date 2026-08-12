@@ -68,6 +68,9 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
 export class KernelSheet extends KernelDialog {
   private handleElement: HTMLElement | null = null;
   private footerElement: HTMLElement | null = null;
+  private bodyElement: HTMLElement | null = null;
+  private bodyResizeObserver: ResizeObserver | null = null;
+  private bodyScrollHandler: (() => void) | null = null;
   private drag: SheetDragController | null = null;
   private resizeHandler: (() => void) | null = null;
   private reflectingSnap = false;
@@ -129,6 +132,13 @@ export class KernelSheet extends KernelDialog {
     this.drag = null;
     if (this.resizeHandler) window.removeEventListener("resize", this.resizeHandler);
     this.resizeHandler = null;
+    this.bodyResizeObserver?.disconnect();
+    this.bodyResizeObserver = null;
+    if (this.bodyElement && this.bodyScrollHandler) {
+      this.bodyElement.removeEventListener("scroll", this.bodyScrollHandler);
+    }
+    this.bodyElement = null;
+    this.bodyScrollHandler = null;
   }
 
   /** A width limit closes the sheet rather than refusing to open it, so that
@@ -241,14 +251,30 @@ export class KernelSheet extends KernelDialog {
 
     const footerSource = content.querySelector(':scope > [slot="footer"]');
     const body = document.createElement("div");
-    body.className = kernelClass("Sheet", "body");
+    body.className = `${kernelClass("Sheet", "body")} ${kernelClass("ScrollArea")}`;
     body.setAttribute("data-slot", "sheet-body");
+    body.setAttribute("data-edge-shadow", "");
 
     for (const node of Array.from(content.childNodes)) {
       if (node === footerSource || node === this.handleElement) continue;
       body.append(node);
     }
     content.append(body);
+    this.bodyElement = body;
+    const measure = () => {
+      const scrollable = body.scrollHeight - body.clientHeight;
+      const top = scrollable > 0 ? Math.min(body.scrollTop / 48, 1) : 0;
+      const bottom = scrollable > 0 ? Math.min((scrollable - body.scrollTop) / 48, 1) : 0;
+      body.style.setProperty("--kernel-scroll-shadow-top", String(top));
+      body.style.setProperty("--kernel-scroll-shadow-bottom", String(bottom));
+    };
+    this.bodyScrollHandler = measure;
+    body.addEventListener("scroll", measure, { passive: true });
+    if (typeof ResizeObserver !== "undefined") {
+      this.bodyResizeObserver = new ResizeObserver(measure);
+      this.bodyResizeObserver.observe(body);
+    }
+    measure();
 
     if (footerSource) {
       const footer = document.createElement("div");

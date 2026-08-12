@@ -60,13 +60,15 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
 
       measure();
       el.addEventListener("scroll", scheduleMeasure, { passive: true });
-      const resizeObserver = new ResizeObserver(scheduleMeasure);
-      resizeObserver.observe(el);
+      const resizeObserver = typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(scheduleMeasure);
+      resizeObserver?.observe(el);
 
       return () => {
         if (frame !== null) cancelAnimationFrame(frame);
         el.removeEventListener("scroll", scheduleMeasure);
-        resizeObserver.disconnect();
+        resizeObserver?.disconnect();
       };
     }, [edgeShadow]);
 

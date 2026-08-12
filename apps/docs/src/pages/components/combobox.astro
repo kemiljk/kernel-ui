@@ -5,6 +5,7 @@ import UsageAccordion from "../../components/UsageAccordion.astro";
 import ComboboxDemo from "../../components/demos/ComboboxDemo";
 import ComboboxGroupsDemo from "../../components/demos/ComboboxGroupsDemo";
 import ComboboxPlayground from "../../components/demos/ComboboxPlayground";
+import ComboboxCompositionDemo from "../../components/demos/ComboboxCompositionDemo";
 
 const usageSnippet = `import { useState } from "react";
 import { Combobox } from "@kernelui-lib/react";
@@ -97,6 +98,17 @@ function renderOption(option: ComboboxOption, state: { selected: boolean }) {
     </div>
 
     <UsageAccordion code={groupsSnippet} lang="tsx" />
+
+    <h2>Composable options</h2>
+    <p>
+      Use the compound API when each option needs product-owned markup,
+      active-state styling, or grouped asynchronous results. The same
+      input-focused keyboard and listbox behavior stays in Kernel.
+    </p>
+
+    <div class="docs-example">
+      <ComboboxCompositionDemo client:visible />
+    </div>
 
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">
