@@ -52,9 +52,9 @@ function matchesQuery(item: CommandPaletteItem, query: string) {
  * leaving the text field.
  *
  * Enter/exit motion (opacity + slight scale + settle) is the default —
- * Escape and backdrop dismiss are held via `cancel`/`data-closing` until
- * the exit transition finishes, matching `Dialog`, so the close doesn't
- * snap shut underneath the animation.
+ * Escape and backdrop dismiss are held via `cancel`/`data-state="closing"`
+ * until the exit transition finishes, matching `Dialog`, so the close
+ * doesn't snap shut underneath the animation.
  */
 export function CommandPalette({
   open,
@@ -120,9 +120,9 @@ export function CommandPalette({
         // `setClosing(true)` above hasn't committed to the DOM yet — this
         // is still the same synchronous tick. Reading the exit
         // transition's duration right now would see the pre-close
-        // (`[open]`-only) styles and wait on the *enter* duration
-        // instead. A double rAF guarantees `data-closing` has actually
-        // painted before waitForExitTransition inspects it.
+        // (`data-state="open"`) styles and wait on the *enter* duration
+        // instead. A double rAF guarantees `data-state="closing"` has
+        // actually painted before waitForExitTransition inspects it.
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         if (cancelled || controller.signal.aborted) return;
         await waitForExitTransition(node, { signal: controller.signal });
@@ -227,8 +227,7 @@ export function CommandPalette({
       ref={dialogRef}
       className={styles.content}
       aria-label="Command palette"
-      data-open={dataAttr(open || closing)}
-      data-closing={dataAttr(closing)}
+      data-state={open ? "open" : closing ? "closing" : undefined}
       data-blur={dataAttr(blur)}
       onClick={(event) => {
         if (event.target === dialogRef.current) requestClose();

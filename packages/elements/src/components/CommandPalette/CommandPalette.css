@@ -1,3 +1,23 @@
+/* Every visual state (open/closing/settled) is driven by exactly ONE
+   attribute — [data-state] — so exactly one rule below ever matches at
+   a time. The native `open` IDL attribute is deliberately NOT used for
+   styling: it flips true on showModal() and stays true for the entire
+   close animation (only clearing when we call dialog.close(), at the
+   very end — see finishClose in the TS), so styling off both `[open]`
+   and `[data-closing]` simultaneously means two equal-specificity rules
+   fight over the same properties (scale/translate/opacity) for the
+   whole exit, and which one wins for which property becomes a
+   cascade-order question instead of a simple state machine. `[open]` is
+   kept for exactly one thing below: forcing `display: flex`, because
+   `<dialog>`'s UA stylesheet has both `dialog:not([open]) { display:
+   none }` AND `dialog { position: absolute; ... }` — unconditionally
+   beating the UA's `display: none` there keeps the closed dialog laid
+   out instead of leaving a real, invisible, hit-testable box sitting
+   over whatever's underneath it. */
+.kernel-CommandPalette-content[open] {
+  display: flex;
+}
+
 .kernel-CommandPalette-content {
   margin: auto;
   flex-direction: column;
@@ -15,21 +35,23 @@
   inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));
   max-block-size: calc(100dvh - var(--kernel-space-12));
 
-  /* Stay opaque on the closed/exit end-state — fading the panel itself
-     mid-close lets page content bleed through it; only the backdrop
-     below fades. Enter still fades in via `@starting-style`. */
+  /* Resting/closed state — matches [data-state="closing"]'s end point so
+     there's no jump once `data-state` is removed and dialog.close() fires. */
   opacity: 1;
   scale: var(--kernel-scale-enter);
   translate: 0 0.5rem;
-  transition:
-    scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+  /* Promotes the panel to its own compositor layer up front rather than
+     waiting for the browser to decide mid-transition, so the scale/
+     translate exit runs on the GPU instead of competing with the
+     backdrop's paint work on the main thread. */
+  will-change: scale, translate;
 }
 
-.kernel-CommandPalette-content[open] {
-  display: flex;
+/* Never scale(0) — nothing in the real world appears from nothing.
+   Opacity stays 1 through both states deliberately: fading the panel
+   itself mid-close lets page content bleed through it, only the
+   backdrop below fades. Enter still fades in via `@starting-style`. */
+.kernel-CommandPalette-content[data-state="open"] {
   opacity: 1;
   scale: 1;
   translate: 0 0;
@@ -41,11 +63,12 @@
     display var(--kernel-duration-enter) allow-discrete;
 }
 
-.kernel-CommandPalette-content[data-closing] {
+.kernel-CommandPalette-content[data-state="closing"] {
   opacity: 1;
   scale: var(--kernel-scale-enter);
   translate: 0 0.5rem;
   transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay),
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
     overlay var(--kernel-duration-exit) allow-discrete,
@@ -53,7 +76,7 @@
 }
 
 @starting-style {
-  .kernel-CommandPalette-content[open] {
+  .kernel-CommandPalette-content[data-state="open"] {
     opacity: 0;
     scale: var(--kernel-scale-enter);
     translate: 0 0.5rem;
@@ -63,19 +86,20 @@
 .kernel-CommandPalette-content::backdrop {
   background-color: var(--kernel-color-scrim);
   opacity: 0;
-  transition:
-    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-exit) allow-discrete,
-    display var(--kernel-duration-exit) allow-discrete;
+  will-change: opacity;
 }
 
-/* Light frost — same 8px as Dialog's `backdrop="blur"`. */
+/* Light frost — same 8px as Dialog's `backdrop="blur"`. blur() is the
+   most expensive CSS filter to composite (it resamples everything
+   behind it every frame); will-change here hints the browser to give
+   it its own layer up front instead of repromoting mid-transition. */
 .kernel-CommandPalette-content[data-blur]::backdrop {
   background-color: color-mix(in oklab, var(--kernel-color-scrim) 70%, transparent);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--kernel-blur-backdrop));
+  will-change: backdrop-filter, opacity;
 }
 
-.kernel-CommandPalette-content[open]::backdrop {
+.kernel-CommandPalette-content[data-state="open"]::backdrop {
   opacity: 1;
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
@@ -83,7 +107,7 @@
     display var(--kernel-duration-enter) allow-discrete;
 }
 
-.kernel-CommandPalette-content[data-closing]::backdrop {
+.kernel-CommandPalette-content[data-state="closing"]::backdrop {
   opacity: 0;
   transition:
     opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
@@ -92,7 +116,7 @@
 }
 
 @starting-style {
-  .kernel-CommandPalette-content[open]::backdrop {
+  .kernel-CommandPalette-content[data-state="open"]::backdrop {
     opacity: 0;
   }
 }
@@ -165,7 +189,8 @@
   }
 
   .kernel-CommandPalette-content,
-  .kernel-CommandPalette-content[data-closing] {
+  .kernel-CommandPalette-content[data-state="open"],
+  .kernel-CommandPalette-content[data-state="closing"] {
     scale: 1;
     translate: 0 0;
     transition: none;

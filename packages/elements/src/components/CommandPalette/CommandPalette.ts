@@ -167,8 +167,7 @@ export class KernelCommandPalette extends KernelElement {
   private async finishClose(dialog: HTMLDialogElement) {
     if (!dialog.open || this.closing) return;
     this.closing = true;
-    dialog.removeAttribute("data-open");
-    dialog.setAttribute("data-closing", "");
+    dialog.setAttribute("data-state", "closing");
 
     if (!prefersReducedMotion()) {
       const controller = new AbortController();
@@ -183,7 +182,7 @@ export class KernelCommandPalette extends KernelElement {
 
     this.skipCloseEvent = true;
     dialog.close();
-    dialog.removeAttribute("data-closing");
+    dialog.removeAttribute("data-state");
     this.closing = false;
   }
 
@@ -315,13 +314,12 @@ export class KernelCommandPalette extends KernelElement {
         if (value !== null && !dialog.open) {
           this.exitAbort?.abort();
           this.closing = false;
-          dialog.removeAttribute("data-closing");
           this.query = "";
           this.activeIndex = 0;
           this.inputEl.value = "";
           this.renderOptions();
           dialog.showModal();
-          dialog.setAttribute("data-open", "");
+          dialog.setAttribute("data-state", "open");
           requestAnimationFrame(() => this.inputEl.focus());
         }
         if (value === null && dialog.open) {
