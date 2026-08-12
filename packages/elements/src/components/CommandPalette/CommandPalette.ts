@@ -73,19 +73,25 @@ export class KernelCommandPalette extends KernelElement {
     if (this.native) this.renderOptions();
   }
 
-  get filtered(): Array<{ item: KernelCommandPaletteItem; group?: KernelCommandPaletteGroup; flatIndex: number }> {
-    const sourceGroups = this._groups.length > 0 ? this._groups : [{ id: "__items__", items: this._items }];
-    const filteredGroups = sourceGroups
+  private get isGrouped(): boolean {
+    return this._groups.length > 0;
+  }
+
+  private get filteredGroups(): KernelCommandPaletteGroup[] {
+    const sourceGroups = this.isGrouped ? this._groups : [{ id: "__items__", items: this._items }];
+    return sourceGroups
       .map((group) => ({ ...group, items: group.items.filter((item) => {
         const q = this.query.toLowerCase();
         return item.label.toLowerCase().includes(q) || (item.description?.toLowerCase().includes(q) ?? false);
       }) }))
       .filter((group) => group.items.length > 0);
+  }
 
+  get filtered(): Array<{ item: KernelCommandPaletteItem; group?: KernelCommandPaletteGroup; flatIndex: number }> {
     const entries: Array<{ item: KernelCommandPaletteItem; group?: KernelCommandPaletteGroup; flatIndex: number }> = [];
-    for (const group of filteredGroups) {
+    for (const group of this.filteredGroups) {
       for (const item of group.items) {
-        entries.push({ item, group, flatIndex: entries.length });
+        entries.push({ item, group: this.isGrouped ? group : undefined, flatIndex: entries.length });
       }
     }
     return entries;
@@ -189,12 +195,14 @@ export class KernelCommandPalette extends KernelElement {
         if (maxIndex < 0) break;
         this.activeIndex = Math.min(this.activeIndex + 1, maxIndex);
         this.renderOptions();
+        this.scrollActiveIntoView();
         break;
       case "ArrowUp":
         event.preventDefault();
         if (maxIndex < 0) break;
         this.activeIndex = Math.max(this.activeIndex - 1, 0);
         this.renderOptions();
+        this.scrollActiveIntoView();
         break;
       case "Enter": {
         const active = this.filtered[this.activeIndex]?.item;
@@ -212,11 +220,21 @@ export class KernelCommandPalette extends KernelElement {
     this.requestClose();
   }
 
+  /** Keyboard nav only — hover already puts the pointer where it needs to
+   * be, so scrolling under it there would fight the user instead of
+   * helping. */
+  private scrollActiveIntoView() {
+    if (this.activeIndex < 0) return;
+    this.listboxEl
+      .querySelector(`[id="${this.baseId}-listbox-option-${this.activeIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }
+
   private renderOptions() {
-    const filtered = this.filtered;
+    const filteredGroups = this.filteredGroups;
     this.listboxEl.replaceChildren();
 
-    if (filtered.length === 0) {
+    if (filteredGroups.length === 0) {
       const empty = document.createElement("div");
       empty.className = kernelClass("CommandPalette", "empty");
       empty.textContent = this.getAttribute("empty-message") || "No results";
@@ -225,51 +243,67 @@ export class KernelCommandPalette extends KernelElement {
       return;
     }
 
-    let previousGroupId: string | undefined;
-    filtered.forEach(({ item, group, flatIndex }) => {
-      if (group?.label && group.id !== previousGroupId) {
+    let flatIndex = 0;
+    for (const group of filteredGroups) {
+      const headerId = group.label ? `${this.baseId}-listbox-group-${group.id}` : undefined;
+      let groupEl: HTMLElement = this.listboxEl;
+
+      if (headerId) {
+        groupEl = document.createElement("div");
+        groupEl.setAttribute("role", "group");
+        groupEl.setAttribute("aria-labelledby", headerId);
+
         const header = document.createElement("div");
+        header.id = headerId;
+        header.setAttribute("role", "presentation");
         header.className = kernelClass("CommandPalette", "groupLabel");
-        header.textContent = group.label;
-        this.listboxEl.append(header);
-        previousGroupId = group.id;
+        header.textContent = group.label ?? "";
+        groupEl.append(header);
+        this.listboxEl.append(groupEl);
       }
 
-      const option = document.createElement("div");
-      option.id = `${this.baseId}-listbox-option-${flatIndex}`;
-      option.setAttribute("role", "option");
-      option.setAttribute("aria-selected", String(flatIndex === this.activeIndex));
-      const active = dataAttr(flatIndex === this.activeIndex);
-      if (active) option.setAttribute("data-active", active);
-      option.className = kernelClass("CommandPalette", "option");
+      for (const item of group.items) {
+        const currentIndex = flatIndex++;
+        const option = document.createElement("div");
+        option.id = `${this.baseId}-listbox-option-${currentIndex}`;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", String(currentIndex === this.activeIndex));
+        const active = dataAttr(currentIndex === this.activeIndex);
+        if (active) option.setAttribute("data-active", active);
+        option.className = kernelClass("CommandPalette", "option");
 
-      const content = this.renderItem?.(item, { active: flatIndex === this.activeIndex, group, index: flatIndex });
-      if (content !== undefined && content !== null && typeof content !== "string") {
-        option.append(content as Node);
-      } else {
-        const label = document.createElement("div");
-        label.className = kernelClass("CommandPalette", "optionLabel");
-        label.textContent = item.label;
-        option.append(label);
+        const content = this.renderItem?.(item, {
+          active: currentIndex === this.activeIndex,
+          group: this.isGrouped ? group : undefined,
+          index: currentIndex,
+        });
+        if (content !== undefined && content !== null && typeof content !== "string") {
+          option.append(content as Node);
+        } else {
+          const label = document.createElement("div");
+          label.className = kernelClass("CommandPalette", "optionLabel");
+          label.textContent = item.label;
+          option.append(label);
 
-        if (item.description) {
-          const description = document.createElement("div");
-          description.className = kernelClass("CommandPalette", "optionDescription");
-          description.textContent = item.description;
-          option.append(description);
+          if (item.description) {
+            const description = document.createElement("div");
+            description.className = kernelClass("CommandPalette", "optionDescription");
+            description.textContent = item.description;
+            option.append(description);
+          }
         }
+
+        option.addEventListener("pointerdown", (event) => event.preventDefault());
+        option.addEventListener("pointermove", () => {
+          this.activeIndex = currentIndex;
+          this.renderOptions();
+        });
+        option.addEventListener("click", () => this.selectItem(item));
+
+        groupEl.append(option);
+        if (currentIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", option.id);
       }
-
-      option.addEventListener("pointerdown", (event) => event.preventDefault());
-      option.addEventListener("pointermove", () => {
-        this.activeIndex = flatIndex;
-        this.renderOptions();
-      });
-      option.addEventListener("click", () => this.selectItem(item));
-
-      this.listboxEl.append(option);
-      if (flatIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", option.id);
-    });
+    }
   }
 
   protected syncAttr(name: string, value: string | null) {

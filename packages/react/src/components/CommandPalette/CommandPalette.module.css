@@ -133,6 +133,7 @@
 .listbox {
   overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-padding-block: var(--kernel-space-1);
   max-block-size: 20rem;
   padding: var(--kernel-space-1);
 }

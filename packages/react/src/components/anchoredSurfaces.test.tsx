@@ -145,4 +145,52 @@ describe("anchored surfaces", () => {
     fireEvent.click(screen.getByTestId("option-react"));
     expect(onValueChange).toHaveBeenCalledWith("react");
   });
+
+  it("scrolls the active option into view on keyboard nav but not on hover", () => {
+    const scrollIntoView = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    render(
+      <Combobox
+        label="Framework"
+        options={[
+          { value: "astro", label: "Astro" },
+          { value: "next", label: "Next.js" },
+        ]}
+      />,
+    );
+
+    const input = screen.getByRole("combobox", { name: "Framework" });
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
+
+    scrollIntoView.mockClear();
+    fireEvent.pointerMove(screen.getByRole("option", { name: "Next.js" }));
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it("scrolls the active item into view on keyboard nav but not on hover", () => {
+    const scrollIntoView = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    render(
+      <CommandPalette
+        open
+        onOpenChange={() => {}}
+        items={[
+          { id: "new-file", label: "New file", onSelect: vi.fn() },
+          { id: "save", label: "Save", onSelect: vi.fn() },
+        ]}
+      />,
+    );
+
+    const input = screen.getByRole("combobox", { name: "Filter commands" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
+
+    scrollIntoView.mockClear();
+    fireEvent.pointerMove(screen.getByRole("option", { name: "New file" }));
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
 });

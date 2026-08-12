@@ -74,11 +74,13 @@ export function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const exitAbortRef = useRef<AbortController | null>(null);
   const skipCloseSyncRef = useRef(false);
+  const keyboardNavRef = useRef(false);
   const id = useId();
   const listboxId = `${id}-listbox`;
 
   const filtered = useMemo(() => {
-    const sourceGroups = groups && groups.length > 0 ? groups : [{ id: "__items__", items }];
+    const isGrouped = Boolean(groups && groups.length > 0);
+    const sourceGroups = isGrouped ? (groups as CommandPaletteGroup[]) : [{ id: "__items__", items }];
     const filteredGroups = sourceGroups
       .map((group) => ({ ...group, items: group.items.filter((item) => matchesQuery(item, query)) }))
       .filter((group) => group.items.length > 0);
@@ -86,11 +88,11 @@ export function CommandPalette({
     const entries: Array<{ item: CommandPaletteItem; group?: CommandPaletteGroup; flatIndex: number }> = [];
     for (const group of filteredGroups) {
       for (const item of group.items) {
-        entries.push({ item, group, flatIndex: entries.length });
+        entries.push({ item, group: isGrouped ? group : undefined, flatIndex: entries.length });
       }
     }
 
-    return { filteredGroups, entries };
+    return { filteredGroups, entries, isGrouped };
   }, [groups, items, query]);
 
   useEffect(() => {
@@ -162,6 +164,17 @@ export function CommandPalette({
     setActiveIndex((index) => Math.min(index, filtered.entries.length - 1));
   }, [filtered.entries.length]);
 
+  /** Only keyboard nav auto-scrolls the active item into view — hover
+   * (`onPointerMove` below) sets `activeIndex` too, and scrolling out from
+   * under a stationary pointer would fight the user rather than help. */
+  useEffect(() => {
+    if (!keyboardNavRef.current) return;
+    keyboardNavRef.current = false;
+    dialogRef.current
+      ?.querySelector(`[id="${listboxId}-option-${activeIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, listboxId]);
+
   function requestClose() {
     if (!open || closing) return;
     onOpenChange(false);
@@ -179,11 +192,13 @@ export function CommandPalette({
       case "ArrowDown":
         event.preventDefault();
         if (maxIndex < 0) break;
+        keyboardNavRef.current = true;
         setActiveIndex((index) => Math.min(index + 1, maxIndex));
         break;
       case "ArrowUp":
         event.preventDefault();
         if (maxIndex < 0) break;
+        keyboardNavRef.current = true;
         setActiveIndex((index) => Math.max(index - 1, 0));
         break;
       case "Enter": {
@@ -241,44 +256,56 @@ export function CommandPalette({
         ) : (
           (() => {
             const nodes: ReactNode[] = [];
-            let previousGroupId: string | undefined;
+            let flatIndex = 0;
 
-            for (const entry of filtered.entries) {
-              const { item, group, flatIndex } = entry;
-              if (group && group.label && group.id !== previousGroupId) {
+            for (const group of filtered.filteredGroups) {
+              const headerId = group.label ? `${listboxId}-group-${group.id}` : undefined;
+
+              const itemNodes = group.items.map((item) => {
+                const currentIndex = flatIndex++;
+                const isActive = currentIndex === activeIndex;
+                return (
+                  <div
+                    key={`${group.id}-${item.id}`}
+                    id={`${listboxId}-option-${currentIndex}`}
+                    role="option"
+                    aria-selected={isActive}
+                    data-active={dataAttr(isActive)}
+                    className={styles.option}
+                    onPointerDown={(event) => event.preventDefault()}
+                    onPointerMove={() => setActiveIndex(currentIndex)}
+                    onClick={() => selectItem(item)}
+                  >
+                    {typeof renderItem === "function"
+                      ? renderItem(item, {
+                          active: isActive,
+                          group: filtered.isGrouped ? group : undefined,
+                          index: currentIndex,
+                        })
+                      : (
+                          <>
+                            <div className={styles.optionLabel}>{item.label}</div>
+                            {item.description ? (
+                              <div className={styles.optionDescription}>{item.description}</div>
+                            ) : null}
+                          </>
+                        )}
+                  </div>
+                );
+              });
+
+              if (headerId) {
                 nodes.push(
-                  <div key={`${group.id}-header`} className={styles.groupLabel}>
-                    {group.label}
+                  <div key={`${group.id}-group`} role="group" aria-labelledby={headerId}>
+                    <div id={headerId} role="presentation" className={styles.groupLabel}>
+                      {group.label}
+                    </div>
+                    {itemNodes}
                   </div>,
                 );
-                previousGroupId = group.id;
+              } else {
+                nodes.push(...itemNodes);
               }
-
-              const isActive = flatIndex === activeIndex;
-              nodes.push(
-                <div
-                  key={`${group?.id ?? "items"}-${item.id}`}
-                  id={`${listboxId}-option-${flatIndex}`}
-                  role="option"
-                  aria-selected={isActive}
-                  data-active={dataAttr(isActive)}
-                  className={styles.option}
-                  onPointerDown={(event) => event.preventDefault()}
-                  onPointerMove={() => setActiveIndex(flatIndex)}
-                  onClick={() => selectItem(item)}
-                >
-                  {typeof renderItem === "function"
-                    ? renderItem(item, { active: isActive, group, index: flatIndex })
-                    : (
-                        <>
-                          <div className={styles.optionLabel}>{item.label}</div>
-                          {item.description ? (
-                            <div className={styles.optionDescription}>{item.description}</div>
-                          ) : null}
-                        </>
-                      )}
-                </div>,
-              );
             }
 
             return nodes;

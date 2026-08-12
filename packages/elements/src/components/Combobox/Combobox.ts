@@ -176,12 +176,14 @@ export class KernelCombobox extends KernelElement {
           this.activeIndex = Math.min(this.activeIndex + 1, maxIndex);
         }
         this.renderOptions();
+        this.scrollActiveIntoView();
         break;
       case "ArrowUp":
         event.preventDefault();
         if (maxIndex < 0) break;
         this.activeIndex = Math.max(this.activeIndex - 1, 0);
         this.renderOptions();
+        this.scrollActiveIntoView();
         break;
       case "Enter": {
         const active = this.filtered[this.activeIndex]?.option;
@@ -198,7 +200,8 @@ export class KernelCombobox extends KernelElement {
   }
 
   private renderOptions() {
-    const sourceGroups = this.groups.length > 0 ? this.groups : [{ id: "__items__", items: this.options }];
+    const isGrouped = this.groups.length > 0;
+    const sourceGroups = isGrouped ? this.groups : [{ id: "__items__", items: this.options }];
     const filteredGroups = sourceGroups
       .map((group) => ({
         ...group,
@@ -209,7 +212,7 @@ export class KernelCombobox extends KernelElement {
     const entries: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
     for (const group of filteredGroups) {
       for (const option of group.items) {
-        entries.push({ option, group, flatIndex: entries.length });
+        entries.push({ option, group: isGrouped ? group : undefined, flatIndex: entries.length });
       }
     }
     this.filtered = entries;
@@ -223,45 +226,67 @@ export class KernelCombobox extends KernelElement {
       return;
     }
 
-    let previousGroupId: string | undefined;
-    this.filtered.forEach(({ option, group, flatIndex }) => {
-      if (group?.label && group.id !== previousGroupId) {
+    let flatIndex = 0;
+    for (const group of filteredGroups) {
+      const headerId = group.label ? `${this.baseId}-listbox-group-${group.id}` : undefined;
+      let groupEl: HTMLElement = this.listboxEl;
+
+      if (headerId) {
+        groupEl = document.createElement("div");
+        groupEl.setAttribute("role", "group");
+        groupEl.setAttribute("aria-labelledby", headerId);
+
         const header = document.createElement("div");
+        header.id = headerId;
+        header.setAttribute("role", "presentation");
         header.className = kernelClass("Combobox", "groupLabel");
-        header.textContent = group.label;
-        this.listboxEl.append(header);
-        previousGroupId = group.id;
+        header.textContent = group.label ?? "";
+        groupEl.append(header);
+        this.listboxEl.append(groupEl);
       }
 
-      const div = document.createElement("div");
-      div.id = `${this.baseId}-listbox-option-${flatIndex}`;
-      div.setAttribute("role", "option");
-      div.setAttribute("aria-selected", String(option.value === this.selectedValue));
-      const active = dataAttr(flatIndex === this.activeIndex);
-      if (active) div.setAttribute("data-active", active);
-      div.className = kernelClass("Combobox", "option");
+      for (const option of group.items) {
+        const currentIndex = flatIndex++;
+        const div = document.createElement("div");
+        div.id = `${this.baseId}-listbox-option-${currentIndex}`;
+        div.setAttribute("role", "option");
+        div.setAttribute("aria-selected", String(option.value === this.selectedValue));
+        const active = dataAttr(currentIndex === this.activeIndex);
+        if (active) div.setAttribute("data-active", active);
+        div.className = kernelClass("Combobox", "option");
 
-      const content = this._renderOption?.(option, {
-        active: flatIndex === this.activeIndex,
-        selected: option.value === this.selectedValue,
-        group,
-        index: flatIndex,
-      });
-      if (content !== undefined && content !== null && typeof content !== "string") {
-        div.append(content as Node);
-      } else {
-        div.textContent = typeof content === "string" ? content : option.label;
+        const content = this._renderOption?.(option, {
+          active: currentIndex === this.activeIndex,
+          selected: option.value === this.selectedValue,
+          group: isGrouped ? group : undefined,
+          index: currentIndex,
+        });
+        if (content !== undefined && content !== null && typeof content !== "string") {
+          div.append(content as Node);
+        } else {
+          div.textContent = typeof content === "string" ? content : option.label;
+        }
+
+        div.addEventListener("pointerdown", (event) => event.preventDefault());
+        div.addEventListener("pointermove", () => {
+          this.activeIndex = currentIndex;
+          this.renderOptions();
+        });
+        div.addEventListener("click", () => this.selectOption(option));
+        groupEl.append(div);
+        if (currentIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", div.id);
       }
+    }
+  }
 
-      div.addEventListener("pointerdown", (event) => event.preventDefault());
-      div.addEventListener("pointermove", () => {
-        this.activeIndex = flatIndex;
-        this.renderOptions();
-      });
-      div.addEventListener("click", () => this.selectOption(option));
-      this.listboxEl.append(div);
-      if (flatIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", div.id);
-    });
+  /** Keyboard nav only — hover already puts the pointer where it needs to
+   * be, so scrolling under it there would fight the user instead of
+   * helping. */
+  private scrollActiveIntoView() {
+    if (this.activeIndex < 0) return;
+    this.listboxEl
+      .querySelector(`[id="${this.baseId}-listbox-option-${this.activeIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
   }
 
   protected syncAttr(name: string, value: string | null) {

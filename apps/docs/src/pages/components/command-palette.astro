@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import CommandPaletteDemo from "../../components/demos/CommandPaletteDemo";
+import CommandPaletteGroupsDemo from "../../components/demos/CommandPaletteGroupsDemo";
 import CommandPalettePlayground from "../../components/demos/CommandPalettePlayground";
 
 const usageSnippet = `import { useState } from "react";
@@ -22,6 +23,43 @@ function App() {
       <Button onClick={() => setOpen(true)}>Open command palette</Button>
       <CommandPalette open={open} onOpenChange={setOpen} items={items} />
     </>
+  );
+}`;
+
+const groupsSnippet = `import { useState } from "react";
+import { CommandPalette } from "@kernelui-lib/react";
+import type { CommandPaletteGroup, CommandPaletteItem } from "@kernelui-lib/react";
+
+const groups: CommandPaletteGroup[] = [
+  { id: "recent", label: "Recent", items: [
+    { id: "save", label: "Save", onSelect: () => {} },
+  ] },
+  { id: "file", label: "File", items: [
+    { id: "new-file", label: "New file", onSelect: () => {} },
+  ] },
+  { id: "danger", label: "Danger zone", items: [
+    { id: "delete", label: "Delete", onSelect: () => {} },
+  ] },
+];
+
+function renderItem(item: CommandPaletteItem, state: { group?: CommandPaletteGroup }) {
+  return (
+    <div style={{ color: state.group?.id === "danger" ? "var(--kernel-color-danger)" : undefined }}>
+      {item.label}
+    </div>
+  );
+}
+
+function App() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <CommandPalette
+      open={open}
+      onOpenChange={setOpen}
+      groups={groups}
+      renderItem={renderItem}
+    />
   );
 }`;
 ---
@@ -55,6 +93,23 @@ function App() {
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <CommandPalettePlayground client:visible />
 
+    <h2>Grouping &amp; custom rendering</h2>
+    <p>
+      Pass <code>groups</code> instead of a flat <code>items</code> array to
+      section the results under labelled headers, "Recent", "File", a
+      danger zone, whatever fits your commands. Filtering, Arrow Up/Down,
+      and <code>aria-activedescendant</code> all operate across the
+      flattened result set. <code>renderItem</code> replaces an item's
+      default label/description with anything you want, given the item,
+      whether it's active, and which group (if any) it belongs to.
+    </p>
+
+    <div class="docs-example">
+      <CommandPaletteGroupsDemo client:visible />
+    </div>
+
+    <UsageAccordion code={groupsSnippet} lang="tsx" />
+
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">
       <caption>Props for Command Palette.</caption>
@@ -65,6 +120,8 @@ function App() {
         <tr><td><code>open</code></td><td>boolean</td><td>—</td></tr>
         <tr><td><code>onOpenChange</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
         <tr><td><code>items</code></td><td>CommandPaletteItem[]</td><td>—</td></tr>
+        <tr><td><code>groups</code></td><td>&#123; id, label?, items: CommandPaletteItem[] &#125;[]</td><td>—</td></tr>
+        <tr><td><code>renderItem</code></td><td>(item, &#123; active, group?, index &#125;) =&gt; ReactNode</td><td>—</td></tr>
         <tr><td><code>placeholder</code></td><td>string</td><td>"Filter commands"</td></tr>
         <tr><td><code>emptyMessage</code></td><td>ReactNode</td><td>"No results"</td></tr>
         <tr><td><code>blur</code></td><td>boolean</td><td>false</td></tr>
@@ -72,6 +129,10 @@ function App() {
     </table></div>
     <p>
       <code>CommandPaletteItem</code>: <code>&#123; id, label, description?, onSelect &#125;</code>.
+      Provide either <code>items</code> or <code>groups</code> — when both
+      are set, <code>groups</code> wins. Each group needs a unique{" "}
+      <code>id</code>; a group without a <code>label</code> renders its
+      items without a header.
     </p>
 
     <h2>Accessibility</h2>
@@ -92,6 +153,11 @@ function App() {
         item's label, live as you type.
       </li>
       <li>Clicking the <code>::backdrop</code> closes the dialog.</li>
+      <li>
+        Grouped items are wrapped in <code>role="group"</code>, labelled
+        via <code>aria-labelledby</code> by a <code>role="presentation"</code>{" "}
+        header, so assistive tech announces which group an item belongs to.
+      </li>
     </ul>
   </div>
 </BaseLayout>

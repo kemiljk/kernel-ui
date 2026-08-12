@@ -93,11 +93,13 @@ export function Combobox({
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const keyboardNavRef = useRef(false);
   const id = useId();
   const listboxId = `${id}-listbox`;
 
   const filtered = useMemo(() => {
-    const sourceGroups = groups && groups.length > 0 ? groups : [{ id: "__items__", items: options }];
+    const isGrouped = Boolean(groups && groups.length > 0);
+    const sourceGroups = isGrouped ? (groups as ComboboxGroup[]) : [{ id: "__items__", items: options }];
     const filteredGroups = sourceGroups
       .map((group) => ({
         ...group,
@@ -108,11 +110,11 @@ export function Combobox({
     const entries: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
     for (const group of filteredGroups) {
       for (const option of group.items) {
-        entries.push({ option, group, flatIndex: entries.length });
+        entries.push({ option, group: isGrouped ? group : undefined, flatIndex: entries.length });
       }
     }
 
-    return { filteredGroups, entries };
+    return { filteredGroups, entries, isGrouped };
   }, [groups, inputText, options]);
 
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLInputElement, HTMLDivElement>({
@@ -166,12 +168,25 @@ export function Combobox({
     setActiveIndex((index) => Math.min(index, filtered.entries.length - 1));
   }, [filtered.entries.length]);
 
+  /** Only keyboard nav auto-scrolls the active option into view — hover
+   * (`onPointerMove` below) sets `activeIndex` too, and scrolling out from
+   * under a stationary pointer would fight the user rather than help. */
+  useEffect(() => {
+    if (!keyboardNavRef.current) return;
+    keyboardNavRef.current = false;
+    if (activeIndex < 0) return;
+    listboxRef.current
+      ?.querySelector(`[id="${listboxId}-option-${activeIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, listboxId]);
+
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     const maxIndex = filtered.entries.length - 1;
 
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
+        keyboardNavRef.current = true;
         if (!open) {
           openList();
           setActiveIndex(maxIndex >= 0 ? 0 : -1);
@@ -182,6 +197,7 @@ export function Combobox({
       case "ArrowUp":
         event.preventDefault();
         if (maxIndex < 0) break;
+        keyboardNavRef.current = true;
         setActiveIndex((index) => Math.max(index - 1, 0));
         break;
       case "Enter": {
@@ -251,43 +267,51 @@ export function Combobox({
         ) : (
           (() => {
             const nodes: ReactNode[] = [];
-            let previousGroupId: string | undefined;
+            let flatIndex = 0;
 
-            for (const entry of filtered.entries) {
-              const { option, group, flatIndex } = entry;
-              if (group && group.label && group.id !== previousGroupId) {
+            for (const group of filtered.filteredGroups) {
+              const headerId = group.label ? `${listboxId}-group-${group.id}` : undefined;
+
+              const optionNodes = group.items.map((option) => {
+                const currentIndex = flatIndex++;
+                const isActive = currentIndex === activeIndex;
+                const isSelected = option.value === selectedValue;
+                return (
+                  <div
+                    key={`${group.id}-${option.value}`}
+                    id={`${listboxId}-option-${currentIndex}`}
+                    role="option"
+                    aria-selected={isSelected}
+                    data-active={dataAttr(isActive)}
+                    className={styles.option}
+                    onPointerDown={(event) => event.preventDefault()}
+                    onPointerMove={() => setActiveIndex(currentIndex)}
+                    onClick={() => selectOption(option)}
+                  >
+                    {typeof renderOption === "function"
+                      ? renderOption(option, {
+                          active: isActive,
+                          selected: isSelected,
+                          group: filtered.isGrouped ? group : undefined,
+                          index: currentIndex,
+                        })
+                      : option.label}
+                  </div>
+                );
+              });
+
+              if (headerId) {
                 nodes.push(
-                  <div key={`${group.id}-header`} className={styles.groupLabel}>
-                    {group.label}
+                  <div key={`${group.id}-group`} role="group" aria-labelledby={headerId}>
+                    <div id={headerId} role="presentation" className={styles.groupLabel}>
+                      {group.label}
+                    </div>
+                    {optionNodes}
                   </div>,
                 );
-                previousGroupId = group.id;
+              } else {
+                nodes.push(...optionNodes);
               }
-
-              const isActive = flatIndex === activeIndex;
-              const isSelected = option.value === selectedValue;
-              nodes.push(
-                <div
-                  key={`${group?.id ?? "items"}-${option.value}`}
-                  id={`${listboxId}-option-${flatIndex}`}
-                  role="option"
-                  aria-selected={isSelected}
-                  data-active={dataAttr(isActive)}
-                  className={styles.option}
-                  onPointerDown={(event) => event.preventDefault()}
-                  onPointerMove={() => setActiveIndex(flatIndex)}
-                  onClick={() => selectOption(option)}
-                >
-                  {typeof renderOption === "function"
-                    ? renderOption(option, {
-                        active: isActive,
-                        selected: isSelected,
-                        group,
-                        index: flatIndex,
-                      })
-                    : option.label}
-                </div>,
-              );
             }
 
             return nodes;

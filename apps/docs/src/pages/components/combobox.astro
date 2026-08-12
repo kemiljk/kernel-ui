@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import ComboboxDemo from "../../components/demos/ComboboxDemo";
+import ComboboxGroupsDemo from "../../components/demos/ComboboxGroupsDemo";
 import ComboboxPlayground from "../../components/demos/ComboboxPlayground";
 
 const usageSnippet = `import { useState } from "react";
@@ -27,6 +28,30 @@ function FrameworkPicker() {
     />
   );
 }`;
+
+const groupsSnippet = `import { Combobox } from "@kernelui-lib/react";
+import type { ComboboxGroup, ComboboxOption } from "@kernelui-lib/react";
+
+const groups: ComboboxGroup[] = [
+  { id: "frontend", label: "Frontend", items: [
+    { value: "astro", label: "Astro" },
+    { value: "next", label: "Next.js" },
+  ] },
+  { id: "backend", label: "Backend", items: [
+    { value: "express", label: "Express" },
+  ] },
+];
+
+function renderOption(option: ComboboxOption, state: { selected: boolean }) {
+  return (
+    <span>
+      {option.label}
+      {state.selected ? " ✓" : null}
+    </span>
+  );
+}
+
+<Combobox label="Framework" groups={groups} renderOption={renderOption} />;`;
 ---
 
 <BaseLayout title="Combobox" withSidebar>
@@ -55,6 +80,24 @@ function FrameworkPicker() {
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <ComboboxPlayground client:visible />
 
+    <h2>Grouping &amp; custom rendering</h2>
+    <p>
+      Pass <code>groups</code> instead of a flat <code>options</code> array to
+      section the listbox under labelled headers — filtering, keyboard
+      navigation, and <code>aria-activedescendant</code> all operate across
+      the flattened result set, so an item's position in its group doesn't
+      change how Arrow Up/Down or Enter behave. <code>renderOption</code>{" "}
+      replaces an option's default text label with anything you want (icons,
+      a checkmark, secondary text), given the option, whether it's active or
+      selected, and which group (if any) it belongs to.
+    </p>
+
+    <div class="docs-example">
+      <ComboboxGroupsDemo client:visible />
+    </div>
+
+    <UsageAccordion code={groupsSnippet} lang="tsx" />
+
     <h2>Props</h2>
     <div class="docs-table-scroll"><table class="docs-table">
       <caption>Props for Combobox.</caption>
@@ -63,7 +106,9 @@ function FrameworkPicker() {
         <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
         <tr><td><code>hideLabel</code></td><td>boolean</td><td>false</td></tr>
         <tr><td><code>labelOffset</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>options</code></td><td>&#123; value, label &#125;[] (required)</td><td>—</td></tr>
+        <tr><td><code>options</code></td><td>&#123; value, label &#125;[]</td><td>—</td></tr>
+        <tr><td><code>groups</code></td><td>&#123; id, label?, items: ComboboxOption[] &#125;[]</td><td>—</td></tr>
+        <tr><td><code>renderOption</code></td><td>(option, &#123; active, selected, group?, index &#125;) =&gt; ReactNode</td><td>—</td></tr>
         <tr><td><code>value</code> / <code>onValueChange</code></td><td>string / (value) =&gt; void</td><td>—</td></tr>
         <tr><td><code>defaultValue</code></td><td>string</td><td>""</td></tr>
         <tr><td><code>placeholder</code></td><td>string</td><td>—</td></tr>
@@ -73,5 +118,20 @@ function FrameworkPicker() {
         <tr><td><code>offset</code></td><td>number (px)</td><td>8</td></tr>
       </tbody>
     </table></div>
+    <p>
+      Provide either <code>options</code> or <code>groups</code> — when both
+      are set, <code>groups</code> wins. Each group needs a unique{" "}
+      <code>id</code>; a group without a <code>label</code> renders its
+      items without a header.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        Grouped options are wrapped in <code>role="group"</code>, labelled
+        via <code>aria-labelledby</code> by a <code>role="presentation"</code>{" "}
+        header, so assistive tech announces which group an option belongs to.
+      </li>
+    </ul>
   </div>
 </BaseLayout>
