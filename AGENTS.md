@@ -4,6 +4,19 @@ This is a monorepo for a component library built on real semantic HTML.
 Read `README.md` for the project pitch. This file is operational
 guidance for anyone (human or agent) making changes here.
 
+## Release checklist for pull requests
+
+Any PR that changes a publishable package under `packages/react`,
+`packages/elements`, `packages/styles`, or `packages/cli` must include a
+`.changeset/<descriptive-name>.md` file describing the affected package(s) and
+the release level (`patch`, `minor`, or `major`). Run `bunx changeset` to create
+it. Docs-only changes do not need a Changeset. CI enforces this rule; the only
+exception is the Changesets-generated `Version Packages` release PR.
+
+When creating a PR, never leave the Changeset decision implicit: add the file
+or explicitly confirm that the PR is docs-only/non-publishable. A merged PR
+without a Changeset will not produce an npm or GitHub release.
+
 For **consuming** the published packages, don't read this file — read
 `packages/react/llms.txt` or `packages/elements/llms.txt` instead; they're
 the API reference. This file is about *building* the library, not using it.
