@@ -19,6 +19,7 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     tab-size: 4;
+    overscroll-behavior: none;
     /* Inherited, so this one root declaration is what lets a `transition:
        height` (Accordion's `::details-content`, e.g.) actually animate
        between `0` and `auto` anywhere in the tree — without it, browsers
@@ -28,6 +29,11 @@
        Inert (not just guarded-and-skipped) in browsers that don't support
        it yet: same instant-snap fallback as before this existed. */
     interpolate-size: allow-keywords;
+  }
+
+  html,
+  body {
+    overscroll-behavior: none;
   }
 
   body {
@@ -66,6 +72,25 @@
   select,
   textarea {
     accent-color: var(--kernel-color-accent);
+  }
+
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   /* Every component already ships its own :hover/:active/:focus-visible
