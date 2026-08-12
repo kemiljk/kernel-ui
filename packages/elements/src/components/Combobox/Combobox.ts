@@ -9,6 +9,12 @@ interface ComboboxOption {
   label: string;
 }
 
+interface ComboboxGroup {
+  id: string;
+  label?: string;
+  items: ComboboxOption[];
+}
+
 /**
  * `<kernel-combobox>` — the WAI-ARIA 1.2 combobox pattern: a real
  * `<input role="combobox">` that keeps DOM focus the whole time, an
@@ -36,7 +42,8 @@ export class KernelCombobox extends KernelElement {
   private readonly baseId = `kernel-combobox-${++comboboxCounter}`;
   private readonly positioner = new FloatingPositioner();
   private options: ComboboxOption[] = [];
-  private filtered: ComboboxOption[] = [];
+  private groups: ComboboxGroup[] = [];
+  private filtered: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
   private selectedValue = "";
   private inputText = "";
   private open = false;
@@ -65,7 +72,7 @@ export class KernelCombobox extends KernelElement {
     this.selectedValue = this.getAttribute("value") ?? "";
     const selectedOption = this.options.find((o) => o.value === this.selectedValue);
     this.inputText = selectedOption?.label ?? "";
-    this.filtered = this.options;
+    this.filtered = [];
 
     const root = document.createElement("div");
     root.className = kernelClass("Combobox");
@@ -119,6 +126,17 @@ export class KernelCombobox extends KernelElement {
     this.syncAllAttrs();
   }
 
+  set renderOption(value: ((option: ComboboxOption, state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number }) => HTMLElement | DocumentFragment | string | null) | undefined) {
+    this._renderOption = value;
+    if (this.native) this.renderOptions();
+  }
+
+  get renderOption() {
+    return this._renderOption;
+  }
+
+  private _renderOption?: ((option: ComboboxOption, state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number }) => HTMLElement | DocumentFragment | string | null);
+
   private openList() {
     if (this.open) return;
     this.open = true;
@@ -147,24 +165,26 @@ export class KernelCombobox extends KernelElement {
   }
 
   private handleKeyDown(event: KeyboardEvent) {
+    const maxIndex = this.filtered.length - 1;
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
         if (!this.open) {
           this.openList();
-          this.activeIndex = 0;
-        } else {
-          this.activeIndex = Math.min(this.activeIndex + 1, this.filtered.length - 1);
+          this.activeIndex = maxIndex >= 0 ? 0 : -1;
+        } else if (maxIndex >= 0) {
+          this.activeIndex = Math.min(this.activeIndex + 1, maxIndex);
         }
         this.renderOptions();
         break;
       case "ArrowUp":
         event.preventDefault();
+        if (maxIndex < 0) break;
         this.activeIndex = Math.max(this.activeIndex - 1, 0);
         this.renderOptions();
         break;
       case "Enter": {
-        const active = this.filtered[this.activeIndex];
+        const active = this.filtered[this.activeIndex]?.option;
         if (this.open && active) {
           event.preventDefault();
           this.selectOption(active);
@@ -178,9 +198,21 @@ export class KernelCombobox extends KernelElement {
   }
 
   private renderOptions() {
-    this.filtered = this.options.filter((option) =>
-      option.label.toLowerCase().includes(this.inputText.toLowerCase()),
-    );
+    const sourceGroups = this.groups.length > 0 ? this.groups : [{ id: "__items__", items: this.options }];
+    const filteredGroups = sourceGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((option) => option.label.toLowerCase().includes(this.inputText.toLowerCase())),
+      }))
+      .filter((group) => group.items.length > 0);
+
+    const entries: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
+    for (const group of filteredGroups) {
+      for (const option of group.items) {
+        entries.push({ option, group, flatIndex: entries.length });
+      }
+    }
+    this.filtered = entries;
     this.listboxEl.replaceChildren();
 
     if (this.filtered.length === 0) {
@@ -191,19 +223,44 @@ export class KernelCombobox extends KernelElement {
       return;
     }
 
-    this.filtered.forEach((option, index) => {
+    let previousGroupId: string | undefined;
+    this.filtered.forEach(({ option, group, flatIndex }) => {
+      if (group?.label && group.id !== previousGroupId) {
+        const header = document.createElement("div");
+        header.className = kernelClass("Combobox", "groupLabel");
+        header.textContent = group.label;
+        this.listboxEl.append(header);
+        previousGroupId = group.id;
+      }
+
       const div = document.createElement("div");
-      div.id = `${this.baseId}-listbox-option-${index}`;
+      div.id = `${this.baseId}-listbox-option-${flatIndex}`;
       div.setAttribute("role", "option");
       div.setAttribute("aria-selected", String(option.value === this.selectedValue));
-      const active = dataAttr(index === this.activeIndex);
+      const active = dataAttr(flatIndex === this.activeIndex);
       if (active) div.setAttribute("data-active", active);
       div.className = kernelClass("Combobox", "option");
-      div.textContent = option.label;
+
+      const content = this._renderOption?.(option, {
+        active: flatIndex === this.activeIndex,
+        selected: option.value === this.selectedValue,
+        group,
+        index: flatIndex,
+      });
+      if (content !== undefined && content !== null && typeof content !== "string") {
+        div.append(content as Node);
+      } else {
+        div.textContent = typeof content === "string" ? content : option.label;
+      }
+
       div.addEventListener("pointerdown", (event) => event.preventDefault());
+      div.addEventListener("pointermove", () => {
+        this.activeIndex = flatIndex;
+        this.renderOptions();
+      });
       div.addEventListener("click", () => this.selectOption(option));
       this.listboxEl.append(div);
-      if (index === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", div.id);
+      if (flatIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", div.id);
     });
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
@@ -15,6 +15,12 @@ export interface ComboboxOption {
   label: string;
 }
 
+export interface ComboboxGroup {
+  id: string;
+  label?: string;
+  items: ComboboxOption[];
+}
+
 export interface ComboboxProps {
   label: ReactNode;
   /** Visually hides the label without removing it from the accessibility
@@ -24,7 +30,8 @@ export interface ComboboxProps {
    * edge, undoing the default inset that lines it up with the input's own
    * text padding (`--kernel-label-inset`). */
   labelOffset?: boolean;
-  options: ComboboxOption[];
+  options?: ComboboxOption[];
+  groups?: ComboboxGroup[];
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
@@ -36,6 +43,10 @@ export interface ComboboxProps {
   align?: FloatingAlign;
   /** Gap between the field and the listbox, in pixels. */
   offset?: number;
+  renderOption?: (
+    option: ComboboxOption,
+    state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number },
+  ) => ReactNode;
 }
 
 /**
@@ -52,7 +63,8 @@ export function Combobox({
   label,
   hideLabel = false,
   labelOffset = true,
-  options,
+  options = [],
+  groups,
   value,
   defaultValue = "",
   onValueChange,
@@ -61,13 +73,18 @@ export function Combobox({
   placement = "bottom",
   align = "center",
   offset = 8,
+  renderOption,
 }: ComboboxProps) {
   const [selectedValue, setSelectedValue] = useControllableState({
     value,
     defaultValue,
     onChange: onValueChange,
   });
-  const selectedOption = options.find((option) => option.value === selectedValue);
+  const sourceOptions = useMemo(
+    () => (groups && groups.length > 0 ? groups.flatMap((group) => group.items) : options),
+    [groups, options],
+  );
+  const selectedOption = sourceOptions.find((option) => option.value === selectedValue);
 
   const [inputText, setInputText] = useState(selectedOption?.label ?? "");
   const [open, setOpen] = useState(false);
@@ -79,9 +96,24 @@ export function Combobox({
   const id = useId();
   const listboxId = `${id}-listbox`;
 
-  const filtered = options.filter((option) =>
-    option.label.toLowerCase().includes(inputText.toLowerCase()),
-  );
+  const filtered = useMemo(() => {
+    const sourceGroups = groups && groups.length > 0 ? groups : [{ id: "__items__", items: options }];
+    const filteredGroups = sourceGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((option) => option.label.toLowerCase().includes(inputText.toLowerCase())),
+      }))
+      .filter((group) => group.items.length > 0);
+
+    const entries: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
+    for (const group of filteredGroups) {
+      for (const option of group.items) {
+        entries.push({ option, group, flatIndex: entries.length });
+      }
+    }
+
+    return { filteredGroups, entries };
+  }, [groups, inputText, options]);
 
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLInputElement, HTMLDivElement>({
     open,
@@ -126,23 +158,34 @@ export function Combobox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  useEffect(() => {
+    if (filtered.entries.length === 0) {
+      setActiveIndex(-1);
+      return;
+    }
+    setActiveIndex((index) => Math.min(index, filtered.entries.length - 1));
+  }, [filtered.entries.length]);
+
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    const maxIndex = filtered.entries.length - 1;
+
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
         if (!open) {
           openList();
-          setActiveIndex(0);
-        } else {
-          setActiveIndex((index) => Math.min(index + 1, filtered.length - 1));
+          setActiveIndex(maxIndex >= 0 ? 0 : -1);
+        } else if (maxIndex >= 0) {
+          setActiveIndex((index) => Math.min(index + 1, maxIndex));
         }
         break;
       case "ArrowUp":
         event.preventDefault();
+        if (maxIndex < 0) break;
         setActiveIndex((index) => Math.max(index - 1, 0));
         break;
       case "Enter": {
-        const active = filtered[activeIndex];
+        const active = filtered.entries[activeIndex]?.option;
         if (open && active) {
           event.preventDefault();
           selectOption(active);
@@ -154,6 +197,8 @@ export function Combobox({
         break;
     }
   }
+
+  const activeEntry = filtered.entries[activeIndex];
 
   return (
     <div
@@ -176,7 +221,7 @@ export function Combobox({
         aria-expanded={open}
         aria-controls={listboxId}
         aria-autocomplete="list"
-        aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined}
+        aria-activedescendant={activeEntry ? `${listboxId}-option-${activeEntry.flatIndex}` : undefined}
         value={inputText}
         placeholder={placeholder}
         autoComplete="off"
@@ -201,23 +246,52 @@ export function Combobox({
         data-closing={dataAttr(closing)}
         className={styles.listbox}
       >
-        {filtered.length === 0 ? (
+        {filtered.entries.length === 0 ? (
           <div className={styles.empty}>{emptyMessage}</div>
         ) : (
-          filtered.map((option, index) => (
-            <div
-              key={option.value}
-              id={`${listboxId}-option-${index}`}
-              role="option"
-              aria-selected={option.value === selectedValue}
-              data-active={dataAttr(index === activeIndex)}
-              className={styles.option}
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() => selectOption(option)}
-            >
-              {option.label}
-            </div>
-          ))
+          (() => {
+            const nodes: ReactNode[] = [];
+            let previousGroupId: string | undefined;
+
+            for (const entry of filtered.entries) {
+              const { option, group, flatIndex } = entry;
+              if (group && group.label && group.id !== previousGroupId) {
+                nodes.push(
+                  <div key={`${group.id}-header`} className={styles.groupLabel}>
+                    {group.label}
+                  </div>,
+                );
+                previousGroupId = group.id;
+              }
+
+              const isActive = flatIndex === activeIndex;
+              const isSelected = option.value === selectedValue;
+              nodes.push(
+                <div
+                  key={`${group?.id ?? "items"}-${option.value}`}
+                  id={`${listboxId}-option-${flatIndex}`}
+                  role="option"
+                  aria-selected={isSelected}
+                  data-active={dataAttr(isActive)}
+                  className={styles.option}
+                  onPointerDown={(event) => event.preventDefault()}
+                  onPointerMove={() => setActiveIndex(flatIndex)}
+                  onClick={() => selectOption(option)}
+                >
+                  {typeof renderOption === "function"
+                    ? renderOption(option, {
+                        active: isActive,
+                        selected: isSelected,
+                        group,
+                        index: flatIndex,
+                      })
+                    : option.label}
+                </div>,
+              );
+            }
+
+            return nodes;
+          })()
         )}
       </div>
     </div>

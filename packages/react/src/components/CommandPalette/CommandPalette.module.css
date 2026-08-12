@@ -156,6 +156,16 @@
   background-color: var(--kernel-color-accent-subtle);
 }
 
+.groupLabel {
+  padding-block: var(--kernel-space-2) 0;
+  padding-inline: var(--kernel-space-3);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .optionLabel {
   color: var(--kernel-color-text);
 }

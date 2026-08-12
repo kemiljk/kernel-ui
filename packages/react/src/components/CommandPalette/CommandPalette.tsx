@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs } from "../../utils/polymorphic";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
@@ -11,14 +11,33 @@ export interface CommandPaletteItem {
   onSelect: () => void;
 }
 
+export interface CommandPaletteGroup {
+  id: string;
+  label?: string;
+  items: CommandPaletteItem[];
+}
+
 export interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  items: CommandPaletteItem[];
+  items?: CommandPaletteItem[];
+  groups?: CommandPaletteGroup[];
   placeholder?: string;
   emptyMessage?: ReactNode;
   /** Light frost on the `::backdrop` (`backdrop-filter: blur(8px)`). */
   blur?: boolean;
+  renderItem?: (
+    item: CommandPaletteItem,
+    state: { active: boolean; group?: CommandPaletteGroup; index: number },
+  ) => ReactNode;
+}
+
+function matchesQuery(item: CommandPaletteItem, query: string) {
+  const q = query.toLowerCase();
+  return (
+    item.label.toLowerCase().includes(q) ||
+    (item.description?.toLowerCase().includes(q) ?? false)
+  );
 }
 
 /**
@@ -40,10 +59,12 @@ export interface CommandPaletteProps {
 export function CommandPalette({
   open,
   onOpenChange,
-  items,
+  items = [],
+  groups,
   placeholder = "Filter commands",
   emptyMessage = "No results",
   blur = false,
+  renderItem,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -56,13 +77,21 @@ export function CommandPalette({
   const id = useId();
   const listboxId = `${id}-listbox`;
 
-  const filtered = items.filter((item) => {
-    const q = query.toLowerCase();
-    return (
-      item.label.toLowerCase().includes(q) ||
-      (item.description?.toLowerCase().includes(q) ?? false)
-    );
-  });
+  const filtered = useMemo(() => {
+    const sourceGroups = groups && groups.length > 0 ? groups : [{ id: "__items__", items }];
+    const filteredGroups = sourceGroups
+      .map((group) => ({ ...group, items: group.items.filter((item) => matchesQuery(item, query)) }))
+      .filter((group) => group.items.length > 0);
+
+    const entries: Array<{ item: CommandPaletteItem; group?: CommandPaletteGroup; flatIndex: number }> = [];
+    for (const group of filteredGroups) {
+      for (const item of group.items) {
+        entries.push({ item, group, flatIndex: entries.length });
+      }
+    }
+
+    return { filteredGroups, entries };
+  }, [groups, items, query]);
 
   useEffect(() => {
     const node = dialogRef.current;
@@ -125,6 +154,14 @@ export function CommandPalette({
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [open]);
 
+  useEffect(() => {
+    if (filtered.entries.length === 0) {
+      setActiveIndex(0);
+      return;
+    }
+    setActiveIndex((index) => Math.min(index, filtered.entries.length - 1));
+  }, [filtered.entries.length]);
+
   function requestClose() {
     if (!open || closing) return;
     onOpenChange(false);
@@ -136,17 +173,21 @@ export function CommandPalette({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    const maxIndex = filtered.entries.length - 1;
+
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
-        setActiveIndex((index) => Math.min(index + 1, filtered.length - 1));
+        if (maxIndex < 0) break;
+        setActiveIndex((index) => Math.min(index + 1, maxIndex));
         break;
       case "ArrowUp":
         event.preventDefault();
+        if (maxIndex < 0) break;
         setActiveIndex((index) => Math.max(index - 1, 0));
         break;
       case "Enter": {
-        const active = filtered[activeIndex];
+        const active = filtered.entries[activeIndex]?.item;
         if (active) {
           event.preventDefault();
           selectItem(active);
@@ -155,6 +196,8 @@ export function CommandPalette({
       }
     }
   }
+
+  const activeEntry = filtered.entries[activeIndex];
 
   return (
     <dialog
@@ -181,7 +224,7 @@ export function CommandPalette({
         aria-expanded="true"
         aria-controls={listboxId}
         aria-autocomplete="list"
-        aria-activedescendant={filtered[activeIndex] ? `${listboxId}-option-${activeIndex}` : undefined}
+        aria-activedescendant={activeEntry ? `${listboxId}-option-${activeEntry.flatIndex}` : undefined}
         value={query}
         placeholder={placeholder}
         autoComplete="off"
@@ -193,27 +236,53 @@ export function CommandPalette({
         className={styles.input}
       />
       <div id={listboxId} role="listbox" className={styles.listbox}>
-        {filtered.length === 0 ? (
+        {filtered.entries.length === 0 ? (
           <div className={styles.empty}>{emptyMessage}</div>
         ) : (
-          filtered.map((item, index) => (
-            <div
-              key={item.id}
-              id={`${listboxId}-option-${index}`}
-              role="option"
-              aria-selected={index === activeIndex}
-              data-active={dataAttr(index === activeIndex)}
-              className={styles.option}
-              onPointerDown={(event) => event.preventDefault()}
-              onPointerMove={() => setActiveIndex(index)}
-              onClick={() => selectItem(item)}
-            >
-              <div className={styles.optionLabel}>{item.label}</div>
-              {item.description ? (
-                <div className={styles.optionDescription}>{item.description}</div>
-              ) : null}
-            </div>
-          ))
+          (() => {
+            const nodes: ReactNode[] = [];
+            let previousGroupId: string | undefined;
+
+            for (const entry of filtered.entries) {
+              const { item, group, flatIndex } = entry;
+              if (group && group.label && group.id !== previousGroupId) {
+                nodes.push(
+                  <div key={`${group.id}-header`} className={styles.groupLabel}>
+                    {group.label}
+                  </div>,
+                );
+                previousGroupId = group.id;
+              }
+
+              const isActive = flatIndex === activeIndex;
+              nodes.push(
+                <div
+                  key={`${group?.id ?? "items"}-${item.id}`}
+                  id={`${listboxId}-option-${flatIndex}`}
+                  role="option"
+                  aria-selected={isActive}
+                  data-active={dataAttr(isActive)}
+                  className={styles.option}
+                  onPointerDown={(event) => event.preventDefault()}
+                  onPointerMove={() => setActiveIndex(flatIndex)}
+                  onClick={() => selectItem(item)}
+                >
+                  {typeof renderItem === "function"
+                    ? renderItem(item, { active: isActive, group, index: flatIndex })
+                    : (
+                        <>
+                          <div className={styles.optionLabel}>{item.label}</div>
+                          {item.description ? (
+                            <div className={styles.optionDescription}>{item.description}</div>
+                          ) : null}
+                        </>
+                      )}
+                </div>,
+              );
+            }
+
+            return nodes;
+          })()
         )}
       </div>
     </dialog>

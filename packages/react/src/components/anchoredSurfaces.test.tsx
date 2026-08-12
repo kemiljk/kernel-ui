@@ -1,5 +1,5 @@
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { Combobox } from "./Combobox/Combobox";
 import { DropdownMenu, MenuItem } from "./DropdownMenu/DropdownMenu";
 import { HoverCard } from "./HoverCard/HoverCard";
@@ -11,6 +11,7 @@ import {
   NavigationMenuTrigger,
 } from "./NavigationMenu/NavigationMenu";
 import { Popover } from "./Popover/Popover";
+import { CommandPalette } from "./CommandPalette/CommandPalette";
 import { Tooltip } from "./Tooltip/Tooltip";
 
 /** Every anchored surface takes the same placement/align/offset trio and
@@ -76,5 +77,72 @@ describe("anchored surfaces", () => {
     expect(popup).not.toBeNull();
     expect(popup).toHaveAttribute("data-placement");
     expect(popup).toHaveAttribute("data-align", "end");
+  });
+
+  it("supports grouped custom-rendered results in CommandPalette", () => {
+    const onSelect = vi.fn();
+    render(
+      <CommandPalette
+        open
+        onOpenChange={() => {}}
+        groups={[
+          {
+            id: "recent",
+            label: "Recent",
+            items: [{ id: "save", label: "Save", onSelect }],
+          },
+        ]}
+        renderItem={(item) => (
+          <span data-testid={`command-${item.id}`}>
+            {item.label}
+          </span>
+        )}
+      />,
+    );
+
+    expect(screen.getByText("Recent")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("command-save"));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it("filters via the real CommandPalette combobox input", () => {
+    render(
+      <CommandPalette
+        open
+        onOpenChange={() => {}}
+        items={[
+          { id: "new-file", label: "New file", description: "Create a new file", onSelect: vi.fn() },
+          { id: "save", label: "Save", description: "Save the current file", onSelect: vi.fn() },
+        ]}
+      />,
+    );
+
+    const search = screen.getByRole("combobox", { name: "Filter commands" });
+    fireEvent.change(search, { target: { value: "save" } });
+
+    expect(screen.getByRole("option", { name: /save/i })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /new file/i })).not.toBeInTheDocument();
+  });
+
+  it("supports grouped custom-rendered options in Combobox", () => {
+    const onValueChange = vi.fn();
+    render(
+      <Combobox
+        label="Framework"
+        groups={[
+          {
+            id: "frontend",
+            label: "Frontend",
+            items: [{ value: "react", label: "React" }],
+          },
+        ]}
+        renderOption={(option) => <span data-testid={`option-${option.value}`}>{option.label}</span>}
+        onValueChange={onValueChange}
+      />,
+    );
+
+    fireEvent.focus(screen.getByRole("combobox", { name: "Framework" }));
+    fireEvent.click(screen.getByTestId("option-react"));
+    expect(onValueChange).toHaveBeenCalledWith("react");
   });
 });

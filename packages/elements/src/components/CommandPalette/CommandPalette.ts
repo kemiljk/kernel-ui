@@ -11,6 +11,12 @@ export interface KernelCommandPaletteItem {
   onSelect: () => void;
 }
 
+export interface KernelCommandPaletteGroup {
+  id: string;
+  label?: string;
+  items: KernelCommandPaletteItem[];
+}
+
 /**
  * `<kernel-command-palette>` — a real `<dialog>`, opened with
  * `showModal()`, same reasoning as `<kernel-dialog>`: native top-layer
@@ -35,6 +41,7 @@ export interface KernelCommandPaletteItem {
 export class KernelCommandPalette extends KernelElement {
   private readonly baseId = `kernel-command-palette-${++paletteCounter}`;
   private _items: KernelCommandPaletteItem[] = [];
+  private _groups: KernelCommandPaletteGroup[] = [];
   private query = "";
   private activeIndex = 0;
   private closing = false;
@@ -57,13 +64,31 @@ export class KernelCommandPalette extends KernelElement {
     if (this.native) this.renderOptions();
   }
 
-  private get filtered(): KernelCommandPaletteItem[] {
-    const q = this.query.toLowerCase();
-    return this._items.filter(
-      (item) =>
-        item.label.toLowerCase().includes(q) ||
-        (item.description?.toLowerCase().includes(q) ?? false),
-    );
+  get groups(): KernelCommandPaletteGroup[] {
+    return this._groups;
+  }
+
+  set groups(value: KernelCommandPaletteGroup[]) {
+    this._groups = value;
+    if (this.native) this.renderOptions();
+  }
+
+  get filtered(): Array<{ item: KernelCommandPaletteItem; group?: KernelCommandPaletteGroup; flatIndex: number }> {
+    const sourceGroups = this._groups.length > 0 ? this._groups : [{ id: "__items__", items: this._items }];
+    const filteredGroups = sourceGroups
+      .map((group) => ({ ...group, items: group.items.filter((item) => {
+        const q = this.query.toLowerCase();
+        return item.label.toLowerCase().includes(q) || (item.description?.toLowerCase().includes(q) ?? false);
+      }) }))
+      .filter((group) => group.items.length > 0);
+
+    const entries: Array<{ item: KernelCommandPaletteItem; group?: KernelCommandPaletteGroup; flatIndex: number }> = [];
+    for (const group of filteredGroups) {
+      for (const item of group.items) {
+        entries.push({ item, group, flatIndex: entries.length });
+      }
+    }
+    return entries;
   }
 
   connectedCallback() {
@@ -117,6 +142,17 @@ export class KernelCommandPalette extends KernelElement {
     this.renderOptions();
   }
 
+  set renderItem(value: ((item: KernelCommandPaletteItem, state: { active: boolean; group?: KernelCommandPaletteGroup; index: number }) => HTMLElement | DocumentFragment | string | null) | undefined) {
+    this._renderItem = value;
+    if (this.native) this.renderOptions();
+  }
+
+  get renderItem() {
+    return this._renderItem;
+  }
+
+  private _renderItem?: ((item: KernelCommandPaletteItem, state: { active: boolean; group?: KernelCommandPaletteGroup; index: number }) => HTMLElement | DocumentFragment | string | null);
+
   private requestClose() {
     if (!this.hasAttribute("open") || this.closing) return;
     this.removeAttribute("open");
@@ -146,19 +182,22 @@ export class KernelCommandPalette extends KernelElement {
   }
 
   private handleKeyDown(event: KeyboardEvent) {
+    const maxIndex = this.filtered.length - 1;
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
-        this.activeIndex = Math.min(this.activeIndex + 1, this.filtered.length - 1);
+        if (maxIndex < 0) break;
+        this.activeIndex = Math.min(this.activeIndex + 1, maxIndex);
         this.renderOptions();
         break;
       case "ArrowUp":
         event.preventDefault();
+        if (maxIndex < 0) break;
         this.activeIndex = Math.max(this.activeIndex - 1, 0);
         this.renderOptions();
         break;
       case "Enter": {
-        const active = this.filtered[this.activeIndex];
+        const active = this.filtered[this.activeIndex]?.item;
         if (active) {
           event.preventDefault();
           this.selectItem(active);
@@ -186,36 +225,50 @@ export class KernelCommandPalette extends KernelElement {
       return;
     }
 
-    filtered.forEach((item, index) => {
+    let previousGroupId: string | undefined;
+    filtered.forEach(({ item, group, flatIndex }) => {
+      if (group?.label && group.id !== previousGroupId) {
+        const header = document.createElement("div");
+        header.className = kernelClass("CommandPalette", "groupLabel");
+        header.textContent = group.label;
+        this.listboxEl.append(header);
+        previousGroupId = group.id;
+      }
+
       const option = document.createElement("div");
-      option.id = `${this.baseId}-listbox-option-${index}`;
+      option.id = `${this.baseId}-listbox-option-${flatIndex}`;
       option.setAttribute("role", "option");
-      option.setAttribute("aria-selected", String(index === this.activeIndex));
-      const active = dataAttr(index === this.activeIndex);
+      option.setAttribute("aria-selected", String(flatIndex === this.activeIndex));
+      const active = dataAttr(flatIndex === this.activeIndex);
       if (active) option.setAttribute("data-active", active);
       option.className = kernelClass("CommandPalette", "option");
 
-      const label = document.createElement("div");
-      label.className = kernelClass("CommandPalette", "optionLabel");
-      label.textContent = item.label;
-      option.append(label);
+      const content = this.renderItem?.(item, { active: flatIndex === this.activeIndex, group, index: flatIndex });
+      if (content !== undefined && content !== null && typeof content !== "string") {
+        option.append(content as Node);
+      } else {
+        const label = document.createElement("div");
+        label.className = kernelClass("CommandPalette", "optionLabel");
+        label.textContent = item.label;
+        option.append(label);
 
-      if (item.description) {
-        const description = document.createElement("div");
-        description.className = kernelClass("CommandPalette", "optionDescription");
-        description.textContent = item.description;
-        option.append(description);
+        if (item.description) {
+          const description = document.createElement("div");
+          description.className = kernelClass("CommandPalette", "optionDescription");
+          description.textContent = item.description;
+          option.append(description);
+        }
       }
 
       option.addEventListener("pointerdown", (event) => event.preventDefault());
       option.addEventListener("pointermove", () => {
-        this.activeIndex = index;
+        this.activeIndex = flatIndex;
         this.renderOptions();
       });
       option.addEventListener("click", () => this.selectItem(item));
 
       this.listboxEl.append(option);
-      if (index === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", option.id);
+      if (flatIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", option.id);
     });
   }
 

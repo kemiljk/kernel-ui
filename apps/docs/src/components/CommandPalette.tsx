@@ -39,16 +39,6 @@ function shortcutLabel() {
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [kbdLabel, setKbdLabel] = useState("⌘K");
-  // The portal below can only render once there's a real `document`, but
-  // gating it on `typeof document` directly is a hydration mismatch: the
-  // server renders nothing and the client's *first* render — the one React
-  // diffs against the server's HTML — already has a document, so it renders
-  // the dialog and the trees don't match. React then throws away and
-  // re-renders this whole island, which is why the palette never worked.
-  // A mount flag makes the first client render match the server's, and the
-  // portal appears on the commit after. Nothing is lost: the palette is only
-  // reachable by click or ⌘K, both of which need JS anyway.
-  const [mounted, setMounted] = useState(false);
 
   const items: CommandPaletteItem[] = useMemo(
     () => [
@@ -77,7 +67,6 @@ export default function CommandPalette() {
   );
 
   useEffect(() => {
-    setMounted(true);
     setKbdLabel(shortcutLabel());
   }, []);
 
@@ -112,7 +101,7 @@ export default function CommandPalette() {
         Search
         <kbd className="command-palette-kbd">{kbdLabel}</kbd>
       </Button>
-      {mounted
+      {typeof document !== "undefined"
         ? createPortal(
             <KernelCommandPalette
               open={open}
