@@ -12,9 +12,14 @@ import { GITHUB_URL } from "../lib/site";
 const available = components.filter((c) => c.status === "available").length;
 const planned = components.length - available;
 
-const cascadeSnippet = `--kernel-hue-accent: 70;       /* → every accent shade re-hues */
---kernel-radius-base: 1.25rem; /* → every corner re-rounds */
---kernel-space-unit: 0.25rem;  /* → every gap and padding rescales */`;
+const cascadeSnippet = `/* → every accent shade re-hues */
+--kernel-hue-accent: 70;
+
+/* → every corner re-rounds */
+--kernel-radius-base: 1.25rem;
+
+/* → every gap and padding rescales */
+--kernel-space-unit: 0.25rem;`;
 
 const kernelSnippet = `<button
   type="button"
@@ -68,6 +73,35 @@ const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
       <div class="hero-ctas">
         <HeroCtas />
       </div>
+      <ul class="hero-proof">
+        <li><strong>{available}</strong> components</li>
+        <li><strong>0</strong> runtime deps</li>
+        <li><strong>MIT</strong> licensed</li>
+        <li>React and Web Components</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="comparison" aria-labelledby="comparison-heading">
+    <p class="section-eyebrow">Comparison</p>
+    <h2 id="comparison-heading">What a real element buys you</h2>
+    <p class="comparison-intro">
+      Same button, same look. One gets focus, keyboard activation, and
+      disabled state from the browser for free. The other has to catch up
+      by hand, and still won't get form submission or <code>:focus-visible</code> right
+      without more code.
+    </p>
+    <div class="bleed">
+      <div class="comparison-grid">
+        <div class="comparison-panel">
+          <p class="comparison-label">Kernel</p>
+          <CodeBlock code={kernelSnippet} lang="tsx" />
+        </div>
+        <div class="comparison-panel">
+          <p class="comparison-label">Div soup</p>
+          <CodeBlock code={divSoupSnippet} lang="tsx" />
+        </div>
+      </div>
     </div>
   </section>
 
@@ -79,17 +113,19 @@ const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
       real library at work, not a screenshot.
     </p>
     <div class="showcase-bleed">
-      <div class="showcase-columns">
-      <div class="showcase-card">
-        <h3>One value, one cascade</h3>
-        <p>
-          Every colour, radius, and duration is a CSS custom property.
-          Change one token and every component updates, live, everywhere
-          it's used — try it further down the page.
-        </p>
+      <div class="cascade-panel">
+        <div class="cascade-copy">
+          <h3>One value, one cascade</h3>
+          <p>
+            Every colour, radius, and duration is a CSS custom property.
+            Change one token and every component updates, live, everywhere
+            it's used — try it further down the page.
+          </p>
+        </div>
         <CodeBlock code={cascadeSnippet} lang="css" />
       </div>
-      <ShowcaseGrid client:visible />
+      <div class="showcase-columns">
+        <ShowcaseGrid client:visible />
       </div>
     </div>
   </section>
@@ -131,27 +167,6 @@ const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
         </dd>
       </div>
     </dl>
-  </section>
-
-  <section class="comparison" aria-labelledby="comparison-heading">
-    <p class="section-eyebrow">Comparison</p>
-    <h2 id="comparison-heading">What a real element buys you</h2>
-    <p class="comparison-intro">
-      Same button, same look. One gets focus, keyboard activation, and
-      disabled state from the browser for free. The other has to catch up
-      by hand, and still won't get form submission or <code>:focus-visible</code> right
-      without more code.
-    </p>
-    <div class="comparison-grid">
-      <div class="comparison-panel">
-        <p class="comparison-label">Kernel</p>
-        <CodeBlock code={kernelSnippet} lang="tsx" />
-      </div>
-      <div class="comparison-panel">
-        <p class="comparison-label">Div soup</p>
-        <CodeBlock code={divSoupSnippet} lang="tsx" />
-      </div>
-    </div>
   </section>
 
   <section class="platforms" aria-labelledby="platforms-heading">

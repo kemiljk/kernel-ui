@@ -8,7 +8,7 @@ export default function InstallCard() {
       <p>One package, every platform.</p>
       <div className="showcase-stack">
         <pre>
-          <code>npm install @kernelui-lib/react @kernelui-lib/styles</code>
+          <code>{"npm install \\\n  @kernelui-lib/react \\\n  @kernelui-lib/styles"}</code>
         </pre>
         <Button variant="primary" render={<a href="/installation/" />}>
           Read the docs

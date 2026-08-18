@@ -52,9 +52,15 @@ kernel-pagination-ellipsis {
   cursor: default;
 }
 
-.kernel-Pagination-item:hover,
-.kernel-Pagination-control:hover:not(:disabled) {
-  background-color: var(--kernel-gray-3);
+/* Guarded, matching the React package: on a touch device :hover latches
+   after a tap and the element stays in its hover state until something
+   else is tapped. `hover: hover` and `pointer: fine` together mean "a
+   real pointing device that can hover without committing". */
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Pagination-item:hover,
+  .kernel-Pagination-control:hover:not(:disabled) {
+    background-color: var(--kernel-gray-3);
+  }
 }
 
 .kernel-Pagination-item[aria-current="page"] {

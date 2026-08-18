@@ -1,38 +1,29 @@
 import BookDemoCard from "./BookDemoCard";
-import StatusRow from "./StatusRow";
-import EditorSettings from "./EditorSettings";
 import DocsNav from "./DocsNav";
-import CodePreviewToggle from "./CodePreviewToggle";
-import CommandShortcuts from "./CommandShortcuts";
-import AvatarGroup from "./AvatarGroup";
-import AccountMenu from "./AccountMenu";
-import ButtonVariants from "./ButtonVariants";
 import InstallCard from "./InstallCard";
-import RepoCard from "./RepoCard";
-import PlatformCards from "./PlatformCards";
-import UpdateBanner from "./UpdateBanner";
-import NotificationToggle from "./NotificationToggle";
+import StatusRow from "./StatusRow";
+import CommandShortcuts from "./CommandShortcuts";
 import UnsavedChangesCard from "./UnsavedChangesCard";
 
 /** Homepage showcase cards in one island — one IntersectionObserver and
- *  one React root instead of fifteen separate `client:visible` islands. */
+ *  one React root instead of six separate `client:visible` islands.
+ *
+ *  Six pieces, deliberately, and every one of them a *composition*: the
+ *  section heading promises "real screens", so a lone Switch, an avatar
+ *  row, or a grid of Button variants actively works against it — those
+ *  are a component zoo, which is the thing this section exists to prove
+ *  Kernel isn't. The bar for adding a seventh is "a real product would
+ *  ship this exact block", not "we have another component to show".
+ *  Single components belong on their own /components page, where the
+ *  reader has come specifically to see one in isolation. */
 export default function ShowcaseGrid() {
   return (
     <>
       <BookDemoCard />
-      <StatusRow />
-      <EditorSettings />
       <DocsNav />
-      <CodePreviewToggle />
-      <CommandShortcuts />
-      <AvatarGroup />
-      <AccountMenu />
-      <ButtonVariants />
       <InstallCard />
-      <RepoCard />
-      <PlatformCards />
-      <UpdateBanner />
-      <NotificationToggle />
+      <StatusRow />
+      <CommandShortcuts />
       <UnsavedChangesCard />
     </>
   );

@@ -41,9 +41,15 @@ kernel-nav-link {
     color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-.kernel-Nav-link:hover {
-  background-color: var(--kernel-color-accent-subtle);
-  color: var(--kernel-color-text);
+/* Guarded, matching the React package: on a touch device :hover latches
+   after a tap and the element stays in its hover state until something
+   else is tapped. `hover: hover` and `pointer: fine` together mean "a
+   real pointing device that can hover without committing". */
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Nav-link:hover {
+    background-color: var(--kernel-color-accent-subtle);
+    color: var(--kernel-color-text);
+  }
 }
 
 .kernel-Nav-link:focus-visible {

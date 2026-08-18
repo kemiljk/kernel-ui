@@ -621,7 +621,16 @@ dialog.mobile-nav-panel[data-side="left"] {
   gap: var(--kernel-space-4);
 }
 
+/* A wrapping list of standalone nav links, not links inside a
+   sentence, so WCAG 2.2's inline-target exception doesn't apply and the
+   24px floor does — at the footer's font size they were 21px boxes.
+   `inline-flex` + `align-items: center` rather than block padding so the
+   extra 3px is distributed either side of the text and the wrapped rows
+   stay evenly spaced by the list's own gap. */
 .site-footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
   color: var(--kernel-color-text-muted);
   text-decoration: none;
 }
@@ -649,6 +658,10 @@ dialog.mobile-nav-panel[data-side="left"] {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  /* The wordmark itself is 22px tall, 2px under the WCAG 2.2 AA target
+     floor. The header row has far more height than this to give, so a
+     minimum costs no layout. */
+  min-block-size: 24px;
   color: var(--kernel-color-text);
 }
 
@@ -1533,6 +1546,70 @@ dialog.mobile-nav-panel[data-side="left"] {
   margin-block-start: var(--kernel-space-6);
 }
 
+/* The credibility line the hero was missing: component count, zero
+   runtime deps, licence, and both platforms. These four facts used to
+   live in a showcase card ~1200px down the page, which is well past the
+   point a sceptical reader has already decided. Muted and small on
+   purpose — it's corroboration under the CTAs, not a second headline
+   competing with the one above them.
+
+   A `<ul>`, not a row of `<span>`s: it IS a list of facts, and the
+   separator is drawn with a pseudo-element so screen readers get four
+   clean list items instead of hearing "middle dot" between each one. */
+.hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--kernel-space-2) var(--kernel-space-4);
+  margin: var(--kernel-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+/* Separator before every item but the first. `::before` on the item
+   rather than a border-inline-start so it disappears cleanly when the
+   list wraps — a border would leave a stray rule at the start of the
+   second line. The list's own column-gap supplies the space BEFORE the
+   dot and this margin the space after, so it sits optically centred
+   between two facts.
+
+   The `li` is deliberately left as a plain block, not made a flex
+   container: `<strong>60</strong> components` has a bare text node
+   after the element, and a flex `li` would promote that text to its own
+   flex item and push it a full gap away from the number it belongs to. */
+.hero-proof li + li::before {
+  content: "·";
+  margin-inline-end: var(--kernel-space-4);
+  color: var(--kernel-color-border);
+}
+
+/* Once the strip wraps, the separator logic breaks down visually: a
+   `::before` dot on the first item of a new line has nothing to its left
+   to separate it from, so it hangs off the start of the line. Below the
+   width where wrapping starts, drop the dots entirely and let a wider
+   column gap do the separating — there's no ambiguity about where one
+   fact ends and the next begins at this size. */
+@media (width < 40rem) {
+  .hero-proof {
+    column-gap: var(--kernel-space-6);
+  }
+
+  .hero-proof li + li::before {
+    content: none;
+  }
+}
+
+.hero-proof strong {
+  color: var(--kernel-color-text);
+  font-weight: 600;
+  /* Tabular figures so the component count doesn't reflow the row when
+     it ticks over to three digits. */
+  font-variant-numeric: tabular-nums;
+}
+
 /* The old hero visual (a phyllotaxis spiral canvas) is gone — its
    entrance animation never replayed on a soft-navigation swap back to
    "/" and wasn't worth carrying the fix for a decorative flourish. This
@@ -1606,17 +1683,15 @@ dialog.mobile-nav-panel[data-side="left"] {
   margin-block-start: 0;
 }
 
-.feature-section {
-  margin-block: var(--kernel-space-8) var(--kernel-space-12);
-}
-
 /* Shared section rhythm: a hairline top border between major sections
    instead of a shadow or a card — a border reads as structure, a
    shadow reads as decoration sitting on top of the page. Skips
-   .feature-section: right after the hero, a divider would cut the
-   page before it's said anything yet. */
+   whichever section runs first after the hero — currently .comparison —
+   because a divider there would cut the page before it's said anything
+   yet. If the section order changes again, move the exemption with it
+   rather than adding a second one. */
 .principles,
-.comparison,
+.feature-section,
 .platforms,
 .playground-section,
 .closing {
@@ -1642,21 +1717,107 @@ dialog.mobile-nav-panel[data-side="left"] {
   column-gap: calc(var(--kernel-space-6) * 1.5);
 }
 
-/* Homepage showcase only: pull the masonry grid out to the viewport
-   edges so the live component demos get more horizontal room. The
-   eyebrow, heading, and intro above stay in .home's centred column —
-   only this wrapper breaks out. */
+/* Break a block out of .home's 44rem reading column to the viewport
+   edges. The eyebrow, heading, and intro above always stay in the
+   centred column — only the wrapper carrying this class breaks out, so
+   prose keeps its measure while the evidence gets the room.
+
+   Two consumers, one rule: the showcase masonry (live demos need
+   horizontal room) and the Kernel-vs-div-soup grid. The comparison
+   needed it for a harder reason than "nicer": two panels inside the
+   reading column are 344px each, and the div-soup snippet's widest line
+   is 416px, so the panel whose entire rhetorical job is "look how much
+   more code this takes" was clipping the code. `.platforms-grid` right
+   below solved the same squeeze by dropping to one column — that option
+   isn't open here, because seeing the two side by side IS the argument. */
+.bleed,
 .feature-section .showcase-bleed {
+  /* How wide the content inside the bleed is allowed to get. Override
+     per consumer if one ever needs a different cap; 64rem is "clearly
+     wider than the 44rem reading column, still short of edge-to-edge on
+     a large display". */
+  --bleed-content: 64rem;
+
   box-sizing: border-box;
   inline-size: 100vw;
   max-inline-size: 100vw;
   margin-inline: calc(50% - 50vw);
-  padding-inline: max(var(--kernel-space-6), calc(50vw - 50%));
+  /* The `50%` this used to subtract resolved against the CONTAINING
+     BLOCK — .home's 44rem column — not against this element's own 100vw
+     width, so the padding always worked out to exactly the amount that
+     put the content back at 44rem. The wrapper bled to the viewport
+     edges and the content inside it never moved: measured at a 1042px
+     viewport, .showcase-bleed was 1042px wide with a 704px content box,
+     identical to the column it was supposedly breaking out of. Subtract
+     half the explicit target width instead, so the cap is a width this
+     rule actually controls. */
+  padding-inline: max(
+    var(--kernel-space-6),
+    calc(50vw - var(--bleed-content) / 2)
+  );
 }
 
 @media (width < 800px) {
   .showcase-columns {
     columns: 1;
+  }
+}
+
+/* The cascade sample is the section's actual proof — change one token,
+   everything moves — and it used to be the first item in the masonry,
+   where an 18rem column gave its <pre> 222px of the 605px its longest
+   line needed. The entire right-hand side of the snippet, which is to
+   say every "every corner re-rounds" comment explaining what the token
+   actually does, sat off-screen behind a horizontal scrollbar. Nobody
+   scrolls a code sample sideways to find the punchline.
+
+   So it comes out of the masonry and gets its own full-bleed row above
+   it: copy on the left, code on the right, both at a width the content
+   actually fits in. It also isn't a live component like the six pieces
+   below it, so leading with it rather than burying it mid-grid stops it
+   reading as "one of the demos". */
+.cascade-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: var(--kernel-space-6);
+  align-items: center;
+  padding: var(--kernel-padding-sheet);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-sheet);
+  background-color: var(--kernel-color-surface);
+  margin-block-end: calc(var(--kernel-space-6) * 1.5);
+}
+
+.cascade-copy h3 {
+  margin: 0 0 var(--kernel-space-2);
+  font-size: var(--kernel-font-size-base);
+  line-height: 1;
+}
+
+.cascade-copy p {
+  margin: 0;
+  max-inline-size: 34rem;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.cascade-panel .code-block {
+  min-inline-size: 0;
+}
+
+.cascade-panel pre code {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+}
+
+/* Same breakpoint the masonry collapses at: below it there isn't room
+   for copy and code side by side either. */
+@media (width < 800px) {
+  .cascade-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--kernel-space-4);
+    align-items: start;
   }
 }
 
@@ -1679,10 +1840,13 @@ dialog.mobile-nav-panel[data-side="left"] {
    tokens are concentric by construction (see tokens.css): a bigger
    radius with small/default padding is the exact bug this fixes,
    corners crowding the content instead of framing it. Never hand-roll a
-   radius and a padding independently — reach for `.showcase-card`
-   (roomy, sheet tier) or `.showcase-subcard` (compact, container tier)
-   below, whichever tier actually matches the content, rather than
-   picking a radius token and a padding value separately. */
+   radius and a padding independently — reach for `.showcase-card`,
+   whose sheet-tier pairing is already concentric, rather than picking a
+   radius token and a padding value separately. (There used to be a
+   compact `.showcase-subcard` tier alongside it for cards nested inside
+   a showcase item; its only consumer went away with the showcase
+   curation. Reinstate it from git history rather than hand-rolling a
+   smaller radius/padding pair if that case comes back.) */
 .showcase-item {
   display: flex;
   flex-direction: column;
@@ -1712,22 +1876,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   max-inline-size: 100%;
 }
 
-/* Compact tier: for a card nested inside a showcase item (a community
-   card sitting beside another one, e.g.) — same pairing discipline as
-   `.showcase-card`, just the smaller radius/padding tier so two of these
-   side by side don't read as heavier than the modal-style cards using
-   the sheet tier. */
-.showcase-subcard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kernel-space-2);
-  flex: 1;
-  padding: var(--kernel-padding-container);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-container);
-  background-color: var(--kernel-color-surface);
-}
-
 /* A heading needs more room to the thing it's labelling than two
    unrelated pieces of content need between each other — the parent's own
    flex `gap` already provides that base spacing, this margin stacks on
@@ -1741,16 +1889,14 @@ dialog.mobile-nav-panel[data-side="left"] {
    doing exactly what it's told, because the two boxes it's centering
    aren't actually the same height as their visible content. */
 .showcase-item h3,
-.showcase-card h3,
-.showcase-subcard h3 {
+.showcase-card h3 {
   margin: 0 0 var(--kernel-space-2);
   font-size: var(--kernel-font-size-base);
   line-height: 1;
 }
 
 .showcase-item p,
-.showcase-card p,
-.showcase-subcard p {
+.showcase-card p {
   margin: 0;
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
@@ -1827,45 +1973,6 @@ dialog.mobile-nav-panel[data-side="left"] {
 .showcase-stack > [data-variant] {
   align-self: stretch;
   justify-content: center;
-}
-
-/* Overlapping avatar group: each avatar after the first pulls left by a
-   quarter of its own width and stacks on top via source order (later
-   avatars painting over earlier ones needs no explicit z-index — that's
-   just normal DOM paint order), with a shared ring so the overlap reads
-   as intentional stacking rather than avatars randomly overlapping. */
-.showcase-avatar-group {
-  display: flex;
-}
-
-.showcase-avatar-group > * {
-  margin-inline-start: calc(-1 * var(--kernel-space-2));
-  border: 2px solid var(--kernel-color-surface);
-  border-radius: var(--kernel-radius-full);
-}
-
-.showcase-avatar-group > *:first-child {
-  margin-inline-start: 0;
-}
-
-/* Platform logo mark: same 2.5rem circle Avatar uses (so React/Elements
-   read as the same visual weight as a real Avatar would in this slot),
-   just with an inline SVG mark instead of an image/initials. */
-.showcase-platform-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 2.5rem;
-  block-size: 2.5rem;
-  border-radius: var(--kernel-radius-full);
-  background-color: var(--kernel-gray-4);
-  color: var(--kernel-gray-11);
-  flex-shrink: 0;
-}
-
-.showcase-platform-icon-mark {
-  inline-size: 1.375rem;
-  block-size: 1.375rem;
 }
 
 .showcase-kbd {
@@ -2188,6 +2295,16 @@ dialog.mobile-nav-panel[data-side="left"] {
   color: var(--kernel-color-text-muted);
 }
 
+/* These two sit on their own line as a link pair, not inside a running
+   sentence, so WCAG 2.2's inline-link exemption from the 24px target
+   size doesn't cover them — at the small font size they were 19px tall.
+   `inline-block` + `min-block-size` rather than padding: padding would
+   push the two links apart and break the "· " separator's rhythm. */
+.closing-links a {
+  display: inline-block;
+  min-block-size: 24px;
+}
+
 .closing .hero-ctas {
   margin-block-start: var(--kernel-space-6);
 }
@@ -2228,7 +2345,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   }
 
   .principles,
-  .comparison,
   .platforms,
   .playground-section,
   .closing {
@@ -2240,7 +2356,6 @@ dialog.mobile-nav-panel[data-side="left"] {
 
 @media (prefers-reduced-motion: reduce) {
   .principles,
-  .comparison,
   .platforms,
   .playground-section,
   .closing {

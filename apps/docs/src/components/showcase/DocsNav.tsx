@@ -19,6 +19,7 @@ import {
 export default function DocsNav() {
   return (
     <div className="showcase-item">
+      <h3>Docs navigation</h3>
       <div className="showcase-stack">
         <Breadcrumbs>
           <BreadcrumbItem>Docs</BreadcrumbItem>

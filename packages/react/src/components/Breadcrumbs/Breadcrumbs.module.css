@@ -13,13 +13,32 @@
   list-style: none;
 }
 
+/* WCAG 2.2 AA target size (2.5.8) is a 24px floor, and these links had no
+   block padding at all: at --kernel-font-size-sm the anchor's box was
+   exactly its 21px line box. Breadcrumbs sit in a nav list, not a
+   sentence, so the inline-target exception doesn't cover them.
+
+   The height is guaranteed on the ITEM and the link stretches into it,
+   rather than the link growing itself with padding. Padding would have
+   pushed the "/" separators off the text's centre line (they're siblings
+   in the same flex row, centred against whatever the link's box height
+   is), and it would have changed breadcrumb density for every consumer.
+   This way the row grows by 3px, the text stays exactly where it was,
+   and the focus ring wraps a properly sized box. `min-block-size` on the
+   item also keeps the current-page item — a <span>, not a target, so it
+   needs no minimum of its own — the same height as its siblings, so a
+   wrapped trail doesn't have uneven rows. */
 .item {
   display: flex;
   align-items: center;
   gap: var(--kernel-space-1);
+  min-block-size: 24px;
 }
 
 .link {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
   color: var(--kernel-color-text-muted);
   text-decoration: none;
   border-radius: var(--kernel-radius-sm);
