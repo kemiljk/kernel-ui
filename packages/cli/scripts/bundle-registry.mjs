@@ -66,19 +66,23 @@ exports.getComponentBySlug = function (slug) {
 // ── 4. Write to dist/ ───────────────────────────────────────────────────
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "registry-bundle.d.ts"), dtsContent);
-writeFileSync(join(outDir, "registry-bundle.js"), jsContent);
+// `.cjs`, NOT `.js`: this package is "type": "module", so Node reads a bare
+// `.js` here as ESM and the CommonJS body below dies on `exports is not
+// defined` the moment anything loads it. The extension is the only thing
+// that says "this file really is CommonJS".
+writeFileSync(join(outDir, "registry-bundle.cjs"), jsContent);
 
 // Also emit .d.ts and a thin re-export .js into src/lib/ so TypeScript
 // can resolve `from "./registry-bundle.js"` during typecheck.
 const srcLibDir = join(__dirname, "..", "src", "lib");
 mkdirSync(srcLibDir, { recursive: true });
 writeFileSync(join(srcLibDir, "registry-bundle.d.ts"), dtsContent);
-// The JS file is an ESM shim that re-exports from the dist output.
-// At compile time this resolves types; at runtime tsc emits it as-is
-// and node loads the bundled data from dist.
+// An ESM shim so TypeScript can resolve the module during typecheck. It is
+// NOT emitted to dist (tsc doesn't copy .js without allowJs) and nothing
+// loads it at runtime — registry.ts requires the .cjs directly.
 writeFileSync(
   join(srcLibDir, "registry-bundle.js"),
-  `export { components, getComponentBySlug } from "../dist/registry-bundle.js";`,
+  `export { components, getComponentBySlug } from "../dist/registry-bundle.cjs";`,
 );
 
 console.log(`[bundle-registry] Bundled ${components.length} components → dist/registry-bundle.*`);
