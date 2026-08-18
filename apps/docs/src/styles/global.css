@@ -2119,7 +2119,26 @@ dialog.mobile-nav-panel[data-side="left"] {
   margin: 0;
   padding: var(--kernel-space-4);
   overflow-x: auto;
-  max-inline-size: calc(100% - 3.75rem);
+}
+
+/* …but reserve that column ONLY where the button can actually turn up.
+   `.code-block-copy` is `opacity: 0` until `:hover` — which is itself
+   gated on `hover: hover` and `pointer: fine` below — or `:focus-within`.
+   On a phone none of that happens, so the strip was 3.75rem of dead
+   space held open for a control that never renders: 60px of a 277px
+   block, 22% of the width, and the reason code appeared to stop short of
+   its own container with a blank gutter beside it.
+
+   `:focus-within` can still reveal the button on a touch device driven by
+   a keyboard, where no space is reserved. That's fine rather than
+   overlooked: the button is a `variant="secondary"` Button, so it has an
+   opaque background and covers the character cells beneath it instead of
+   colliding with them. Reserving 22% of every code block on every phone
+   against that possibility is the worse trade. */
+@media (hover: hover) and (pointer: fine) {
+  .code-block pre {
+    max-inline-size: calc(100% - 3.75rem);
+  }
 }
 
 .code-block-copy {
