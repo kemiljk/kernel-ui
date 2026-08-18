@@ -29,14 +29,26 @@ export interface RegistryEntry {
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
-// Try the bundled ESM output first, then fall back to CJS.
+/* `.cjs` because the generated bundle is CommonJS and this package is
+   "type": "module" — a bare `.js` would be parsed as ESM and throw.
+
+   The catch deliberately does NOT substitute empty data any more. It used
+   to, and that is exactly how a bundle that could not be loaded at all
+   shipped as a working build: the ReferenceError was swallowed, every
+   lookup quietly returned undefined, and the CLI looked merely unhelpful
+   rather than broken. A missing catalog is not a recoverable state for a
+   CLI whose whole job is looking components up — fail loudly, at load. */
 let registryModule;
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports -- bundle-generated
-  registryModule = require("../registry-bundle.js");
-} catch {
-  // Fallback: if dist hasn't been built yet, provide empty data.
-  registryModule = { components: [], getComponentBySlug: () => undefined };
+  registryModule = require("../registry-bundle.cjs");
+} catch (error) {
+  throw new Error(
+    "[kernel] Component catalog missing or unloadable (dist/registry-bundle.cjs). " +
+      "This is a packaging fault, not a user error — please report it at " +
+      "https://github.com/kemiljk/kernel-ui/issues.",
+    { cause: error },
+  );
 }
 type Mod = { components: RegistryEntry[]; getComponentBySlug: (slug: string) => RegistryEntry | undefined };
 const mod = registryModule as Mod;

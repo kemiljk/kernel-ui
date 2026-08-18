@@ -1,1 +1,1 @@
-export { components, getComponentBySlug } from "../dist/registry-bundle.js";
+export { components, getComponentBySlug } from "../dist/registry-bundle.cjs";
