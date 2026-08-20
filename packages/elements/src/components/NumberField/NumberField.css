@@ -142,6 +142,7 @@
   cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),

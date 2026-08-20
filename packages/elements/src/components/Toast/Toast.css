@@ -29,6 +29,7 @@
   /* The whole toast is swipe-to-dismiss draggable; without this a drag
      gesture starting on its text selects that text instead of moving
      the toast. */
+  -webkit-user-select: none;
   user-select: none;
 
   --y: 0px;
@@ -196,6 +197,7 @@
   cursor: default;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
   opacity: 0.7;
   transition:

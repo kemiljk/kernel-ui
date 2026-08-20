@@ -22,6 +22,7 @@
   padding-block: var(--kernel-space-2);
   cursor: default;
   list-style: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -80,6 +81,7 @@
 .root[data-state="opening"] .content,
 .root[data-state="closing"] .content {
   overflow: clip;
+  -webkit-user-select: none;
   user-select: none;
 }
 
