@@ -10,7 +10,10 @@
   cursor: default;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out),

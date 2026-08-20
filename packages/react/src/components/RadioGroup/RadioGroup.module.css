@@ -32,6 +32,8 @@
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   font-family: var(--kernel-font-sans);
   color: var(--kernel-color-text);
 }
@@ -108,6 +110,7 @@
 }
 
 .label {
+  -webkit-user-select: none;
   user-select: none;
 }
 

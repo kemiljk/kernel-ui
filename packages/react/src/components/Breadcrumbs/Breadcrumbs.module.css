@@ -42,6 +42,8 @@
   color: var(--kernel-color-text-muted);
   text-decoration: none;
   border-radius: var(--kernel-radius-sm);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 @media (hover: hover) and (pointer: fine) {

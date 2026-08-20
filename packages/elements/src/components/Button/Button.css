@@ -11,7 +11,10 @@
   white-space: nowrap;
   text-decoration: none;
   cursor: default;
+  -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),

@@ -209,6 +209,9 @@ h3 {
   background: none;
   color: var(--kernel-color-text-muted);
   cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -280,6 +283,7 @@ p.docs-sidebar-eyebrow:first-child {
   gap: var(--kernel-space-2);
   cursor: pointer;
   list-style: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -364,6 +368,8 @@ p.docs-sidebar-eyebrow:first-child {
   border-inline-start: var(--kernel-border-width) solid transparent;
   padding-inline-start: var(--kernel-space-3);
   margin-inline-start: calc(var(--kernel-space-3) * -1 - var(--kernel-border-width));
+  -webkit-user-select: none;
+  user-select: none;
   transition: color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -445,6 +451,8 @@ dialog.mobile-nav-panel[data-side="left"] {
   font-size: var(--kernel-font-size-sm);
   text-decoration: none;
   white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .site-header-registry-link svg {
@@ -663,6 +671,8 @@ dialog.mobile-nav-panel[data-side="left"] {
      minimum costs no layout. */
   min-block-size: 24px;
   color: var(--kernel-color-text);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .site-header-logo-icon {
@@ -1373,8 +1383,8 @@ dialog.mobile-nav-panel[data-side="left"] {
   background: transparent;
   color: var(--kernel-color-text);
   cursor: grab;
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
   inline-size: 5.5rem;
   flex: 0 0 auto;
   translate: var(--desktop-nudge-x, 0) var(--desktop-nudge-y, 0);
@@ -2213,6 +2223,7 @@ dialog.mobile-nav-panel[data-side="left"] {
   font-weight: 500;
   cursor: default;
   list-style: none;
+  -webkit-user-select: none;
   user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -2260,6 +2271,7 @@ dialog.mobile-nav-panel[data-side="left"] {
    resizing, matching the library Accordion's own rule. */
 .usage-accordion[data-state="opening"] .usage-accordion-content,
 .usage-accordion[data-state="closing"] .usage-accordion-content {
+  -webkit-user-select: none;
   user-select: none;
 }
 

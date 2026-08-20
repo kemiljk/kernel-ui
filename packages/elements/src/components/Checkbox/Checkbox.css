@@ -6,6 +6,8 @@
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-base);
   color: var(--kernel-color-text);
