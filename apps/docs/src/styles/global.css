@@ -156,6 +156,10 @@ h3 {
   z-index: var(--site-z-sticky);
 }
 
+.docs-sidebar-slot {
+  overflow-x: hidden;
+}
+
 @media (width < 900px) {
   .docs-shell[data-with-sidebar="true"] {
     grid-template-columns: minmax(0, 1fr);
