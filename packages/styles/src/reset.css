@@ -94,20 +94,55 @@
   }
 
   /* Every component already ships its own :hover/:active/:focus-visible
-     styling, so the browser's default tap flash and double-tap-to-zoom
-     delay only get in the way on touch devices. */
+     styling, so the browser's default tap flash, long-press callout, and
+     double-tap-to-zoom delay only get in the way on touch devices.
+
+     `label` is load-bearing: tapping a checkbox/radio/switch label
+     highlights the LABEL, not the input, so omitting it leaves the
+     grey iOS flash on the most common labelled controls. */
   a,
   button,
   input,
   select,
   textarea,
   summary,
+  label,
   [role="button"],
+  [role="checkbox"],
+  [role="combobox"],
   [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="radio"],
+  [role="slider"],
+  [role="switch"],
   [role="tab"],
-  [role="switch"] {
+  [role="treeitem"] {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Clickable chrome, not editable or copyable content. Links stay
+     selectable (copying the text is a real action) and keep the iOS
+     long-press callout (open in new tab / copy link). Inputs keep
+     selection because that's how you edit them. */
+  button,
+  summary,
+  label,
+  [role="button"],
+  [role="checkbox"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="radio"],
+  [role="switch"],
+  [role="tab"],
+  [role="treeitem"] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   p,

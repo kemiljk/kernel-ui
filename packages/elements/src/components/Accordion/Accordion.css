@@ -27,6 +27,7 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item {
   font-weight: 500;
   cursor: default;
   list-style: none;
+  -webkit-user-select: none;
   user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -85,6 +86,7 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item[open] .kernel-Accordio
 .kernel-Accordion-item[data-state="opening"] .kernel-Accordion-content,
 .kernel-Accordion-item[data-state="closing"] .kernel-Accordion-content {
   overflow: clip;
+  -webkit-user-select: none;
   user-select: none;
 }
 
