@@ -17,6 +17,7 @@
   padding-block: var(--kernel-space-2);
   cursor: default;
   list-style: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -147,6 +148,7 @@
 .kernel-ToolCall-root[data-state="opening"] .kernel-ToolCall-content,
 .kernel-ToolCall-root[data-state="closing"] .kernel-ToolCall-content {
   overflow: clip;
+  -webkit-user-select: none;
   user-select: none;
 }
 

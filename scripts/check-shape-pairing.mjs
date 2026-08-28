@@ -13,10 +13,14 @@
  *
  *   2. Anything with `cursor: pointer` must also set `user-select: none`.
  *      Otherwise a double-click on a disclosure selects its own label and a
- *      drag from a control selects text across the page.
+ *      drag from a control selects text across the page. Any rule that sets
+ *      `user-select: none` (or `text`) must also set `-webkit-user-select` to
+ *      the same value — Safari still needs the prefix to actually suppress
+ *      selection on a double-tap.
  *
- * Native form controls are exempt from (2): there's no text in an `<input>` to
- * select. Anything else can opt out with an inline marker naming a reason:
+ * Native form controls are exempt from the cursor:pointer half of (2):
+ * there's no text in an `<input>` to select. Anything else can opt out
+ * with an inline marker naming a reason:
  *
  *   /* shape-pairing-ok: reason *\/
  *
@@ -115,6 +119,13 @@ for (const { dir, suffix } of SOURCES) {
       }
 
       for (const { selector, body } of rules(css)) {
+        const userSelect = body.match(/user-select:\s*(none|text)/);
+        if (userSelect && !new RegExp(`-webkit-user-select:\\s*${userSelect[1]}`).test(body)) {
+          failures.push(
+            `${relative}: \`${selector}\` sets user-select: ${userSelect[1]} ` +
+              `without -webkit-user-select (see AGENTS.md).`,
+          );
+        }
         if (!/cursor:\s*pointer/.test(body)) continue;
         if (/user-select:\s*none/.test(body)) continue;
         if (isNativeControl(selector, body)) continue;

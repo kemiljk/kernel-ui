@@ -49,6 +49,7 @@ kernel-carousel-slide {
   cursor: default;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -96,6 +97,7 @@ kernel-carousel-slide {
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-border-interactive);
   cursor: default;
+  -webkit-user-select: none;
   user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }

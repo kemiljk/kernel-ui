@@ -80,6 +80,8 @@
   opacity: 1;
   scale: 1;
   filter: blur(0);
+  -webkit-user-select: none;
+  user-select: none;
   transition:
     opacity var(--kernel-duration-exit-fast) linear,
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
@@ -113,6 +115,7 @@
   cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),

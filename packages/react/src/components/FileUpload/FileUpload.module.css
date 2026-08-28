@@ -44,6 +44,7 @@
   text-align: center;
   cursor: pointer;
   overflow: hidden;
+  -webkit-user-select: none;
   user-select: none;
   transition:
     border-color var(--kernel-duration-enter) var(--kernel-ease-overlay),
@@ -236,6 +237,7 @@
   /* A drag gesture that starts on/near a file row shouldn't fight the
      browser's own text-selection heuristics — nothing in the row is
      meant to be selected as text. */
+  -webkit-user-select: none;
   user-select: none;
 }
 
