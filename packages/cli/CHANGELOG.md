@@ -1,5 +1,11 @@
 # @kernelui-lib/cli
 
+## 1.0.3
+
+### Patch Changes
+
+- 92f832d: Update development tooling dependencies.
+
 ## 1.0.2
 
 ### Patch Changes
