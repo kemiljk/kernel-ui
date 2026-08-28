@@ -131,7 +131,13 @@ new component done, grep both `packages/react/src/index.ts` and
   was for, and a drag from a control selects text across the page. Pair it
   with `-webkit-user-select: none` for Safari. Same rule for gutters that
   aren't content: line numbers and diff markers are `user-select: none` so
-  a copy contains code, not decoration.
+  a copy contains code, not decoration. Tap flash and the iOS long-press
+  callout are a reset concern, not a per-component one: `packages/styles`'
+  reset kills `-webkit-tap-highlight-color` and sets `touch-action:
+  manipulation` on `a`/`button`/`input`/`label`/`summary` and the widget
+  roles, and `-webkit-touch-callout: none` on the clickable-chrome subset
+  (not links — long-press to open in a new tab stays). Omitting `label`
+  from that list is how a checkbox tap still flashes grey on iOS.
 - **Motion baseline** (tokens in `packages/styles/src/tokens.css`, craft
   bar from [transitions.dev](https://transitions.dev/) + Emil): enter with
   `--kernel-ease-overlay` / `--kernel-ease-out`, never `ease-in` on

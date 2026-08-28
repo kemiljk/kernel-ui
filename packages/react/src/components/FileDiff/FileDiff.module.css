@@ -119,8 +119,8 @@
   text-align: end;
   vertical-align: top;
   white-space: nowrap;
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
 }
 
 /* The +/− marker is real text, not a colour. Colour alone doesn't say whether
@@ -130,8 +130,8 @@
   padding-inline-start: var(--kernel-space-2);
   vertical-align: top;
   white-space: pre;
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
 }
 
 .row[data-kind="add"] .marker {

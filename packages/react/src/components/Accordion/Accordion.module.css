@@ -25,6 +25,7 @@
   list-style: none;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -100,6 +101,7 @@
 .item[data-state="opening"] .content,
 .item[data-state="closing"] .content {
   overflow: clip;
+  -webkit-user-select: none;
   user-select: none;
 }
 

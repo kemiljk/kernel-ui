@@ -10,6 +10,7 @@
   padding-block: var(--kernel-space-2);
   cursor: default;
   list-style: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -65,6 +66,7 @@
 .kernel-Reasoning-root[data-state="opening"] .kernel-Reasoning-content,
 .kernel-Reasoning-root[data-state="closing"] .kernel-Reasoning-content {
   overflow: clip;
+  -webkit-user-select: none;
   user-select: none;
 }
 
