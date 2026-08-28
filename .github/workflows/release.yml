@@ -36,11 +36,11 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
-          version: bun run version-packages
-          publish: bun run release
-          title: Version Packages
-          commit: Version Packages
-          createGithubReleases: true
+          version-script: bun run version-packages
+          publish-script: bun run release
+          pr-title: Version Packages
+          commit-message: Version Packages
+          create-github-releases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
