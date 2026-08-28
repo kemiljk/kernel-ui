@@ -1,5 +1,23 @@
 # @kernelui-lib/react
 
+## 1.3.2
+
+### Patch Changes
+
+- 92f832d: Prevent Sidebar from exposing unintended horizontal scrolling.
+- c08e43b: Make high-frequency command surfaces immediate, keep direct-manipulation gestures off render loops, and add a persistent ToolCall status morph.
+- 92f832d: Update development tooling dependencies.
+- b5624a0: Stop tap flash and accidental text selection on clickable controls.
+  
+  The reset now includes `label` (tapping a checkbox label highlighted the
+  label, not the input) plus the widget roles, kills the iOS long-press
+  callout on chrome, and sets `user-select: none` on buttons, summaries, and
+  labels. React and Web Components pair `-webkit-user-select` everywhere
+  selection is suppressed, including nav, breadcrumbs, and chips. Links stay
+  selectable so copying their text still works.
+- Updated dependencies [b5624a0]
+  - @kernelui-lib/styles@1.2.1
+
 ## 1.3.1
 
 ### Patch Changes
