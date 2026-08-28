@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [dts({ include: ["src"], rollupTypes: false, insertTypesEntry: true })],
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: resolve(import.meta.dirname, "src/index.ts"),
       formats: ["es"],
       fileName: () => "index.js",
     },

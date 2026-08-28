@@ -1,3 +1,20 @@
+# Vite config modernization
+
+- [x] Replace CommonJS `__dirname` usage in both package Vite configs with the native ESM equivalent.
+- [x] Verify React and Elements builds with Vite's current and future native config loaders, confirming the warning is gone.
+- [x] Run the affected typechecks/docs build, review the diff, and commit/push the standalone config change to `main`.
+
+## Review
+
+Replaced `__dirname` with `import.meta.dirname` in both package configs. Vite
+8 requires Node 20.19+ while the native ESM property is available from Node
+20.11+, so the supported runtime floor covers it. React and Elements build
+cleanly with both Vite's current bundled config loader and explicit
+`--configLoader native`; the prior warning is gone in both modes. Both package
+typechecks pass, Astro reports zero findings across 244 files, and the 71-page
+docs production build succeeds. The output is unchanged, so this build-config
+only change does not require a Changeset.
+
 # Dependabot cleanup and main push
 
 - [x] Inventory every open Dependabot PR, including package scope, version delta, CI state, mergeability, and release notes/security impact.
