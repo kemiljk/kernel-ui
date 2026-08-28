@@ -15,6 +15,7 @@
 }
 
 .kernel-Resizable-root[data-dragging] {
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -28,6 +29,9 @@
   position: relative;
   flex-shrink: 0;
   background-color: var(--kernel-color-border);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 

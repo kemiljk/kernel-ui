@@ -28,6 +28,8 @@
   color: var(--kernel-color-text-muted);
   text-decoration: none;
   font-size: var(--kernel-font-size-sm);
+  -webkit-user-select: none;
+  user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out);
 }

@@ -4,6 +4,8 @@
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
   color: var(--kernel-color-text);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .required {

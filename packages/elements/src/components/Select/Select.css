@@ -40,6 +40,7 @@
   font-size: var(--kernel-font-size-base);
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
+  -webkit-user-select: none;
   user-select: none;
   transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out);

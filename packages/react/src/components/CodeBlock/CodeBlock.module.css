@@ -186,8 +186,8 @@
   color: var(--kernel-color-text-muted);
   font-variant-numeric: tabular-nums;
   text-align: end;
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
 }
 
 .lineText {
