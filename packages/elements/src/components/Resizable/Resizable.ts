@@ -74,6 +74,7 @@ export class KernelResizable extends KernelElement {
     divider.addEventListener("pointerdown", (event) => this.handlePointerDown(event));
     divider.addEventListener("pointermove", (event) => this.handlePointerMove(event));
     divider.addEventListener("pointerup", (event) => this.handlePointerUp(event));
+    divider.addEventListener("pointercancel", (event) => this.handlePointerUp(event));
     divider.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this.syncAllAttrs();
@@ -97,11 +98,13 @@ export class KernelResizable extends KernelElement {
         ? ((event.clientX - rect.left) / rect.width) * 100
         : ((event.clientY - rect.top) / rect.height) * 100;
     this.split = clamp(percent, this.min, this.max);
-    this.render();
+    this.applyLiveSplit();
   }
 
   private handlePointerUp(event: PointerEvent) {
-    this.divider?.releasePointerCapture(event.pointerId);
+    if (this.divider?.hasPointerCapture(event.pointerId)) {
+      this.divider.releasePointerCapture(event.pointerId);
+    }
     this.dragging = false;
     document.body.style.cursor = "";
     document.body.style.userSelect = "";
@@ -147,14 +150,19 @@ export class KernelResizable extends KernelElement {
     root.setAttribute("data-orientation", this.orientation);
     if (this.dragging) root.setAttribute("data-dragging", "");
     else root.removeAttribute("data-dragging");
-    root.style.setProperty("--kernel-resizable-split", `${this.split}%`);
 
     divider.setAttribute("aria-orientation", this.orientation === "horizontal" ? "vertical" : "horizontal");
-    divider.setAttribute("aria-valuenow", String(Math.round(this.split)));
     divider.setAttribute("aria-valuemin", String(this.min));
     divider.setAttribute("aria-valuemax", String(this.max));
     if (this.dragging) divider.setAttribute("data-dragging", "");
     else divider.removeAttribute("data-dragging");
+    this.applyLiveSplit();
+  }
+
+  /** Keep the pointer hot path to the two values that actually change. */
+  private applyLiveSplit() {
+    this.native?.style.setProperty("--kernel-resizable-split", `${this.split}%`);
+    this.divider?.setAttribute("aria-valuenow", String(Math.round(this.split)));
   }
 }
 

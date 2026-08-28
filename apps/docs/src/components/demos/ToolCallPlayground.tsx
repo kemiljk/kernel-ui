@@ -52,7 +52,7 @@ export default function ToolCallPlayground() {
       stageClassName="prop-playground-stage-start"
       render={(values) => (
         <ToolCall
-          key={`${values.status}-${values.withResults}-${values.defaultOpen}`}
+          key={String(values.defaultOpen)}
           label={String(values.label)}
           status={values.status as "pending" | "running" | "complete" | "error"}
           defaultOpen={Boolean(values.defaultOpen)}

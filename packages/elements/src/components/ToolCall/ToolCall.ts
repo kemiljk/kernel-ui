@@ -168,39 +168,71 @@ export class KernelToolCall extends KernelElement {
     const status = this.getAttribute("status") ?? "pending";
     const labelText = this.getAttribute("label") ?? "Tool call";
     root.setAttribute("data-status", status);
-    summaryContent.replaceChildren();
+    let label = summaryContent.querySelector<HTMLElement>(
+      `.${kernelClass("ToolCall", "label")}`,
+    );
 
-    if (status === "running") {
-      const label = document.createElement("span");
+    if (!label) {
+      label = document.createElement("span");
       label.className = kernelClass("ToolCall", "label");
-      if (this.hasResults) label.setAttribute("role", "status");
 
+      const statusSlot = document.createElement("span");
+      statusSlot.className = kernelClass("ToolCall", "statusSlot");
+      statusSlot.setAttribute("aria-hidden", "true");
+
+      const runningLayer = document.createElement("span");
+      runningLayer.className = kernelClass("ToolCall", "statusLayer");
+      runningLayer.dataset.kind = "running";
       const dots = document.createElement("span");
       dots.className = kernelClass("ToolCall", "dots");
-      dots.setAttribute("aria-hidden", "true");
       for (let i = 0; i < 3; i++) {
         const dot = document.createElement("span");
         dot.className = kernelClass("ToolCall", "dot");
         dots.append(dot);
       }
+      runningLayer.append(dots);
+      statusSlot.append(runningLayer);
 
-      const shimmer = document.createElement("span");
-      shimmer.className = kernelClass("ToolCall", "shimmer");
-      shimmer.textContent = labelText;
+      for (const kind of ["pending", "complete", "error"]) {
+        const layer = document.createElement("span");
+        layer.className = kernelClass("ToolCall", "statusLayer");
+        layer.dataset.kind = kind;
+        layer.append(statusIcon(kind));
+        statusSlot.append(layer);
+      }
 
-      label.append(dots, shimmer);
+      const labelStack = document.createElement("span");
+      labelStack.className = kernelClass("ToolCall", "labelStack");
+
+      const runningText = document.createElement("span");
+      runningText.className = `${kernelClass("ToolCall", "labelLayer")} ${kernelClass("ToolCall", "shimmer")}`;
+      runningText.dataset.kind = "running";
+      runningText.dataset.labelCopy = "";
+      runningText.setAttribute("aria-hidden", "true");
+
+      const settledText = document.createElement("span");
+      settledText.className = `${kernelClass("ToolCall", "labelLayer")} ${kernelClass("ToolCall", "labelText")}`;
+      settledText.dataset.kind = "settled";
+      settledText.dataset.labelCopy = "";
+      settledText.setAttribute("aria-hidden", "true");
+
+      const accessibleText = document.createElement("span");
+      accessibleText.className = "kernel-sr-only";
+      accessibleText.dataset.labelCopy = "";
+
+      labelStack.append(runningText, settledText, accessibleText);
+      label.append(statusSlot, labelStack);
       summaryContent.append(label);
-      return;
     }
 
-    const label = document.createElement("span");
-    label.className = kernelClass("ToolCall", "label");
-    label.append(statusIcon(status));
-    const text = document.createElement("span");
-    text.className = kernelClass("ToolCall", "labelText");
-    text.textContent = labelText;
-    label.append(text);
-    summaryContent.append(label);
+    if (this.hasResults) {
+      if (status === "running") label.setAttribute("role", "status");
+      else label.removeAttribute("role");
+    }
+
+    for (const copy of label.querySelectorAll<HTMLElement>("[data-label-copy]")) {
+      copy.textContent = labelText;
+    }
   }
 
   protected syncAttr(name: string, _value: string | null) {

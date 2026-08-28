@@ -1,4 +1,4 @@
-import { Button, ToastViewport, toast } from "@kernelui-lib/react";
+import { Button, toast } from "@kernelui-lib/react";
 import Playground, { type PlaygroundValues } from "../Playground";
 
 const controls = [
@@ -66,12 +66,9 @@ export default function ToastPlayground() {
       code={code}
       elementsCode={elementsCode}
       render={(values) => (
-        <>
-          <Button variant="primary" onClick={() => fire(values)}>
-            Publish
-          </Button>
-          <ToastViewport />
-        </>
+        <Button variant="primary" onClick={() => fire(values)}>
+          Publish
+        </Button>
       )}
     />
   );

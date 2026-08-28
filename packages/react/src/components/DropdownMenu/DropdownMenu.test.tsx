@@ -56,11 +56,12 @@ describe("DropdownMenu", () => {
     expect(onClick.mock.calls[0]![0].defaultPrevented).toBe(false);
   });
 
-  it("keeps arrow-key roving across link menu items", () => {
+  it("keeps ArrowDown, Home, and End roving across link menu items", () => {
     render(
       <DropdownMenu render={<button type="button">Menu</button>}>
         <MenuItem render={<a href="/one" />}>One</MenuItem>
         <MenuItem render={<a href="/two" />}>Two</MenuItem>
+        <MenuItem render={<a href="/three" />}>Three</MenuItem>
       </DropdownMenu>,
     );
 
@@ -70,6 +71,8 @@ describe("DropdownMenu", () => {
     items[0]!.focus();
     fireEvent.keyDown(menu, { key: "ArrowDown" });
     expect(document.activeElement).toBe(items[1]);
+    fireEvent.keyDown(menu, { key: "End" });
+    expect(document.activeElement).toBe(items[2]);
     fireEvent.keyDown(menu, { key: "Home" });
     expect(document.activeElement).toBe(items[0]);
   });

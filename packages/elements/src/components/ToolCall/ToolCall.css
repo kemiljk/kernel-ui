@@ -53,6 +53,52 @@
   text-wrap: pretty;
 }
 
+/* Persistent layers preserve continuity across status changes and allow a
+   rapid reversal to retarget the same transition instead of rebuilding DOM. */
+.kernel-ToolCall-statusSlot,
+.kernel-ToolCall-labelStack {
+  display: inline-grid;
+  min-inline-size: 0;
+}
+
+.kernel-ToolCall-statusSlot {
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+  place-items: center;
+}
+
+.kernel-ToolCall-statusLayer,
+.kernel-ToolCall-labelLayer {
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  filter: blur(var(--kernel-blur-sm));
+  pointer-events: none;
+  transition:
+    opacity var(--kernel-duration-fast) linear,
+    scale var(--kernel-duration-base) var(--kernel-ease-in-out),
+    filter var(--kernel-duration-fast) linear;
+}
+
+.kernel-ToolCall-statusLayer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kernel-ToolCall-root[data-status="running"] .kernel-ToolCall-statusLayer[data-kind="running"],
+.kernel-ToolCall-root[data-status="pending"] .kernel-ToolCall-statusLayer[data-kind="pending"],
+.kernel-ToolCall-root[data-status="complete"] .kernel-ToolCall-statusLayer[data-kind="complete"],
+.kernel-ToolCall-root[data-status="error"] .kernel-ToolCall-statusLayer[data-kind="error"],
+.kernel-ToolCall-root[data-status="running"] .kernel-ToolCall-labelLayer[data-kind="running"],
+.kernel-ToolCall-root:not([data-status="running"]) .kernel-ToolCall-labelLayer[data-kind="settled"] {
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
+}
+
 .kernel-ToolCall-dots {
   display: inline-flex;
   align-items: center;
@@ -65,6 +111,7 @@
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-text-muted);
   animation: kernel-toolcall-bounce 1s ease-in-out infinite;
+  animation-play-state: paused;
 }
 
 .kernel-ToolCall-dot:nth-child(2) {
@@ -100,7 +147,13 @@
   color: transparent;
   -webkit-text-fill-color: transparent;
   animation: kernel-toolcall-shimmer 2.5s linear infinite;
+  animation-play-state: paused;
   text-wrap: pretty;
+}
+
+.kernel-ToolCall-root[data-status="running"] .kernel-ToolCall-statusLayer[data-kind="running"] .kernel-ToolCall-dot,
+.kernel-ToolCall-root[data-status="running"] .kernel-ToolCall-labelLayer[data-kind="running"] {
+  animation-play-state: running;
 }
 
 @keyframes kernel-toolcall-shimmer {
@@ -119,11 +172,11 @@
   color: var(--kernel-color-text-muted);
 }
 
-.kernel-ToolCall-root[data-status="complete"] .kernel-ToolCall-icon {
+.kernel-ToolCall-root[data-status="complete"] .kernel-ToolCall-statusLayer[data-kind="complete"] .kernel-ToolCall-icon {
   color: var(--kernel-color-success-text);
 }
 
-.kernel-ToolCall-root[data-status="error"] .kernel-ToolCall-icon {
+.kernel-ToolCall-root[data-status="error"] .kernel-ToolCall-statusLayer[data-kind="error"] .kernel-ToolCall-icon {
   color: var(--kernel-color-danger-text);
 }
 
@@ -170,5 +223,12 @@
     background-clip: unset;
     color: var(--kernel-color-text-muted);
     -webkit-text-fill-color: unset;
+  }
+
+  .kernel-ToolCall-statusLayer,
+  .kernel-ToolCall-labelLayer {
+    scale: 1;
+    filter: none;
+    transition: opacity var(--kernel-duration-fast) linear !important;
   }
 }

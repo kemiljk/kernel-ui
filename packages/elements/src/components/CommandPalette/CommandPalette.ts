@@ -1,5 +1,4 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
-import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./CommandPalette.css";
 
 let paletteCounter = 0;
@@ -26,9 +25,8 @@ export interface KernelCommandPaletteGroup {
  * `aria-activedescendant` pointing at whichever is highlighted, focus
  * staying on the input throughout.
  *
- * Enter/exit motion (opacity + slight scale + settle) is the default —
- * Escape and backdrop dismiss are held until the exit transition
- * finishes, matching `<kernel-dialog>`.
+ * Opening and closing are immediate because this keyboard-driven surface
+ * should respond in the same frame as its shortcut.
  *
  * Items carry an `onSelect` callback, which isn't expressible as an
  * HTML attribute — set them via the `items` property (not attribute):
@@ -44,10 +42,6 @@ export class KernelCommandPalette extends KernelElement {
   private _groups: KernelCommandPaletteGroup[] = [];
   private query = "";
   private activeIndex = 0;
-  private closing = false;
-  private skipCloseEvent = false;
-  private exitAbort: AbortController | null = null;
-
   private inputEl!: HTMLInputElement;
   private listboxEl!: HTMLElement;
 
@@ -112,11 +106,7 @@ export class KernelCommandPalette extends KernelElement {
       this.requestClose();
     });
     dialog.addEventListener("close", () => {
-      if (this.skipCloseEvent) {
-        this.skipCloseEvent = false;
-        return;
-      }
-      this.removeAttribute("open");
+      if (this.hasAttribute("open")) this.removeAttribute("open");
     });
 
     const input = document.createElement("input");
@@ -160,33 +150,14 @@ export class KernelCommandPalette extends KernelElement {
   private _renderItem?: ((item: KernelCommandPaletteItem, state: { active: boolean; group?: KernelCommandPaletteGroup; index: number }) => HTMLElement | DocumentFragment | string | null);
 
   private requestClose() {
-    if (!this.hasAttribute("open") || this.closing) return;
+    if (!this.hasAttribute("open")) return;
     this.removeAttribute("open");
   }
 
-  private async finishClose(dialog: HTMLDialogElement) {
-    if (!dialog.open || this.closing) return;
-    this.closing = true;
+  private finishClose(dialog: HTMLDialogElement) {
+    if (dialog.open) dialog.close();
     dialog.removeAttribute("data-open");
-    dialog.setAttribute("data-closing", "");
-    dialog.setAttribute("data-state", "closing");
-
-    if (!prefersReducedMotion()) {
-      const controller = new AbortController();
-      this.exitAbort?.abort();
-      this.exitAbort = controller;
-      await waitForExitTransition(dialog, { signal: controller.signal });
-      if (controller.signal.aborted) {
-        this.closing = false;
-        return;
-      }
-    }
-
-    this.skipCloseEvent = true;
-    dialog.close();
-    dialog.removeAttribute("data-closing");
     dialog.removeAttribute("data-state");
-    this.closing = false;
   }
 
   private handleKeyDown(event: KeyboardEvent) {
@@ -315,20 +286,17 @@ export class KernelCommandPalette extends KernelElement {
     switch (name) {
       case "open":
         if (value !== null && !dialog.open) {
-          this.exitAbort?.abort();
-          this.closing = false;
           this.query = "";
           this.activeIndex = 0;
           this.inputEl.value = "";
           this.renderOptions();
           dialog.showModal();
           dialog.setAttribute("data-open", "");
-          dialog.removeAttribute("data-closing");
           dialog.setAttribute("data-state", "open");
           requestAnimationFrame(() => this.inputEl.focus());
         }
         if (value === null && dialog.open) {
-          void this.finishClose(dialog);
+          this.finishClose(dialog);
         }
         break;
       case "placeholder":
@@ -347,9 +315,6 @@ export class KernelCommandPalette extends KernelElement {
     }
   }
 
-  disconnectedCallback() {
-    this.exitAbort?.abort();
-  }
 }
 
 customElements.define("kernel-command-palette", KernelCommandPalette);

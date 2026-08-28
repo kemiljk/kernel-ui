@@ -18,8 +18,8 @@
 
 /* Every toast is `position: absolute`, anchored to the same bottom edge,
    and moved into its stacked position entirely in CSS via a single composed
-   `translate` — never by flex layout and never by a JS-written inline
-   transform. `--y` is the stack position; `--swipe-amount` is the live drag.
+   `translate` — never by flex layout. `--y` is the stack position; a live
+   swipe temporarily writes the element's non-inheriting `translate` property.
    Because BOTH the collapsed and expanded positions are computed here (from
    custom properties React sets once — `--offset`, and the toast's own
    `data-depth`), hovering only flips the viewport's `data-expanded`
@@ -66,7 +66,7 @@
   opacity: 1;
   scale: 1;
   filter: blur(0px);
-  translate: var(--swipe-amount, 0px) var(--y);
+  translate: 0 var(--y);
   transition:
     opacity var(--kernel-duration-slow) var(--kernel-ease-out),
     translate var(--kernel-duration-slow) var(--kernel-ease-spring),
@@ -317,10 +317,8 @@
   opacity: 1;
 }
 
-/* While dragging, kill the transition so `--swipe-amount` tracks the
-   pointer 1:1 instead of lagging behind it through the slow spring. This
-   replaces the old inline `transition: none` — same effect, but the toast's
-   inline style is now custom-properties-only (no per-render transform). */
+/* While dragging, kill the transition so the directly-written `translate`
+   tracks the pointer 1:1 instead of lagging through the slow spring. */
 .toast[data-dragging] {
   transition: none;
 }

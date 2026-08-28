@@ -4,6 +4,21 @@ import { describe, expect, it, vi } from "vitest";
 import { CommandPalette } from "./CommandPalette";
 
 describe("CommandPalette", () => {
+  it("closes its native dialog immediately and keeps native cancel controlled", () => {
+    const onOpenChange = vi.fn();
+    const { rerender } = render(<CommandPalette open onOpenChange={onOpenChange} />);
+    const dialog = screen.getByRole("dialog");
+
+    expect(dialog).toHaveAttribute("open");
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+
+    rerender(<CommandPalette open={false} onOpenChange={onOpenChange} />);
+    expect(dialog).not.toHaveAttribute("open");
+    expect(dialog).not.toHaveAttribute("data-state");
+    expect(dialog).not.toHaveAttribute("data-closing");
+  });
+
   it("keeps the legacy items API filtering and selection behavior", async () => {
     const onSelect = vi.fn();
     const onOpenChange = vi.fn();

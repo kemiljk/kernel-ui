@@ -1,3 +1,45 @@
+# Dependabot cleanup and main push
+
+- [x] Inventory every open Dependabot PR, including package scope, version delta, CI state, mergeability, and release notes/security impact.
+- [x] Merge relevant compatible PRs and close superseded, duplicate, or irrelevant PRs with an explicit reason.
+- [x] Reconcile the updated remote `main` with all current local work and review the complete diff.
+- [x] Run the full relevant test, typecheck, build, registry, shape, and docs verification suite.
+- [x] Commit and push all remaining work to `main`, then confirm the remote branch and PR queue state.
+
+## Review
+
+Reviewed the two remaining Dependabot PRs. Merged #47 (Astro 7.2.6 and
+`@astrojs/react` 6.0.4) after fresh CI, then added the required Changeset to
+#50, resolved its post-#47 lockfile conflict, and merged Vite 8.2.2,
+`@types/node` 26.3.0, and `@types/react-dom` 19.2.5 after another clean CI
+run. Both were relevant, so none were discarded. Security review found no
+issues, the proposed dependencies introduced no new known advisories, and
+both Vercel previews passed.
+
+The combined tree passes frozen install, all package builds/typechecks, the
+60-entry registry consistency check, shape checks, 123 React tests, 10 CLI
+tests, Astro diagnostics (244 files, zero findings), and the 71-page docs
+build. The Mac was locked during the final browser smoke attempt; the existing
+Default motion review below records the completed Round-radius interaction
+pass for these same UI changes. The release workflow is non-publishable; the
+component/tooling changes include their required Changesets.
+
+# Changesets v2 release workflow fix
+
+- [x] Fast-forward the local branch to the latest `origin/main` without disturbing existing worktree changes.
+- [x] Remove obsolete Changesets action input names and retain the v2 equivalents.
+- [x] Validate the workflow syntax/configuration and review the final diff.
+
+## Review
+
+Fast-forwarded `main` from `294dd4e` to `92f832d` after temporarily stashing
+and cleanly restoring the existing tracked and untracked work. Updated the five
+inputs renamed by `changesets/action@v2` while preserving their values and the
+release scripts. The workflow parses as YAML, a focused assertion confirms the
+exact v2 input set, `git diff --check` passes, and no other Changesets action
+usage exists in `.github/workflows`. This workflow-only change is
+non-publishable, so it does not require a Changeset.
+
 # Sheet
 
 Ported from [astro-kejk#83](https://github.com/kemiljk/astro-kejk/pull/83), then
@@ -93,3 +135,74 @@ no-ops and the sheet opens at the wrong height. That one cost real time.
 
 Vaul-style `activeSnapPoint` snapping on `side="top" | "left" | "right"`, and
 migrating astro-kejk onto the published component.
+
+# Favicon asset fix
+
+- [x] Compare the docs favicon asset/link with the working `astro-kejk` site.
+- [x] Fix the root cause with the smallest docs-only change.
+- [x] Run Astro diagnostics/build and inspect the emitted favicon response.
+
+## Review
+
+The original SVG and Astro route were valid, but Kernel depended on that single
+format while `astro-kejk` supplies browser and platform fallbacks. Added a 32px
+PNG, 32px ICO, and 180px Apple touch icon generated from the same amber mark,
+then declared them alongside the SVG with a version query to clear persistent
+favicon caches.
+
+`astro check` passed with 244 files and zero findings; the production build
+completed with 71 pages. The emitted HTML contains all four links and each
+asset has the expected format. A local production browser check loaded
+`/favicon.svg?v=2` successfully with no console errors; the server also saw the
+browser request both the SVG and conventional `/favicon.ico` paths.
+
+This is docs-only, so no Changeset is required.
+
+# Default motion pass
+
+- [x] Make CommandPalette open and close immediately in React and Elements.
+- [x] Make DropdownMenu and ContextMenu selection fills immediate while retaining press feedback.
+- [x] Keep Resizable pointermove updates out of React/Elements render loops.
+- [x] Keep Toast swipe movement out of React state and inherited custom properties.
+- [x] Morph ToolCall running and settled status layers in place with reduced-motion support.
+- [x] Add focused regression coverage and a patch Changeset for both publishable packages.
+- [x] Typecheck, test, build, run shape/docs checks, and interactively verify the affected surfaces.
+
+## Review
+
+Implemented all five audited plans in both packages. CommandPalette and menu
+selection now prioritize keyboard immediacy; Resizable and Toast keep pointer
+movement out of render loops; ToolCall uses persistent status/text layers with
+hidden ambient loops paused. Added thirteen focused regression tests across the
+new CommandPalette, Resizable, Toast, and ToolCall paths, plus the existing menu
+navigation coverage.
+
+Verified 123 React tests, React and Elements typechecks/builds,
+`test:shape`, and Astro diagnostics (243 files, zero findings). In the browser,
+checked CommandPalette's zero-duration resting styles, menu items' scale-only
+transition, Resizable keyboard updates, Toast directional swipe dismissal, and
+ToolCall running/error layer states at the Round radius setting. The browser
+could not synthesize the native dialog Escape cancellation reliably; that path
+is covered by the focused cancel event regression test.
+
+# Docs integration fixes and deployment
+
+- [x] Preserve the ToolCall instance when playground status changes so the morph is visible.
+- [x] Remount the uncontrolled Resizable only when its `defaultSplit` control changes.
+- [x] Mount one shared Toast viewport for the page so demo actions do not duplicate toasts.
+- [x] Re-run package tests/typechecks/builds, Astro checks/build, and production browser smoke tests.
+- [x] Deploy the verified production build and confirm the live site.
+
+## Review
+
+Fixed all three docs integration defects. The ToolCall playground now preserves
+component identity across status/result changes, Resizable remounts only when
+`defaultSplit` changes, and Toast demo/playground actions share exactly one
+viewport. Re-ran 123 React tests, both package typechecks/builds, shape checks,
+Astro diagnostics/build, and local browser interaction checks.
+
+Deployed preview `dpl_F5vZKSmDzP294v4NitGvs6xzHmt3`, promoted it to production
+as `dpl_Ei8gmXMqqJBX1L1CcmhaaKLFA1ri`, and confirmed the deployment reached
+READY. On `www.kernelui.com`, verified one Toast viewport/one Toast, ToolCall's
+running state, Resizable's updated split, and one open Command Palette dialog.
+The post-deploy Vercel error scan returned no logs/errors; the site is static.

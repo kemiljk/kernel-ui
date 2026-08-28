@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { InputHTMLAttributes, KeyboardEvent, ReactNode } from "react";
 import { dataAttr } from "../../utils/polymorphic";
-import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { ScrollArea } from "../ScrollArea/ScrollArea";
 import styles from "./CommandPalette.module.css";
 
@@ -243,11 +242,10 @@ function CommandPaletteRoot({
   const [query, setQuery] = useState("");
   const [registeredItems, setRegisteredItems] = useState<RegisteredItem[]>([]);
   const [activeId, setActiveIdState] = useState<string | null>(null);
-  const [closing, setClosing] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputElementRef = useRef<HTMLInputElement | null>(null);
-  const exitAbortRef = useRef<AbortController | null>(null);
-  const skipCloseSyncRef = useRef(false);
+  const openRef = useRef(open);
+  openRef.current = open;
   const keyboardNavRef = useRef(false);
   const id = useId();
   const listboxId = `${id}-listbox`;
@@ -299,35 +297,19 @@ function CommandPaletteRoot({
     const node = dialogRef.current;
     if (!node) return;
     if (open) {
-      exitAbortRef.current?.abort();
-      setClosing(false);
       if (!node.open) node.showModal();
       return;
     }
-    if (!node.open) return;
-    const controller = new AbortController();
-    exitAbortRef.current?.abort();
-    exitAbortRef.current = controller;
-    setClosing(true);
-    void (async () => {
-      if (!prefersReducedMotion()) await waitForExitTransition(node, { signal: controller.signal });
-      if (controller.signal.aborted) return;
-      skipCloseSyncRef.current = true;
+    if (node.open) {
       node.close();
-      setClosing(false);
-    })();
-    return () => controller.abort();
+    }
   }, [open]);
 
   useEffect(() => {
     const node = dialogRef.current;
     if (!node) return;
     const handleClose = () => {
-      if (skipCloseSyncRef.current) {
-        skipCloseSyncRef.current = false;
-        return;
-      }
-      onOpenChange(false);
+      if (openRef.current) onOpenChange(false);
     };
     node.addEventListener("close", handleClose);
     return () => node.removeEventListener("close", handleClose);
@@ -340,14 +322,13 @@ function CommandPaletteRoot({
     requestAnimationFrame(() => inputElementRef.current?.focus());
   }, [open]);
 
-  const dataState = closing ? "closing" : open || dialogRef.current?.open ? "open" : undefined;
   const shorthand = <><CommandPaletteInput placeholder={placeholder} aria-label={placeholder} />
     <CommandPaletteList>{selectableItems.length === 0 ? <CommandPaletteEmpty>{emptyMessage}</CommandPaletteEmpty> : null}
       <CommandPaletteShorthand items={items} groups={groups} renderItem={renderItem} />
     </CommandPaletteList></>;
 
   return <PaletteContext.Provider value={context}><dialog ref={dialogRef} className={styles.content} aria-label="Command palette"
-    data-state={dataState} data-open={dataAttr(open && !closing)} data-closing={dataAttr(closing)} data-blur={dataAttr(blur)}
+    data-state={open ? "open" : undefined} data-open={dataAttr(open)} data-blur={dataAttr(blur)}
     onClick={(event) => { if (event.target === dialogRef.current) onOpenChange(false); }}
     onCancel={(event) => { event.preventDefault(); event.stopPropagation(); onOpenChange(false); }}>
     {children ?? shorthand}

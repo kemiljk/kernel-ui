@@ -97,11 +97,10 @@ const compositionSnippet = `import { CommandPalette, Combobox } from "@kernelui-
       controlled, not self-triggering, you decide what opens it, a button,
       a keyboard shortcut, whatever, and it stays generic: it takes a flat
       list of <code>items</code>, it doesn't know anything about your app's
-      navigation or commands. Open and close fade the panel and backdrop
-      with a slight scale + settle by default — Escape and backdrop
-      dismiss wait for the exit transition, same as Dialog — and
-      <code>prefers-reduced-motion</code> collapses that to a short opacity
-      fade.
+      navigation or commands. Open and close are intentionally immediate:
+      a shortcut-driven command surface should appear and dismiss in the
+      same interaction frame, without making keyboard navigation wait on
+      decorative motion.
     </p>
 
     <div class="docs-example">

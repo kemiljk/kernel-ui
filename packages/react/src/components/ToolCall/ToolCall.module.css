@@ -51,6 +51,53 @@
   text-wrap: pretty;
 }
 
+/* Status and text layers stay mounted so a tool reads as one object changing
+   state. The root's public data-status hook retargets the transition directly,
+   including when status changes again before the first transition settles. */
+.statusSlot,
+.labelStack {
+  display: inline-grid;
+  min-inline-size: 0;
+}
+
+.statusSlot {
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+  place-items: center;
+}
+
+.statusLayer,
+.labelLayer {
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+  opacity: 0;
+  scale: var(--kernel-scale-enter);
+  filter: blur(var(--kernel-blur-sm));
+  pointer-events: none;
+  transition:
+    opacity var(--kernel-duration-fast) linear,
+    scale var(--kernel-duration-base) var(--kernel-ease-in-out),
+    filter var(--kernel-duration-fast) linear;
+}
+
+.statusLayer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.root[data-status="running"] .statusLayer[data-kind="running"],
+.root[data-status="pending"] .statusLayer[data-kind="pending"],
+.root[data-status="complete"] .statusLayer[data-kind="complete"],
+.root[data-status="error"] .statusLayer[data-kind="error"],
+.root[data-status="running"] .labelLayer[data-kind="running"],
+.root:not([data-status="running"]) .labelLayer[data-kind="settled"] {
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
+}
+
 .dots {
   display: inline-flex;
   align-items: center;
@@ -63,6 +110,7 @@
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-text-muted);
   animation: kernel-toolcall-bounce 1s ease-in-out infinite;
+  animation-play-state: paused;
 }
 
 .dot:nth-child(2) {
@@ -100,7 +148,13 @@
   color: transparent;
   -webkit-text-fill-color: transparent;
   animation: kernel-toolcall-shimmer 2.5s linear infinite;
+  animation-play-state: paused;
   text-wrap: pretty;
+}
+
+.root[data-status="running"] .statusLayer[data-kind="running"] .dot,
+.root[data-status="running"] .shimmer {
+  animation-play-state: running;
 }
 
 @keyframes kernel-toolcall-shimmer {
@@ -119,11 +173,11 @@
   color: var(--kernel-color-text-muted);
 }
 
-.root[data-status="complete"] .icon {
+.root[data-status="complete"] .statusLayer[data-kind="complete"] .icon {
   color: var(--kernel-color-success-text);
 }
 
-.root[data-status="error"] .icon {
+.root[data-status="error"] .statusLayer[data-kind="error"] .icon {
   color: var(--kernel-color-danger-text);
 }
 
@@ -170,5 +224,12 @@
     background-clip: unset;
     color: var(--kernel-color-text-muted);
     -webkit-text-fill-color: unset;
+  }
+
+  .statusLayer,
+  .labelLayer {
+    scale: 1;
+    filter: none;
+    transition: opacity var(--kernel-duration-fast) linear !important;
   }
 }

@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import {
   dismissToast,
   getToastSnapshot,
@@ -26,10 +27,14 @@ const DISMISS_VELOCITY = 0.5;
 
 interface TrackedToast {
   el: HTMLElement;
-  dragX: number;
   dragging: boolean;
   dragStart: { x: number; time: number } | null;
   measuredHeight: number;
+  settleAbort: AbortController | null;
+}
+
+function writeSwipe(node: HTMLElement, x: number) {
+  node.style.translate = `${x}px var(--y)`;
 }
 
 function setContent(target: HTMLElement, content: ToastContent | undefined) {
@@ -74,6 +79,7 @@ export class KernelToastViewport extends KernelElement {
     this.unsubscribe?.();
     this.unsubscribe = null;
     clearTimeout(this.collapseTimer);
+    for (const entry of this.tracked.values()) entry.settleAbort?.abort();
   }
 
   private expand() {
@@ -102,6 +108,7 @@ export class KernelToastViewport extends KernelElement {
 
     for (const [id, entry] of this.tracked) {
       if (!toasts.some((item) => item.id === id)) {
+        entry.settleAbort?.abort();
         entry.el.remove();
         this.tracked.delete(id);
       }
@@ -146,7 +153,6 @@ export class KernelToastViewport extends KernelElement {
 
     el.style.setProperty("--offset", `${offset}px`);
     el.style.setProperty("--z-index", String(zIndex));
-    el.style.setProperty("--swipe-amount", `${entry.dragX}px`);
 
     const iconEl = el.querySelector<HTMLElement>(`.${kernelClass("Toast", "icon")}`);
     const glyph = icons[item.variant];
@@ -200,11 +206,39 @@ export class KernelToastViewport extends KernelElement {
 
     el.append(content, close);
 
-    const entry: TrackedToast = { el, dragX: 0, dragging: false, dragStart: null, measuredHeight: 60 };
+    const entry: TrackedToast = {
+      el,
+      dragging: false,
+      dragStart: null,
+      measuredHeight: 60,
+      settleAbort: null,
+    };
+
+    const releasePointer = (event: PointerEvent) => {
+      if (el.hasPointerCapture?.(event.pointerId)) el.releasePointerCapture(event.pointerId);
+    };
+
+    const settleBack = () => {
+      entry.settleAbort?.abort();
+      const controller = new AbortController();
+      entry.settleAbort = controller;
+
+      el.removeAttribute("data-dragging");
+      void el.offsetWidth;
+      writeSwipe(el, 0);
+
+      void waitForExitTransition(el, { signal: controller.signal }).then(() => {
+        if (controller.signal.aborted) return;
+        el.style.removeProperty("translate");
+        if (entry.settleAbort === controller) entry.settleAbort = null;
+      });
+    };
 
     el.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
       if ((event.target as HTMLElement).closest("button")) return;
+      entry.settleAbort?.abort();
+      entry.settleAbort = null;
       entry.dragStart = { x: event.clientX, time: performance.now() };
       entry.dragging = true;
       el.setPointerCapture(event.pointerId);
@@ -213,8 +247,7 @@ export class KernelToastViewport extends KernelElement {
 
     el.addEventListener("pointermove", (event) => {
       if (!entry.dragStart) return;
-      entry.dragX = event.clientX - entry.dragStart.x;
-      el.style.setProperty("--swipe-amount", `${entry.dragX}px`);
+      writeSwipe(el, event.clientX - entry.dragStart.x);
     });
 
     const endDrag = (event: PointerEvent) => {
@@ -222,8 +255,7 @@ export class KernelToastViewport extends KernelElement {
       if (!start) return;
       entry.dragStart = null;
       entry.dragging = false;
-      el.releasePointerCapture(event.pointerId);
-      el.removeAttribute("data-dragging");
+      releasePointer(event);
 
       const deltaX = event.clientX - start.x;
       const elapsed = Math.max(1, performance.now() - start.time);
@@ -231,18 +263,27 @@ export class KernelToastViewport extends KernelElement {
       const width = el.offsetWidth;
 
       if (Math.abs(deltaX) > width * 0.4 || velocity > DISMISS_VELOCITY) {
-        entry.dragX = deltaX > 0 ? width * 1.5 : -width * 1.5;
-        el.style.setProperty("--swipe-amount", `${entry.dragX}px`);
+        el.removeAttribute("data-dragging");
+        void el.offsetWidth;
+        if (prefersReducedMotion()) el.style.removeProperty("translate");
+        else writeSwipe(el, deltaX > 0 ? width * 1.5 : -width * 1.5);
         dismissToast(item.id);
         return;
       }
 
-      entry.dragX = 0;
-      el.style.setProperty("--swipe-amount", "0px");
+      settleBack();
+    };
+
+    const cancelDrag = (event: PointerEvent) => {
+      if (!entry.dragStart) return;
+      entry.dragStart = null;
+      entry.dragging = false;
+      releasePointer(event);
+      settleBack();
     };
 
     el.addEventListener("pointerup", endDrag);
-    el.addEventListener("pointercancel", endDrag);
+    el.addEventListener("pointercancel", cancelDrag);
 
     return entry;
   }

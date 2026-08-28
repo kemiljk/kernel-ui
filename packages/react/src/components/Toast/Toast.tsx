@@ -9,6 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import {
   dismissToast,
   getToastSnapshot,
@@ -156,6 +157,13 @@ export function ToastViewport({ className }: ToastViewportProps) {
  * as intentional even if the pointer didn't travel far. */
 const DISMISS_VELOCITY = 0.5;
 
+/** Writes the live gesture to the non-inheriting transform property. Keeping
+ * this out of React state avoids a component render and descendant style
+ * invalidation for every pointer pixel. */
+function writeSwipe(node: HTMLElement, x: number) {
+  node.style.translate = `${x}px var(--y)`;
+}
+
 function ToastItem({
   item,
   depth,
@@ -170,10 +178,17 @@ function ToastItem({
   onHeight: (height: number) => void;
 }) {
   const isUrgent = item.variant === "danger" || item.variant === "warning";
-  const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const elementRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<{ x: number; time: number } | null>(null);
+  const settleAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(
+    () => () => {
+      settleAbortRef.current?.abort();
+    },
+    [],
+  );
 
   // Measure ONCE per content change, never with a live ResizeObserver. A
   // toast with a two-line description is taller than a bare title, and the
@@ -200,6 +215,8 @@ function ToastItem({
     // pointer capture redirects the matching pointerup away from the
     // button, so the click never gets to synthesize.
     if ((event.target as HTMLElement).closest("button")) return;
+    settleAbortRef.current?.abort();
+    settleAbortRef.current = null;
     dragStart.current = { x: event.clientX, time: performance.now() };
     setDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -207,7 +224,32 @@ function ToastItem({
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     if (!dragStart.current) return;
-    setDragX(event.clientX - dragStart.current.x);
+    writeSwipe(event.currentTarget, event.clientX - dragStart.current.x);
+  }
+
+  function finishPointerCapture(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function settleBack(node: HTMLDivElement) {
+    settleAbortRef.current?.abort();
+    const controller = new AbortController();
+    settleAbortRef.current = controller;
+
+    // Removing the gesture marker arms the stylesheet's spring before its
+    // target changes. The inline X remains composed with the latest `--y`, so
+    // stack movement can continue naturally while the swipe settles.
+    node.removeAttribute("data-dragging");
+    void node.offsetWidth;
+    writeSwipe(node, 0);
+
+    void waitForExitTransition(node, { signal: controller.signal }).then(() => {
+      if (controller.signal.aborted) return;
+      node.style.removeProperty("translate");
+      if (settleAbortRef.current === controller) settleAbortRef.current = null;
+    });
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
@@ -215,7 +257,7 @@ function ToastItem({
     if (!start) return;
     dragStart.current = null;
     setDragging(false);
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    finishPointerCapture(event);
 
     const deltaX = event.clientX - start.x;
     const elapsed = Math.max(1, performance.now() - start.time);
@@ -223,7 +265,10 @@ function ToastItem({
     const width = elementRef.current?.offsetWidth ?? 0;
 
     if (Math.abs(deltaX) > width * 0.4 || velocity > DISMISS_VELOCITY) {
-      setDragX(deltaX > 0 ? width * 1.5 : -width * 1.5);
+      event.currentTarget.removeAttribute("data-dragging");
+      void event.currentTarget.offsetWidth;
+      if (prefersReducedMotion()) event.currentTarget.style.removeProperty("translate");
+      else writeSwipe(event.currentTarget, deltaX > 0 ? width * 1.5 : -width * 1.5);
       dismissToast(item.id);
       return;
     }
@@ -234,7 +279,15 @@ function ToastItem({
     // already paused every toast — resuming now would restart the
     // countdown while still hovering it. `collapse()` (the viewport's
     // `onMouseLeave`) is the only thing that should resume anyone.
-    setDragX(0);
+    settleBack(event.currentTarget);
+  }
+
+  function handlePointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!dragStart.current) return;
+    dragStart.current = null;
+    setDragging(false);
+    finishPointerCapture(event);
+    settleBack(event.currentTarget);
   }
 
   return (
@@ -246,21 +299,19 @@ function ToastItem({
       data-depth={depth}
       data-dragging={dataAttr(dragging)}
       className={styles.toast}
-      // Custom properties only — the actual `translate`/`scale` live in the
-      // stylesheet and read these. `--offset` is the expanded distance from
-      // the anchor; `--swipe-amount` is the live drag, composed into the same
-      // single CSS `translate` so dragging never needs a JS-written transform.
+      // Stable stack properties only. Pointer tracking writes the element's
+      // non-inheriting `translate` property directly, outside React's render
+      // loop; `--offset` remains the expanded distance from the anchor.
       style={
         {
           "--offset": `${offset}px`,
           "--z-index": zIndex,
-          "--swipe-amount": `${dragX}px`,
         } as CSSProperties
       }
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
     >
       {icons[item.variant] ? (
         <span className={styles.icon} aria-hidden="true">

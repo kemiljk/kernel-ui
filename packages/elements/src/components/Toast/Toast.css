@@ -36,7 +36,7 @@
   opacity: 1;
   scale: 1;
   filter: blur(0px);
-  translate: var(--swipe-amount, 0px) var(--y);
+  translate: 0 var(--y);
   transition:
     opacity var(--kernel-duration-slow) var(--kernel-ease-out),
     translate var(--kernel-duration-slow) var(--kernel-ease-spring),

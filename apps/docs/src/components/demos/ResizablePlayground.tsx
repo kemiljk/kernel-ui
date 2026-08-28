@@ -40,6 +40,7 @@ export default function ResizablePlayground() {
       render={(values) => (
         <div style={{ inlineSize: "100%", blockSize: "12rem" }}>
           <Resizable
+            key={Number(values.defaultSplit)}
             defaultSplit={Number(values.defaultSplit)}
             min={Number(values.min)}
             max={Number(values.max)}

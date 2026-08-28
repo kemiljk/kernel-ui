@@ -83,9 +83,7 @@ kernel-menu-separator {
      own label text never drag-selects. */
   -webkit-user-select: none;
   user-select: none;
-  transition:
-    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 a.kernel-DropdownMenu-item {
@@ -157,7 +155,7 @@ a.kernel-DropdownMenu-item {
 
 @media (prefers-reduced-motion: reduce) {
   .kernel-DropdownMenu-item {
-    transition: background-color var(--kernel-duration-fast) linear;
+    transition: none;
   }
 
   .kernel-DropdownMenu-item:active:not(:disabled) {

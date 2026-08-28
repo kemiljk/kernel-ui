@@ -42,18 +42,26 @@ export function Resizable({
 }: ResizableProps) {
   const [split, setSplit] = useState(() => clamp(defaultSplit, min, max));
   const [dragging, setDragging] = useState(false);
+  const splitRef = useRef(split);
   const rootRef = useRef<HTMLDivElement>(null);
   const state: ResizableState = { orientation, dragging };
 
   const updateFromPointer = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, divider: HTMLDivElement) => {
       const rect = rootRef.current?.getBoundingClientRect();
       if (!rect) return;
       const percent =
         orientation === "horizontal"
           ? ((clientX - rect.left) / rect.width) * 100
           : ((clientY - rect.top) / rect.height) * 100;
-      setSplit(clamp(percent, min, max));
+      const next = clamp(percent, min, max);
+
+      // Pointer movement is direct manipulation: update only the two values
+      // that visually and semantically track the pointer. Committing React
+      // state here would reconcile both pane subtrees for every pointer event.
+      splitRef.current = next;
+      rootRef.current?.style.setProperty("--kernel-resizable-split", `${next}%`);
+      divider.setAttribute("aria-valuenow", String(Math.round(next)));
     },
     [orientation, min, max],
   );
@@ -73,14 +81,22 @@ export function Resizable({
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
-    updateFromPointer(event.clientX, event.clientY);
+    updateFromPointer(event.clientX, event.clientY, event.currentTarget);
   }
 
-  function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
-    event.currentTarget.releasePointerCapture(event.pointerId);
+  function finishPointerDrag(event: PointerEvent<HTMLDivElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setSplit(splitRef.current);
     setDragging(false);
     document.body.style.cursor = "";
     document.body.style.userSelect = "";
+  }
+
+  function commitSplit(next: number) {
+    splitRef.current = next;
+    setSplit(next);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -90,16 +106,16 @@ export function Resizable({
 
     if (event.key === decreaseKey) {
       event.preventDefault();
-      setSplit((current) => clamp(current - step, min, max));
+      commitSplit(clamp(splitRef.current - step, min, max));
     } else if (event.key === increaseKey) {
       event.preventDefault();
-      setSplit((current) => clamp(current + step, min, max));
+      commitSplit(clamp(splitRef.current + step, min, max));
     } else if (event.key === "Home") {
       event.preventDefault();
-      setSplit(min);
+      commitSplit(min);
     } else if (event.key === "End") {
       event.preventDefault();
-      setSplit(max);
+      commitSplit(max);
     }
   }
 
@@ -123,7 +139,8 @@ export function Resizable({
         className={styles.divider}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
+        onPointerUp={finishPointerDrag}
+        onPointerCancel={finishPointerDrag}
         onKeyDown={handleKeyDown}
       />
       <div className={styles.pane}>{children[1]}</div>

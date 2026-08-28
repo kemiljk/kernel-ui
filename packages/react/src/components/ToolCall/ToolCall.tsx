@@ -64,22 +64,55 @@ function StatusIcon({ status }: { status: Exclude<ToolCallStatus, "running"> }) 
 }
 
 function StatusLabel({ status, label }: { status: ToolCallStatus; label: ReactNode }) {
-  if (status === "running") {
-    return (
-      <span className={styles.label}>
-        <span className={styles.dots} aria-hidden="true">
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-        </span>
-        <span className={styles.shimmer}>{label}</span>
-      </span>
-    );
-  }
+  const canLayerLabel = typeof label === "string" || typeof label === "number";
+
   return (
     <span className={styles.label}>
-      <StatusIcon status={status} />
-      <span className={styles.labelText}>{label}</span>
+      <span className={styles.statusSlot} aria-hidden="true">
+        <span className={styles.statusLayer} data-kind="running">
+          <span className={styles.dots}>
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+          </span>
+        </span>
+        <span className={styles.statusLayer} data-kind="pending">
+          <StatusIcon status="pending" />
+        </span>
+        <span className={styles.statusLayer} data-kind="complete">
+          <StatusIcon status="complete" />
+        </span>
+        <span className={styles.statusLayer} data-kind="error">
+          <StatusIcon status="error" />
+        </span>
+      </span>
+      {canLayerLabel ? (
+        <span className={styles.labelStack}>
+          <span
+            className={[styles.labelLayer, styles.shimmer].join(" ")}
+            data-kind="running"
+            aria-hidden="true"
+          >
+            {label}
+          </span>
+          <span
+            className={[styles.labelLayer, styles.labelText].join(" ")}
+            data-kind="settled"
+            aria-hidden="true"
+          >
+            {label}
+          </span>
+          <span className="kernel-sr-only">{label}</span>
+        </span>
+      ) : (
+        <span
+          className={[styles.labelText, status === "running" ? styles.shimmer : null]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {label}
+        </span>
+      )}
     </span>
   );
 }
@@ -133,7 +166,7 @@ export function ToolCall({
       data-status={status}
     >
       <summary className={styles.trigger}>
-        {status === "running" ? <span role="status">{summaryBody}</span> : summaryBody}
+        <span role={status === "running" ? "status" : undefined}>{summaryBody}</span>
         <svg
           className={styles.chevron}
           viewBox="0 0 16 16"
