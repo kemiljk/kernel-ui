@@ -19,7 +19,7 @@
     "@kernelui-lib/react": "workspace:*",
     "@kernelui-lib/registry": "workspace:*",
     "@kernelui-lib/styles": "workspace:*",
-    "astro": "^7.2.6",
+    "astro": "^7.2.9",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
