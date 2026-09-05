@@ -77,3 +77,52 @@ describe("DropdownMenu", () => {
     expect(document.activeElement).toBe(items[0]);
   });
 });
+
+// details.open is the source of truth; the toggle event mirrors what a
+// native summary activation emits (JSDOM has no rendered disclosure tree).
+describe("DropdownMenu disclosure", () => {
+  it("uses native details/summary without a popover or click controller", () => {
+    render(<DropdownMenu presentation="disclosure" render={<summary>Navigation</summary>}>
+      <MenuItem>Home</MenuItem>
+    </DropdownMenu>);
+    const summary = screen.getByText("Navigation");
+    const details = summary.closest("details")!;
+    const menu = details.querySelector('[role="menu"]')!;
+    expect(summary.tagName).toBe("SUMMARY");
+    expect(summary).toHaveAttribute("aria-controls", menu.id);
+    expect(summary).not.toHaveAttribute("popovertarget");
+    expect(menu).not.toHaveAttribute("popover");
+    expect(details).not.toHaveAttribute("open");
+  });
+
+  it("closes on Escape and selection, restoring focus to summary", () => {
+    render(<DropdownMenu presentation="disclosure" render={<summary>Navigation</summary>}>
+      <MenuItem>Home</MenuItem>
+    </DropdownMenu>);
+    const summary = screen.getByText("Navigation");
+    const details = summary.closest("details")!;
+    const menu = details.querySelector('[role="menu"]')!;
+    const item = menu.querySelector<HTMLElement>('[role="menuitem"]')!;
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
+    item.focus();
+    fireEvent.keyDown(document, {key:"Escape"});
+    expect(details.open).toBe(false);
+    expect(document.activeElement).toBe(summary);
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
+    fireEvent.click(item);
+    expect(details.open).toBe(false);
+  });
+
+  it("preserves preventDefault for a menu panel change", () => {
+    render(<DropdownMenu presentation="disclosure" render={<summary>Navigation</summary>}>
+      <MenuItem onClick={event => event.preventDefault()}>Submenu</MenuItem>
+    </DropdownMenu>);
+    const details = screen.getByText("Navigation").closest("details")!;
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
+    fireEvent.click(screen.getByText("Submenu"));
+    expect(details.open).toBe(true);
+  });
+});

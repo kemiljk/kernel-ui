@@ -55,6 +55,12 @@ jobs:
       - name: Test React package
         run: bun run --cwd packages/react test
 
+      - name: Install menu test browsers
+        run: bunx playwright install --with-deps chromium webkit
+
+      - name: Test native dropdown motion and touch behavior
+        run: bun run test:dropdown
+
       - name: Test CLI package
         run: bun run --cwd packages/cli test
 

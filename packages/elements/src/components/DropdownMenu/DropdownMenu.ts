@@ -53,11 +53,15 @@ function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
  * (`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.
  *
  * Attributes: `placement` (default bottom), `align` (start/center/end,
- * default center), `offset` (px, default 8).
+ * default center), `offset` (px, default 8). `presentation="disclosure"`
+ * uses a native details/summary in the page's stacking context; provide
+ * <summary slot="trigger">. CSS owns entry/exit without a top-layer backdrop.
  */
 export class KernelDropdownMenu extends KernelElement {
   private readonly contentId = `kernel-dropdown-menu-${++menuCounter}`;
   private readonly positioner = new FloatingPositioner();
+  private disclosure: HTMLDetailsElement | null = null;
+  private disclosureListeners: AbortController | null = null;
 
   protected createNative(): HTMLElement {
     const content = document.createElement("div");
@@ -70,7 +74,12 @@ export class KernelDropdownMenu extends KernelElement {
   }
 
   connectedCallback() {
+    if (this.disclosure) { this.listenToDisclosure(); return; }
     if (this.native) return;
+    if (this.getAttribute("presentation") === "disclosure") {
+      this.createDisclosure();
+      return;
+    }
 
     const triggerSlot = this.querySelector('[slot="trigger"]');
     const rest: Node[] = [];
@@ -113,8 +122,80 @@ export class KernelDropdownMenu extends KernelElement {
     this.append(content);
   }
 
+  private createDisclosure() {
+    // A summary is the native trigger, not a button nested in a summary.
+    const summary = this.querySelector<HTMLElement>('summary[slot="trigger"]');
+    if (!summary) throw new Error('A disclosure menu requires <summary slot="trigger">');
+    const details = document.createElement("details");
+    details.className = kernelClass("DropdownMenu", "disclosure");
+    const { placement, align, offset } = readFloatingAttributes(this);
+    details.setAttribute("data-placement", placement);
+    details.setAttribute("data-align", align);
+    details.style.setProperty("--kernel-menu-offset", `${offset}px`);
+    summary.classList.add(kernelClass("DropdownMenu", "disclosureTrigger"));
+    summary.setAttribute("aria-haspopup", "menu");
+    summary.setAttribute("aria-controls", this.contentId);
+    summary.setAttribute("aria-expanded", "false");
+    const content = this.createNative();
+    content.removeAttribute("popover");
+    content.classList.add(kernelClass("DropdownMenu", "disclosureContent"));
+    content.setAttribute("data-placement", placement);
+    content.setAttribute("data-align", align);
+    content.inert = true;
+    (content as MenuClosable).__kernelMenuClose = () => this.closeDisclosure();
+    for (const node of Array.from(this.childNodes)) {
+      if (node !== summary) content.append(node);
+    }
+    details.append(summary, content);
+    this.native = content;
+    this.disclosure = details;
+    this.append(details);
+    this.listenToDisclosure();
+  }
+
+  private closeDisclosure() {
+    if (!this.disclosure) return;
+    if (this.native?.contains(document.activeElement)) {
+      this.disclosure.querySelector<HTMLElement>("summary")?.focus();
+    }
+    this.disclosure.open = false;
+  }
+
+  private listenToDisclosure() {
+    this.disclosureListeners?.abort();
+    const controller = new AbortController();
+    this.disclosureListeners = controller;
+    const { signal } = controller;
+    const details = this.disclosure!;
+    const content = this.native!;
+    details.addEventListener("toggle", () => {
+      details.querySelector("summary")?.setAttribute("aria-expanded", String(details.open));
+      content.inert = !details.open;
+      content.toggleAttribute("data-open", details.open);
+      // WebKit exposes the previously skipped details subtree after layout.
+      if (details.open) requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (details.open) content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
+      }));
+    }, { signal });
+    content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event), { signal });
+    // A transient blur during a touch tap must not pre-toggle the summary.
+    document.addEventListener("focusin", (event) => {
+      if (details.open && !details.contains(event.target as Node)) this.closeDisclosure();
+    }, { signal });
+    document.addEventListener("pointerdown", (event) => {
+      if (details.open && !details.contains(event.target as Node)) this.closeDisclosure();
+    }, { signal });
+    document.addEventListener("keydown", (event) => {
+      if (details.open && event.key === "Escape" && !event.defaultPrevented) {
+        event.preventDefault();
+        this.closeDisclosure();
+      }
+    }, { signal });
+  }
+
   disconnectedCallback() {
     this.positioner.destroy();
+    this.disclosureListeners?.abort();
   }
 }
 
@@ -308,7 +389,7 @@ export class KernelMenuItem extends KernelElement {
         return;
       }
       this.dispatchEvent(new CustomEvent("select", { bubbles: true }));
-      const popover = this.closest("[popover]") as MenuClosable | null;
+      const popover = this.closest('[role="menu"], [popover]') as MenuClosable | null;
       // `__kernelMenuClose`, if the closest popover set one, replaces a
       // bare hidePopover() with whatever that popover's own close needs
       // to do first — `KernelDropdownMenuMorph` sets this so selecting

@@ -77,6 +77,10 @@ export interface DropdownMenuState {
 }
 
 export interface DropdownMenuProps {
+  /** Native popover (default), or a details/summary disclosure that stays
+   * in the page's stacking context. For disclosure, render a <summary>
+   * (or Button render={<summary />}) instead of a button. */
+  presentation?: "popover" | "disclosure";
   render: RenderProp<{ open: boolean }>;
   children: ReactNode;
   placement?: FloatingPlacement;
@@ -96,7 +100,99 @@ export interface DropdownMenuProps {
  * roving between items is the one part of the WAI-ARIA menu pattern that
  * has to be wired up by hand, there's no native menu element.
  */
-export function DropdownMenu({
+export function DropdownMenu(props: DropdownMenuProps) {
+  return props.presentation === "disclosure"
+    ? <DisclosureDropdownMenu {...props} />
+    : <PopoverDropdownMenu {...props} />;
+}
+
+/** A real details/summary owns toggling and the closed subtree. CSS keeps
+ * ::details-content painted through the exit, without a top-layer backdrop
+ * or an animation timer. Only menu focus, dismissal and roving need JS. */
+function DisclosureDropdownMenu({
+  render, children, placement = "bottom", align = "center", offset = 8,
+  className, renderContent,
+}: DropdownMenuProps) {
+  const id = useId();
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState<boolean>();
+  const state = { open: Boolean(open), placement, align };
+
+  function close() {
+    const details = detailsRef.current;
+    if (!details) return;
+    if (menuRef.current?.contains(document.activeElement)) {
+      details.querySelector<HTMLElement>("summary")?.focus();
+    }
+    details.open = false;
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    function dismiss(event: PointerEvent) {
+      if (!detailsRef.current?.contains(event.target as Node)) close();
+    }
+    // Touch browsers can blur to no relatedTarget before summary's click.
+    // Only an actual focus destination outside the disclosure dismisses it.
+    function focusOutside(event: FocusEvent) {
+      if (!detailsRef.current?.contains(event.target as Node)) close();
+    }
+    function escape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape" && !event.defaultPrevented) {
+        event.preventDefault();
+        close();
+      }
+    }
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("focusin", focusOutside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("focusin", focusOutside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+
+  return (
+    <MenuContext.Provider value={{ close }}>
+      <details
+        ref={detailsRef}
+        className={styles.disclosure}
+        data-placement={placement}
+        data-align={align}
+        style={{ "--kernel-menu-offset": `${offset}px` } as import("react").CSSProperties}
+        onToggle={(event) => {
+          const nowOpen = event.currentTarget.open;
+          setOpen(nowOpen);
+          // Wait for WebKit to lay out the previously skipped subtree.
+          if (nowOpen) requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (detailsRef.current?.open) menuRef.current
+              ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
+          }));
+        }}
+      >
+        {renderElement(render, "summary", {
+          className: styles.disclosureTrigger,
+          "aria-haspopup": "menu",
+          "aria-controls": id,
+          "aria-expanded": open,
+        }, { open: Boolean(open) })}
+        {renderElement(renderContent, "div", {
+          ref: menuRef, id, role: "menu", inert: open === false,
+          "data-slot": "dropdown-menu-content",
+          "data-placement": placement, "data-align": align,
+          "data-open": dataAttr(open),
+          className: [styles.content, styles.disclosureContent, resolveClassName(className, state)].filter(Boolean).join(" "),
+          onKeyDown: (event: KeyboardEvent<HTMLElement>) => roveMenuItems(menuRef.current, event),
+          children,
+        }, state)}
+      </details>
+    </MenuContext.Provider>
+  );
+}
+
+function PopoverDropdownMenu({
   render,
   children,
   placement = "bottom",

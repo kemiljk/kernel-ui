@@ -267,3 +267,65 @@ a.item {
     transition: opacity var(--kernel-duration-fast) linear;
   }
 }
+
+/* Native disclosure presentation: HTML owns open/closed state, and the
+   details-content transition retains the subtree through the CSS exit.
+   There is no popover backdrop, scroll lock, or JS animation lifecycle. */
+.disclosure {
+  position: relative;
+  inline-size: max-content;
+  --kernel-menu-duration: var(--kernel-duration-exit-fast);
+}
+
+.disclosure[open] {
+  --kernel-menu-duration: var(--kernel-duration-fast);
+}
+
+.disclosure::details-content {
+  content-visibility: hidden;
+  transition: content-visibility var(--kernel-menu-duration) allow-discrete;
+}
+
+.disclosure[open]::details-content {
+  content-visibility: visible;
+}
+
+.disclosureTrigger {
+  list-style: none;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.disclosureTrigger::-webkit-details-marker { display: none; }
+.disclosureTrigger::marker { content: ""; }
+
+.content.disclosureContent {
+  position: absolute;
+  display: flex;
+  inset: auto;
+  inset-block-start: calc(100% + var(--kernel-menu-offset));
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  opacity: 0;
+  scale: var(--kernel-scale-exit);
+  transform-origin: top center;
+  transition:
+    opacity var(--kernel-menu-duration) var(--kernel-ease-overlay),
+    scale var(--kernel-menu-duration) var(--kernel-ease-overlay);
+}
+
+.disclosure[open] > .disclosureContent { opacity: 1; scale: 1; }
+@starting-style {
+  .disclosure[open] > .disclosureContent { opacity: 0; scale: var(--kernel-scale-enter); }
+}
+.disclosure[data-align="start"] > .disclosureContent { inset-inline-start: 0; translate: 0; transform-origin: top left; }
+.disclosure[data-align="end"] > .disclosureContent { inset-inline-start: auto; inset-inline-end: 0; translate: 0; transform-origin: top right; }
+.disclosure[data-placement="top"] > .disclosureContent { inset-block-start: auto; inset-block-end: calc(100% + var(--kernel-menu-offset)); transform-origin: bottom center; }
+.disclosure[data-placement="left"] > .disclosureContent { inset-block-start: 50%; inset-inline-start: auto; inset-inline-end: calc(100% + var(--kernel-menu-offset)); translate: 0 -50%; transform-origin: right center; }
+.disclosure[data-placement="right"] > .disclosureContent { inset-block-start: 50%; inset-inline-start: calc(100% + var(--kernel-menu-offset)); inset-inline-end: auto; translate: 0 -50%; transform-origin: left center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .disclosure::details-content,
+  .content.disclosureContent { transition: none; }
+}

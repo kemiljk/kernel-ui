@@ -2,9 +2,25 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
+import DropdownMenuDisclosureDemo from "../../components/demos/DropdownMenuDisclosureDemo";
 import DropdownMenuDemo from "../../components/demos/DropdownMenuDemo";
 import DropdownMenuPlayground from "../../components/demos/DropdownMenuPlayground";
 import DropdownMenuMorphDemo from "../../components/demos/DropdownMenuMorphDemo";
+
+const disclosureSnippet = `<DropdownMenu
+  presentation="disclosure"
+  align="end"
+  render={<Button render={<summary />}>Menu</Button>}
+>
+  <MenuItem render={<a href="/work" />}>Work</MenuItem>
+  <MenuItem render={<a href="/about" />}>About</MenuItem>
+</DropdownMenu>`;
+
+const disclosureElementsSnippet = `<kernel-dropdown-menu presentation="disclosure" align="end">
+  <summary slot="trigger">Menu</summary>
+  <kernel-menu-item href="/work">Work</kernel-menu-item>
+  <kernel-menu-item href="/about">About</kernel-menu-item>
+</kernel-dropdown-menu>`;
 
 const morphSnippet = `import { DropdownMenuMorph, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 
@@ -65,6 +81,7 @@ function ActionsMenu() {
       <caption>Props for Dropdown Menu.</caption>
       <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
       <tbody>
+        <tr><td><code>DropdownMenu</code></td><td><code>presentation</code></td><td>"popover" (default) | "disclosure"</td></tr>
         <tr><td><code>DropdownMenu</code></td><td><code>render</code></td><td>the trigger (required)</td></tr>
         <tr><td><code>DropdownMenu</code></td><td><code>renderContent</code></td><td>RenderProp — replace the popup</td></tr>
         <tr><td><code>DropdownMenu</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
@@ -84,6 +101,30 @@ function ActionsMenu() {
         <tr><td><code>DropdownMenuMorph</code></td><td><code>offset</code></td><td>number (px)</td></tr>
       </tbody>
     </table></div>
+
+    <h2 id="disclosure-presentation">Native disclosure presentation</h2>
+    <p>
+      Set <code>presentation="disclosure"</code> for a menu anchored within
+      its parent, such as navigation in a fixed mobile header. This renders
+      a real <code>details</code> with a <code>summary</code> trigger. HTML
+      handles toggling; CSS handles repeated entry and exit through
+      <code>::details-content</code>. It creates no top-layer backdrop and
+      does not change page scrolling. Escape, outside clicks, Tab leaving
+      the menu, and item selection close it; arrow keys move between items.
+    </p>
+    <p>
+      Render a <code>summary</code>, not a button inside a summary. The
+      disclosure stays in its ancestor's stacking context and can be clipped
+      by ancestor overflow. It does not flip to avoid viewport edges; use the
+      default popover presentation when those positioning features are needed.
+      Browsers without <code>::details-content</code> transitions still
+      toggle natively, with immediate closing. Reduced motion is immediate.
+    </p>
+    <div class="docs-example">
+      <DropdownMenuDisclosureDemo client:visible />
+    </div>
+    <UsageAccordion code={disclosureSnippet} lang="tsx" />
+    <UsageAccordion code={disclosureElementsSnippet} lang="html" />
 
     <h2 id="morph-variant">Morph variant</h2>
     <p>
