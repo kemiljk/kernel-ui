@@ -27,7 +27,7 @@
     "@astrojs/check": "^0.9.10",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "node-html-parser": "^9.0.1",
+    "node-html-parser": "^9.0.2",
     "typescript": "^5.7.3"
   }
 }
