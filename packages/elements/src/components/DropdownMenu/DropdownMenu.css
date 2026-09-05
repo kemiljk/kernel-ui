@@ -258,11 +258,15 @@ a.kernel-DropdownMenu-item {
 
 .kernel-DropdownMenu-disclosure::details-content {
   content-visibility: hidden;
-  transition: content-visibility var(--kernel-menu-duration) allow-discrete;
+  opacity: 0;
+  transition:
+    opacity var(--kernel-menu-duration) var(--kernel-ease-overlay),
+    content-visibility var(--kernel-menu-duration) allow-discrete;
 }
 
 .kernel-DropdownMenu-disclosure[open]::details-content {
   content-visibility: visible;
+  opacity: 1;
 }
 
 .kernel-DropdownMenu-disclosureTrigger {
@@ -291,9 +295,6 @@ a.kernel-DropdownMenu-item {
 }
 
 .kernel-DropdownMenu-disclosure[open] > .kernel-DropdownMenu-disclosureContent { opacity: 1; scale: 1; }
-@starting-style {
-  .kernel-DropdownMenu-disclosure[open] > .kernel-DropdownMenu-disclosureContent { opacity: 0; scale: var(--kernel-scale-enter); }
-}
 .kernel-DropdownMenu-disclosure[data-align="start"] > .kernel-DropdownMenu-disclosureContent { inset-inline-start: 0; translate: 0; transform-origin: top left; }
 .kernel-DropdownMenu-disclosure[data-align="end"] > .kernel-DropdownMenu-disclosureContent { inset-inline-start: auto; inset-inline-end: 0; translate: 0; transform-origin: top right; }
 .kernel-DropdownMenu-disclosure[data-placement="top"] > .kernel-DropdownMenu-disclosureContent { inset-block-start: auto; inset-block-end: calc(100% + var(--kernel-menu-offset)); transform-origin: bottom center; }

@@ -283,11 +283,15 @@ a.item {
 
 .disclosure::details-content {
   content-visibility: hidden;
-  transition: content-visibility var(--kernel-menu-duration) allow-discrete;
+  opacity: 0;
+  transition:
+    opacity var(--kernel-menu-duration) var(--kernel-ease-overlay),
+    content-visibility var(--kernel-menu-duration) allow-discrete;
 }
 
 .disclosure[open]::details-content {
   content-visibility: visible;
+  opacity: 1;
 }
 
 .disclosureTrigger {
@@ -316,9 +320,6 @@ a.item {
 }
 
 .disclosure[open] > .disclosureContent { opacity: 1; scale: 1; }
-@starting-style {
-  .disclosure[open] > .disclosureContent { opacity: 0; scale: var(--kernel-scale-enter); }
-}
 .disclosure[data-align="start"] > .disclosureContent { inset-inline-start: 0; translate: 0; transform-origin: top left; }
 .disclosure[data-align="end"] > .disclosureContent { inset-inline-start: auto; inset-inline-end: 0; translate: 0; transform-origin: top right; }
 .disclosure[data-placement="top"] > .disclosureContent { inset-block-start: auto; inset-block-end: calc(100% + var(--kernel-menu-offset)); transform-origin: bottom center; }

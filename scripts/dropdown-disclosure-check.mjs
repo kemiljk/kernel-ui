@@ -14,21 +14,19 @@ for (const engine of [chromium, webkit]) {
     for (let cycle=0;cycle<3;cycle++) {
       for (const open of [true,false]) {
         const samples = await details.evaluate(async (d, open) => {
-          const menu=d.querySelector('[role="menu"]');
           d.querySelector('summary').click();
           const samples=[]; const start=performance.now();
           while(performance.now()-start < 350) {
             await new Promise(requestAnimationFrame);
-            samples.push({open:d.open,opacity:Number(getComputedStyle(menu).opacity),visibility:getComputedStyle(d,'::details-content').contentVisibility});
+            const disclosure = getComputedStyle(d,'::details-content');
+            samples.push({open:d.open,opacity:Number(disclosure.opacity),visibility:disclosure.contentVisibility});
           }
           return samples;
         },open);
         assert.equal(samples.at(-1).open,open);
         assert.equal(samples.at(-1).visibility,open?'visible':'hidden');
         assert(samples.some(s=>s.opacity>0 && s.opacity<1),`${engine.name()} cycle ${cycle} ${open?'open':'close'} must animate`);
-        // WebKit retains the last computed descendant style once content-visibility
-        // skips the closed subtree. The native pseudo-element is the visibility signal.
-        if (open) assert.equal(samples.at(-1).opacity,1);
+        assert.equal(samples.at(-1).opacity,open?1:0);
       }
     }
     // Touch can transiently blur an item before summary's native click.
@@ -47,7 +45,7 @@ for (const engine of [chromium, webkit]) {
     await summary.click(); await page.waitForTimeout(250); await page.locator('#outside').click();
     assert.equal(await details.getAttribute('open'),null);
     await page.emulateMedia({reducedMotion:'reduce'}); await summary.click(); await page.waitForTimeout(40);
-    assert.equal(await menu.evaluate(e=>e.getAnimations().length),0);
+    assert.equal(await details.evaluate(e=>e.getAnimations({subtree:true}).length),0);
     assert.equal(await menu.getAttribute('popover'),null);
     await page.evaluate(()=>scrollTo(0,200)); assert.equal(await page.evaluate(()=>scrollY),200);
     // Reconnecting the custom element must restore dismissal listeners.
