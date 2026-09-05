@@ -1,5 +1,11 @@
 # @kernelui-lib/elements
 
+## 1.4.1
+
+### Patch Changes
+
+- 5d5fb03: Move disclosure-menu reveal motion onto the native `::details-content` box so entry and exit animate on every toggle, including repeated touch interactions in Chromium and WebKit.
+
 ## 1.4.0
 
 ### Minor Changes
