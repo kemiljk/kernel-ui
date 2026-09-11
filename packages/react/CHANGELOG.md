@@ -1,5 +1,11 @@
 # @kernelui-lib/react
 
+## 1.4.2
+
+### Patch Changes
+
+- 629fa4e: Update development dependencies for React component tests and CLI typechecking.
+
 ## 1.4.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @kernelui-lib/cli
 
+## 1.0.4
+
+### Patch Changes
+
+- 629fa4e: Update development dependencies for React component tests and CLI typechecking.
+
 ## 1.0.3
 
 ### Patch Changes
