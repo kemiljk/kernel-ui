@@ -1,5 +1,11 @@
 # @kernelui-lib/styles
 
+## 1.2.2
+
+### Patch Changes
+
+- f32dfb6: Use bundled KK Sans and KK Mono webfonts throughout Kernel, including variable weights and italic faces.
+
 ## 1.2.1
 
 ### Patch Changes
