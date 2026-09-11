@@ -1,0 +1,33 @@
+/* Bundled variable webfonts; italic faces pin each font’s native italic axis. */
+
+@font-face {
+  font-family: "KK Sans";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./fonts/KKSansVF.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "KK Sans";
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./fonts/KKSansVF-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "KK Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/KKMono-VF.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "KK Mono";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/KKMono-VF-Italic.woff2") format("woff2");
+}

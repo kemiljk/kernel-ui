@@ -26,6 +26,8 @@
   ],
   "exports": {
     ".": "./src/index.css",
+    "./fonts.css": "./src/fonts.css",
+    "./fonts/*": "./src/fonts/*",
     "./tokens.css": "./src/tokens.css",
     "./reset.css": "./src/reset.css",
     "./tailwind.css": "./src/tailwind.css",

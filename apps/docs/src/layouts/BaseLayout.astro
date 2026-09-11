@@ -1,8 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import stackSansLatin from "@fontsource-variable/stack-sans-text/files/stack-sans-text-latin-wght-normal.woff2";
-import lilexLatin from "@fontsource-variable/lilex/files/lilex-latin-wght-normal.woff2";
-import "../styles/fonts-latin.css";
+import kkSans from "@kernelui-lib/styles/fonts/KKSansVF.woff2";
+import kkMono from "@kernelui-lib/styles/fonts/KKMono-VF.woff2";
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -182,14 +181,14 @@ const pageTitle =
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
     <link
       rel="preload"
-      href={stackSansLatin}
+      href={kkSans}
       as="font"
       type="font/woff2"
       crossorigin="anonymous"
     />
     <link
       rel="preload"
-      href={lilexLatin}
+      href={kkMono}
       as="font"
       type="font/woff2"
       crossorigin="anonymous"

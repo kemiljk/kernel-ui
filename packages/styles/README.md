@@ -10,6 +10,8 @@ Plain CSS or CSS Modules, no Tailwind:
 @import "@kernelui-lib/styles";
 ```
 
+KK Sans and KK Mono variable webfonts are bundled and loaded by `tokens.css`, including italic faces. Override `--kernel-font-sans` and `--kernel-font-mono` to use your own families.
+
 That's `tokens.css` (all the custom properties) plus `reset.css` (a deliberately small baseline). Import them separately if you want the tokens without the reset:
 
 ```css

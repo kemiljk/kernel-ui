@@ -13,8 +13,6 @@
   "dependencies": {
     "@astrojs/react": "^6.0.5",
     "@astrojs/sitemap": "^3.7.4",
-    "@fontsource-variable/lilex": "^5.3.0",
-    "@fontsource-variable/stack-sans-text": "^5.3.0",
     "@kernelui-lib/elements": "workspace:*",
     "@kernelui-lib/react": "workspace:*",
     "@kernelui-lib/registry": "workspace:*",
