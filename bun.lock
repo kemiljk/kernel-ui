@@ -27,13 +27,13 @@
         "@astrojs/check": "^0.9.10",
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.7",
-        "node-html-parser": "^9.0.3",
+        "node-html-parser": "^9.0.4",
         "typescript": "^5.7.3",
       },
     },
     "packages/cli": {
       "name": "@kernelui-lib/cli",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "bin": {
         "kernel": "./dist/index.js",
       },
@@ -57,7 +57,7 @@
     },
     "packages/react": {
       "name": "@kernelui-lib/react",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "dependencies": {
         "@kernelui-lib/styles": "^1.2.1",
       },
@@ -90,7 +90,7 @@
     },
     "packages/styles": {
       "name": "@kernelui-lib/styles",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "devDependencies": {
         "culori": "^4.0.2",
       },
