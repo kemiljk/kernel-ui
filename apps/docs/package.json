@@ -17,14 +17,14 @@
     "@kernelui-lib/react": "workspace:*",
     "@kernelui-lib/registry": "workspace:*",
     "@kernelui-lib/styles": "workspace:*",
-    "astro": "^7.3.1",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "astro": "^7.3.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "node-html-parser": "^9.0.4",
     "typescript": "^5.7.3"
   }
