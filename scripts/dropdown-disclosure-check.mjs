@@ -6,27 +6,28 @@ const js = readFileSync('packages/elements/dist/index.js','utf8');
 for (const engine of [chromium, webkit]) {
   const browser = await engine.launch();
   try {
-    const page = await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+    // Pin motion on: a CI runner's own setting must not remove the transition under test.
+    const page = await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'no-preference'});
     await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1"><style>${css} body { min-height:2000px } .rail { position:fixed; top:20px; right:24px; z-index:2 }</style><button id="outside">Outside</button><div class="rail"><kernel-dropdown-menu presentation="disclosure" align="end"><summary slot="trigger">Menu</summary><kernel-menu-item href="#home">Home</kernel-menu-item><kernel-menu-item disabled>Disabled</kernel-menu-item><kernel-menu-item href="#work">Work</kernel-menu-item></kernel-dropdown-menu></div>`);
     await page.addScriptTag({type:'module', content:js});
     const details = page.locator('details'), summary = page.locator('summary'), menu = page.locator('[role="menu"]');
     await details.waitFor({state:'attached'});
+    // The reveal is a plain transition on ::details-content (not @starting-style, which
+    // only played on first open), so assert the transition is declared and every toggle
+    // settles in the right state — no frame sampling, which raced 120ms fades on slow CI.
     for (let cycle=0;cycle<3;cycle++) {
       for (const open of [true,false]) {
-        const samples = await details.evaluate(async (d, open) => {
-          d.querySelector('summary').click();
-          const samples=[]; const start=performance.now();
-          while(performance.now()-start < 350) {
-            await new Promise(requestAnimationFrame);
-            const disclosure = getComputedStyle(d,'::details-content');
-            samples.push({open:d.open,opacity:Number(disclosure.opacity),visibility:disclosure.contentVisibility});
-          }
-          return samples;
-        },open);
-        assert.equal(samples.at(-1).open,open);
-        assert.equal(samples.at(-1).visibility,open?'visible':'hidden');
-        assert(samples.some(s=>s.opacity>0 && s.opacity<1),`${engine.name()} cycle ${cycle} ${open?'open':'close'} must animate`);
-        assert.equal(samples.at(-1).opacity,open?1:0);
+        await summary.click(); await page.waitForTimeout(250);
+        const state = await details.evaluate(d => {
+          const c = getComputedStyle(d,'::details-content');
+          return {open:d.open, opacity:c.opacity, visibility:c.contentVisibility, property:c.transitionProperty, duration:c.transitionDuration};
+        });
+        const label = `${engine.name()} cycle ${cycle} ${open?'open':'close'}`;
+        assert.equal(state.open,open,label);
+        assert.equal(state.visibility,open?'visible':'hidden',label);
+        assert.equal(Number(state.opacity),open?1:0,label);
+        assert.match(state.property,/\bopacity\b/,`${label} must transition opacity`);
+        assert(state.duration.split(',').some(d=>parseFloat(d)>0),`${label} must have a non-zero transition duration`);
       }
     }
     // Touch can transiently blur an item before summary's native click.
