@@ -212,6 +212,10 @@ new component done, grep both `packages/react/src/index.ts` and
   the mistakes the Shape and select-none rules above exist to stop, and
   both are invisible until someone switches the theme to Round or
   double-clicks a disclosure.
+- `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
+  `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
+  the browser's 300×150 default when component CSS is absent, so give every
+  icon attributes equal to the size its CSS already sets.
 - Actually open the docs page in a browser and interact with it — typecheck
   passing proves the types line up, not that the feature works. Switch the
   docs site's radius to **Round** while you're there: it's the setting that

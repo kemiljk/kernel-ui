@@ -12,6 +12,8 @@ const REASONING_ICON_PATHS = [
 function svg(paths: string[], className: string): SVGSVGElement {
   const el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   el.setAttribute("viewBox", "0 0 16 16");
+  el.setAttribute("width", "16");
+  el.setAttribute("height", "16");
   el.setAttribute("fill", "none");
   el.setAttribute("aria-hidden", "true");
   el.setAttribute("class", className);

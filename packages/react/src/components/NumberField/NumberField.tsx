@@ -187,7 +187,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               onClick={() => stepBy(1)}
               className={styles.stepperButton}
             >
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" aria-hidden="true">
                 <path
                   d="M4 10L8 6L12 10"
                   stroke="currentColor"
@@ -205,7 +205,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               onClick={() => stepBy(-1)}
               className={styles.stepperButton}
             >
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" aria-hidden="true">
                 <path
                   d="M4 6L8 10L12 6"
                   stroke="currentColor"

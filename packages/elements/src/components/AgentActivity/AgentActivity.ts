@@ -29,6 +29,8 @@ const KIND_SHAPES: Record<string, Array<{ tag: "path" | "circle"; attrs: Record<
 function kindIcon(kind: string): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
   svg.setAttribute("fill", "none");
   svg.setAttribute("class", kernelClass("AgentActivity", "icon"));
   for (const shape of KIND_SHAPES[kind] ?? KIND_SHAPES.trace!) {
@@ -164,6 +166,8 @@ export class KernelAgentActivityItem extends KernelElement {
 
       const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       chevron.setAttribute("viewBox", "0 0 16 16");
+      chevron.setAttribute("width", "14");
+      chevron.setAttribute("height", "14");
       chevron.setAttribute("fill", "none");
       chevron.setAttribute("aria-hidden", "true");
       chevron.setAttribute("class", kernelClass("AgentActivity", "chevron"));

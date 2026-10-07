@@ -101,7 +101,7 @@ export function TodoList({
           </span>
         ) : null}
         {metadata ? <span className={styles.metadata}>{metadata}</span> : null}
-        <svg className={styles.chevron} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <svg className={styles.chevron} viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
           <path
             d="M4 6L8 10L12 6"
             stroke="currentColor"
@@ -168,14 +168,14 @@ export function TodoItem({
       className={[styles.item, resolveClassName(className, state)].filter(Boolean).join(" ")}
     >
       <span className={styles.mark} aria-hidden="true">
-        <svg className={styles.markLayer} data-kind="pending" viewBox="0 0 16 16" fill="none">
+        <svg className={styles.markLayer} data-kind="pending" viewBox="0 0 16 16" width="16" height="16" fill="none">
           <circle cx="8" cy="8" r="5.75" stroke="currentColor" strokeWidth="1.25" />
         </svg>
-        <svg className={styles.markLayer} data-kind="active" viewBox="0 0 16 16" fill="none">
+        <svg className={styles.markLayer} data-kind="active" viewBox="0 0 16 16" width="16" height="16" fill="none">
           <circle cx="8" cy="8" r="5.75" stroke="currentColor" strokeWidth="1.25" />
           <circle cx="8" cy="8" r="2.5" fill="currentColor" />
         </svg>
-        <svg className={styles.markLayer} data-kind="done" viewBox="0 0 16 16" fill="none">
+        <svg className={styles.markLayer} data-kind="done" viewBox="0 0 16 16" width="16" height="16" fill="none">
           <circle cx="8" cy="8" r="5.75" fill="currentColor" />
           <path
             d="M5.5 8.25 7.25 10l3.25-3.75"
@@ -185,7 +185,7 @@ export function TodoItem({
             strokeLinejoin="round"
           />
         </svg>
-        <svg className={styles.markLayer} data-kind="error" viewBox="0 0 16 16" fill="none">
+        <svg className={styles.markLayer} data-kind="error" viewBox="0 0 16 16" width="16" height="16" fill="none">
           <circle cx="8" cy="8" r="5.75" stroke="currentColor" strokeWidth="1.25" />
           <path
             d="M6 6l4 4M10 6l-4 4"

@@ -399,7 +399,7 @@ export function MenuSeparator() {
  */
 export function MenuChevron() {
   return (
-    <svg className={styles.chevron} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg className={styles.chevron} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
       <path
         d="M4 6L8 10L12 6"
         stroke="currentColor"

@@ -145,6 +145,8 @@ export function DataTable<T>({
                       className={styles.sortIcon}
                       data-direction={sort?.key === column.key ? sort.direction : undefined}
                       viewBox="0 0 16 16"
+                      width="12"
+                      height="12"
                       fill="none"
                       aria-hidden="true"
                     >

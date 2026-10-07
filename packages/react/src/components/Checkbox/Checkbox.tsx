@@ -73,7 +73,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           onChange={(event) => setChecked(event.target.checked)}
         />
         <span className={styles.control} aria-hidden="true">
-          <svg className={styles.icon} viewBox="0 0 16 16" fill="none">
+          <svg className={styles.icon} viewBox="0 0 16 16" width="14" height="14" fill="none">
             <path
               className={styles.checkmark}
               d="M3.5 8.5L6.5 11.5L12.5 4.5"

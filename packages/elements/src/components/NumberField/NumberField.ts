@@ -9,6 +9,8 @@ const CHEVRON_DOWN = "M4 6L8 10L12 6";
 function chevron(path: string): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("width", "10");
+  svg.setAttribute("height", "10");
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");

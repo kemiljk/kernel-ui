@@ -181,6 +181,8 @@ export class KernelFileDiff extends KernelElement {
 
     const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     chevron.setAttribute("viewBox", "0 0 16 16");
+    chevron.setAttribute("width", "14");
+    chevron.setAttribute("height", "14");
     chevron.setAttribute("fill", "none");
     chevron.setAttribute("aria-hidden", "true");
     chevron.setAttribute("class", kernelClass("FileDiff", "chevron"));
