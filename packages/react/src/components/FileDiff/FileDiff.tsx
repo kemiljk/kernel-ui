@@ -133,7 +133,7 @@ export function FileDiff({
           <span className={styles.additions}>+{resolvedAdditions}</span>
           <span className={styles.deletions}>−{resolvedDeletions}</span>
         </span>
-        <svg className={styles.chevron} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <svg className={styles.chevron} viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
           <path
             d="M4 6L8 10L12 6"
             stroke="currentColor"

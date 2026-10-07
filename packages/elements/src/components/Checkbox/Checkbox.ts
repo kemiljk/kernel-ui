@@ -30,7 +30,7 @@ export class KernelCheckbox extends KernelElement {
     control.className = kernelClass("Checkbox", "control");
     control.setAttribute("aria-hidden", "true");
     control.innerHTML = `
-      <svg class="${kernelClass("Checkbox", "icon")}" viewBox="0 0 16 16" fill="none">
+      <svg class="${kernelClass("Checkbox", "icon")}" viewBox="0 0 16 16" width="14" height="14" fill="none">
         <path class="${kernelClass("Checkbox", "checkmark")}" d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pathLength="1" />
         <rect class="${kernelClass("Checkbox", "dash")}" x="3.5" y="7.25" width="9" height="1.5" rx="0.75" fill="currentColor" />
       </svg>

@@ -12,9 +12,11 @@ const STATUS_WORDS: Record<string, string> = {
   error: "Failed",
 };
 
-function svgEl(className: string): SVGSVGElement {
+function svgEl(className: string, size: number): SVGSVGElement {
   const el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   el.setAttribute("viewBox", "0 0 16 16");
+  el.setAttribute("width", String(size));
+  el.setAttribute("height", String(size));
   el.setAttribute("fill", "none");
   el.setAttribute("class", className);
   return el;
@@ -171,7 +173,7 @@ export class KernelTodoList extends KernelElement {
       summary.append(meta);
     }
 
-    const chevron = svgEl(kernelClass("TodoList", "chevron"));
+    const chevron = svgEl(kernelClass("TodoList", "chevron"), 14);
     chevron.setAttribute("aria-hidden", "true");
     chevron.append(path(CHEVRON_PATH, { "stroke-width": "1.75" }));
     summary.append(chevron);
@@ -213,15 +215,15 @@ export class KernelTodoItem extends KernelElement {
     mark.className = kernelClass("TodoList", "mark");
     mark.setAttribute("aria-hidden", "true");
 
-    const pending = svgEl(kernelClass("TodoList", "markLayer"));
+    const pending = svgEl(kernelClass("TodoList", "markLayer"), 16);
     pending.dataset.kind = "pending";
     pending.append(circle("5.75"));
 
-    const active = svgEl(kernelClass("TodoList", "markLayer"));
+    const active = svgEl(kernelClass("TodoList", "markLayer"), 16);
     active.dataset.kind = "active";
     active.append(circle("5.75"), circle("2.5", { fill: "currentColor", stroke: "none" }));
 
-    const done = svgEl(kernelClass("TodoList", "markLayer"));
+    const done = svgEl(kernelClass("TodoList", "markLayer"), 16);
     done.dataset.kind = "done";
     done.append(
       circle("5.75", { fill: "currentColor", stroke: "none" }),
@@ -231,7 +233,7 @@ export class KernelTodoItem extends KernelElement {
       }),
     );
 
-    const error = svgEl(kernelClass("TodoList", "markLayer"));
+    const error = svgEl(kernelClass("TodoList", "markLayer"), 16);
     error.dataset.kind = "error";
     error.append(circle("5.75"), path("M6 6l4 4M10 6l-4 4", { "stroke-width": "1.5" }));
 

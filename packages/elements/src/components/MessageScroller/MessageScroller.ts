@@ -126,6 +126,8 @@ export class KernelMessageScroller extends KernelElement {
 
       const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       icon.setAttribute("viewBox", "0 0 16 16");
+      icon.setAttribute("width", "16");
+      icon.setAttribute("height", "16");
       icon.setAttribute("fill", "none");
       icon.setAttribute("aria-hidden", "true");
       icon.setAttribute("class", kernelClass("MessageScroller", "jumpIcon"));

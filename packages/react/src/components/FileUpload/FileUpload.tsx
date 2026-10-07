@@ -573,7 +573,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
               crossfade/scale (transitions.dev DnD "zone morphs into the
               image"), not a hard cut from unmounting one tree for the other. */}
           <span className={styles.empty} aria-hidden={showMould || undefined}>
-            <svg className={styles.icon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <svg className={styles.icon} viewBox="0 0 16 16" width="24" height="24" fill="none" aria-hidden="true">
               <path
                 d="M8 10.5V3.5M8 3.5L5 6.5M8 3.5L11 6.5"
                 stroke="currentColor"

@@ -93,6 +93,8 @@ export class KernelNavMenuTrigger extends KernelElement {
 
     const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     chevron.setAttribute("viewBox", "0 0 16 16");
+    chevron.setAttribute("width", "16");
+    chevron.setAttribute("height", "16");
     chevron.setAttribute("fill", "none");
     chevron.setAttribute("aria-hidden", "true");
     chevron.setAttribute("class", kernelClass("NavigationMenu", "chevron"));

@@ -113,7 +113,7 @@ export const MessageScroller = forwardRef<HTMLDivElement, MessageScrollerProps>(
             aria-hidden={showJump ? undefined : true}
             onClick={() => scrollToBottom("smooth")}
           >
-            <svg className={styles.jumpIcon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <svg className={styles.jumpIcon} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
               <path
                 d="M8 3.25v9.5M4.25 9L8 12.75L11.75 9"
                 stroke="currentColor"

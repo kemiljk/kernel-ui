@@ -2,8 +2,22 @@
 // Verification scratch page (not linked from nav): zero CSS imported
 // at all. Confirms both packages render real semantic elements with
 // browser-default styling when no stylesheet is loaded — the "fully
-// headless" case.
-import { Button } from "@kernelui-lib/react";
+// headless" case. The icon-bearing components are here because an
+// inline <svg> with only a viewBox renders at 300×150 without CSS; every
+// icon on this page should stay icon-sized (see scripts/check-svg-size.mjs).
+// Those are server-rendered only: hydrating Select would put an
+// <astro-slot> inside <select>, and the icons are in the SSR markup anyway.
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Checkbox,
+  NumberField,
+  Select,
+  SelectOption,
+  TodoItem,
+  TodoList,
+} from "@kernelui-lib/react";
 ---
 
 <html lang="en">
@@ -13,8 +27,40 @@ import { Button } from "@kernelui-lib/react";
   </head>
   <body>
     <h1>No CSS imported</h1>
+
+    <h2>React</h2>
     <Button client:load variant="primary">React Button</Button>
+    <Select label="Country">
+      <SelectOption value="uk">United Kingdom</SelectOption>
+      <SelectOption value="us">United States</SelectOption>
+    </Select>
+    <Checkbox defaultChecked>Subscribe</Checkbox>
+    <NumberField label="Quantity" defaultValue={1} />
+    <Accordion>
+      <AccordionItem title="Is it accessible?">Yes — it's a real details element.</AccordionItem>
+    </Accordion>
+    <TodoList label="Ship the fix">
+      <TodoItem status="done">Size the icons</TodoItem>
+      <TodoItem status="active">Verify unstyled</TodoItem>
+      <TodoItem status="pending">Open the PR</TodoItem>
+    </TodoList>
+
+    <h2>Elements</h2>
     <kernel-button variant="primary">Elements Button</kernel-button>
+    <kernel-select label="Country">
+      <option value="uk">United Kingdom</option>
+      <option value="us">United States</option>
+    </kernel-select>
+    <kernel-checkbox checked>Subscribe</kernel-checkbox>
+    <kernel-number-field label="Quantity" value="1"></kernel-number-field>
+    <kernel-accordion>
+      <kernel-accordion-item title="Is it accessible?">Yes — it's a real details element.</kernel-accordion-item>
+    </kernel-accordion>
+    <kernel-todo-list label="Ship the fix">
+      <kernel-todo-item status="done">Size the icons</kernel-todo-item>
+      <kernel-todo-item status="active">Verify unstyled</kernel-todo-item>
+      <kernel-todo-item status="pending">Open the PR</kernel-todo-item>
+    </kernel-todo-list>
   </body>
 </html>
 

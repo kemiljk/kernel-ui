@@ -19,6 +19,8 @@ const NEXT_PATH = "M6 3L11 8L6 13";
 function arrowIcon(path: string, className: string): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("class", className);

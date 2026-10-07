@@ -28,7 +28,7 @@ export interface ToolCallProps {
 function StatusIcon({ status }: { status: Exclude<ToolCallStatus, "running"> }) {
   if (status === "complete") {
     return (
-      <svg className={styles.icon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <svg className={styles.icon} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
         <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.25" />
         <path
           d="M5.25 8.25 7 10l3.75-4"
@@ -42,14 +42,14 @@ function StatusIcon({ status }: { status: Exclude<ToolCallStatus, "running"> }) 
   }
   if (status === "error") {
     return (
-      <svg className={styles.icon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <svg className={styles.icon} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
         <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.25" />
         <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
       </svg>
     );
   }
   return (
-    <svg className={styles.icon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg className={styles.icon} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
       <circle
         cx="8"
         cy="8"
@@ -170,6 +170,8 @@ export function ToolCall({
         <svg
           className={styles.chevron}
           viewBox="0 0 16 16"
+          width="16"
+          height="16"
           fill="none"
           aria-hidden="true"
         >

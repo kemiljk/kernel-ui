@@ -218,7 +218,7 @@ export class KernelFileUpload extends KernelElement {
     dropzone.htmlFor = id;
     dropzone.innerHTML = `
       <span class="${kernelClass("FileUpload", "empty")}">
-        <svg class="${kernelClass("FileUpload", "icon")}" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <svg class="${kernelClass("FileUpload", "icon")}" viewBox="0 0 16 16" width="24" height="24" fill="none" aria-hidden="true">
           <path d="M8 10.5V3.5M8 3.5L5 6.5M8 3.5L11 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           <path d="M2.5 10.5V11.5C2.5 12.0523 2.94772 12.5 3.5 12.5H12.5C13.0523 12.5 13.5 12.0523 13.5 11.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>

@@ -192,6 +192,8 @@ export class KernelCodeBlock extends KernelElement {
     const makeIcon = (kind: "copy" | "copied", shapes: typeof COPY_PATHS) => {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 16 16");
+      svg.setAttribute("width", "14");
+      svg.setAttribute("height", "14");
       svg.setAttribute("fill", "none");
       svg.setAttribute("class", kernelClass("CodeBlock", "copyIconLayer"));
       svg.setAttribute("data-kind", kind);

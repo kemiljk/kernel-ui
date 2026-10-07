@@ -52,6 +52,9 @@ jobs:
       - name: Typecheck packages
         run: bun run --filter '@kernelui-lib/*' typecheck
 
+      - name: Inline SVG size check
+        run: bun run test:svg
+
       - name: Test React package
         run: bun run --cwd packages/react test
 

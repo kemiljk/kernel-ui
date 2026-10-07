@@ -13,6 +13,8 @@ function hostFromHref(href: string | null): string | undefined {
 function externalArrow(): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("width", "12");
+  svg.setAttribute("height", "12");
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("class", kernelClass("Sources", "arrow"));
