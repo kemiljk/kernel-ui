@@ -1,5 +1,11 @@
 # @kernelui-lib/cli
 
+## 1.0.5
+
+### Patch Changes
+
+- da1063a: Update the package build dependencies to Vite 8.3 and Node.js 26.6 types.
+
 ## 1.0.4
 
 ### Patch Changes
