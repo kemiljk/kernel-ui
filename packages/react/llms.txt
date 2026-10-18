@@ -82,7 +82,7 @@ real underlying element, fully functional, just unstyled — never broken.
 - **FileUpload** — Drag-and-drop over a real file input, with optional square image preview moulding. `onError` fires with `type: "accept" | "max-size" | "max-files" | "directory"` when a pick or drop is rejected (including a dropped folder, which the platform surfaces as an unreadable 0-byte `File`).
 - **InputOTP** — One-time-code entry with roving focus.
 - **NumberField** — TextField's scaffold, specialised for numbers.
-- **Select** (+ `SelectOption`) — The platform's own picker UI, on every device.
+- **Select** (+ `SelectOption`) — Native selection with a progressively styled picker.
 - **Slider** — Custom-painted thumb, native drag and keyboard behaviour.
 - **TagInput** — Freeform text that commits into discrete, removable tags.
 - **TextField** — Correct labelling and live validation styling.

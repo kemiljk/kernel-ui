@@ -575,7 +575,7 @@ export const components: RegistryEntry[] = [
     category: "Forms",
     slug: "select",
     element: "<select>",
-    summary: "The platform's own picker UI, on every device.",
+    summary: "Native selection with a progressively styled picker.",
     status: "available",
     reactExports: ["Select", "SelectOption"],
     elementTag: "kernel-select",
@@ -583,7 +583,7 @@ export const components: RegistryEntry[] = [
     shadcnAliases: ["select"],
     radixPackages: ["@radix-ui/react-select"],
     migrationCaveats: [
-      "Kernel Select wraps a native <select> — the OS renders the picker.",
+      "Kernel Select wraps a native <select> — supported browsers get a token-styled native picker, with the platform picker as fallback.",
       "Custom portal/listbox Select from Radix usually maps to Combobox instead.",
       "Use SelectOption (or real <option> in elements) instead of SelectItem.",
     ],

@@ -18,6 +18,7 @@
     "docs:build": "bun run --cwd packages/registry build && bun run --cwd packages/react build && bun run --cwd apps/docs build",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun run --cwd packages/react test && bun run --cwd packages/cli test",
+    "test:select": "node scripts/select-check.mjs",
     "test:motion": "node scripts/disclosure-motion-check.mjs",
     "test:shape": "node scripts/check-shape-pairing.mjs",
     "test:svg": "node scripts/check-svg-size.mjs",
@@ -29,10 +30,11 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "bun run build && changeset publish",
-    "smoke:consumer": "node scripts/smoke-test-consumer.mjs"
+    "smoke:consumer": "node scripts/smoke-test-consumer.mjs",
+    "test:styles-package": "node scripts/check-styles-package.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^3.0.2",
-    "playwright": "^1.63.0"
+    "@changesets/cli": "^3.0.3",
+    "playwright": "^1.64.1"
   }
 }

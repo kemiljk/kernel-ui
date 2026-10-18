@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/styles",
-  "version": "1.2.2",
+  "version": "1.2.7",
   "description": "Kernel design tokens: CSS custom properties, baseline reset, and an optional Tailwind v4 bridge.",
   "license": "MIT",
   "author": "Karl Koch",
@@ -20,14 +20,14 @@
   ],
   "type": "module",
   "files": [
-    "src",
+    "src/*.css",
+    "src/themes/*.css",
     "LICENSE",
     "README.md"
   ],
   "exports": {
     ".": "./src/index.css",
     "./fonts.css": "./src/fonts.css",
-    "./fonts/*": "./src/fonts/*",
     "./tokens.css": "./src/tokens.css",
     "./reset.css": "./src/reset.css",
     "./tailwind.css": "./src/tailwind.css",

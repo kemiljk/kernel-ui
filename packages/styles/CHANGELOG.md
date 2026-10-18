@@ -1,5 +1,35 @@
 # @kernelui-lib/styles
 
+## 1.2.7
+
+### Patch Changes
+
+- 0d32c0b: Restore system font defaults and remove bundled brand fonts from the published package. The Kernel website now owns its font files separately. The legacy fonts.css entry remains an empty compatibility import.
+
+## 1.2.6
+
+### Patch Changes
+
+- 8bf220f: Refine KK Sans section, infinity, currency, and editorial symbols across upright and italic weights.
+
+## 1.2.5
+
+### Patch Changes
+
+- 5d5e9ce: Refine 28 KK Sans currency, editorial, fraction, prime, and mathematical glyphs across all weights and italics. Keep counters and identifying bars clear in Bold and Black, improve symbol proportions and spacing, and preserve the existing 325-character coverage.
+
+## 1.2.4
+
+### Patch Changes
+
+- 080c33b: Expand KK Sans to 325 encoded characters, adding 68 currency, editorial, fraction, spacing, and raised-figure characters across every weight and italic style. Preserve existing glyphs and spacing.
+
+## 1.2.3
+
+### Patch Changes
+
+- ed52077: Improve punctuation weight and comma clarity in KK Sans and KK Mono.
+
 ## 1.2.2
 
 ### Patch Changes

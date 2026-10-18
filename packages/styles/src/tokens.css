@@ -10,8 +10,6 @@
  * container, for scoped theming) in a later `@layer`.
  */
 
-@import "./fonts.css";
-
 @layer kernel.tokens, kernel.base;
 
 @layer kernel.tokens {
@@ -332,10 +330,10 @@
     /* ---------------------------------------------------------------- */
     /* Type: one base size, one scale ratio                             */
     /* ---------------------------------------------------------------- */
-    /* Bundled webfonts load when used; system stacks cover loading and
-       unsupported glyphs. Consumers can override either family token. */
-    --kernel-font-sans: "KK Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --kernel-font-mono: "KK Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    /* System fonts require no download. Consumers can load their own
+       fonts and override either family token. */
+    --kernel-font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --kernel-font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
     --kernel-font-size-base: 1rem;
     --kernel-font-scale: 1.125;
