@@ -1,5 +1,11 @@
 # @kernelui-lib/styles
 
+## 1.2.6
+
+### Patch Changes
+
+- 8bf220f: Refine KK Sans section, infinity, currency, and editorial symbols across upright and italic weights.
+
 ## 1.2.5
 
 ### Patch Changes
