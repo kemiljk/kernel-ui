@@ -25,12 +25,10 @@ export interface SelectProps
 }
 
 /**
- * A real `<select>`. Options, keyboard navigation, typeahead, and the
- * native picker UI (which is the platform's own, correct-for-the-device
- * picker on mobile) all come from the browser. `appearance: base-select`
- * will eventually allow fully custom-styled option lists on top of the
- * same element; it's too new to depend on today, so this styles the
- * closed control and leaves the native popup as-is.
+ * A real `<select>`: the browser owns selection, keyboard navigation,
+ * typeahead, and form behaviour. Supporting browsers opt into a token-styled
+ * native picker with `appearance: base-select`; others retain the existing
+ * styled control and platform picker. Plain options keep SSR markup portable.
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
   {

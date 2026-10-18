@@ -133,3 +133,72 @@
     animation: none;
   }
 }
+
+/* Enhance single dropdowns only. Unsupported browsers keep the existing
+   styled control and platform picker; listboxes retain their native layout. */
+@supports (appearance: base-select) and selector(::picker(select)) {
+  .kernel-Select-select:not([multiple]):not([size]),
+  .kernel-Select-select:not([multiple])[size="1"] {
+    appearance: base-select;
+    align-items: center;
+    min-inline-size: 0;
+  }
+
+  .kernel-Select-select::picker(select) {
+    appearance: base-select;
+    border: var(--kernel-border-width) solid var(--kernel-color-border);
+    border-radius: var(--kernel-radius-md);
+    padding: var(--kernel-space-1);
+    background-color: var(--kernel-color-surface-raised);
+    color: var(--kernel-color-text);
+    box-shadow: var(--kernel-shadow-md);
+    font-family: var(--kernel-font-sans);
+    font-size: var(--kernel-font-size-sm);
+    max-block-size: calc(100dvh - var(--kernel-space-8));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Keep the existing SVG chevron in both paths. */
+  .kernel-Select-select::picker-icon {
+    display: none;
+  }
+
+  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option {
+    display: flex;
+    align-items: center;
+    gap: var(--kernel-space-3);
+    padding: var(--kernel-space-3);
+    border: none;
+    border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
+    background-color: transparent;
+    color: var(--kernel-color-text);
+    font: inherit;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:is(:checked, :focus-visible) {
+    background-color: var(--kernel-color-accent-subtle);
+  }
+
+  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:focus-visible {
+    outline: 2px solid var(--kernel-color-focus-ring);
+    outline-offset: -2px;
+  }
+
+  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:disabled {
+    color: var(--kernel-color-text-muted);
+  }
+
+  .kernel-Select-select option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:hover:not(:disabled) {
+      background-color: var(--kernel-color-accent-subtle);
+    }
+  }
+}
