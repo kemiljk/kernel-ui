@@ -1,5 +1,11 @@
 # @kernelui-lib/react
 
+## 1.4.4
+
+### Patch Changes
+
+- f5387cb: Enhance single selects with a native, token-styled picker when appearance: base-select and ::picker(select) are supported. Preserve the existing control styling, chevron, and platform picker fallback, and leave multiple selects and listboxes unchanged.
+
 ## 1.4.3
 
 ### Patch Changes
