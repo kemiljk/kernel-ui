@@ -1,5 +1,12 @@
 # @kernelui-lib/react
 
+## 1.4.5
+
+### Patch Changes
+
+- da1063a: Update the package build dependencies to Vite 8.3 and Node.js 26.6 types.
+- 74b8f1c: Update React and React DOM development dependencies to 19.3.1, with matching type definitions.
+
 ## 1.4.4
 
 ### Patch Changes

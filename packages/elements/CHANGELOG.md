@@ -1,5 +1,11 @@
 # @kernelui-lib/elements
 
+## 1.4.4
+
+### Patch Changes
+
+- da1063a: Update the package build dependencies to Vite 8.3 and Node.js 26.6 types.
+
 ## 1.4.3
 
 ### Patch Changes
