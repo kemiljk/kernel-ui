@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/react",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Accessible React components built on real semantic HTML, not div soup.",
   "license": "MIT",
   "author": "Karl Koch",
