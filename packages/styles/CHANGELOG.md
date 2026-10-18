@@ -1,5 +1,11 @@
 # @kernelui-lib/styles
 
+## 1.2.3
+
+### Patch Changes
+
+- ed52077: Improve punctuation weight and comma clarity in KK Sans and KK Mono.
+
 ## 1.2.2
 
 ### Patch Changes
