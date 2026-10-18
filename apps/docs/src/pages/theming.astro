@@ -119,8 +119,8 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
     <h2>Type and motion</h2>
     <p>
       <code>--kernel-font-sans</code> and <code>--kernel-font-mono</code>{" "}
-      fall through to the system font stack unless you also load the named
-      webfonts yourself — the package never forces a font download.{" "}
+      use system font stacks by default. The package includes no webfonts;
+      load your own fonts and override these tokens to customise typography.{" "}
       <code>--kernel-duration-fast/base/slow</code> and{" "}
       <code>--kernel-ease-spring/out/in</code> drive every transition the
       same way: change the curve once, every hover, open, and close

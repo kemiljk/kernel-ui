@@ -30,7 +30,8 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "bun run build && changeset publish",
-    "smoke:consumer": "node scripts/smoke-test-consumer.mjs"
+    "smoke:consumer": "node scripts/smoke-test-consumer.mjs",
+    "test:styles-package": "node scripts/check-styles-package.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.2",

@@ -1,8 +1,12 @@
 @import "@kernelui-lib/styles";
 @import "@kernelui-lib/styles/themes/index.css";
 @import "@kernelui-lib/react/styles.css";
+@import "./fonts.css";
 
 :root {
+  --kernel-font-sans: "KK Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --kernel-font-mono: "KK Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
   --docs-content-width: 44rem;
   --docs-shell-width: 78rem;
 

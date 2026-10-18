@@ -220,3 +220,7 @@ new component done, grep both `packages/react/src/index.ts` and
   passing proves the types line up, not that the feature works. Switch the
   docs site's radius to **Round** while you're there: it's the setting that
   exposes a wrong radius/padding pairing immediately.
+
+## Font distribution
+
+Publishable packages must use system font stacks and contain no font assets or font-face declarations. KK Sans and KK Mono belong only to the commercial site in `apps/docs/src/assets/fonts`, with site-only declarations in `apps/docs/src/styles/fonts.css`. Font updates must not put brand fonts back into `packages/styles`. Run `bun run test:styles-package` before releasing changes to styles packaging.
