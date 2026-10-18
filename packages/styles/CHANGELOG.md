@@ -1,5 +1,11 @@
 # @kernelui-lib/styles
 
+## 1.2.4
+
+### Patch Changes
+
+- 080c33b: Expand KK Sans to 325 encoded characters, adding 68 currency, editorial, fraction, spacing, and raised-figure characters across every weight and italic style. Preserve existing glyphs and spacing.
+
 ## 1.2.3
 
 ### Patch Changes
