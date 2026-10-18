@@ -1,5 +1,11 @@
 # @kernelui-lib/styles
 
+## 1.2.7
+
+### Patch Changes
+
+- 0d32c0b: Restore system font defaults and remove bundled brand fonts from the published package. The Kernel website now owns its font files separately. The legacy fonts.css entry remains an empty compatibility import.
+
 ## 1.2.6
 
 ### Patch Changes
