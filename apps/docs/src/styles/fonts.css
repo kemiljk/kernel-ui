@@ -1,0 +1,33 @@
+/* Site-only brand fonts; never distributed in the styles package. */
+
+@font-face {
+  font-family: "KK Sans";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../assets/fonts/KKSansVF.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "KK Sans";
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../assets/fonts/KKSansVF-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "KK Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../assets/fonts/KKMono-VF.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "KK Mono";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../assets/fonts/KKMono-VF-Italic.woff2") format("woff2");
+}
