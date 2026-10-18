@@ -34,7 +34,7 @@
     "test:styles-package": "node scripts/check-styles-package.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^3.0.2",
+    "@changesets/cli": "^3.0.3",
     "playwright": "^1.63.0"
   }
 }
