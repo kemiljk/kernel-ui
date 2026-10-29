@@ -99,6 +99,30 @@ export function TabsList({ children, className, shape = "default", ...rest }: Ta
     previousXRef.current = nextX;
   }, [activeValue]);
 
+  // The effect above measures once per selection. A list that first
+  // renders hidden (inside a closed dialog, popover or <details>) measures
+  // every tab as 0px wide, leaving a zero-width indicator until the
+  // selection next changes; the same goes for anything that resizes the
+  // tabs later (fonts loading, the container narrowing). Re-measure on
+  // every size change, snapping rather than animating, since nothing was
+  // selected — the layout just moved.
+  useEffect(() => {
+    const list = listRef.current;
+    const indicator = indicatorRef.current;
+    if (!list || !indicator || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      const activeTab = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+      if (!activeTab) return;
+      indicator.style.transitionDuration = "0ms";
+      indicator.style.setProperty("--kernel-tabs-indicator-x", `${activeTab.offsetLeft}px`);
+      indicator.style.setProperty("--kernel-tabs-indicator-width", `${activeTab.offsetWidth}px`);
+      previousXRef.current = activeTab.offsetLeft;
+    });
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, []);
+
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const tabs = Array.from(
       listRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)') ?? [],

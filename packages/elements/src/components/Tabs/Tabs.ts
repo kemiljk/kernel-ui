@@ -18,7 +18,6 @@ let tabsCounter = 0;
 export class KernelTabs extends KernelElement {
   private readonly baseId = `kernel-tabs-${++tabsCounter}`;
   private currentValue = "";
-  private previousIndicatorX: number | null = null;
 
   static get observedAttributes() {
     return ["value"];
@@ -97,7 +96,7 @@ export class KernelTabs extends KernelElement {
 
     const list = this.querySelector("kernel-tabs-list") as KernelTabsList | null;
     if (list) {
-      this.previousIndicatorX = list.updateIndicator(selectedButton, this.previousIndicatorX);
+      list.updateIndicator(selectedButton, list.lastIndicatorX);
     }
   }
 }
@@ -107,6 +106,11 @@ export class KernelTabs extends KernelElement {
  * `pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`
  * children and the animated sliding indicator. */
 export class KernelTabsList extends KernelElement {
+  private resizeObserver: ResizeObserver | null = null;
+  /** Where the indicator last landed, so the next move animates from the
+   * right place — including after a resize snapped it. */
+  lastIndicatorX: number | null = null;
+
   protected createNative(): HTMLElement {
     const element = document.createElement("div");
     element.setAttribute("role", "tablist");
@@ -116,7 +120,10 @@ export class KernelTabsList extends KernelElement {
   }
 
   connectedCallback() {
-    if (this.native) return;
+    if (this.native) {
+      this.observeSize();
+      return;
+    }
     const native = this.createNative();
     const indicator = document.createElement("span");
     indicator.className = kernelClass("Tabs", "indicator");
@@ -125,6 +132,27 @@ export class KernelTabsList extends KernelElement {
     this.native = native;
     this.append(native);
     this.syncAllAttrs();
+    this.observeSize();
+  }
+
+  disconnectedCallback() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+  }
+
+  /** Re-measure on every size change, snapping rather than animating: a
+   * list first rendered hidden (closed dialog, popover, `<details>`)
+   * measures every tab as 0px wide, and fonts loading or the container
+   * narrowing move the tabs too. Mirrors `@kernelui-lib/react`'s
+   * `TabsList`. */
+  private observeSize() {
+    const native = this.native;
+    if (!native || this.resizeObserver || typeof ResizeObserver === "undefined") return;
+    this.resizeObserver = new ResizeObserver(() => {
+      const active = native.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
+      if (active) this.updateIndicator(active, null);
+    });
+    this.resizeObserver.observe(native);
   }
 
   static get observedAttributes() {
@@ -196,6 +224,7 @@ export class KernelTabsList extends KernelElement {
     indicator.style.setProperty("--kernel-tabs-indicator-x", `${nextX}px`);
     indicator.style.setProperty("--kernel-tabs-indicator-width", `${nextWidth}px`);
 
+    this.lastIndicatorX = nextX;
     return nextX;
   }
 }
