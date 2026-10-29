@@ -103,7 +103,8 @@ export class KernelTabs extends KernelElement {
 }
 
 /** `<kernel-tabs-list>` — `role="tablist"`. Attributes: `aria-label`
- * (required). Handles arrow-key/Home/End roving between `<kernel-tab>`
+ * (required), `shape` (`default` follows the theme's control radius,
+ * `pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`
  * children and the animated sliding indicator. */
 export class KernelTabsList extends KernelElement {
   protected createNative(): HTMLElement {
@@ -127,11 +128,16 @@ export class KernelTabsList extends KernelElement {
   }
 
   static get observedAttributes() {
-    return ["aria-label"];
+    return ["aria-label", "shape"];
   }
 
   protected syncAttr(name: string, value: string | null) {
-    if (name !== "aria-label" || !this.native) return;
+    if (!this.native) return;
+    if (name === "shape") {
+      this.native.dataset.shape = value === "pill" ? "pill" : "default";
+      return;
+    }
+    if (name !== "aria-label") return;
     if (value === null) this.native.removeAttribute("aria-label");
     else this.native.setAttribute("aria-label", value);
   }

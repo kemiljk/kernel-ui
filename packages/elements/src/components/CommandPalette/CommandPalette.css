@@ -41,7 +41,7 @@
 .kernel-CommandPalette-input {
   flex-shrink: 0;
   inline-size: 100%;
-  block-size: calc(var(--kernel-space-unit) * 12);
+  block-size: var(--kernel-control-height-lg);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-control);
   background-color: transparent;
@@ -74,7 +74,13 @@
   gap: var(--kernel-space-1);
   padding-block: var(--kernel-space-2);
   padding-inline: var(--kernel-space-3);
-  border-radius: var(--kernel-radius-sm);
+  border-radius: max(
+    0px,
+    calc(
+      var(--kernel-radius-container) - var(--kernel-padding-container-curve) -
+        var(--kernel-space-1)
+    )
+  );
   color: var(--kernel-color-text);
   font-size: var(--kernel-font-size-sm);
   cursor: default;

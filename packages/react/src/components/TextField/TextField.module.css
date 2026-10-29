@@ -39,17 +39,17 @@
 }
 
 .root[data-size="sm"] .input {
-  block-size: calc(var(--kernel-space-unit) * 8);
+  block-size: var(--kernel-control-height-sm);
   font-size: var(--kernel-font-size-sm);
 }
 
 .root[data-size="md"] .input {
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
   font-size: var(--kernel-font-size-base);
 }
 
 .root[data-size="lg"] .input {
-  block-size: calc(var(--kernel-space-unit) * 12);
+  block-size: var(--kernel-control-height-lg);
   font-size: var(--kernel-font-size-lg);
 }
 

@@ -18,6 +18,14 @@ import SliderPlayground from "../../components/demos/SliderPlayground";
       and fed back in as a CSS custom property, that hand-off is the only
       JavaScript involved.
     </p>
+    <p>
+      The <code>inset</code> variant turns the track itself into a control:
+      the same height and corner as a default Button or Tabs list, filled
+      with the accent colour and dragged by a slim bar inside the fill. It
+      follows the theme's rounding — square at Sharp, a pill at Round — and
+      optional <code>startLabel</code>/<code>endLabel</code> captions change
+      colour exactly where the fill crosses them.
+    </p>
 
     <div class="docs-example">
       <SliderDemo client:visible />
@@ -38,6 +46,8 @@ import SliderPlayground from "../../components/demos/SliderPlayground";
         <tr><td><code>value</code> / <code>defaultValue</code></td><td>number</td><td>0</td></tr>
         <tr><td><code>min</code> / <code>max</code> / <code>step</code></td><td>number</td><td>0 / 100 / 1</td></tr>
         <tr><td><code>showValue</code></td><td>boolean</td><td>false</td></tr>
+        <tr><td><code>variant</code></td><td>"default" | "inset"</td><td>"default"</td></tr>
+        <tr><td><code>startLabel</code> / <code>endLabel</code></td><td>ReactNode (inset only)</td><td>—</td></tr>
       </tbody>
     </table></div>
   </div>

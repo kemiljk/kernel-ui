@@ -313,6 +313,32 @@
        "where the text starts" doesn't apply there. */
     --kernel-label-inset: var(--kernel-space-3);
 
+    /* Control DNA: one height scale, one inset, one inner radius. Every
+       standalone control (Button, Toggle, TextField, Select, NumberField,
+       ColorPicker…) sits on the same three heights, so a row that mixes
+       them lines up without anyone matching numbers by hand.
+
+       A control that *holds* pieces (Tabs' track and its selected
+       segment, Slider's inset track and its fill) frames them with
+       --kernel-control-inset and gives them --kernel-radius-control-inner,
+       which is concentric with the control's own corner by construction:
+       inner = outer − inset, the same relationship --kernel-radius-container
+       encodes one level up. It follows whatever --kernel-radius-control
+       is — square at Sharp, a soft corner by default, a pill when a theme
+       swaps the control radius for --kernel-radius-full — so a segmented
+       track never shows a pill around square segments or the reverse.
+       Like the container tokens, it resolves where it's declared: a
+       subtree that overrides --kernel-radius-control should override
+       this alongside it. */
+    --kernel-control-height-sm: calc(var(--kernel-space-unit) * 8);
+    --kernel-control-height-md: calc(var(--kernel-space-unit) * 10);
+    --kernel-control-height-lg: calc(var(--kernel-space-unit) * 12);
+    --kernel-control-inset: var(--kernel-space-1);
+    --kernel-radius-control-inner: max(
+      0px,
+      calc(var(--kernel-radius-control) - var(--kernel-control-inset))
+    );
+
     --kernel-border-width: 1px;
 
     /* ---------------------------------------------------------------- */

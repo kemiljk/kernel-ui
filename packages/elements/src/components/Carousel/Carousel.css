@@ -39,8 +39,8 @@ kernel-carousel-slide {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: calc(var(--kernel-space-unit) * 8);
-  block-size: calc(var(--kernel-space-unit) * 8);
+  inline-size: var(--kernel-control-height-sm);
+  block-size: var(--kernel-control-height-sm);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-control);
   background-color: var(--kernel-color-surface-raised);

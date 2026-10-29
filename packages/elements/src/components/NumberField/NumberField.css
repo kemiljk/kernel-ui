@@ -42,17 +42,17 @@
 }
 
 .kernel-NumberField-root[data-size="sm"] .kernel-NumberField-input {
-  block-size: calc(var(--kernel-space-unit) * 8);
+  block-size: var(--kernel-control-height-sm);
   font-size: var(--kernel-font-size-sm);
 }
 
 .kernel-NumberField-root[data-size="md"] .kernel-NumberField-input {
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
   font-size: var(--kernel-font-size-base);
 }
 
 .kernel-NumberField-root[data-size="lg"] .kernel-NumberField-input {
-  block-size: calc(var(--kernel-space-unit) * 12);
+  block-size: var(--kernel-control-height-lg);
   font-size: var(--kernel-font-size-lg);
 }
 

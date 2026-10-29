@@ -96,6 +96,18 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       Sharp, +50% at Round. Use them for anything you build on top of these
       tokens, and switch the rounding control above to Round to check it.
     </p>
+    <p>
+      Controls share one more layer of DNA. Every standalone control sits on
+      the same height scale — <code>--kernel-control-height-sm</code>,{" "}
+      <code>-md</code> and <code>-lg</code> — so a button, a text field and a
+      select line up in a row without matching numbers by hand. A control
+      that holds pieces of its own, like the selected segment in Tabs or the
+      fill of an inset Slider, frames them with{" "}
+      <code>--kernel-control-inset</code> and rounds them with{" "}
+      <code>--kernel-radius-control-inner</code>: the control radius minus
+      that inset, so the inner and outer corners stay concentric at Sharp,
+      Soft and Round alike.
+    </p>
 
     <h2>Space</h2>
     <p>

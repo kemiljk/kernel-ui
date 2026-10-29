@@ -51,11 +51,15 @@ export function Tabs({ value, defaultValue, onValueChange, children, className }
 
 export interface TabsListProps {
   "aria-label": string;
+  /** `"default"` follows the theme's control radius (square at Sharp, a
+   * pill when the theme makes controls pills). `"pill"` makes this list
+   * fully rounded — track, tabs and indicator — whatever the theme says. */
+  shape?: "default" | "pill";
   children: ReactNode;
   className?: ClassNameValue<Record<string, never>>;
 }
 
-export function TabsList({ children, className, ...rest }: TabsListProps) {
+export function TabsList({ children, className, shape = "default", ...rest }: TabsListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
   const previousXRef = useRef<number | null>(null);
@@ -131,6 +135,7 @@ export function TabsList({ children, className, ...rest }: TabsListProps) {
       {...rest}
       ref={listRef}
       role="tablist"
+      data-shape={shape}
       onKeyDown={handleKeyDown}
       className={[styles.list, resolveClassName(className, {})].filter(Boolean).join(" ")}
     >

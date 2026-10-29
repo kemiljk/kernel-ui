@@ -35,17 +35,17 @@
 }
 
 .kernel-TextField-root[data-size="sm"] .kernel-TextField-input {
-  block-size: calc(var(--kernel-space-unit) * 8);
+  block-size: var(--kernel-control-height-sm);
   font-size: var(--kernel-font-size-sm);
 }
 
 .kernel-TextField-root[data-size="md"] .kernel-TextField-input {
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
   font-size: var(--kernel-font-size-base);
 }
 
 .kernel-TextField-root[data-size="lg"] .kernel-TextField-input {
-  block-size: calc(var(--kernel-space-unit) * 12);
+  block-size: var(--kernel-control-height-lg);
   font-size: var(--kernel-font-size-lg);
 }
 

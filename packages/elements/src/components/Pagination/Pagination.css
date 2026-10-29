@@ -24,11 +24,11 @@ kernel-pagination-ellipsis {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: calc(var(--kernel-space-unit) * 8);
-  block-size: calc(var(--kernel-space-unit) * 8);
+  min-inline-size: var(--kernel-control-height-sm);
+  block-size: var(--kernel-control-height-sm);
   padding-inline: var(--kernel-space-2);
   border: var(--kernel-border-width) solid transparent;
-  border-radius: var(--kernel-radius-sm);
+  border-radius: var(--kernel-radius-control);
   background: none;
   color: var(--kernel-color-text);
   text-decoration: none;
@@ -84,6 +84,6 @@ kernel-pagination-ellipsis {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: calc(var(--kernel-space-unit) * 8);
+  min-inline-size: var(--kernel-control-height-sm);
   color: var(--kernel-color-text-muted);
 }

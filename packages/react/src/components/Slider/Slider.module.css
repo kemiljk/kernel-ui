@@ -25,7 +25,6 @@
 }
 
 .input {
-  --percent: 0%;
   appearance: none;
   inline-size: 100%;
   background: transparent;
@@ -34,12 +33,16 @@
 }
 
 .input::-webkit-slider-runnable-track {
+  --fill-stop: calc(0.875rem + (100% - 1.75rem) * var(--ratio, 0));
   block-size: 6px;
   border-radius: var(--kernel-radius-full);
+  /* The stop sits under the thumb's centre, not at the raw percentage:
+     the thumb only travels (track − thumb width), so a plain percentage
+     stop leads the thumb near the start and trails it near the end. */
   background: linear-gradient(
     to right,
-    var(--kernel-color-accent) var(--percent),
-    var(--kernel-gray-4) var(--percent)
+    var(--kernel-color-accent) var(--fill-stop),
+    var(--kernel-gray-4) var(--fill-stop)
   );
 }
 
@@ -104,7 +107,23 @@
   scale: 1.15;
 }
 
-.input:focus-visible::-webkit-slider-thumb,
+/* The ring belongs on the thumb, the thing that moves; without this a
+   global `:focus-visible` outline also boxes the whole input, so a
+   focused slider shows two rings, one of them square at every theme
+   rounding. */
+.input:focus-visible {
+  outline: none;
+}
+
+/* Two rules, not one selector list: a browser drops a whole rule when
+   any selector in it uses a pseudo-element it doesn't know, so a shared
+   `::-webkit-…, ::-moz-…` list never matches anywhere — which is how
+   this focus ring used to be invisible in every browser. */
+.input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .input:focus-visible::-moz-range-thumb {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 2px;
@@ -115,8 +134,180 @@
   opacity: 0.5;
 }
 
+/* ------------------------------------------------------------------ */
+/* Inset variant                                                       */
+/* ------------------------------------------------------------------ */
+
+/* The track is a control in its own right: --kernel-control-height-md
+   and --kernel-radius-control, the same box as a default Button, Select
+   or Tabs list, so it lines up in a toolbar row and follows the theme's
+   rounding (square at Sharp, pill at Round) with no extra rules.
+
+   --thumb is the thumb's hit box, and so the narrowest the fill can get.
+   It's at least twice the corner radius, so the clipped fill's rounded
+   end never has to squeeze a curve into less room than it needs — at a
+   pill radius that means a full-height circle at the minimum value
+   rather than a lens-shaped sliver. */
+.track {
+  --track-height: var(--kernel-control-height-md);
+  --track-radius: min(var(--kernel-radius-control), var(--track-height) / 2);
+  --thumb: clamp(var(--kernel-space-6), var(--track-radius) * 2, var(--track-height));
+  --fill: calc(var(--thumb) + (100% - var(--thumb)) * var(--ratio, 0));
+  /* Bar distance from the fill's edge: a fixed gap at small radii,
+     growing with the curve so the bar never touches a pill's end. */
+  --bar-offset: max(var(--kernel-space-2), var(--track-radius) * 0.5);
+  position: relative;
+  block-size: var(--track-height);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-gray-3);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.ends {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding-inline: max(var(--kernel-space-3), var(--track-radius) * 0.6);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* One element is both the fill and the on-accent copy of the captions,
+   so the colour change on each caption happens on exactly the edge the
+   fill ends on. `clip-path` percentages resolve against this element's
+   own box, which is the track's, so --fill means the same here as it
+   does to the thumb. The `round` keeps the fill's trailing end on the
+   same corner as the track. */
+.fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+  clip-path: inset(0 calc(100% - var(--fill)) 0 0 round var(--kernel-radius-control));
+  pointer-events: none;
+}
+
+.insetInput {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  appearance: none;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.insetInput::-webkit-slider-runnable-track {
+  block-size: 100%;
+  background: transparent;
+}
+
+.insetInput::-moz-range-track {
+  block-size: 100%;
+  background: transparent;
+}
+
+.insetInput::-moz-range-progress {
+  background: transparent;
+}
+
+/* The thumb is the whole trailing slice of the fill and invisible: a
+   comfortable box to grab. What you see is .bar, drawn at the thumb's
+   trailing edge from the same --fill. */
+.insetInput::-webkit-slider-thumb {
+  appearance: none;
+  inline-size: var(--thumb);
+  block-size: var(--track-height);
+  border: none;
+  background: transparent;
+}
+
+.insetInput::-moz-range-thumb {
+  inline-size: var(--thumb);
+  block-size: var(--track-height);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* On-accent rather than --kernel-color-thumb: this bar only ever sits on
+   the accent fill (never a neutral track, which is the case that rules
+   on-accent out for Switch and the default thumb), so the best-contrast
+   colour against the accent is the right one — white on most accents,
+   near-black on amber. */
+.bar {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--fill) - var(--bar-offset) - 2px);
+  inline-size: 2px;
+  block-size: 45%;
+  border-radius: 1px;
+  background-color: var(--kernel-color-on-accent);
+  translate: 0 -50%;
+  pointer-events: none;
+  transition-property: opacity, block-size, inline-size;
+  transition-duration: var(--kernel-duration-fast);
+  transition-timing-function: var(--kernel-ease-out);
+}
+
+.ends > span {
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.track:hover .bar {
+  block-size: 55%;
+}
+
+.track:has(.insetInput:active) .bar {
+  inline-size: 3px;
+  block-size: 60%;
+}
+
+/* Bar vs caption, decided by data-overlap (set by measuring, see the
+   component). At rest the caption wins and the bar steps aside — the
+   fill's edge already shows the value. While the slider is being used
+   the handle wins and the caption it covers steps aside instead. */
+.track[data-overlap]:not(:hover, :has(.insetInput:active), :has(.insetInput:focus-visible)) .bar {
+  opacity: 0;
+}
+
+.track[data-overlap="start"]:is(:hover, :has(.insetInput:active), :has(.insetInput:focus-visible))
+  .ends
+  > span:first-child,
+.track[data-overlap="end"]:is(:hover, :has(.insetInput:active), :has(.insetInput:focus-visible))
+  .ends
+  > span:last-child {
+  opacity: 0;
+}
+
+.insetInput:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.insetInput:disabled {
+  cursor: not-allowed;
+}
+
+.track:has(.insetInput:disabled) {
+  opacity: 0.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .input::-webkit-slider-thumb {
+  .input::-webkit-slider-thumb,
+  .bar,
+  .ends > span {
     transition: none;
   }
 

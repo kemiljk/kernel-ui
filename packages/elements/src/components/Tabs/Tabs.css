@@ -11,21 +11,26 @@ kernel-tabs {
 .kernel-Tabs-list {
   position: relative;
   display: inline-flex;
-  gap: var(--kernel-space-1);
-  padding: var(--kernel-space-1);
-  border-radius: calc(var(--kernel-radius-sm) + var(--kernel-space-1));
+  gap: var(--kernel-control-inset);
+  padding: var(--kernel-control-inset);
+  border-radius: var(--kernel-radius-control);
   background-color: var(--kernel-gray-3);
   width: fit-content;
 }
 
+.kernel-Tabs-list[data-shape="pill"] {
+  --kernel-radius-control: var(--kernel-radius-full);
+  --kernel-radius-control-inner: var(--kernel-radius-full);
+}
+
 .kernel-Tabs-indicator {
   position: absolute;
-  inset-block: var(--kernel-space-1);
+  inset-block: var(--kernel-control-inset);
   inset-inline-start: 0;
   inline-size: var(--kernel-tabs-indicator-width);
   transform: translateX(var(--kernel-tabs-indicator-x));
   background-color: var(--kernel-color-surface);
-  border-radius: var(--kernel-radius-sm);
+  border-radius: var(--kernel-radius-control-inner);
   box-shadow: var(--kernel-shadow-sm);
   transition-property: transform;
   transition-timing-function: var(--kernel-ease-magnetic);
@@ -34,10 +39,16 @@ kernel-tabs {
 .kernel-Tabs-tab {
   position: relative;
   z-index: 1;
-  padding-block: var(--kernel-space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Track height = --kernel-control-height-md, matching Button, Select
+     and TextField at their default size. */
+  block-size: calc(var(--kernel-control-height-md) - var(--kernel-control-inset) * 2);
+  padding-block: 0;
   padding-inline: var(--kernel-space-4);
   border: none;
-  border-radius: var(--kernel-radius-sm);
+  border-radius: var(--kernel-radius-control-inner);
   background-color: transparent;
   color: var(--kernel-color-text-muted);
   font-family: var(--kernel-font-sans);

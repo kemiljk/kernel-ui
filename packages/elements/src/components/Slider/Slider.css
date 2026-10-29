@@ -25,7 +25,6 @@
 }
 
 .kernel-Slider-input {
-  --percent: 0%;
   appearance: none;
   inline-size: 100%;
   background: transparent;
@@ -34,12 +33,13 @@
 }
 
 .kernel-Slider-input::-webkit-slider-runnable-track {
+  --fill-stop: calc(0.875rem + (100% - 1.75rem) * var(--ratio, 0));
   block-size: 6px;
   border-radius: var(--kernel-radius-full);
-  background: linear-gradient(
+    background: linear-gradient(
     to right,
-    var(--kernel-color-accent) var(--percent),
-    var(--kernel-gray-4) var(--percent)
+    var(--kernel-color-accent) var(--fill-stop),
+    var(--kernel-gray-4) var(--fill-stop)
   );
 }
 
@@ -60,10 +60,10 @@
   box-sizing: border-box;
   inline-size: 1.75rem;
   block-size: 1.25rem;
-  margin-block-start: calc((6px - 1.25rem) / 2);
+    margin-block-start: calc((6px - 1.25rem) / 2);
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-thumb);
-  box-shadow:
+    box-shadow:
     0 0 0 1px var(--kernel-stroke-subtle),
     var(--kernel-shadow-thumb);
   transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
@@ -84,7 +84,15 @@
   scale: 1.15;
 }
 
-.kernel-Slider-input:focus-visible::-webkit-slider-thumb,
+.kernel-Slider-input:focus-visible {
+  outline: none;
+}
+
+.kernel-Slider-input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
 .kernel-Slider-input:focus-visible::-moz-range-thumb {
   outline: 2px solid var(--kernel-color-focus-ring);
   outline-offset: 2px;
@@ -95,8 +103,146 @@
   opacity: 0.5;
 }
 
+.kernel-Slider-track {
+  --track-height: var(--kernel-control-height-md);
+  --track-radius: min(var(--kernel-radius-control), var(--track-height) / 2);
+  --thumb: clamp(var(--kernel-space-6), var(--track-radius) * 2, var(--track-height));
+  --fill: calc(var(--thumb) + (100% - var(--thumb)) * var(--ratio, 0));
+    --bar-offset: max(var(--kernel-space-2), var(--track-radius) * 0.5);
+  position: relative;
+  block-size: var(--track-height);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-gray-3);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.kernel-Slider-ends {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  padding-inline: max(var(--kernel-space-3), var(--track-radius) * 0.6);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.kernel-Slider-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--kernel-color-accent);
+  color: var(--kernel-color-on-accent);
+  clip-path: inset(0 calc(100% - var(--fill)) 0 0 round var(--kernel-radius-control));
+  pointer-events: none;
+}
+
+.kernel-Slider-insetInput {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  appearance: none;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.kernel-Slider-insetInput::-webkit-slider-runnable-track {
+  block-size: 100%;
+  background: transparent;
+}
+
+.kernel-Slider-insetInput::-moz-range-track {
+  block-size: 100%;
+  background: transparent;
+}
+
+.kernel-Slider-insetInput::-moz-range-progress {
+  background: transparent;
+}
+
+.kernel-Slider-insetInput::-webkit-slider-thumb {
+  appearance: none;
+  inline-size: var(--thumb);
+  block-size: var(--track-height);
+  border: none;
+  background: transparent;
+}
+
+.kernel-Slider-insetInput::-moz-range-thumb {
+  inline-size: var(--thumb);
+  block-size: var(--track-height);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.kernel-Slider-bar {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--fill) - var(--bar-offset) - 2px);
+  inline-size: 2px;
+  block-size: 45%;
+  border-radius: 1px;
+  background-color: var(--kernel-color-on-accent);
+  translate: 0 -50%;
+  pointer-events: none;
+  transition-property: opacity, block-size, inline-size;
+  transition-duration: var(--kernel-duration-fast);
+  transition-timing-function: var(--kernel-ease-out);
+}
+
+.kernel-Slider-ends > span {
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Slider-track:hover .kernel-Slider-bar {
+  block-size: 55%;
+}
+
+.kernel-Slider-track:has(.kernel-Slider-insetInput:active) .kernel-Slider-bar {
+  inline-size: 3px;
+  block-size: 60%;
+}
+
+.kernel-Slider-track[data-overlap]:not(:hover, :has(.kernel-Slider-insetInput:active), :has(.kernel-Slider-insetInput:focus-visible)) .kernel-Slider-bar {
+  opacity: 0;
+}
+
+.kernel-Slider-track[data-overlap="start"]:is(:hover, :has(.kernel-Slider-insetInput:active), :has(.kernel-Slider-insetInput:focus-visible))
+  .kernel-Slider-ends
+  > span:first-child,
+.kernel-Slider-track[data-overlap="end"]:is(:hover, :has(.kernel-Slider-insetInput:active), :has(.kernel-Slider-insetInput:focus-visible))
+  .kernel-Slider-ends
+  > span:last-child {
+  opacity: 0;
+}
+
+.kernel-Slider-insetInput:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.kernel-Slider-insetInput:disabled {
+  cursor: not-allowed;
+}
+
+.kernel-Slider-track:has(.kernel-Slider-insetInput:disabled) {
+  opacity: 0.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .kernel-Slider-input::-webkit-slider-thumb {
+  .kernel-Slider-input::-webkit-slider-thumb,
+  .kernel-Slider-bar,
+  .kernel-Slider-ends > span {
     transition: none;
   }
 

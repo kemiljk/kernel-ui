@@ -31,8 +31,8 @@
   position: relative;
   display: inline-flex;
   flex-shrink: 0;
-  inline-size: calc(var(--kernel-space-unit) * 10);
-  block-size: calc(var(--kernel-space-unit) * 10);
+  inline-size: var(--kernel-control-height-md);
+  block-size: var(--kernel-control-height-md);
   border-radius: var(--kernel-radius-control);
   cursor: pointer;
   -webkit-user-select: none;
@@ -77,7 +77,7 @@
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-mono);
   padding-inline: var(--kernel-space-3);
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
   inline-size: 8rem;
   text-transform: lowercase;
   transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
@@ -134,18 +134,18 @@
 
 .root[data-size="sm"] .swatchLabel,
 .root[data-size="sm"] .hexInput {
-  block-size: calc(var(--kernel-space-unit) * 8);
+  block-size: var(--kernel-control-height-sm);
 }
 .root[data-size="sm"] .swatchLabel {
-  inline-size: calc(var(--kernel-space-unit) * 8);
+  inline-size: var(--kernel-control-height-sm);
 }
 
 .root[data-size="lg"] .swatchLabel,
 .root[data-size="lg"] .hexInput {
-  block-size: calc(var(--kernel-space-unit) * 12);
+  block-size: var(--kernel-control-height-lg);
 }
 .root[data-size="lg"] .swatchLabel {
-  inline-size: calc(var(--kernel-space-unit) * 12);
+  inline-size: var(--kernel-control-height-lg);
 }
 
 .root[data-invalid] .swatch {

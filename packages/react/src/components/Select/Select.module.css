@@ -31,7 +31,7 @@
   appearance: none;
   grid-area: 1 / 1;
   inline-size: 100%;
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
   border-radius: var(--kernel-radius-control);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);

@@ -19,13 +19,15 @@
 
 .kernel-Switch-control {
   --kernel-switch-block: calc(var(--kernel-space-unit) * 6);
+  --kernel-switch-inset: calc(var(--kernel-control-inset) / 2);
+  --kernel-switch-radius: min(var(--kernel-radius-full), calc(var(--kernel-radius-control) * 100));
   --kernel-switch-inline: calc(var(--kernel-space-unit) * 11);
 
   position: relative;
   flex-shrink: 0;
   inline-size: var(--kernel-switch-inline);
   block-size: var(--kernel-switch-block);
-  border-radius: var(--kernel-radius-full);
+  border-radius: var(--kernel-switch-radius);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface-raised);
   cursor: inherit;
@@ -62,11 +64,13 @@
 .kernel-Switch-thumb {
   --kernel-switch-thumb-extra: 6px;
   position: absolute;
-  inset-block-start: 1px;
-  inset-inline-start: 1px;
-  inline-size: calc(var(--kernel-switch-block) - 4px + var(--kernel-switch-thumb-extra));
-  block-size: calc(var(--kernel-switch-block) - 4px);
-  border-radius: var(--kernel-radius-full);
+  inset-block-start: calc(var(--kernel-switch-inset) - var(--kernel-border-width));
+  inset-inline-start: calc(var(--kernel-switch-inset) - var(--kernel-border-width));
+  inline-size: calc(
+    var(--kernel-switch-block) - var(--kernel-switch-inset) * 2 + var(--kernel-switch-thumb-extra)
+  );
+  block-size: calc(var(--kernel-switch-block) - var(--kernel-switch-inset) * 2);
+  border-radius: max(0px, calc(var(--kernel-switch-radius) - var(--kernel-switch-inset)));
   background-color: var(--kernel-color-thumb);
   box-shadow: var(--kernel-shadow-sm);
   translate: 0 0;

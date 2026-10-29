@@ -9,6 +9,7 @@ const controls = [
     options: ["overview", "activity", "settings"],
     default: "overview",
   },
+  { type: "enum" as const, prop: "shape", options: ["default", "pill"], default: "default" },
   { type: "boolean" as const, prop: "disabled", label: "disable 'activity' tab", default: false },
 ];
 
@@ -16,7 +17,7 @@ function code(values: PlaygroundValues) {
   const activityAttrs = [`value="activity"`];
   if (values.disabled) activityAttrs.push("disabled");
   return `<Tabs defaultValue="${values.defaultValue}">
-  <TabsList aria-label="Project sections">
+  <TabsList aria-label="Project sections"${values.shape === "pill" ? ` shape="pill"` : ""}>
     <Tab value="overview">Overview</Tab>
     <Tab ${activityAttrs.join(" ")}>Activity</Tab>
     <Tab value="settings">Settings</Tab>
@@ -31,7 +32,7 @@ function elementsCode(values: PlaygroundValues) {
   const activityAttrs = [`value="activity"`];
   if (values.disabled) activityAttrs.push("disabled");
   return `<kernel-tabs default-value="${values.defaultValue}">
-  <kernel-tabs-list aria-label="Project sections">
+  <kernel-tabs-list aria-label="Project sections"${values.shape === "pill" ? ` shape="pill"` : ""}>
     <kernel-tab value="overview">Overview</kernel-tab>
     <kernel-tab ${activityAttrs.join(" ")}>Activity</kernel-tab>
     <kernel-tab value="settings">Settings</kernel-tab>
@@ -51,7 +52,10 @@ export default function TabsPlayground() {
       render={(values) => (
         <div style={{ inlineSize: "100%" }}>
           <Tabs defaultValue={String(values.defaultValue)} key={String(values.defaultValue)}>
-            <TabsList aria-label="Project sections">
+            <TabsList
+              aria-label="Project sections"
+              shape={values.shape === "pill" ? "pill" : "default"}
+            >
               <Tab value="overview">Overview</Tab>
               <Tab value="activity" disabled={Boolean(values.disabled)}>
                 Activity

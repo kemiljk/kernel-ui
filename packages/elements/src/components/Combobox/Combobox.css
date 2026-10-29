@@ -19,7 +19,7 @@
 
 .kernel-Combobox-input {
   inline-size: 100%;
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
   border-radius: var(--kernel-radius-control);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
@@ -87,7 +87,7 @@
 .kernel-Combobox-option {
   padding-block: var(--kernel-space-2);
   padding-inline: var(--kernel-space-3);
-  border-radius: var(--kernel-radius-sm);
+  border-radius: max(0px, calc(var(--kernel-radius-md) - var(--kernel-space-1)));
   color: var(--kernel-color-text);
   font-size: var(--kernel-font-size-sm);
   cursor: default;

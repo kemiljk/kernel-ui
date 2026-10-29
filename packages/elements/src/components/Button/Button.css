@@ -41,21 +41,21 @@
   padding-block: var(--kernel-space-1);
   padding-inline: var(--kernel-space-3);
   font-size: var(--kernel-font-size-sm);
-  block-size: calc(var(--kernel-space-unit) * 8);
+  block-size: var(--kernel-control-height-sm);
 }
 
 .kernel-Button-root[data-size="md"] {
   padding-block: var(--kernel-space-2);
   padding-inline: var(--kernel-space-4);
   font-size: var(--kernel-font-size-base);
-  block-size: calc(var(--kernel-space-unit) * 10);
+  block-size: var(--kernel-control-height-md);
 }
 
 .kernel-Button-root[data-size="lg"] {
   padding-block: var(--kernel-space-3);
   padding-inline: var(--kernel-space-6);
   font-size: var(--kernel-font-size-lg);
-  block-size: calc(var(--kernel-space-unit) * 12);
+  block-size: var(--kernel-control-height-lg);
 }
 
 .kernel-Button-root[data-variant="primary"] {

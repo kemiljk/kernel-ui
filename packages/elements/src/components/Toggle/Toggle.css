@@ -28,20 +28,20 @@
    for why: a fixed square sized for a single icon clipped/overflowed
    real text labels, visibly overlapping adjacent toggles. */
 .kernel-Toggle-root[data-size="sm"] {
-  min-inline-size: calc(var(--kernel-space-unit) * 8);
-  block-size: calc(var(--kernel-space-unit) * 8);
+  min-inline-size: var(--kernel-control-height-sm);
+  block-size: var(--kernel-control-height-sm);
   padding-inline: var(--kernel-space-2);
 }
 
 .kernel-Toggle-root[data-size="md"] {
-  min-inline-size: calc(var(--kernel-space-unit) * 10);
-  block-size: calc(var(--kernel-space-unit) * 10);
+  min-inline-size: var(--kernel-control-height-md);
+  block-size: var(--kernel-control-height-md);
   padding-inline: var(--kernel-space-2);
 }
 
 .kernel-Toggle-root[data-size="lg"] {
-  min-inline-size: calc(var(--kernel-space-unit) * 12);
-  block-size: calc(var(--kernel-space-unit) * 12);
+  min-inline-size: var(--kernel-control-height-lg);
+  block-size: var(--kernel-control-height-lg);
   padding-inline: var(--kernel-space-3);
 }
 
