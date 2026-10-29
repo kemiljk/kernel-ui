@@ -1,5 +1,19 @@
 # @kernelui-lib/elements
 
+## 1.6.0
+
+### Minor Changes
+
+- 9c181a0: Tables are mobile-friendly. `Table` (and `<kernel-table>`) now renders its `<table>` inside a horizontal scroll container, so a wide table scrolls in place instead of widening the page on a phone; `className` still targets the table and the new `wrapperClassName` targets the container. An edge fade and inset shadow show which side still has content to scroll to, driven by a CSS scroll-driven animation. DataTable gets the same scroll container, its pagination wraps (centred) when the page links don't fit on one line, and the filter field gains a real placeholder: `filterPlaceholder` (`filter-placeholder`) now sets it, with a new `filterLabel` (`filter-label`) for the visible label, which falls back to `filterPlaceholder` as before. Pagination's page list wraps instead of overflowing.
+- 9c181a0: Surface-aware fills. New `--kernel-color-fill-subtle`, `--kernel-color-fill` and `--kernel-color-fill-strong` tokens back every well, track and hover background (Tabs, inset and default Slider, Progress, Skeleton, Toggle, Pagination, date pickers, Table row hover, Avatar, Badge, Carousel, Toast). Card re-sets them one grey step up and raised containers (Dialog, Sheet, Popover, HoverCard, DropdownMenu, ContextMenu, NavigationMenu, Toast, CommandPalette, Combobox and Select popups) two, so a Tabs track or Slider keeps its contrast instead of disappearing into a raised surface of the same grey.
+  
+  ScrollArea's `edgeShadow` is now driven by a CSS scroll-driven animation (same 48px ramp); its scroll listener only runs as a fallback in browsers without scroll timelines.
+
+### Patch Changes
+
+- Updated dependencies [9c181a0]
+  - @kernelui-lib/styles@1.4.0
+
 ## 1.5.0
 
 ### Minor Changes
