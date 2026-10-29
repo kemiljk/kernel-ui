@@ -27,8 +27,9 @@ Everything the browser reads from the subsets matches the sources exactly:
 outlines, advances and kerning at every weight (see `pinned_gvar`), and the
 font-wide metrics (see `build`).
 
-Each face is split in two. The core file is preloaded and holds ASCII plus
-the punctuation nearly every page renders. The extended file sits behind a
+Each face is split in two. The core file is preloaded and holds ASCII, the
+punctuation nearly every page renders and any accented letter the content
+uses. The extended file sits behind a
 `unicode-range` that lists only what it contains, so the browser downloads it
 only on a page that renders one of those characters. Keep both halves in the
 same family: a different family between them in the stack (for example a
@@ -43,6 +44,7 @@ import argparse
 import hashlib
 import io
 import sys
+import unicodedata
 from pathlib import Path
 
 from fontTools import subset
@@ -86,6 +88,8 @@ ASCII = set(range(0x20, 0x7F))
 # when the primary (core) face has it, no-break space, and the footer's ©.
 CORE_PUNCTUATION = {0xA0, 0xA9, 0x2010, 0x2011, 0x2013, 0x2014, 0x2018, 0x2019, 0x201C, 0x201D, 0x2026}
 CORE = ASCII | CORE_PUNCTUATION
+# Glyphs every extended file carries for small-size rendering; see write().
+REFERENCE = {ord("X"), ord("o")}
 # Kept whether or not the content uses them yet.
 LATIN = set(range(0xA0, 0x180))
 
@@ -135,7 +139,9 @@ def build(source: Path, pins: dict, codepoints: set[int]) -> TTFont:
     options = subset.Options()
     options.layout_features = FEATURES
     options.hinting = False
-    options.glyph_names = False
+    # Chrome on macOS rasterises a font without glyph names (post format 3)
+    # visibly differently, so they stay.
+    options.glyph_names = True
     # BASE is tiny; keep it so baseline alignment can't move.
     options.drop_tables = [t for t in options.drop_tables if t != "BASE"]
     subsetter = subset.Subsetter(options)
@@ -146,6 +152,10 @@ def build(source: Path, pins: dict, codepoints: set[int]) -> TTFont:
     # source's values over to keep layout identical.
     original = TTFont(source)
     font.recalcBBoxes = False
+    # Keep the source's timestamp too, so an unchanged font gets the same
+    # bytes on every run.
+    font.recalcTimestamp = False
+    font["head"].modified = original["head"].modified
     for field in ("xMin", "yMin", "xMax", "yMax"):
         setattr(font["head"], field, getattr(original["head"], field))
     for field in ("advanceWidthMax", "minLeftSideBearing", "minRightSideBearing", "xMaxExtent"):
@@ -170,8 +180,20 @@ def unicode_range(codepoints: set[int]) -> str:
     return ", ".join(ranges)
 
 
+def core_codepoints(used: set[int]) -> set[int]:
+    """CORE plus every accented letter the content uses.
+
+    A browser shapes the core and extended files as separate runs, so a
+    letter in the extended file loses its kerning against its neighbours
+    ("résumés", "Müller"). Keeping used letters in the core keeps words whole.
+    """
+    return CORE | {cp for cp in used & LATIN if unicodedata.category(chr(cp)).startswith("L")}
+
+
 def plan() -> list[dict]:
-    wanted = used_codepoints() | LATIN | CORE
+    used = used_codepoints()
+    core = core_codepoints(used)
+    wanted = used | LATIN | core
     faces = []
     for family, style, stem, pins in FACES:
         source = SOURCE / f"{stem}.woff2"
@@ -182,7 +204,7 @@ def plan() -> list[dict]:
         faces.append({
             "family": family, "style": style, "stem": stem, "pins": pins, "source": source,
             "weight": (int(weight.minValue), int(weight.maxValue)),
-            "core": kept & CORE, "extended": kept - CORE,
+            "core": kept & core, "extended": kept - core,
         })
     return faces
 
@@ -211,12 +233,22 @@ def write() -> None:
     for face in plan():
         sources.append(fingerprint(face))
         for part in ("core", "extended"):
-            font = build(face["source"], face["pins"], face[part])
-            # The subsetter must map exactly what was asked for, or the
-            # unicode-range below would promise glyphs the file lacks.
+            # Chrome on macOS renders small text (around 14 device pixels and
+            # below) differently from a file missing certain reference glyphs:
+            # X for KK Sans, o for KK Mono. The extended file carries both;
+            # its unicode-range leaves them to the core.
+            font = build(face["source"], face["pins"], face[part] | REFERENCE)
+            # The subsetter also maps characters whose glyphs a feature pulls
+            # in (› brings ‹), so the unicode-range is read back from the
+            # file, and the extended file skips whatever the core already has.
             got = set(font.getBestCmap())
-            if got != face[part]:
-                sys.exit(f"{face['stem']}-{part}: cmap differs by {sorted(got ^ face[part])}")
+            if not face[part] <= got:
+                sys.exit(f"{face['stem']}-{part}: missing {sorted(face[part] - got)}")
+            if part == "extended":
+                got -= REFERENCE
+            if part == "core" and got != face["core"]:
+                face["extended"] -= got
+                face["core"] = got
             buffer = io.BytesIO()
             font.save(buffer)
             path = OUT / f"{face['stem']}-{part}.woff2"
@@ -240,16 +272,19 @@ def check() -> int:
         if f"Source: {fingerprint(face)}" not in css:
             stale += 1
             print(f"{face['source'].name} changed since the subsets were generated")
-        kept = set()
+        kept = {}
         for part in ("core", "extended"):
             path = OUT / f"{face['stem']}-{part}.woff2"
-            if path.exists():
-                kept |= set(TTFont(path).getBestCmap())
-        missing = (face["core"] | face["extended"]) - kept
+            kept[part] = set(TTFont(path).getBestCmap()) if path.exists() else set()
+        missing = (face["core"] | face["extended"]) - kept["core"] - kept["extended"]
         if missing:
             stale += 1
             sample = "".join(chr(cp) for cp in sorted(missing & used)[:40])
             print(f"{face['stem']}: {len(missing)} characters missing from the subsets {sample!r}")
+        outside = face["core"] - kept["core"]
+        if outside:
+            stale += 1
+            print(f"{face['stem']}: {''.join(map(chr, sorted(outside)))!r} should move into the core file")
     print("Subsets are stale; rerun without --check." if stale else "Subsets cover the content.")
     return 1 if stale else 0
 
