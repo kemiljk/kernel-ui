@@ -17,6 +17,9 @@
   --kernel-padding-container-curve: var(--kernel-space-4);
   padding: var(--kernel-padding-container-curve);
   background-color: var(--kernel-color-surface-raised);
+  --kernel-color-fill-subtle: var(--kernel-gray-4);
+  --kernel-color-fill: var(--kernel-gray-5);
+  --kernel-color-fill-strong: var(--kernel-gray-6);
   color: var(--kernel-color-text);
   box-shadow: var(--kernel-shadow-lg);
   inline-size: min(32rem, calc(100vw - var(--kernel-space-8)));

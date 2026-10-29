@@ -20,7 +20,7 @@
 }
 
 .kernel-Badge-root[data-variant="neutral"] {
-  background-color: var(--kernel-gray-3);
+  background-color: var(--kernel-color-fill);
   color: var(--kernel-gray-11);
 }
 

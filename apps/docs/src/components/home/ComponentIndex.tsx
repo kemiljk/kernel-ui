@@ -38,7 +38,8 @@ export default function ComponentIndex() {
       columns={columns}
       data={available}
       rowKey={(entry) => entry.slug}
-      filterPlaceholder="Filter components"
+      filterLabel="Filter components"
+      filterPlaceholder="Name, element or category…"
       pageSize={8}
       caption={`${available.length} components and the element each one is built on`}
     />

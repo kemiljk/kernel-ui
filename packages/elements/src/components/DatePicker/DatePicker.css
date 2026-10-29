@@ -46,7 +46,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-DatePicker-navButton:hover {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
     border-color: var(--kernel-color-border-hover);
   }
 }
@@ -107,7 +107,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-DatePicker-dayButton:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
   }
 }
 

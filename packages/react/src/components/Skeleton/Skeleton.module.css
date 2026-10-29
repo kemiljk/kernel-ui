@@ -28,6 +28,6 @@
   .root {
     animation: none;
     background-image: none;
-    background-color: var(--kernel-gray-4);
+    background-color: var(--kernel-color-fill-strong);
   }
 }

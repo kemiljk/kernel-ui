@@ -89,6 +89,53 @@
     mask-image var(--kernel-duration-base) var(--kernel-ease-out);
 }
 
+/* Where scroll-driven animations exist, the two edge values above come
+   from the scroll position itself: each ramps 0→1 over the first/last
+   48px of scroll, the same distance the JS fallback uses, and stays 0
+   when there's nothing to scroll (no active timeline). ScrollArea.tsx
+   skips its scroll listener entirely in those browsers; the JS path is
+   only for engines without scroll timelines. Registered so the
+   keyframes interpolate. */
+@property --kernel-scroll-shadow-top {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --kernel-scroll-shadow-bottom {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes kernel-scroll-shadow-top {
+  from {
+    --kernel-scroll-shadow-top: 0;
+  }
+  to {
+    --kernel-scroll-shadow-top: 1;
+  }
+}
+
+@keyframes kernel-scroll-shadow-bottom {
+  from {
+    --kernel-scroll-shadow-bottom: 1;
+  }
+  to {
+    --kernel-scroll-shadow-bottom: 0;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .root[data-edge-shadow] {
+    animation:
+      kernel-scroll-shadow-top linear both,
+      kernel-scroll-shadow-bottom linear both;
+    animation-timeline: scroll(self block), scroll(self block);
+    animation-range: 0 48px, calc(100% - 48px) 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .root[data-edge-shadow] {
     transition: none;

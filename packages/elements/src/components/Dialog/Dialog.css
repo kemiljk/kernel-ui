@@ -4,6 +4,9 @@
   border-radius: var(--kernel-radius-sheet);
   padding: var(--kernel-padding-sheet);
   background-color: var(--kernel-color-surface-raised);
+  --kernel-color-fill-subtle: var(--kernel-gray-4);
+  --kernel-color-fill: var(--kernel-gray-5);
+  --kernel-color-fill-strong: var(--kernel-gray-6);
   color: var(--kernel-color-text);
   box-shadow: var(--kernel-shadow-lg);
   max-inline-size: min(28rem, calc(100vw - var(--kernel-space-8)));

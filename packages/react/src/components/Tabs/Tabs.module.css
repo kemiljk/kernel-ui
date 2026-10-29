@@ -14,7 +14,7 @@
      indicator, so the corners stay concentric at every theme rounding —
      square at Sharp, pill segments in a pill track at Round. */
   border-radius: var(--kernel-radius-control);
-  background-color: var(--kernel-gray-3);
+  background-color: var(--kernel-color-fill);
   width: fit-content;
 }
 

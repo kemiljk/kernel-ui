@@ -3,10 +3,17 @@
   flex-direction: column;
   gap: var(--kernel-space-3);
   width: 100%;
+  min-inline-size: 0;
 }
 
 .kernel-DataTable-filter {
   max-inline-size: 20rem;
+}
+
+.kernel-DataTable-scroll {
+  min-inline-size: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 .kernel-DataTable-status {
@@ -58,6 +65,10 @@
 
 .kernel-DataTable-pagination {
   align-self: center;
+}
+
+.kernel-DataTable-pagination ol {
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {

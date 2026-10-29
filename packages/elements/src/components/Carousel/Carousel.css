@@ -65,7 +65,7 @@ kernel-carousel-slide {
 @media (hover: hover) and (pointer: fine) {
   .kernel-Carousel-prev:hover:not(:disabled),
   .kernel-Carousel-next:hover:not(:disabled) {
-    background-color: var(--kernel-gray-4);
+    background-color: var(--kernel-color-fill-strong);
   }
 }
 

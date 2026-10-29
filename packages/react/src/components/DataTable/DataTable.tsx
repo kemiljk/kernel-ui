@@ -28,6 +28,10 @@ export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   data: T[];
   rowKey: (row: T) => string;
+  /** The filter field's visible label. Falls back to `filterPlaceholder`
+   * when omitted, which is how that prop used to be used. */
+  filterLabel?: string;
+  /** Placeholder text inside the filter field. */
   filterPlaceholder?: string;
   pageSize?: number;
   caption?: ReactNode;
@@ -59,6 +63,7 @@ export function DataTable<T>({
   columns,
   data,
   rowKey,
+  filterLabel,
   filterPlaceholder = "Filter",
   pageSize = 10,
   caption,
@@ -123,7 +128,8 @@ export function DataTable<T>({
     <div className={styles.root}>
       <TextField
         id={filterId}
-        label={filterPlaceholder}
+        label={filterLabel ?? filterPlaceholder}
+        placeholder={filterPlaceholder}
         value={filter}
         onChange={(event) => handleFilterChange(event.target.value)}
         className={styles.filter}

@@ -5,6 +5,7 @@
 
 .list {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--kernel-space-1);
   margin: 0;
@@ -52,7 +53,7 @@
 @media (hover: hover) and (pointer: fine) {
   .item:hover,
   .control:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
   }
 }
 

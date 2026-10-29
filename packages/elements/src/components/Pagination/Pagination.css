@@ -5,6 +5,7 @@
 
 .kernel-Pagination-list {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--kernel-space-1);
   margin: 0;
@@ -60,7 +61,7 @@ kernel-pagination-ellipsis {
 @media (hover: hover) and (pointer: fine) {
   .kernel-Pagination-item:hover,
   .kernel-Pagination-control:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
   }
 }
 

@@ -56,7 +56,8 @@ export default function DataTableDemo() {
       columns={columns}
       data={members}
       rowKey={(row) => row.name}
-      filterPlaceholder="Filter by name, role, or status"
+      filterLabel="Filter people"
+      filterPlaceholder="Name, role or status…"
       pageSize={5}
       caption="Team members"
     />

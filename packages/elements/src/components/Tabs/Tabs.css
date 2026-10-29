@@ -14,7 +14,7 @@ kernel-tabs {
   gap: var(--kernel-control-inset);
   padding: var(--kernel-control-inset);
   border-radius: var(--kernel-radius-control);
-  background-color: var(--kernel-gray-3);
+  background-color: var(--kernel-color-fill);
   width: fit-content;
 }
 

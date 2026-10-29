@@ -42,14 +42,14 @@
   background: linear-gradient(
     to right,
     var(--kernel-color-accent) var(--fill-stop),
-    var(--kernel-gray-4) var(--fill-stop)
+    var(--kernel-color-fill-strong) var(--fill-stop)
   );
 }
 
 .input::-moz-range-track {
   block-size: 6px;
   border-radius: var(--kernel-radius-full);
-  background: var(--kernel-gray-4);
+  background: var(--kernel-color-fill-strong);
 }
 
 .input::-moz-range-progress {
@@ -159,7 +159,7 @@
   position: relative;
   block-size: var(--track-height);
   border-radius: var(--kernel-radius-control);
-  background-color: var(--kernel-gray-3);
+  background-color: var(--kernel-color-fill);
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;

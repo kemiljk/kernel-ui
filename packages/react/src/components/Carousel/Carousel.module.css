@@ -72,7 +72,7 @@
 @media (hover: hover) and (pointer: fine) {
   .prev:hover:not(:disabled),
   .next:hover:not(:disabled) {
-    background-color: var(--kernel-gray-4);
+    background-color: var(--kernel-color-fill-strong);
   }
 }
 

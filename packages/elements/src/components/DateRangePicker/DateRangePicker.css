@@ -46,7 +46,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-DateRangePicker-navButton:hover {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
     border-color: var(--kernel-color-border-hover);
   }
 }
@@ -112,7 +112,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-DateRangePicker-dayButton:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
     transition:
       background-color var(--kernel-duration-fast) var(--kernel-ease-out),
       color var(--kernel-duration-fast) var(--kernel-ease-out);

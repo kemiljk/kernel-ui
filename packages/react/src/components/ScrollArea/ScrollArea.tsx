@@ -20,8 +20,13 @@ export interface ScrollAreaProps
 }
 
 /* Matches the ambient layer extent in ScrollArea.module.css (~40px)
-   so the opacity ramp finishes as the soft falloff fully reads. */
+   so the opacity ramp finishes as the soft falloff fully reads. The CSS
+   scroll-timeline path ramps over the same 48px. */
 const EDGE_FADE_DISTANCE = 48;
+
+function supportsScrollTimeline() {
+  return typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("animation-timeline", "scroll()");
+}
 
 /**
  * A native overflow container. `scrollbar-gutter: stable` reserves the
@@ -39,6 +44,9 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
     useEffect(() => {
       const el = rootRef.current;
       if (!edgeShadow || !el) return;
+      // Scroll-driven animations drive the edge values in CSS where they
+      // exist; this listener is the fallback for engines without them.
+      if (supportsScrollTimeline()) return;
 
       let frame: number | null = null;
 

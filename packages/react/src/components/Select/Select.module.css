@@ -150,6 +150,9 @@
     border-radius: var(--kernel-radius-md);
     padding: var(--kernel-space-1);
     background-color: var(--kernel-color-surface-raised);
+    --kernel-color-fill-subtle: var(--kernel-gray-4);
+    --kernel-color-fill: var(--kernel-gray-5);
+    --kernel-color-fill-strong: var(--kernel-gray-6);
     color: var(--kernel-color-text);
     box-shadow: var(--kernel-shadow-md);
     font-family: var(--kernel-font-sans);

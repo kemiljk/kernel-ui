@@ -4,6 +4,9 @@
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-sheet);
   background-color: var(--kernel-color-surface);
+  --kernel-color-fill-subtle: var(--kernel-gray-3);
+  --kernel-color-fill: var(--kernel-gray-4);
+  --kernel-color-fill-strong: var(--kernel-gray-5);
   box-shadow: var(--kernel-shadow-sm);
 }
 

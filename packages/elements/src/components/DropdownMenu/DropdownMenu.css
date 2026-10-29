@@ -28,6 +28,9 @@ kernel-menu-separator {
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-md);
   background-color: var(--kernel-color-surface-raised);
+  --kernel-color-fill-subtle: var(--kernel-gray-4);
+  --kernel-color-fill: var(--kernel-gray-5);
+  --kernel-color-fill-strong: var(--kernel-gray-6);
   box-shadow: var(--kernel-shadow-md);
 
   /* Opaque on exit — fading opacity mid-close lets page content bleed
@@ -195,6 +198,9 @@ a.kernel-DropdownMenu-item {
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-md);
   background-color: var(--kernel-color-surface-raised);
+  --kernel-color-fill-subtle: var(--kernel-gray-4);
+  --kernel-color-fill: var(--kernel-gray-5);
+  --kernel-color-fill-strong: var(--kernel-gray-6);
   box-shadow: var(--kernel-shadow-md);
   transform-origin: var(--kernel-transform-origin, center);
 

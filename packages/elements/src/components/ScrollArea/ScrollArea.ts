@@ -14,6 +14,10 @@ const EDGE_FADE_DISTANCE = 48;
  * to scroll toward, hidden again once that edge is scrolled into view;
  * the fade masks into the host surface so it stays context-aware).
  */
+function supportsScrollTimeline() {
+  return typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("animation-timeline", "scroll()");
+}
+
 export class KernelScrollArea extends KernelElement {
   private resizeObserver: ResizeObserver | null = null;
   private frame: number | null = null;
@@ -54,7 +58,9 @@ export class KernelScrollArea extends KernelElement {
   private syncEdgeShadowListener() {
     const el = this.native;
     if (!el) return;
-    if (this.hasAttribute("edge-shadow")) {
+    // Scroll-driven animations drive the edge values in CSS where they
+    // exist (see ScrollArea.css); this listener is only the fallback.
+    if (this.hasAttribute("edge-shadow") && !supportsScrollTimeline()) {
       if (this.resizeObserver) return; // already wired
       el.addEventListener("scroll", this.scheduleMeasure, { passive: true });
       this.resizeObserver = new ResizeObserver(this.scheduleMeasure);

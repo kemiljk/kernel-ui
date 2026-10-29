@@ -44,7 +44,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .navButton:hover {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
     border-color: var(--kernel-color-border-hover);
   }
 }
@@ -122,7 +122,7 @@
    fast sweep instead of tracking the cursor 1:1. */
 @media (hover: hover) and (pointer: fine) {
   .dayButton:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
     transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out), color var(--kernel-duration-fast) var(--kernel-ease-out);
   }
 }

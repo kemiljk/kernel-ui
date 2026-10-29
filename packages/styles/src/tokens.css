@@ -130,6 +130,24 @@
     --kernel-color-surface: var(--kernel-gray-2);
     --kernel-color-surface-raised: var(--kernel-gray-3);
 
+    /* Fills: wells, tracks and hover backgrounds drawn ON a surface — a
+       Tabs track, an inset Slider, a Progress rail, a row hover. Three
+       strengths, defined here for content on the page canvas. A surface
+       re-sets them a step or two up the grey scale for whatever it
+       contains, so a track keeps the same contrast against whatever it
+       sits on instead of vanishing into it (surface-raised is gray-3,
+       the same step as the canvas-level fill):
+
+         on --kernel-color-surface (Card):        gray-3 / 4 / 5
+         on --kernel-color-surface-raised
+           (Dialog, Sheet, Popover, menus, Toast): gray-4 / 5 / 6
+
+       Build a surface of your own? Re-set these three alongside its
+       background, the same way. */
+    --kernel-color-fill-subtle: var(--kernel-gray-2);
+    --kernel-color-fill: var(--kernel-gray-3);
+    --kernel-color-fill-strong: var(--kernel-gray-4);
+
     --kernel-color-border: var(--kernel-gray-6);
     --kernel-color-border-interactive: var(--kernel-gray-7);
     --kernel-color-border-hover: var(--kernel-gray-8);

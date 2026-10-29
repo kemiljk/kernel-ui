@@ -47,7 +47,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-Toggle-root:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
   }
 }
 

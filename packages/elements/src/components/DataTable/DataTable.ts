@@ -36,8 +36,9 @@ let dataTableCounter = 0;
  * `tableEl.columns = [...]`, `tableEl.data = [...]`,
  * `tableEl.rowKey = (row) => row.id`.
  *
- * Attributes: `filter-placeholder` (default "Filter"), `page-size`
- * (default 10), `caption`.
+ * Attributes: `filter-label` (the field's visible label, falling back to
+ * `filter-placeholder`), `filter-placeholder` (default "Filter"),
+ * `page-size` (default 10), `caption`.
  */
 export class KernelDataTable<T = unknown> extends KernelElement {
   private readonly baseId = `kernel-data-table-${++dataTableCounter}`;
@@ -55,7 +56,7 @@ export class KernelDataTable<T = unknown> extends KernelElement {
   private paginationEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["filter-placeholder", "page-size", "caption"];
+    return ["filter-label", "filter-placeholder", "page-size", "caption"];
   }
 
   get columns(): KernelDataTableColumn<T>[] {
@@ -97,11 +98,13 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     const filterLabel = document.createElement("label");
     filterLabel.className = kernelClass("TextField", "label");
     filterLabel.htmlFor = filterId;
-    filterLabel.textContent = this.getAttribute("filter-placeholder") || "Filter";
+    filterLabel.textContent =
+      this.getAttribute("filter-label") || this.getAttribute("filter-placeholder") || "Filter";
 
     this.filterInput = document.createElement("input");
     this.filterInput.id = filterId;
     this.filterInput.className = kernelClass("TextField", "input");
+    this.filterInput.placeholder = this.getAttribute("filter-placeholder") || "Filter";
     this.filterInput.addEventListener("input", () => {
       this.filter = this.filterInput.value;
       this.page = 1;
@@ -130,7 +133,10 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     this.paginationEl.setAttribute("aria-label", "Pagination");
     this.paginationEl.className = `${kernelClass("Pagination")} ${kernelClass("DataTable", "pagination")}`;
 
-    root.append(filterWrapper, this.statusEl, table, this.paginationEl);
+    const scroll = document.createElement("div");
+    scroll.className = kernelClass("DataTable", "scroll");
+    scroll.append(table);
+    root.append(filterWrapper, this.statusEl, scroll, this.paginationEl);
     this.native = root;
     this.append(root);
     this.renderAll();
@@ -293,9 +299,11 @@ export class KernelDataTable<T = unknown> extends KernelElement {
 
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
-    if (name === "filter-placeholder") {
+    if (name === "filter-label" || name === "filter-placeholder") {
       const label = this.native.querySelector(`.${kernelClass("TextField", "label")}`);
-      if (label) label.textContent = value || "Filter";
+      const placeholder = this.getAttribute("filter-placeholder") || "Filter";
+      if (label) label.textContent = this.getAttribute("filter-label") || placeholder;
+      this.filterInput.placeholder = placeholder;
     } else if (name === "page-size") {
       this.page = 1;
       this.renderAll();

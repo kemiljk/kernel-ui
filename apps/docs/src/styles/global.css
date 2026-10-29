@@ -554,12 +554,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   font-size: var(--kernel-font-size-sm);
 }
 
-@media (hover: none) {
-  .code-block-copy {
-    opacity: 1;
-  }
-}
-
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -1868,43 +1862,16 @@ dialog.mobile-nav-panel[data-side="left"] {
   overflow: hidden;
 }
 
-/* Every code block has a copy button floating over its top-right
-   corner. `padding-inline-end` alone can't keep text clear of it: pre
-   text is `white-space: pre`, so it never wraps, and padding on a
-   scrollable box only adds blank space *after* an already-overflowing
-   line — it doesn't change what's already visible before any
-   scrolling happens. Only actually narrowing the box does that: pre
-   itself carries no border or background of its own now (that moved
-   to .code-block above), so the reserved strip on the right just
-   shows the card's own plain background instead of a text-free gap
-   cut out of a separately-bordered box. This is what actually nests a
-   short one-liner "nicely" and a long line doesn't: the short one
-   never reached the button's column in the first place, not a
-   difference in how the button itself is placed. */
+/* The code gets the block's full width. The copy button isn't given a
+   reserved column: where it can be hovered it floats over the top-right
+   corner and only appears on hover or focus (it's an opaque secondary
+   Button, so it covers the characters beneath it cleanly while it's
+   there); on touch screens, where it has to be visible all the time,
+   it sits below the block instead of on top of the code. */
 .code-block pre {
   margin: 0;
   padding: var(--kernel-space-4);
   overflow-x: auto;
-}
-
-/* …but reserve that column ONLY where the button can actually turn up.
-   `.code-block-copy` is `opacity: 0` until `:hover` — which is itself
-   gated on `hover: hover` and `pointer: fine` below — or `:focus-within`.
-   On a phone none of that happens, so the strip was 3.75rem of dead
-   space held open for a control that never renders: 60px of a 277px
-   block, 22% of the width, and the reason code appeared to stop short of
-   its own container with a blank gutter beside it.
-
-   `:focus-within` can still reveal the button on a touch device driven by
-   a keyboard, where no space is reserved. That's fine rather than
-   overlooked: the button is a `variant="secondary"` Button, so it has an
-   opaque background and covers the character cells beneath it instead of
-   colliding with them. Reserving 22% of every code block on every phone
-   against that possibility is the worse trade. */
-@media (hover: hover) and (pointer: fine) {
-  .code-block pre {
-    max-inline-size: calc(100% - 3.75rem);
-  }
 }
 
 .code-block-copy {
@@ -1926,6 +1893,28 @@ dialog.mobile-nav-panel[data-side="left"] {
 
 @media (hover: hover) and (pointer: fine) {
   .code-block:hover .code-block-copy {
+    opacity: 1;
+  }
+}
+
+/* Touch: the button hangs just below the block's bottom-right corner,
+   always visible, with room reserved under the block so it never sits
+   on whatever comes next. The block stops clipping (the button lives
+   outside it), so the pre takes over clipping its own background to
+   the rounded corners. */
+@media (hover: none) {
+  .code-block {
+    overflow: visible;
+    margin-block-end: calc(var(--kernel-control-height-sm) + var(--kernel-space-2));
+  }
+
+  .code-block pre {
+    border-radius: calc(var(--kernel-radius-md) - var(--kernel-border-width));
+  }
+
+  .code-block .code-block-copy {
+    inset-block-start: calc(100% + var(--kernel-space-2));
+    inset-inline-end: 0;
     opacity: 1;
   }
 }
@@ -2194,18 +2183,127 @@ dialog.mobile-nav-panel[data-side="left"] {
   opacity: 1;
 }
 
-/* Theme builder: Kernel controls above, the CSS they add up to below,
-   inside the same framed panel the old playground used. Stacked rather
-   than side by side: in the 44rem reading column a half-width code
-   column truncates the snippet behind the copy button's reserved strip. */
-.theme-builder {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--kernel-space-8);
-  padding: var(--kernel-space-8);
+/* Theme builder: a launch button in the page, the controls in a panel
+   outside the flow (see ThemeBuilder.tsx for why). */
+.theme-launch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kernel-space-4);
+}
+
+.theme-launch-note {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+/* The panel keeps the library's default spacing whatever density the
+   page is set to, so it doesn't resize under the slider dragging it.
+   Derived tokens resolve where they're declared, so pinning the unit
+   alone isn't enough: everything built from it is redeclared here too.
+   Corner radii are left inherited on purpose, so the panel still follows
+   the theme's rounding (including Sharp's square override). */
+.theme-panel-scope {
+  --kernel-space-unit: 0.25rem;
+  --kernel-space-1: calc(var(--kernel-space-unit) * 1);
+  --kernel-space-2: calc(var(--kernel-space-unit) * 2);
+  --kernel-space-3: calc(var(--kernel-space-unit) * 3);
+  --kernel-space-4: calc(var(--kernel-space-unit) * 4);
+  --kernel-space-6: calc(var(--kernel-space-unit) * 6);
+  --kernel-space-8: calc(var(--kernel-space-unit) * 8);
+  --kernel-space-12: calc(var(--kernel-space-unit) * 12);
+  --kernel-padding-container: var(--kernel-space-4);
+  --kernel-padding-sheet: var(--kernel-space-6);
+  --kernel-padding-container-curve: calc(
+    var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4
+  );
+  --kernel-padding-sheet-curve: calc(
+    var(--kernel-padding-sheet) + var(--kernel-radius-base) * 0.4
+  );
+  --kernel-label-inset: var(--kernel-space-3);
+  --kernel-control-height-sm: calc(var(--kernel-space-unit) * 8);
+  --kernel-control-height-md: calc(var(--kernel-space-unit) * 10);
+  --kernel-control-height-lg: calc(var(--kernel-space-unit) * 12);
+  --kernel-control-inset: var(--kernel-space-1);
+  --kernel-radius-control-inner: max(
+    0px,
+    calc(var(--kernel-radius-control) - var(--kernel-control-inset))
+  );
+}
+
+/* Non-modal popover, pinned to the right edge below the header. The top
+   offset is fixed rather than tracking the header, whose height scales
+   with density: 5.5rem clears it even at the roomiest setting. */
+.theme-panel {
+  position: fixed;
+  inset: 5.5rem var(--kernel-space-4) auto auto;
+  margin: 0;
+  inline-size: min(24rem, calc(100vw - var(--kernel-space-8)));
+  max-block-size: calc(100dvh - 5.5rem - var(--kernel-space-4));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-padding-container-curve);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
-  background-color: var(--kernel-color-surface);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface-raised);
+  /* A raised surface: its tracks and wells step up with it (tokens.css). */
+  --kernel-color-fill-subtle: var(--kernel-gray-4);
+  --kernel-color-fill: var(--kernel-gray-5);
+  --kernel-color-fill-strong: var(--kernel-gray-6);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-lg);
+  opacity: 0;
+  translate: var(--kernel-space-4) 0;
+  transition-property: opacity, translate, display, overlay;
+  transition-duration: var(--kernel-duration-exit);
+  transition-timing-function: var(--kernel-ease-out);
+  transition-behavior: allow-discrete;
+}
+
+.theme-panel:popover-open {
+  opacity: 1;
+  translate: 0 0;
+  transition-duration: var(--kernel-duration-enter);
+  transition-timing-function: var(--kernel-ease-overlay);
+}
+
+@starting-style {
+  .theme-panel:popover-open {
+    opacity: 0;
+    translate: var(--kernel-space-4) 0;
+  }
+}
+
+.theme-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kernel-space-3);
+  margin-block-end: var(--kernel-space-4);
+}
+
+.theme-panel-header h3 {
+  margin: 0;
+  font-size: var(--kernel-font-size-base);
+}
+
+.theme-panel-body {
+  display: grid;
+  gap: var(--kernel-space-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-panel {
+    translate: 0 0;
+    transition-property: opacity, display, overlay;
+  }
+
+  @starting-style {
+    .theme-panel:popover-open {
+      translate: 0 0;
+    }
+  }
 }
 
 .theme-builder-controls {
@@ -2244,11 +2342,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   color: var(--kernel-color-text-muted);
 }
 
-@media (width < 800px) {
-  .theme-builder {
-    padding: var(--kernel-space-6);
-  }
-}
 
 /* Platform snippets: Tabs over one code block, so the three ways in read
    as alternatives rather than three things you need. */

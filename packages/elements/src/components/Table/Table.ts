@@ -10,10 +10,20 @@ import "./Table.css";
  * `<kernel-table-cell>` (`<td>`).
  */
 export class KernelTable extends KernelElement {
-  protected createNative(): HTMLElement {
-    const element = document.createElement("table");
-    element.className = kernelClass("Table", "table");
-    return element;
+  /** Same horizontal scroll container as `@kernelui-lib/react`'s
+   * `<Table>`: the native child is the scroll box, and the real `<table>`
+   * inside it receives the author's sections. */
+  connectedCallback() {
+    if (this.native) return;
+    const scroll = document.createElement("div");
+    scroll.className = kernelClass("Table", "scroll");
+    const table = document.createElement("table");
+    table.className = kernelClass("Table", "table");
+    this.moveChildrenInto(table);
+    scroll.append(table);
+    this.native = scroll;
+    this.append(scroll);
+    this.syncAllAttrs();
   }
 }
 

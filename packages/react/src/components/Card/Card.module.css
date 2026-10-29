@@ -8,6 +8,9 @@
      --kernel-space-6 is what keeps the two from drifting apart. */
   border-radius: var(--kernel-radius-sheet);
   background-color: var(--kernel-color-surface);
+  --kernel-color-fill-subtle: var(--kernel-gray-3);
+  --kernel-color-fill: var(--kernel-gray-4);
+  --kernel-color-fill-strong: var(--kernel-gray-5);
   box-shadow: var(--kernel-shadow-sm);
 }
 

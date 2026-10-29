@@ -6,7 +6,7 @@
   inline-size: 2.5rem;
   block-size: 2.5rem;
   border-radius: var(--kernel-radius-full);
-  background-color: var(--kernel-gray-4);
+  background-color: var(--kernel-color-fill-strong);
   flex-shrink: 0;
   /* A photo dropped straight onto any background needs a defined edge —
      the same hairline the elevation system already uses for cards

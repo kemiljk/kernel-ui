@@ -10,24 +10,34 @@ import styles from "./Table.module.css";
 type Div<TState> = ClassNameValue<TState>;
 
 export interface TableProps extends Omit<HTMLAttributes<HTMLTableElement>, "className"> {
+  /** Applied to the `<table>` itself. */
   className?: Div<Record<string, never>>;
+  /** Applied to the scroll container around it. */
+  wrapperClassName?: Div<Record<string, never>>;
 }
 
-/** A real `<table>`. Wrap it in a scrolling `<div>` yourself if it needs
- * to overflow on narrow screens, that's a layout concern, not the
- * table's. */
+/** A real `<table>`, inside its own horizontal scroll container. A table
+ * can't shrink below the width of its content, so without one a wide
+ * table on a phone widens the whole page (and the browser zooms the
+ * layout out to fit) instead of scrolling where it is. */
 export const Table = forwardRef<HTMLTableElement, TableProps>(function Table(
-  { className, ...rest },
+  { className, wrapperClassName, ...rest },
   ref,
 ) {
   return (
-    <table
-      {...rest}
-      ref={ref}
-      className={[styles.table, resolveClassName(className, {})]
+    <div
+      className={[styles.scroll, resolveClassName(wrapperClassName, {})]
         .filter(Boolean)
         .join(" ")}
-    />
+    >
+      <table
+        {...rest}
+        ref={ref}
+        className={[styles.table, resolveClassName(className, {})]
+          .filter(Boolean)
+          .join(" ")}
+      />
+    </div>
   );
 });
 

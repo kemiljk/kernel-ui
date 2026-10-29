@@ -53,7 +53,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .root:hover:not(:disabled) {
-    background-color: var(--kernel-gray-3);
+    background-color: var(--kernel-color-fill);
   }
 }
 

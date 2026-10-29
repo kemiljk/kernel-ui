@@ -16,6 +16,84 @@ kernel-table-cell {
   display: contents;
 }
 
+.kernel-Table-scroll {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+@property --kernel-table-shadow-start {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --kernel-table-shadow-end {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes kernel-table-shadow-start {
+  from {
+    --kernel-table-shadow-start: 0;
+  }
+  to {
+    --kernel-table-shadow-start: 1;
+  }
+}
+
+@keyframes kernel-table-shadow-end {
+  from {
+    --kernel-table-shadow-end: 1;
+  }
+  to {
+    --kernel-table-shadow-end: 0;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .kernel-Table-scroll {
+    animation:
+      kernel-table-shadow-start linear both,
+      kernel-table-shadow-end linear both;
+    animation-timeline: scroll(self inline), scroll(self inline);
+    animation-range: 0 48px, calc(100% - 48px) 100%;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-start))) 0,
+      #000 2.75rem,
+      #000 calc(100% - 2.75rem),
+      rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-end))) 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-start))) 0,
+      #000 2.75rem,
+      #000 calc(100% - 2.75rem),
+      rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-end))) 100%
+    );
+    box-shadow:
+      inset 2px 0 4px -2px light-dark(
+        oklch(0% 0 0 / calc(0.16 * var(--kernel-table-shadow-start))),
+        oklch(0% 0 0 / calc(0.42 * var(--kernel-table-shadow-start)))
+      ),
+      inset 8px 0 16px -6px light-dark(
+        oklch(0% 0 0 / calc(0.12 * var(--kernel-table-shadow-start))),
+        oklch(0% 0 0 / calc(0.32 * var(--kernel-table-shadow-start)))
+      ),
+      inset -2px 0 4px -2px light-dark(
+        oklch(0% 0 0 / calc(0.16 * var(--kernel-table-shadow-end))),
+        oklch(0% 0 0 / calc(0.42 * var(--kernel-table-shadow-end)))
+      ),
+      inset -8px 0 16px -6px light-dark(
+        oklch(0% 0 0 / calc(0.12 * var(--kernel-table-shadow-end))),
+        oklch(0% 0 0 / calc(0.32 * var(--kernel-table-shadow-end)))
+      );
+  }
+}
+
 .kernel-Table-table {
   width: 100%;
   border-collapse: collapse;
@@ -36,7 +114,7 @@ kernel-table-cell {
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-Table-row:hover {
-    background-color: var(--kernel-gray-2);
+    background-color: var(--kernel-color-fill-subtle);
   }
 }
 
