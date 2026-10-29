@@ -74,6 +74,12 @@ export function AccordionItem({
         .filter(Boolean)
         .join(" ")}
       name={name}
+      // Server-rendered markup needs the attribute itself: the transition
+      // hook only opens the panel from an effect, so without this a
+      // `defaultOpen` item arrives closed — permanently with no JS, and
+      // as a closed-then-open flash with it. It never changes after
+      // mount, so React leaves the native toggle state alone from here.
+      open={defaultOpen || undefined}
     >
       <summary className={styles.trigger}>
         <span className={styles.title}>{title}</span>

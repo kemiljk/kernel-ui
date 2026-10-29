@@ -1,7 +1,7 @@
 /**
  * The single place that reads or writes the site's theme. Anything
  * that lets a visitor change accent, radius, or colour scheme —
- * ThemePlayground's "try it here" demo, the header's ThemeMenu, the
+ * the homepage's ThemeBuilder, the header's ThemeMenu, the
  * sun/moon ThemeToggle — calls through here instead of touching
  * `<html>` directly, so a change made in any one of them is visible in
  * all the others immediately and survives navigation.
@@ -62,7 +62,7 @@ const STORAGE_KEYS = {
 } as const;
 
 /**
- * ThemePlayground, ThemeMenu, and ThemeToggle are three separate Astro
+ * ThemeBuilder, ThemeMenu, and ThemeToggle are three separate Astro
  * islands (three separate React roots) that can independently change
  * the theme — they can't share React state directly, and
  * `window.addEventListener("storage", ...)` only fires in *other*

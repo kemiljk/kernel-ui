@@ -12,11 +12,11 @@ import {
 } from "../lib/theme";
 
 /**
- * The accent + radius controls, shared by ThemePlayground's homepage
- * demo, ThemeMenu's header popover, and MobileHeaderNav's panel — one
- * implementation instead of three copies to keep in sync. All three
- * read/write through src/lib/theme.ts, so a change made in any one is
- * reflected in the others immediately via THEME_CHANGE_EVENT.
+ * The accent + radius controls, shared by ThemeMenu's header popover and
+ * MobileHeaderNav's panel — one implementation instead of two copies to
+ * keep in sync. Both read/write through src/lib/theme.ts (as does the
+ * homepage's ThemeBuilder), so a change made in any one is reflected in
+ * the others immediately via THEME_CHANGE_EVENT.
  */
 export default function ThemeControls() {
   const [accent, setAccent] = useState<(typeof ACCENTS)[number]>("amber");

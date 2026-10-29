@@ -251,9 +251,8 @@ h3 {
 
 .docs-sidebar-eyebrow {
   /* 50% more than the base --kernel-space-4 (16px → 24px) — a deliberate
-     multiplier, not a bigger named token, for the same reason the
-     showcase grid's own 50%-more spacing isn't one either: no step in
-     the scale lands on "the current value plus half again". Groups need
+     multiplier, not a bigger named token: no step in the scale lands
+     on "the current value plus half again". Groups need
      to read as clearly separate at a glance, not just visually distinct
      from their own items. */
   margin: calc(var(--kernel-space-4) * 1.5) 0 var(--kernel-space-1);
@@ -835,8 +834,9 @@ dialog.mobile-nav-panel[data-side="left"] {
   margin-inline: auto;
 }
 
-/* Homepage sections share the docs reading column. Only the showcase
-   masonry (.showcase-bleed) breaks out to the viewport edges. */
+/* Homepage sections share the docs reading column. Only the
+   Kernel-vs-div-soup comparison (.bleed) breaks out to the viewport
+   edges. */
 .home {
   max-inline-size: var(--docs-content-width);
   margin-inline: auto;
@@ -1495,15 +1495,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   }
 }
 
-.playground-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--kernel-space-4);
-  padding-block-start: var(--kernel-space-6);
-  border-block-start: var(--kernel-border-width) dashed var(--kernel-color-border);
-}
-
 .hero {
   position: relative;
   display: flex;
@@ -1712,27 +1703,11 @@ dialog.mobile-nav-panel[data-side="left"] {
 .feature-section,
 .platforms,
 .playground-section,
+.releases-section,
 .closing {
   padding-block: var(--kernel-space-12);
   border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
   margin-block-start: var(--kernel-space-8);
-}
-
-/* Showcase: real components composed into realistic mini-patterns (a
-   sign-up field, an OTP verification card, a create-account card…)
-   instead of one component in isolation — proof this is a system you
-   build actual screens from, not a component zoo. Native CSS multi-
-   column masonry, not a JS layout library or a manually-tuned CSS Grid
-   with `grid-row: span N` per card: each card's real height decides
-   which column it lands in and how tall it reads, no measurement, no
-   hydration cost, and a card that gets a line of text added to it later
-   doesn't need its span recalculated by hand. */
-.showcase-columns {
-  columns: 3 18rem;
-  /* 50% more than the base --kernel-space-6 (24px → 36px) — a deliberate
-     multiplier, not a bigger named token, since no token in the scale
-     lands on "the current value plus half again". */
-  column-gap: calc(var(--kernel-space-6) * 1.5);
 }
 
 /* Break a block out of .home's 44rem reading column to the viewport
@@ -1740,16 +1715,13 @@ dialog.mobile-nav-panel[data-side="left"] {
    centred column — only the wrapper carrying this class breaks out, so
    prose keeps its measure while the evidence gets the room.
 
-   Two consumers, one rule: the showcase masonry (live demos need
-   horizontal room) and the Kernel-vs-div-soup grid. The comparison
-   needed it for a harder reason than "nicer": two panels inside the
-   reading column are 344px each, and the div-soup snippet's widest line
-   is 416px, so the panel whose entire rhetorical job is "look how much
-   more code this takes" was clipping the code. `.platforms-grid` right
-   below solved the same squeeze by dropping to one column — that option
-   isn't open here, because seeing the two side by side IS the argument. */
-.bleed,
-.feature-section .showcase-bleed {
+   Its consumer is the Kernel-vs-div-soup grid, and it needs it for a
+   harder reason than "nicer": two panels inside the reading column are
+   344px each, and the div-soup snippet's widest line is 416px, so the
+   panel whose entire rhetorical job is "look how much more code this
+   takes" was clipping the code. Dropping to one column isn't an option,
+   because seeing the two side by side IS the argument. */
+.bleed {
   /* How wide the content inside the bleed is allowed to get. Override
      per consumer if one ever needs a different cap; 64rem is "clearly
      wider than the 44rem reading column, still short of edge-to-edge on
@@ -1773,230 +1745,6 @@ dialog.mobile-nav-panel[data-side="left"] {
     var(--kernel-space-6),
     calc(50vw - var(--bleed-content) / 2)
   );
-}
-
-@media (width < 800px) {
-  .showcase-columns {
-    columns: 1;
-  }
-}
-
-/* The cascade sample is the section's actual proof — change one token,
-   everything moves — and it used to be the first item in the masonry,
-   where an 18rem column gave its <pre> 222px of the 605px its longest
-   line needed. The entire right-hand side of the snippet, which is to
-   say every "every corner re-rounds" comment explaining what the token
-   actually does, sat off-screen behind a horizontal scrollbar. Nobody
-   scrolls a code sample sideways to find the punchline.
-
-   So it comes out of the masonry and gets its own full-bleed row above
-   it: copy on the left, code on the right, both at a width the content
-   actually fits in. It also isn't a live component like the six pieces
-   below it, so leading with it rather than burying it mid-grid stops it
-   reading as "one of the demos". */
-.cascade-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: var(--kernel-space-6);
-  align-items: center;
-  padding: var(--kernel-padding-sheet);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-sheet);
-  background-color: var(--kernel-color-surface);
-  margin-block-end: calc(var(--kernel-space-6) * 1.5);
-}
-
-.cascade-copy h3 {
-  margin: 0 0 var(--kernel-space-2);
-  font-size: var(--kernel-font-size-base);
-  line-height: 1;
-}
-
-.cascade-copy p {
-  margin: 0;
-  max-inline-size: 34rem;
-  color: var(--kernel-color-text-muted);
-  font-size: var(--kernel-font-size-sm);
-}
-
-.cascade-panel .code-block {
-  min-inline-size: 0;
-}
-
-.cascade-panel pre code {
-  font-family: var(--kernel-font-mono);
-  font-size: var(--kernel-font-size-sm);
-  line-height: var(--kernel-line-height-tight);
-}
-
-/* Same breakpoint the masonry collapses at: below it there isn't room
-   for copy and code side by side either. */
-@media (width < 800px) {
-  .cascade-panel {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--kernel-space-4);
-    align-items: start;
-  }
-}
-
-/* Two ways a showcase piece can sit in the grid, and which one to reach
-   for is a real UI decision, not a default: most real interfaces are
-   controls, rows, and text floating directly on the page — a card is a
-   specific, deliberate container (a modal, a list, a distinct clickable
-   unit), not the default wrapper for "a thing in a grid." Reaching for
-   `.showcase-card` on everything is exactly how you get a card holding
-   a card holding a control: the outer grid item does NOT need its own
-   border/background just because it's sitting in a masonry column —
-   `break-inside: avoid` (needed so column masonry doesn't split an
-   item's content across two columns) and the bottom margin are the only
-   things every grid item actually needs, and `.showcase-item` is that:
-   no visual box, the content supplies its own shape.
-
-   `.showcase-card` is for the minority of pieces that a real interface
-   would ALSO box — a modal, a menu/list, a code sample — and it pairs
-   `--kernel-radius-sheet` with `--kernel-padding-sheet` because those two
-   tokens are concentric by construction (see tokens.css): a bigger
-   radius with small/default padding is the exact bug this fixes,
-   corners crowding the content instead of framing it. Never hand-roll a
-   radius and a padding independently — reach for `.showcase-card`,
-   whose sheet-tier pairing is already concentric, rather than picking a
-   radius token and a padding value separately. (There used to be a
-   compact `.showcase-subcard` tier alongside it for cards nested inside
-   a showcase item; its only consumer went away with the showcase
-   curation. Reinstate it from git history rather than hand-rolling a
-   smaller radius/padding pair if that case comes back.) */
-.showcase-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kernel-space-3);
-  /* Same 50%-over-the-token multiplier as .showcase-columns' column-gap —
-     the two together are the grid's row gap and column gap. */
-  margin-block-end: calc(var(--kernel-space-6) * 1.5);
-  break-inside: avoid;
-  min-inline-size: 0;
-  max-inline-size: 100%;
-}
-
-.showcase-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kernel-space-3);
-  padding: var(--kernel-padding-sheet);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-sheet);
-  background-color: var(--kernel-color-surface);
-  margin-block-end: calc(var(--kernel-space-6) * 1.5);
-  break-inside: avoid;
-  /* Column masonry gives each item a fixed column width; long
-     `white-space: pre` lines otherwise set a wider min-content width
-     and the card (and its full-width buttons) spill past the column. */
-  min-inline-size: 0;
-  max-inline-size: 100%;
-}
-
-/* A heading needs more room to the thing it's labelling than two
-   unrelated pieces of content need between each other — the parent's own
-   flex `gap` already provides that base spacing, this margin stacks on
-   top of it specifically after a heading, so "header, then its content"
-   reads as a clearly bigger step than "content, then more content". */
-/* line-height: 1, not the inherited body value (1.5): a heading sitting
-   in a `.showcase-row` next to a Badge (RepoCard, e.g.) centers by box
-   height, and the body line-height pads invisible space above/below the
-   glyph that Badge's own tight box doesn't have — the heading LOOKS
-   off-centre against the badge even though `align-items: center` is
-   doing exactly what it's told, because the two boxes it's centering
-   aren't actually the same height as their visible content. */
-.showcase-item h3,
-.showcase-card h3 {
-  margin: 0 0 var(--kernel-space-2);
-  font-size: var(--kernel-font-size-base);
-  line-height: 1;
-}
-
-.showcase-item p,
-.showcase-card p {
-  margin: 0;
-  color: var(--kernel-color-text-muted);
-  font-size: var(--kernel-font-size-sm);
-}
-
-/* The one showcase card that isn't a live component — the cascade-token
-   code sample — still needs its own code block sized like the rest of
-   the docs' code samples, not inheriting the muted/small text rule above
-   (code needs its own contrast and a monospace stack). */
-.showcase-card .code-block {
-  margin-block-start: var(--kernel-space-2);
-}
-
-.showcase-card pre {
-  margin: 0;
-  overflow-x: auto;
-  max-inline-size: 100%;
-  background-color: var(--kernel-color-canvas);
-  padding: var(--kernel-space-2) var(--kernel-space-3);
-  border-radius: var(--kernel-radius-sm);
-}
-
-.showcase-card pre code {
-  display: block;
-  white-space: pre;
-  font-family: var(--kernel-font-mono);
-  font-size: var(--kernel-font-size-sm);
-}
-
-.showcase-row {
-  display: flex;
-  align-items: center;
-  gap: var(--kernel-space-3);
-}
-
-/* The h3 rule above gives headings a bottom margin for the common case —
-   a heading directly followed by more block content. Inside a
-   `.showcase-row` that margin instead lands on the h3 as a flex item's
-   OWN trailing margin, and `align-items: center` centers each item's
-   margin box, not its content box: the badge (no margin) centers true
-   to its glyphs, but the heading's added bottom margin pulls its glyphs
-   above that same center line, reading as "the badge is offset" when
-   it's actually the heading that's off-center. Row spacing here is
-   already handled by `.showcase-row`'s own `gap`, so the margin is
-   redundant in this context — zero it out. */
-.showcase-row h3 {
-  margin-block-end: 0;
-}
-
-/* `flex-start`, not `center`: this pairs a label (often two lines — a
-   name plus a description) with a control (a Switch, e.g.). Centering
-   vertically centers the control across the WHOLE label stack, landing
-   it between the two lines rather than level with either — flex-start
-   lines the control up with the label's own first line, which is the
-   thing it's actually a control FOR. */
-.showcase-row-between {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--kernel-space-4);
-}
-
-.showcase-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kernel-space-2);
-  min-inline-size: 0;
-  inline-size: 100%;
-}
-
-/* `width: 100%` on Kernel's inline-flex Button doesn't reliably fill a
-   masonry column when a sibling <pre> has a long min-content width —
-   stretch the flex item instead. */
-.showcase-stack > [data-variant] {
-  align-self: stretch;
-  justify-content: center;
-}
-
-.showcase-kbd {
-  font-family: var(--kernel-font-mono);
-  font-size: var(--kernel-font-size-sm);
-  color: var(--kernel-color-text-muted);
 }
 
 .principles h2,
@@ -2302,12 +2050,6 @@ dialog.mobile-nav-panel[data-side="left"] {
   }
 }
 
-/* Platforms stacks three code samples in one column — each block is wide
-   enough that a side-by-side grid just truncates the snippets. */
-.platforms-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 .closing h2 {
   max-inline-size: 32rem;
   font-size: var(--kernel-font-size-xl);
@@ -2357,8 +2099,9 @@ dialog.mobile-nav-panel[data-side="left"] {
    content, fully visible, with no animation at all — never stuck
    invisible.
 
-   Deliberately NOT applied to `.showcase-card`/`.showcase-item`: this was
-   tried and reverted. It designed and reads correctly for a handful of
+   Deliberately applied to whole sections, never to small items inside
+   one: per-item reveals on the old showcase masonry were tried and
+   reverted. It designed and reads correctly for a handful of
    large, singular per-section blocks, each unambiguously either fully
    above or fully below the fold at load — but a masonry grid of 15 small
    items has no such guarantee: `columns` balances items across columns by
@@ -2386,6 +2129,7 @@ dialog.mobile-nav-panel[data-side="left"] {
   .principles,
   .platforms,
   .playground-section,
+  .releases-section,
   .closing {
     animation: kernel-reveal linear both;
     animation-timeline: view();
@@ -2397,7 +2141,134 @@ dialog.mobile-nav-panel[data-side="left"] {
   .principles,
   .platforms,
   .playground-section,
+  .releases-section,
   .closing {
     animation: none;
   }
+}
+
+/* Hero install line: package-manager Tabs over one copyable command.
+   The copy button stays visible here (unlike code blocks, where it's
+   hover-revealed) because copying is the whole point of this row. */
+.install-command {
+  align-items: center;
+  gap: var(--kernel-space-2);
+  inline-size: 100%;
+  max-inline-size: 36rem;
+  margin-block-start: var(--kernel-space-6);
+  margin-inline: auto;
+  /* The command is one unwrapped line; without this its full width
+     becomes the hero's minimum width and pushes the hero off a phone
+     screen. Contained, the line scrolls inside its own box instead. */
+  contain: inline-size;
+}
+
+.install-command > [role="tabpanel"] {
+  align-self: stretch;
+}
+
+.install-command-line {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-3);
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-4) var(--kernel-space-2);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-control);
+  background-color: var(--kernel-color-canvas);
+}
+
+.install-command-line code {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.install-command-line .code-block-copy {
+  position: static;
+  flex-shrink: 0;
+  opacity: 1;
+}
+
+/* Theme builder: Kernel controls above, the CSS they add up to below,
+   inside the same framed panel the old playground used. Stacked rather
+   than side by side: in the 44rem reading column a half-width code
+   column truncates the snippet behind the copy button's reserved strip. */
+.theme-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kernel-space-8);
+  padding: var(--kernel-space-8);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: calc(var(--kernel-radius-md) * 1.6 + var(--kernel-space-4));
+  background-color: var(--kernel-color-surface);
+}
+
+.theme-builder-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  align-items: end;
+  gap: var(--kernel-space-6);
+}
+
+.theme-builder-controls > :first-child {
+  grid-column: 1 / -1;
+}
+
+.theme-builder-field {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.theme-builder-output {
+  display: grid;
+  align-content: start;
+  min-inline-size: 0;
+}
+
+.theme-builder-output pre code {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+}
+
+.theme-builder-note {
+  margin: var(--kernel-space-3) 0 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+@media (width < 800px) {
+  .theme-builder {
+    padding: var(--kernel-space-6);
+  }
+}
+
+/* Platform snippets: Tabs over one code block, so the three ways in read
+   as alternatives rather than three things you need. */
+.platform-tabs .code-block pre code {
+  font-family: var(--kernel-font-mono);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+}
+
+.releases-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-3);
+}
+
+.releases-list {
+  display: grid;
+  gap: var(--kernel-space-2);
+  margin: 0;
+  padding-inline-start: var(--kernel-space-6);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
 }

@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { isValidElement, useId, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
   Table,
@@ -37,11 +37,14 @@ type SortDirection = "ascending" | "descending";
 
 /** Coerces whatever a cell renders down to plain text, for both the
  * filter match and the sort fallback: a `ReactNode` isn't comparable or
- * searchable on its own. */
+ * searchable on its own. Walks into elements' children, so a cell that
+ * wraps its text in a link, `<code>` or a Badge still filters and sorts
+ * by that text rather than as an empty string. */
 function nodeToText(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === "boolean") return "";
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(nodeToText).join(" ");
+  if (isValidElement<{ children?: ReactNode }>(node)) return nodeToText(node.props.children);
   return "";
 }
 

@@ -1,8 +1,12 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ThemePlayground from "../components/ThemePlayground";
 import HeroCtas from "../components/HeroCtas";
-import ShowcaseGrid from "../components/showcase/ShowcaseGrid";
+import InstallCommand from "../components/home/InstallCommand";
+import ComponentIndex from "../components/home/ComponentIndex";
+import PlatformTabs from "../components/home/PlatformTabs";
+import ThemeBuilder from "../components/home/ThemeBuilder";
+import Releases, { type Release } from "../components/home/Releases";
+import reactChangelog from "../../../../packages/react/CHANGELOG.md?raw";
 import OpenSourceCallout from "../components/OpenSourceCallout";
 import CodeBlock from "../components/CodeBlock.astro";
 import KernelMark from "../components/KernelMark.astro";
@@ -12,14 +16,23 @@ import { GITHUB_URL } from "../lib/site";
 const available = components.filter((c) => c.status === "available").length;
 const planned = components.length - available;
 
-const cascadeSnippet = `/* → every accent shade re-hues */
---kernel-hue-accent: 70;
-
-/* → every corner re-rounds */
---kernel-radius-base: 1.25rem;
-
-/* → every gap and padding rescales */
---kernel-space-unit: 0.25rem;`;
+/* The newest few entries of the published React package's changelog,
+   parsed at build time: version, release level and each change's text
+   (Changesets prefixes every entry with a commit hash, dropped here). */
+const releases: Release[] = reactChangelog
+  .split(/^## /m)
+  .slice(1, 5)
+  .map((block) => {
+    const [heading = "", ...rest] = block.split("\n");
+    const body = rest.join("\n");
+    const level = body.match(/^### (\w+) Changes/m)?.[1] ?? "Patch";
+    const changes = body
+      .split(/^- /m)
+      .slice(1)
+      .map((entry) => entry.replace(/^[0-9a-f]{7,}: /, "").replace(/^#+ .*$/gm, "").replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+    return { version: heading.trim(), level, changes };
+  });
 
 const kernelSnippet = `<button
   type="button"
@@ -43,20 +56,6 @@ const divSoupSnippet = `<div
   Save changes
 </div>`;
 
-const reactPlatformSnippet = `import { Button } from "@kernelui-lib/react";
-
-<Button variant="primary">Save changes</Button>`;
-
-const elementsPlatformSnippet = `<script type="module">
-  import "@kernelui-lib/elements";
-</script>
-
-<kernel-button variant="primary">Save changes</kernel-button>`;
-
-const headlessPlatformSnippet = `import { Button } from "@kernelui-lib/react";
-// No "@kernelui-lib/react/styles.css" import anywhere —
-// <Button> is still a real <button>, just unstyled.`;
-
 const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
 ---
 
@@ -73,6 +72,7 @@ const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
       <div class="hero-ctas">
         <HeroCtas />
       </div>
+      <InstallCommand client:load />
       <ul class="hero-proof">
         <li><strong>{available}</strong> components</li>
         <li><strong>0</strong> runtime deps</li>
@@ -105,29 +105,15 @@ const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
     </div>
   </section>
 
-  <section class="feature-section" aria-labelledby="showcase-heading">
-    <p class="section-eyebrow">Showcase</p>
-    <h2 id="showcase-heading">Real components, composed into real screens</h2>
+  <section class="feature-section" aria-labelledby="index-heading">
+    <p class="section-eyebrow">The library</p>
+    <h2 id="index-heading">Every component, and the element doing the work</h2>
     <p class="principles-intro">
-      A scheduling card. A docs nav. An install panel. Each one is the
-      real library at work, not a screenshot.
+      The full catalogue, in Kernel's own DataTable: filter it, sort it,
+      page through it, and open any component's docs. The middle column
+      is the whole idea — each one names the native element it's built on.
     </p>
-    <div class="showcase-bleed">
-      <div class="cascade-panel">
-        <div class="cascade-copy">
-          <h3>One value, one cascade</h3>
-          <p>
-            Every colour, radius, and duration is a CSS custom property.
-            Change one token and every component updates, live, everywhere
-            it's used — try it further down the page.
-          </p>
-        </div>
-        <CodeBlock code={cascadeSnippet} lang="css" />
-      </div>
-      <div class="showcase-columns">
-        <ShowcaseGrid client:visible />
-      </div>
-    </div>
+    <ComponentIndex client:visible />
   </section>
 
   <section class="principles" aria-labelledby="principles-heading">
@@ -180,27 +166,30 @@ const CONTRIBUTING_URL = `${GITHUB_URL}/blob/main/CONTRIBUTING.md`;
       fully-functional semantic elements with none of Kernel's own look —
       just the bones, themed however you want.
     </p>
-    <div class="comparison-grid platforms-grid">
-      <div class="comparison-panel">
-        <p class="comparison-label">React</p>
-        <CodeBlock code={reactPlatformSnippet} lang="tsx" />
-      </div>
-      <div class="comparison-panel">
-        <p class="comparison-label">Anywhere else</p>
-        <CodeBlock code={elementsPlatformSnippet} lang="html" />
-      </div>
-      <div class="comparison-panel">
-        <p class="comparison-label">Unstyled</p>
-        <CodeBlock code={headlessPlatformSnippet} lang="tsx" />
-      </div>
-    </div>
+    <PlatformTabs client:visible />
     <p class="platforms-cta"><a href="/platforms/">More on platforms &amp; headless usage →</a></p>
   </section>
 
   <section class="playground-section" aria-labelledby="playground-heading">
-    <p class="section-eyebrow">Playground</p>
-    <h2 id="playground-heading">Try the cascade</h2>
-    <ThemePlayground client:visible />
+    <p class="section-eyebrow">Theming</p>
+    <h2 id="playground-heading">One value, one cascade</h2>
+    <p class="comparison-intro">
+      Every colour, corner and gap is a CSS custom property. These controls
+      are Kernel components changing the real site — not a preview pane —
+      and the code beside them is the theme you'd paste into your own app.
+    </p>
+    <ThemeBuilder client:visible />
+  </section>
+
+  <section class="releases-section" aria-labelledby="releases-heading">
+    <p class="section-eyebrow">Changelog</p>
+    <h2 id="releases-heading">Recently shipped</h2>
+    <p class="comparison-intro">
+      Straight from the published package's changelog. This list is an
+      Accordion on <code>&lt;details&gt;</code>, so it works with no
+      JavaScript at all.
+    </p>
+    <Releases releases={releases} />
   </section>
 
   <section class="closing">
