@@ -1,5 +1,12 @@
 # @kernelui-lib/cli
 
+## 1.0.5
+
+### Patch Changes
+
+- Update development dependencies: Vite 8.3.5, `@testing-library/user-event` 14.6.8 and Node.js 26.6.5 types.
+- da1063a: Update the package build dependencies to Vite 8.3 and Node.js 26.6 types.
+
 ## 1.0.4
 
 ### Patch Changes
