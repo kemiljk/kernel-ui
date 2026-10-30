@@ -1,7 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import kkSans from "../assets/fonts/KKSansVF-core.woff2";
-import kkMono from "../assets/fonts/KKMono-VF-core.woff2";
+import { fontPrecache } from "../data/font-precache";
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -179,20 +178,33 @@ const pageTitle =
       sizes="any"
     />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
-    <link
-      rel="preload"
-      href={kkSans}
-      as="font"
-      type="font/woff2"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="preload"
-      href={kkMono}
-      as="font"
-      type="font/woff2"
-      crossorigin="anonymous"
-    />
+    <!--
+      The upright core fonts are embedded in the stylesheet. Fetch their
+      extended files once the page is idle, so a later page that needs one
+      finds it cached; skip it when the visitor is saving data. Runs once:
+      ClientRouter keeps the document, and with it the prefetched files.
+    -->
+    <script is:inline define:vars={{ fontPrecache }}>
+      const connection = navigator.connection;
+      if (!connection?.saveData && !/2g/.test(connection?.effectiveType ?? "")) {
+        const prefetch = () =>
+          fontPrecache.forEach((href) => {
+            const link = document.createElement("link");
+            link.rel = "prefetch";
+            link.as = "font";
+            link.type = "font/woff2";
+            link.crossOrigin = "anonymous";
+            link.href = href;
+            document.head.append(link);
+          });
+        const whenIdle = () =>
+          "requestIdleCallback" in window
+            ? requestIdleCallback(prefetch, { timeout: 5000 })
+            : setTimeout(prefetch, 2000);
+        if (document.readyState === "complete") whenIdle();
+        else addEventListener("load", whenIdle, { once: true });
+      }
+    </script>
     {
       import.meta.env.PROD && (
         <script is:inline>

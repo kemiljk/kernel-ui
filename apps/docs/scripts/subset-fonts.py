@@ -6,7 +6,7 @@
 
 Run by hand from apps/docs, then commit everything it writes:
 
-    uv run scripts/subset-fonts.py          # rebuild the fonts and fonts.css
+    uv run scripts/subset-fonts.py          # rebuild the fonts, fonts.css and precache list
     uv run scripts/subset-fonts.py --check  # exit 1 if a rerun is needed
 
 This is deliberately not part of `astro build`: the output is committed, so
@@ -28,12 +28,14 @@ The subsets match the sources exactly at 400 and 700 and in the font-wide
 metrics (see `build`). Cutting KK Sans at 700 moves some advances and kerning
 by up to a unit at in-between weights (see FACES and `restricted_gvar`).
 
-Each face is split in two. The core file is preloaded and holds ASCII, the
-punctuation nearly every page renders and any accented letter the content
-uses. The extended file sits behind a
-`unicode-range` that lists only what it contains, so the browser downloads it
-only on a page that renders one of those characters. Keep both halves in the
-same family: a different family between them in the stack (for example a
+Each face is split in two. The core holds ASCII, the punctuation nearly every
+page renders and any accented letter the content uses; the upright cores are
+embedded in fonts.css as data URIs (see EMBEDDED), so they arrive with the
+stylesheet. The extended file sits behind a `unicode-range` that lists only
+what it contains, so a page that renders one of those characters fetches it;
+BaseLayout also prefetches the upright extended files once the page is idle,
+so later pages find them cached. Keep both halves in the same family: a
+different family between them in the stack (for example a
 generated fallback face) would draw extended characters before the real font.
 
 The KK fonts carry no Reserved Font Name, so the subsets keep their names.
@@ -42,8 +44,10 @@ The KK fonts carry no Reserved Font Name, so the subsets keep their names.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import io
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -57,6 +61,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "src/assets/fonts/source"
 OUT = ROOT / "src/assets/fonts"
 CSS = ROOT / "src/styles/fonts.css"
+PRECACHE = ROOT / "src/data/font-precache.ts"
 
 # Text the site can render: docs pages plus the component sources and
 # registry entries that demos and playgrounds pull strings from.
@@ -74,6 +79,11 @@ CONTENT_SUFFIXES = {".astro", ".md", ".mdx", ".ts", ".tsx", ".js", ".mjs", ".jso
 # rounding of in-between weights (450, 550, 650…), which moves some advances
 # and kerning by up to one unit (a hundredth of a pixel at 16px). KK Mono
 # already stops at 700.
+# Faces whose core is embedded in fonts.css as a data URI, so it arrives with
+# the stylesheet: the upright faces every page uses. The italic cores stay
+# files, fetched by the few pages with italics.
+EMBEDDED = {"KKSansVF", "KKMono-VF"}
+
 FACES = [
     ("KK Sans", "normal", "KKSansVF", {"wght": (400, 700), "ital": 0}),
     ("KK Sans", "italic", "KKSansVF-Italic", {"wght": (400, 700)}),
@@ -236,14 +246,19 @@ def plan() -> list[dict]:
     return faces
 
 
-def font_face(face: dict, part: str, codepoints: set[int]) -> str:
+def font_face(face: dict, part: str, data: bytes, codepoints: set[int]) -> str:
     low, high = face["weight"]
+    if part == "core" and face["stem"] in EMBEDDED:
+        # The marker names the embedded subset so `--check` can find it.
+        src = f'/* {face["stem"]}-core */\n  src: url("data:font/woff2;base64,{base64.b64encode(data).decode()}") format("woff2");'
+    else:
+        src = f'src: url("../assets/fonts/{face["stem"]}-{part}.woff2") format("woff2");'
     return f"""@font-face {{
   font-family: "{face['family']}";
   font-style: {face['style']};
   font-weight: {low} {high};
   font-display: swap;
-  src: url("../assets/fonts/{face['stem']}-{part}.woff2") format("woff2");
+  {src}
   unicode-range: {unicode_range(codepoints)};
 }}
 """
@@ -278,16 +293,29 @@ def write() -> None:
                 face["core"] = got
             buffer = io.BytesIO()
             font.save(buffer)
+            data = buffer.getvalue()
             path = OUT / f"{face['stem']}-{part}.woff2"
-            path.write_bytes(buffer.getvalue())
-            print(f"{path.relative_to(ROOT)}  {len(buffer.getvalue()):>6} B  {len(got)} characters")
-            blocks.append(font_face(face, part, got))
+            if part == "core" and face["stem"] in EMBEDDED:
+                path.unlink(missing_ok=True)
+                print(f"embedded {path.name}  {len(data):>6} B  {len(got)} characters")
+            else:
+                path.write_bytes(data)
+                print(f"{path.relative_to(ROOT)}  {len(data):>6} B  {len(got)} characters")
+            blocks.append(font_face(face, part, data, got))
     CSS.write_text(
         "/* Site-only brand fonts; never distributed in the styles package.\n"
         "   Generated by scripts/subset-fonts.py: edit that, not this file.\n"
         + "".join(f"   Source: {line}\n" for line in sources)
         + "*/\n\n"
         + "\n".join(blocks)
+    )
+    # Vite fingerprints the extended files, so the list imports them.
+    stems = [face[2] for face in FACES if face[2] in EMBEDDED]
+    names = [re.sub(r"\W", "", stem) + "Extended" for stem in stems]
+    PRECACHE.write_text(
+        "// Generated by scripts/subset-fonts.py: extended font files to prefetch when idle.\n"
+        + "".join(f'import {n} from "../assets/fonts/{stem}-extended.woff2";\n' for n, stem in zip(names, stems))
+        + f"\nexport const fontPrecache = [{', '.join(names)}];\n"
     )
 
 
@@ -303,6 +331,9 @@ def check() -> int:
         for part in ("core", "extended"):
             path = OUT / f"{face['stem']}-{part}.woff2"
             kept[part] = set(TTFont(path).getBestCmap()) if path.exists() else set()
+        embedded = re.search(rf'/\* {re.escape(face["stem"])}-core \*/\s*src: url\("data:font/woff2;base64,([^"]+)"\)', css)
+        if embedded:
+            kept["core"] = set(TTFont(io.BytesIO(base64.b64decode(embedded[1]))).getBestCmap())
         missing = (face["core"] | face["extended"]) - kept["core"] - kept["extended"]
         if missing:
             stale += 1
