@@ -16,6 +16,7 @@ the diff. Rerun it when:
 - a source font in src/assets/fonts/source/ changes,
 - content starts using a character the KK fonts draw but the subsets dropped
   (`--check` reports these; most new text is ASCII and needs nothing),
+- the site starts using KK Sans above 700 (bold inside italics included),
 - the site starts setting the `ital` axis on an upright face (see FACES) or
   turns on an OpenType feature not listed in FEATURES,
 - a character outside CORE starts appearing on most pages, which would make
@@ -23,9 +24,9 @@ the diff. Rerun it when:
 
 Neither the build nor `--check` catches the last two; they are CSS changes.
 
-Everything the browser reads from the subsets matches the sources exactly:
-outlines, advances and kerning at every weight (see `pinned_gvar`), and the
-font-wide metrics (see `build`).
+The subsets match the sources exactly at 400 and 700 and in the font-wide
+metrics (see `build`). Cutting KK Sans at 700 moves some advances and kerning
+by up to a unit at in-between weights (see FACES and `restricted_gvar`).
 
 Each face is split in two. The core file is preloaded and holds ASCII, the
 punctuation nearly every page renders and any accented letter the content
@@ -67,14 +68,15 @@ CONTENT = [
 CONTENT_SUFFIXES = {".astro", ".md", ".mdx", ".ts", ".tsx", ".js", ".mjs", ".json", ".css"}
 
 # Italics come from separate files with ital already fixed, and nothing sets
-# the axis on the upright faces, so pin it there. The weight axes stay whole:
-# weights in use top out at 700, but trimming KK Sans to 400–700 (about
-# 5 KB per core file) re-normalises the axis, which shifts the 2.14 rounding
-# of in-between weights and moves some advances and kerning by a unit. Pins
-# must be at an axis default, which keeps them exact.
+# the axis on the upright faces, so pin it there. Weights in use top out at
+# 700, so KK Sans drops 700–900 of its wght axis. Its 700 master makes that
+# cut exact in the outlines, but re-normalising the axis shifts the 2.14
+# rounding of in-between weights (450, 550, 650…), which moves some advances
+# and kerning by up to one unit (a hundredth of a pixel at 16px). KK Mono
+# already stops at 700.
 FACES = [
-    ("KK Sans", "normal", "KKSansVF", {"ital": 0}),
-    ("KK Sans", "italic", "KKSansVF-Italic", {}),
+    ("KK Sans", "normal", "KKSansVF", {"wght": (400, 700), "ital": 0}),
+    ("KK Sans", "italic", "KKSansVF-Italic", {"wght": (400, 700)}),
     ("KK Mono", "normal", "KKMono-VF", {"ital": 0}),
     ("KK Mono", "italic", "KKMono-VF-Italic", {}),
 ]
@@ -103,39 +105,64 @@ def used_codepoints() -> set[int]:
     return used
 
 
-def pinned_gvar(source: TTFont, pins: dict) -> dict:
-    """The source's outline variations with `pins` applied, without rounding.
+def snap(value: float) -> float:
+    return 1.0 if abs(value - 1) < 4 / 16384 else value
+
+
+def restricted_gvar(source: TTFont, axes: dict) -> dict:
+    """The source's outline variations restricted to `axes`, without rounding.
 
     The instancer fills in each glyph's omitted (interpolated) deltas and
     rounds them to whole units, which moves points by up to half a unit.
-    Pinning an axis at its default needs no new deltas: tuples that peak
-    elsewhere on it contribute nothing there, so drop those and keep the
-    rest of the sparse originals as they are.
+    Pinning an axis at its default, or cutting its range at an existing
+    master, needs no new deltas: drop the tuples that no longer apply and
+    re-normalise the rest of the sparse originals. Anything else is refused.
     """
-    defaults = {a.axisTag: a.defaultValue for a in source["fvar"].axes}
-    for tag, value in pins.items():
-        if value != defaults[tag]:
-            sys.exit(f"{tag} can only be pinned at its default, {defaults[tag]}")
+    ranges = {a.axisTag: a for a in source["fvar"].axes}
     variations = {}
     for glyph, tuples in source["gvar"].variations.items():
-        variations[glyph] = [
-            TupleVariation({tag: r for tag, r in tv.axes.items() if tag not in pins}, tv.coordinates)
-            for tv in tuples
-            if all(tv.axes.get(tag, (0, 0, 0))[1] == 0 for tag in pins)
-        ]
+        kept = []
+        for tv in tuples:
+            region = {}
+            for tag, (start, peak, end) in tv.axes.items():
+                axis = ranges[tag]
+                if tag not in axes:
+                    region[tag] = (start, peak, end)
+                elif not isinstance(axes[tag], tuple):
+                    if axes[tag] != axis.defaultValue:
+                        sys.exit(f"{tag} can only be pinned at its default, {axis.defaultValue}")
+                    if peak != 0:
+                        break  # contributes nothing at the default
+                else:
+                    low, high = axes[tag]
+                    if low != axis.defaultValue or start < 0:
+                        sys.exit(f"{tag} can only be cut above its default")
+                    scale = (axis.maxValue - axis.defaultValue) / (high - axis.defaultValue)
+                    # Coordinates are stored in 2.14 fixed point, so a master
+                    # at the new maximum lands within a step or two of 1.
+                    start, peak, end = (snap(x * scale) for x in (start, peak, end))
+                    if start >= 1:
+                        break  # starts beyond the new maximum
+                    if peak > 1:
+                        sys.exit(f"{tag} {low}–{high} cuts between masters; it can't be cut exactly")
+                    region[tag] = (start, peak, min(end, 1.0))
+            else:
+                if region:
+                    kept.append(TupleVariation(region, tv.coordinates))
+        variations[glyph] = kept
     return variations
 
 
-def build(source: Path, pins: dict, codepoints: set[int]) -> TTFont:
+def build(source: Path, axes: dict, codepoints: set[int]) -> TTFont:
     font = TTFont(source)
-    if pins:
+    if axes:
         # The instancer updates fvar, STAT and the kerning variations; gvar
         # is then replaced with the exact version. Round-trip the result:
         # subsetting it in memory trips over gvar's lazy loading.
         instanced = io.BytesIO()
-        instancer.instantiateVariableFont(font, pins, optimize=False).save(instanced)
+        instancer.instantiateVariableFont(font, axes, optimize=False).save(instanced)
         font = TTFont(instanced)
-        font["gvar"].variations = pinned_gvar(TTFont(source), pins)
+        font["gvar"].variations = restricted_gvar(TTFont(source), axes)
     options = subset.Options()
     options.layout_features = FEATURES
     options.hinting = False
@@ -195,15 +222,15 @@ def plan() -> list[dict]:
     core = core_codepoints(used)
     wanted = used | LATIN | core
     faces = []
-    for family, style, stem, pins in FACES:
+    for family, style, stem, axes in FACES:
         source = SOURCE / f"{stem}.woff2"
         font = TTFont(source)
         cmap = set(font.getBestCmap())
         weight = next(a for a in font["fvar"].axes if a.axisTag == "wght")
         kept = cmap & wanted
         faces.append({
-            "family": family, "style": style, "stem": stem, "pins": pins, "source": source,
-            "weight": (int(weight.minValue), int(weight.maxValue)),
+            "family": family, "style": style, "stem": stem, "axes": axes, "source": source,
+            "weight": axes.get("wght", (int(weight.minValue), int(weight.maxValue))),
             "core": kept & core, "extended": kept - core,
         })
     return faces
@@ -237,7 +264,7 @@ def write() -> None:
             # below) differently from a file missing certain reference glyphs:
             # X for KK Sans, o for KK Mono. The extended file carries both;
             # its unicode-range leaves them to the core.
-            font = build(face["source"], face["pins"], face[part] | REFERENCE)
+            font = build(face["source"], face["axes"], face[part] | REFERENCE)
             # The subsetter also maps characters whose glyphs a feature pulls
             # in (› brings ‹), so the unicode-range is read back from the
             # file, and the extended file skips whatever the core already has.

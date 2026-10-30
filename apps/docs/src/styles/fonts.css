@@ -9,7 +9,7 @@
 @font-face {
   font-family: "KK Sans";
   font-style: normal;
-  font-weight: 400 900;
+  font-weight: 400 700;
   font-display: swap;
   src: url("../assets/fonts/KKSansVF-core.woff2") format("woff2");
   unicode-range: U+20-7E, U+A0, U+A9, U+F3, U+2010-2011, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
@@ -18,7 +18,7 @@
 @font-face {
   font-family: "KK Sans";
   font-style: normal;
-  font-weight: 400 900;
+  font-weight: 400 700;
   font-display: swap;
   src: url("../assets/fonts/KKSansVF-extended.woff2") format("woff2");
   unicode-range: U+A1-A8, U+AA-F2, U+F4-FF, U+131, U+152-153, U+174-178, U+2039-203A, U+2191-2193, U+2212, U+2713, U+2715;
@@ -27,7 +27,7 @@
 @font-face {
   font-family: "KK Sans";
   font-style: italic;
-  font-weight: 400 900;
+  font-weight: 400 700;
   font-display: swap;
   src: url("../assets/fonts/KKSansVF-Italic-core.woff2") format("woff2");
   unicode-range: U+20-7E, U+A0, U+A9, U+F3, U+2010-2011, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
@@ -36,7 +36,7 @@
 @font-face {
   font-family: "KK Sans";
   font-style: italic;
-  font-weight: 400 900;
+  font-weight: 400 700;
   font-display: swap;
   src: url("../assets/fonts/KKSansVF-Italic-extended.woff2") format("woff2");
   unicode-range: U+A1-A8, U+AA-F2, U+F4-FF, U+131, U+152-153, U+174-178, U+2039-203A, U+2191-2193, U+2212, U+2713, U+2715;
