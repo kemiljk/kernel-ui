@@ -10,7 +10,7 @@
   line-height: 1;
   white-space: nowrap;
   text-decoration: none;
-  cursor: default;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;

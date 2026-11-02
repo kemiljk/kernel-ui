@@ -21,7 +21,7 @@
   padding: var(--kernel-space-4);
   font-family: var(--kernel-font-sans);
   font-weight: 500;
-  cursor: default;
+  cursor: pointer;
   list-style: none;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */

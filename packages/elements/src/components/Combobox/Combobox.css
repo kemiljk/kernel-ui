@@ -93,7 +93,7 @@
   border-radius: max(0px, calc(var(--kernel-radius-md) - var(--kernel-space-1)));
   color: var(--kernel-color-text);
   font-size: var(--kernel-font-size-sm);
-  cursor: default;
+  cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   -webkit-user-select: none;

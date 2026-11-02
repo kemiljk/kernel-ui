@@ -51,7 +51,9 @@ kernel-pagination-ellipsis {
 }
 
 .kernel-Pagination-control {
-  cursor: default;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Guarded, matching the React package: on a touch device :hover latches

@@ -10,7 +10,7 @@
   line-height: 1;
   white-space: nowrap;
   text-decoration: none;
-  cursor: default;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -22,15 +22,6 @@
     scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-/* `render` can swap the underlying element for a real `<a>` (see
-   Button.tsx); when it does, this is a true navigational link, so it
-   gets the pointer cursor back, following the actual tag rather than
-   guessing from props. */
-.root:is(a) {
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-}
 
 .root:active:not(:disabled, [aria-disabled="true"]) {
   scale: var(--kernel-scale-press);

@@ -8,7 +8,7 @@
   justify-content: space-between;
   gap: var(--kernel-space-3);
   padding-block: var(--kernel-space-2);
-  cursor: default;
+  cursor: pointer;
   list-style: none;
   -webkit-user-select: none;
   user-select: none;

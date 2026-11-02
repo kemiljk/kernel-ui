@@ -37,9 +37,6 @@
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
-/* .item is a real <a href> (true navigation, pointer); .control is a
-   real <button> (Prev/Next, default) — see cursor semantics note on
-   Button.module.css for the same reasoning. */
 .item {
   cursor: pointer;
   -webkit-user-select: none;
@@ -47,7 +44,9 @@
 }
 
 .control {
-  cursor: default;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 @media (hover: hover) and (pointer: fine) {

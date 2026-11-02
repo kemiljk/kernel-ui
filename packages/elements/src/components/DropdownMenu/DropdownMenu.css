@@ -81,7 +81,7 @@ kernel-menu-separator {
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
-  cursor: default;
+  cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   -webkit-user-select: none;
@@ -277,7 +277,7 @@ a.kernel-DropdownMenu-item {
 
 .kernel-DropdownMenu-disclosureTrigger {
   list-style: none;
-  cursor: default;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
 }

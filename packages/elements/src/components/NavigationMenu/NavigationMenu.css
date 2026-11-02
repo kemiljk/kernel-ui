@@ -34,7 +34,7 @@ kernel-nav-menu-item {
   text-decoration: none;
   font-family: inherit;
   font-size: var(--kernel-font-size-sm);
-  cursor: default;
+  cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   -webkit-user-select: none;

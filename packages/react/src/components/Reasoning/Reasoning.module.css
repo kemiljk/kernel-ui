@@ -20,7 +20,7 @@
      inset. Vertical padding stays, purely to keep the click/tap target
      comfortable. */
   padding-block: var(--kernel-space-2);
-  cursor: default;
+  cursor: pointer;
   list-style: none;
   -webkit-user-select: none;
   user-select: none;

@@ -197,7 +197,7 @@
   border-radius: var(--kernel-radius-sm);
   background: none;
   color: var(--kernel-color-text-muted);
-  cursor: default;
+  cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   -webkit-user-select: none;

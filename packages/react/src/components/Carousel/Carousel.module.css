@@ -53,7 +53,7 @@
   background-color: var(--kernel-color-surface-raised);
   color: var(--kernel-color-text);
   box-shadow: var(--kernel-shadow-sm);
-  cursor: default;
+  cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   -webkit-user-select: none;
@@ -106,7 +106,7 @@
   border: none;
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-border-interactive);
-  cursor: default;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);

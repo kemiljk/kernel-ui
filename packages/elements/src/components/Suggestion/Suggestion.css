@@ -38,7 +38,7 @@
   line-height: 1.3;
   text-align: start;
   text-wrap: pretty;
-  cursor: default;
+  cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
   -webkit-user-select: none;

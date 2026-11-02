@@ -216,7 +216,7 @@ h3 {
   border-radius: var(--kernel-radius-full);
   background: none;
   color: var(--kernel-color-text-muted);
-  cursor: default;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -1966,7 +1966,7 @@ dialog.mobile-nav-panel[data-side="left"] {
   border-radius: calc(var(--kernel-radius-container) - var(--kernel-border-width));
   font-family: var(--kernel-font-sans);
   font-weight: 500;
-  cursor: default;
+  cursor: pointer;
   list-style: none;
   -webkit-user-select: none;
   user-select: none;
