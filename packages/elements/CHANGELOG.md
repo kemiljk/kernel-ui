@@ -1,5 +1,13 @@
 # @kernelui-lib/elements
 
+## 1.6.2
+
+### Patch Changes
+
+- 2c79835: Use pointer cursors consistently for enabled click controls, including buttons, tabs, menu options, and disclosure triggers. Preserve text-editing, drag, resize, and disabled-state cursors.
+- Updated dependencies [2c79835]
+  - @kernelui-lib/styles@1.4.1
+
 ## 1.6.1
 
 ### Patch Changes
