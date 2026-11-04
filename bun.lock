@@ -27,13 +27,13 @@
         "@astrojs/check": "^0.9.12",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
-        "node-html-parser": "^9.0.5",
+        "node-html-parser": "^9.0.6",
         "typescript": "^5.7.3",
       },
     },
     "packages/cli": {
       "name": "@kernelui-lib/cli",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "bin": {
         "kernel": "./dist/index.js",
       },
@@ -45,9 +45,9 @@
     },
     "packages/elements": {
       "name": "@kernelui-lib/elements",
-      "version": "1.4.3",
+      "version": "1.6.1",
       "dependencies": {
-        "@kernelui-lib/styles": "^1.2.1",
+        "@kernelui-lib/styles": "^1.4.0",
       },
       "devDependencies": {
         "typescript": "^5.7.3",
@@ -57,9 +57,9 @@
     },
     "packages/react": {
       "name": "@kernelui-lib/react",
-      "version": "1.4.4",
+      "version": "1.6.1",
       "dependencies": {
-        "@kernelui-lib/styles": "^1.2.1",
+        "@kernelui-lib/styles": "^1.4.0",
       },
       "devDependencies": {
         "@testing-library/jest-dom": "^7.0.1",
@@ -90,7 +90,7 @@
     },
     "packages/styles": {
       "name": "@kernelui-lib/styles",
-      "version": "1.2.7",
+      "version": "1.4.0",
       "devDependencies": {
         "culori": "^4.0.2",
       },
@@ -957,7 +957,7 @@
 
     "node-fetch-native": ["node-fetch-native@1.6.7", "", {}, "sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q=="],
 
-    "node-html-parser": ["node-html-parser@9.0.5", "", { "dependencies": { "css-select": "^5.1.0", "entities": "^8.0.0" } }, "sha512-LpUc74Ax3L6AsxTEqoep0GDqCBbsPjtn74sYaiazxGXfwhe6iqD4E5sHTJFCU+wBxVMX+Dd7mvLim0QM1vsvpw=="],
+    "node-html-parser": ["node-html-parser@9.0.6", "", { "dependencies": { "css-select": "^5.1.0", "entities": "^8.0.0" } }, "sha512-q3ETJ2gU+VlERyYbiJ5JQ6+mMVV1Bc6mZQ7MdJ30moq+h3oN0kQGj3rWDORaSX1SOLSkPbY/bN+sBzDlliVOBA=="],
 
     "node-mock-http": ["node-mock-http@1.0.4", "", {}, "sha512-8DY+kFsDkNXy1sJglUfuODx1/opAGJGyrTuFqEoN90oRc2Vk0ZbD4K2qmKXBBEhZQzdKHIVfEJpDU8Ak2NJEvQ=="],
 
@@ -1378,8 +1378,6 @@
     "svgo/sax": ["sax@1.6.1", "", {}, "sha512-42tBVwLWnaQvW5zc4HbZrTuWccECCZfBi92FDuwtqxasH+JbPB3/FOKb1m222K42R4WxuxzzMsTswfzgtSu64Q=="],
 
     "unifont/std-env": ["std-env@4.3.0", "", {}, "sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag=="],
-
-    "unstorage/chokidar": ["chokidar@5.0.0", "", { "dependencies": { "readdirp": "^5.0.0" } }, "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="],
 
     "vite/picomatch": ["picomatch@4.0.7", "", {}, "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="],
 
