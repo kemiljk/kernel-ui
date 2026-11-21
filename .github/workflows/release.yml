@@ -10,6 +10,11 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write
+  # Approve the Version Packages PR's CI run. github-actions[bot] is not a
+  # collaborator, so a repo set to require approval for all outside
+  # contributors creates that pull_request run as action_required and the
+  # required review can never see a finished verify job.
+  actions: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -52,3 +57,16 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      # changesets/action pushes changeset-release/main with GITHUB_TOKEN, so
+      # the pull_request CI run is attributed to github-actions[bot]. When the
+      # repo requires approval for outside collaborators, that run is created
+      # already completed with conclusion action_required and zero jobs, and
+      # the Version Packages PR stays blocked. This job caused the push, and
+      # actions: write lets it approve that one CI run. It never approves a
+      # run on any other branch.
+      - name: Approve CI for the Version Packages pull request
+        if: steps.changesets.outputs.published != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/approve-release-pr-ci.mjs
