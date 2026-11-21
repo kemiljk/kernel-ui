@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
-    "playwright": "^1.64.1"
+    "playwright": "^1.65.1"
   },
   "overrides": {
     "@astrojs/astro2tsx": "0.1.4"
