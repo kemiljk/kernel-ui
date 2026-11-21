@@ -11,13 +11,13 @@
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 astro check"
   },
   "dependencies": {
-    "@astrojs/react": "^7.1.0",
-    "@astrojs/sitemap": "^3.7.4",
+    "@astrojs/react": "^7.1.9",
+    "@astrojs/sitemap": "^3.7.5",
     "@kernelui-lib/elements": "workspace:*",
     "@kernelui-lib/react": "workspace:*",
     "@kernelui-lib/registry": "workspace:*",
     "@kernelui-lib/styles": "workspace:*",
-    "astro": "^7.4.0",
+    "astro": "^7.4.12",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
@@ -25,7 +25,7 @@
     "@astrojs/check": "^0.9.12",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "node-html-parser": "^9.0.5",
+    "node-html-parser": "^9.0.7",
     "typescript": "^5.7.3"
   }
 }
