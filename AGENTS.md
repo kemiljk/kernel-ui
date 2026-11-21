@@ -10,8 +10,12 @@ Any PR that changes a publishable package under `packages/react`,
 `packages/elements`, `packages/styles`, or `packages/cli` must include a
 `.changeset/<descriptive-name>.md` file describing the affected package(s) and
 the release level (`patch`, `minor`, or `major`). Run `bunx changeset` to create
-it. Docs-only changes do not need a Changeset. CI enforces this rule; the only
-exception is the Changesets-generated `Version Packages` release PR.
+it. Docs-only changes do not need a Changeset. A bump that only edits
+`devDependencies` in those packages' `package.json` files does not need one
+either: those dependencies are not part of the published tarball, and
+`scripts/check-changeset.mjs` treats that diff as non-publishable. CI enforces
+this rule; the only other exception is the Changesets-generated `Version Packages`
+release PR.
 
 When creating a PR, never leave the Changeset decision implicit: add the file
 or explicitly confirm that the PR is docs-only/non-publishable. A merged PR
