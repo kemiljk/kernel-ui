@@ -18,7 +18,38 @@ const changedFiles = execFileSync("git", ["diff", "--name-only", `${baseSha}...$
   .trim()
   .split("\n")
   .filter(Boolean);
-const publishableChange = changedFiles.some((file) => /^(packages\/(react|elements|styles|cli)\/)/.test(file));
+
+const publishableRoot = /^packages\/(react|elements|styles|cli)\//;
+const packageManifest = /^packages\/(react|elements|styles|cli)\/package\.json$/;
+
+function showJson(rev, file) {
+  try {
+    return JSON.parse(execFileSync("git", ["show", `${rev}:${file}`], { encoding: "utf8" }));
+  } catch {
+    return null;
+  }
+}
+
+// devDependencies are not published. A Dependabot bump of vite, @types/node,
+// or a test helper edits the manifest without changing the package consumers
+// install, so it must not demand a release changeset. Any other manifest
+// field (dependencies, exports, version, files, …) still does.
+function devDependenciesOnly(file) {
+  const before = showJson(baseSha, file);
+  const after = showJson(headSha, file);
+  if (!before || !after) return false;
+  const rest = (pkg) => {
+    const { devDependencies: _devDependencies, ...manifest } = pkg;
+    return manifest;
+  };
+  return JSON.stringify(rest(before)) === JSON.stringify(rest(after));
+}
+
+const publishableChange = changedFiles.some((file) => {
+  if (!publishableRoot.test(file)) return false;
+  if (packageManifest.test(file) && devDependenciesOnly(file)) return false;
+  return true;
+});
 const changeset = changedFiles.some((file) => /^\.changeset\/[^/]+\.md$/.test(file));
 
 if (publishableChange && !changeset) {
