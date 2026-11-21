@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CATEGORIES, components } from "../dist/components.js";
@@ -69,13 +69,18 @@ async function replaceGeneratedSection(filePath, generated) {
   const content = await readFile(filePath, "utf-8");
   const startIdx = content.indexOf(START);
   const endIdx = content.indexOf(END);
-  if (startIdx === -1 || endIdx === -1) {
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
     throw new Error(`Missing generation markers in ${filePath}`);
   }
   const before = content.slice(0, startIdx + START.length);
   const after = content.slice(endIdx);
   const updated = `${before}\n${generated}\n${after}`;
-  await writeFile(filePath, updated, "utf-8");
+  // cli and registry both run this script from `bun run --filter` at the same
+  // time. A direct write truncates the file, so the other process can read it
+  // with the markers gone. Rename into place keeps every read on a complete file.
+  const temporary = `${filePath}.${process.pid}.tmp`;
+  await writeFile(temporary, updated, "utf-8");
+  await rename(temporary, filePath);
 }
 
 async function main() {
