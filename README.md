@@ -81,7 +81,7 @@ Releases are automated with Changesets via [`.github/workflows/release.yml`](.gi
 - On every push to `main`, the workflow will either:
   - open/update a `Version Packages` pull request with version bumps and changelogs, or
   - publish to npm and create GitHub Releases when a version PR has just been merged.
-- Publishing requires a repository secret named `NPM_TOKEN` with publish access to the `@kernelui-lib/*` packages.
+- Publishing authenticates with npm trusted publishing (GitHub OIDC) from this workflow. It does not use an `NPM_TOKEN`.
 - Version bumps are driven by `.changeset/*.md` files. Include one with package-impacting PRs so the next release increments versions automatically.
 
 ## Status
