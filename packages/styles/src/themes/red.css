@@ -31,9 +31,9 @@
   --kernel-accent-6: light-dark(oklch(81% 0.099 25), oklch(37% 0.138 25));
   --kernel-accent-7: light-dark(oklch(74% 0.132 25), oklch(43% 0.160 25));
   --kernel-accent-8: light-dark(oklch(65% 0.165 25), oklch(50% 0.186 25));
-  --kernel-accent-9: light-dark(oklch(56% 0.209 25), oklch(58% 0.216 25));
-  --kernel-accent-10: light-dark(oklch(50% 0.186 25), oklch(64% 0.198 25));
-  --kernel-accent-11: light-dark(oklch(46% 0.172 25), oklch(76% 0.132 25));
+  --kernel-accent-9: light-dark(oklch(56% 0.209 25), oklch(53% 0.214 25));
+  --kernel-accent-10: light-dark(oklch(50% 0.186 25), oklch(57% 0.198 25));
+  --kernel-accent-11: light-dark(oklch(46% 0.172 25), oklch(80% 0.114 25));
   --kernel-accent-12: light-dark(oklch(24% 0.090 25), oklch(93% 0.033 25));
   --kernel-color-on-accent: light-dark(oklch(99% 0 0), oklch(99% 0 0));
 }
