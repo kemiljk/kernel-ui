@@ -203,6 +203,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               type="button"
               tabIndex={-1}
               aria-label={l.decrement}
+              data-step="down"
               disabled={disabled || atMin}
               onClick={() => stepBy(-1)}
               className={styles.stepperButton}
@@ -221,6 +222,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               type="button"
               tabIndex={-1}
               aria-label={l.increment}
+              data-step="up"
               disabled={disabled || atMax}
               onClick={() => stepBy(1)}
               className={styles.stepperButton}
