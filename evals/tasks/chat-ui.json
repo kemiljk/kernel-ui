@@ -1,0 +1,162 @@
+{
+  "id": "chat-ui",
+  "title": "Chat UI with message list and composer",
+  "package": "react",
+  "prompt": "Build a chat screen for an AI assistant. Show a conversation of at least four messages alternating between the user and the assistant, and a message composer at the bottom. Sending a message adds it to the conversation as a user message, shows that the assistant is thinking, and after about one second adds a short canned assistant reply.",
+  "screenshots": [
+    {
+      "name": "After sending",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "textarea",
+          "value": "Hello from the eval"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/send/i"
+        },
+        {
+          "action": "wait",
+          "ms": 2500
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-chat",
+      "description": "Imports Composer, MessageList and Message",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "Composer",
+        "MessageList",
+        "Message"
+      ]
+    },
+    {
+      "id": "no-raw-controls",
+      "description": "No hand-rolled <textarea> or <button>",
+      "type": "source",
+      "pattern": "<textarea\\b|<button\\b",
+      "absent": true
+    },
+    {
+      "id": "list",
+      "description": "Messages are list items (at least four)",
+      "type": "dom",
+      "selector": "ol > li, ul > li",
+      "min": 4
+    },
+    {
+      "id": "articles",
+      "description": "Each message is an <article>",
+      "type": "dom",
+      "selector": "li article, li [role=article]",
+      "min": 4
+    },
+    {
+      "id": "composer",
+      "description": "The composer is a labelled textarea",
+      "type": "check",
+      "check": "inputs-labelled"
+    },
+    {
+      "id": "send-named",
+      "description": "The send button has an accessible name",
+      "type": "role",
+      "role": "button",
+      "name": "/send/i"
+    },
+    {
+      "id": "sends",
+      "description": "Sending adds the user's message to the list",
+      "type": "eval",
+      "expression": "[...document.querySelectorAll('li')].some((li) => li.textContent?.includes('Hello from the eval'))",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "textarea",
+          "value": "Hello from the eval"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/send/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "clears",
+      "description": "The composer clears after sending",
+      "type": "eval",
+      "expression": "document.querySelector('textarea')?.value === ''",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "textarea",
+          "value": "Hello from the eval"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/send/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "thinking",
+      "description": "While the reply is pending, the page shows the assistant is thinking",
+      "type": "eval",
+      "expression": "/thinking|typing|writing/i.test(document.body.innerText) || document.querySelector('[data-thinking], [aria-busy=true]') !== null",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "textarea",
+          "value": "Hello from the eval"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/send/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "replies",
+      "description": "An assistant reply follows within ~2.5s",
+      "type": "eval",
+      "expression": "(() => { const items = [...document.querySelectorAll('ol > li, ul > li')]; const i = items.findIndex((li) => li.textContent?.includes('Hello from the eval')); const last = items[items.length - 1]; return i !== -1 && i < items.length - 1 && !/thinking|typing/i.test(last?.textContent ?? ''); })()",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "textarea",
+          "value": "Hello from the eval"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/send/i"
+        },
+        {
+          "action": "wait",
+          "ms": 2500
+        }
+      ]
+    }
+  ]
+}

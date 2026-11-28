@@ -1,0 +1,17 @@
+{
+  "name": "kernel-ui",
+  "description": "Kernel UI for coding agents: skills for building with Kernel's semantic-HTML components, plus an MCP server with exact props, tokens and docs.",
+  "owner": {
+    "name": "Kernel UI",
+    "url": "https://www.kernelui.com"
+  },
+  "plugins": [
+    {
+      "name": "kernel-ui",
+      "source": "./plugins/kernel-ui",
+      "description": "Skills for building, theming and migrating to Kernel UI (React and Custom Elements), and the kernel MCP server for component props, tokens and docs.",
+      "category": "development",
+      "homepage": "https://www.kernelui.com/agents/"
+    }
+  ]
+}

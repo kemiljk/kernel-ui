@@ -323,11 +323,48 @@ controller.destroy();</code></pre></kernel-code-block>
 
     <kernel-file-diff id="lab-file-diff" path="packages/react/src/utils/stickToBottom.ts"></kernel-file-diff>
     <kernel-button id="lab-diff-stream" variant="secondary" size="sm">Stream a row</kernel-button>
+
+    <kernel-composer id="lab-model-composer" placeholder="Ask anything…">
+      <kernel-model-picker id="lab-model-picker" slot="leading" value="atlas-swift">
+        <optgroup label="Northwind">
+          <option value="atlas" data-description="Deepest reasoning, longest context" data-badges="New:accent">Atlas</option>
+          <option value="atlas-swift" data-description="Near-Atlas quality at a fraction of the latency" data-badges="Fast">Atlas Swift</option>
+          <option value="atlas-legacy" data-description="Retired — kept for existing chats" disabled>Atlas Legacy</option>
+        </optgroup>
+        <optgroup label="Lumen Labs">
+          <option value="nimbus" data-description="Strong at code and tool use">Nimbus</option>
+          <option value="nimbus-lite" data-description="Cheapest, for quick drafts" data-badges="Fast:success">Nimbus Lite</option>
+        </optgroup>
+      </kernel-model-picker>
+      <kernel-button slot="trailing" variant="primary" size="sm">Send</kernel-button>
+    </kernel-composer>
+
+    <kernel-streaming-markdown id="lab-streaming-markdown">
+      Light-DOM **Markdown**, read once at connect.
+    </kernel-streaming-markdown>
+    <kernel-button id="lab-markdown-stream" variant="secondary" size="sm">Stream an answer</kernel-button>
   </section>
 </BaseLayout>
 
 <script>
   import { toast } from "@kernelui-lib/elements";
+
+  const LAB_MARKDOWN = "## Streamed\n\nSome **bold** text, a [link](https://example.com) and `code`.\n\n- one\n- two\n  - nested\n\n```ts\nconst a = 1;\nconst b = 2;\n```\n\n| a | b |\n|---|--:|\n| 1 | 2 |\n\n> Done.";
+  document.getElementById("lab-markdown-stream")?.addEventListener("click", () => {
+    const md = document.getElementById("lab-streaming-markdown") as (HTMLElement & { content: string }) | null;
+    if (!md) return;
+    let index = 0;
+    md.setAttribute("streaming", "");
+    md.content = "";
+    const timer = setInterval(() => {
+      index = Math.min(LAB_MARKDOWN.length, index + 4);
+      md.content = LAB_MARKDOWN.slice(0, index);
+      if (index >= LAB_MARKDOWN.length) {
+        clearInterval(timer);
+        md.removeAttribute("streaming");
+      }
+    }, 30);
+  });
 
   document.getElementById("lab-toast-default")?.addEventListener("click", () => {
     toast("Saved", { description: "Your changes have been saved." });

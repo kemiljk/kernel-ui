@@ -8,7 +8,10 @@ import {
   isWithinRange,
   parseDateAttr,
   startOfDay,
+  gridTabStop,
 } from "../../utils/dateGrid";
+import { inputModality } from "../../utils/changeDetails";
+import { gridDirectionForKey, spatialMove, tableCellPosition } from "../../utils/spatialMove";
 import "./DateRangePicker.css";
 
 const WEEKDAY_LABELS: readonly string[] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -44,15 +47,18 @@ let rangePickerCounter = 0;
  * instead of one. A click either starts a fresh range or completes the
  * open one; once both ends are set, the next click starts over. The
  * in-progress second half of a range (before it's clicked) is a hover
- * preview only — it never reaches the `valuechange` event.
+ * preview only — it never reaches the change events.
  *
  * Built-in strings: `label-previous-month` ("Previous month"),
  * `label-next-month` ("Next month"), `label-weekdays` (comma-separated,
  * Sunday first; default "Su,Mo,Tu,We,Th,Fr,Sa"), or the `labels` property.
  *
  * Attributes: `value-from`, `value-to`, `min-date`, `max-date` — all
- * `YYYY-MM-DD`. Events: `valuechange`
- * (`event.detail` = `{ from?, to? }`, each a `YYYY-MM-DD` string).
+ * `YYYY-MM-DD`. Events: `beforevaluechange`
+ * (`event.detail` = `{ from?, to?, reason }`, each date a `YYYY-MM-DD`
+ * string), dispatched before the range changes; `reason` is `"day-press"`
+ * or `"keyboard"`, and `preventDefault()` keeps the current range. Then
+ * `valuechange`, with the same detail, once the range has changed.
  */
 export class KernelDateRangePicker extends KernelElement {
   private readonly baseId = `kernel-date-range-picker-${++rangePickerCounter}`;
@@ -60,6 +66,7 @@ export class KernelDateRangePicker extends KernelElement {
   private to: Date | undefined;
   private hoverDate: Date | null = null;
   private visibleMonth: Date = startOfDay(new Date());
+  private focusedDay: Date | undefined;
   private headingEl!: HTMLElement;
   private tbodyEl!: HTMLTableSectionElement;
 
@@ -145,69 +152,42 @@ export class KernelDateRangePicker extends KernelElement {
     this.renderGrid();
   }
 
-  private selectDay(day: Date) {
+  private selectDay(day: Date, event?: Event) {
     if (!isWithinRange(day, this.minDate, this.maxDate)) return;
 
-    if (!this.from || this.to) {
-      this.from = day;
-      this.to = undefined;
-    } else if (day < this.from) {
-      this.from = day;
-      this.to = undefined;
+    let from = this.from;
+    let to = this.to;
+    if (!from || to || day < from) {
+      from = day;
+      to = undefined;
     } else {
-      this.to = day;
+      to = day;
     }
 
+    // Asked first: a cancelled `beforevaluechange` keeps the current range.
+    const reason = inputModality(event) === "keyboard" ? "keyboard" : "day-press";
+    const detail = { from: from ? formatDateAttr(from) : undefined, to: to ? formatDateAttr(to) : undefined };
+    if (!this.emitChange("beforevaluechange", detail, reason, event)) return;
+    this.from = from;
+    this.to = to;
     this.renderGrid();
-    this.dispatchEvent(
-      new CustomEvent("valuechange", {
-        detail: {
-          from: this.from ? formatDateAttr(this.from) : undefined,
-          to: this.to ? formatDateAttr(this.to) : undefined,
-        },
-        bubbles: true,
-      }),
-    );
+    this.emitCommitted("valuechange", detail, reason, event);
   }
 
   private handleGridKeyDown(event: KeyboardEvent) {
-    const cells = Array.from(
-      this.tbodyEl.querySelectorAll<HTMLButtonElement>("button[data-day]:not(:disabled)"),
-    );
+    const cells = Array.from(this.tbodyEl.querySelectorAll<HTMLButtonElement>("button[data-day]"));
     if (cells.length === 0) return;
-
-    const currentIndex = cells.indexOf(document.activeElement as HTMLButtonElement);
-    let nextIndex: number | null = null;
-
-    switch (event.key) {
-      case "ArrowRight":
-        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, cells.length - 1);
-        break;
-      case "ArrowLeft":
-        nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 1, 0);
-        break;
-      case "ArrowDown":
-        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 7, cells.length - 1);
-        break;
-      case "ArrowUp":
-        nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 7, 0);
-        break;
-      case "Home": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = weekStart;
-        break;
-      }
-      case "End": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = Math.min(weekStart + 6, cells.length - 1);
-        break;
-      }
-      default:
-        return;
-    }
-
+    const direction = gridDirectionForKey(event, getComputedStyle(this.tbodyEl).direction === "rtl");
+    if (!direction) return;
     event.preventDefault();
-    cells[nextIndex]?.focus();
+    // Real row/column positions, not index arithmetic over enabled days —
+    // see `spatialMove` for why ± 7 lands a column off once a day is disabled.
+    const next = spatialMove(
+      cells.map((cell) => ({ ...tableCellPosition(cell), disabled: cell.disabled })),
+      cells.indexOf(document.activeElement as HTMLButtonElement),
+      direction,
+    );
+    cells[next]?.focus();
   }
 
   protected applyLabels() {
@@ -222,6 +202,16 @@ export class KernelDateRangePicker extends KernelElement {
     });
   }
 
+  /** APG grid: the one Tab stop follows focus, so Tab back into the grid
+   * returns to the day the arrow keys last reached. Updated in place: a
+   * re-render would replace the button that just took focus. */
+  private moveTabStop(button: HTMLButtonElement, day: Date) {
+    this.focusedDay = day;
+    for (const cell of Array.from(this.tbodyEl.querySelectorAll<HTMLButtonElement>("button[data-day]"))) {
+      cell.tabIndex = cell === button ? 0 : -1;
+    }
+  }
+
   private renderGrid() {
     if (!this.headingEl || !this.tbodyEl) return;
     this.headingEl.textContent = MONTH_FORMATTER.format(this.visibleMonth);
@@ -233,6 +223,7 @@ export class KernelDateRangePicker extends KernelElement {
     const previewTo =
       from && !this.to && this.hoverDate && this.hoverDate > from ? this.hoverDate : undefined;
     const effectiveTo = this.to ?? previewTo;
+    const tabStop = gridTabStop(this.visibleMonth, [this.focusedDay, from, this.to, today], this.minDate, this.maxDate);
 
     for (const week of weeks) {
       const tr = document.createElement("tr");
@@ -267,10 +258,14 @@ export class KernelDateRangePicker extends KernelElement {
           td.setAttribute("aria-selected", String(isSelected));
           if (isToday) button.setAttribute("aria-current", "date");
           button.disabled = disabled;
-          button.tabIndex = isSelected || (!from && isToday) ? 0 : -1;
+          button.tabIndex = tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1;
           button.className = kernelClass("DateRangePicker", "dayButton");
           button.textContent = String(day.getDate());
-          button.addEventListener("click", () => this.selectDay(day));
+          button.addEventListener("click", (event) => {
+            this.focusedDay = day;
+            this.selectDay(day, event);
+          });
+          button.addEventListener("focus", () => this.moveTabStop(button, day));
           button.addEventListener("pointerenter", () => {
             this.hoverDate = day;
             this.renderGrid();

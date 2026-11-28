@@ -1,0 +1,176 @@
+/* SchemaRenderer — layout and type for the nodes that aren't already a
+   Kernel component (Stack, Text, Heading, Form, Image, Link). Everything
+   else renders as the real component and brings its own styles. Every
+   value is a token: a model picks from enums, never from raw CSS. */
+
+.kernel-SchemaRenderer-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  min-inline-size: 0;
+  color: var(--kernel-color-text);
+}
+
+.kernel-SchemaRenderer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  min-inline-size: 0;
+}
+
+.kernel-SchemaRenderer-stack[data-direction="horizontal"] {
+  flex-direction: row;
+  align-items: center;
+}
+
+.kernel-SchemaRenderer-stack[data-wrap="true"] {
+  flex-wrap: wrap;
+}
+
+.kernel-SchemaRenderer-stack[data-gap="none"] {
+  gap: 0;
+}
+
+.kernel-SchemaRenderer-stack[data-gap="xs"] {
+  gap: var(--kernel-space-1);
+}
+
+.kernel-SchemaRenderer-stack[data-gap="sm"] {
+  gap: var(--kernel-space-2);
+}
+
+.kernel-SchemaRenderer-stack[data-gap="lg"] {
+  gap: var(--kernel-space-6);
+}
+
+.kernel-SchemaRenderer-stack[data-align="start"] {
+  align-items: flex-start;
+}
+
+.kernel-SchemaRenderer-stack[data-align="center"] {
+  align-items: center;
+}
+
+.kernel-SchemaRenderer-stack[data-align="end"] {
+  align-items: flex-end;
+}
+
+.kernel-SchemaRenderer-stack[data-align="stretch"] {
+  align-items: stretch;
+}
+
+.kernel-SchemaRenderer-stack[data-justify="start"] {
+  justify-content: flex-start;
+}
+
+.kernel-SchemaRenderer-stack[data-justify="center"] {
+  justify-content: center;
+}
+
+.kernel-SchemaRenderer-stack[data-justify="end"] {
+  justify-content: flex-end;
+}
+
+.kernel-SchemaRenderer-stack[data-justify="between"] {
+  justify-content: space-between;
+}
+
+.kernel-SchemaRenderer-text {
+  margin: 0;
+  font-size: var(--kernel-font-size-base);
+  line-height: var(--kernel-line-height);
+  /* Model output is often one long unbroken token (a URL, a hash). */
+  overflow-wrap: anywhere;
+}
+
+.kernel-SchemaRenderer-text[data-size="sm"] {
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-SchemaRenderer-text[data-size="lg"] {
+  font-size: var(--kernel-font-size-lg);
+}
+
+.kernel-SchemaRenderer-text[data-weight="medium"] {
+  font-weight: 500;
+}
+
+.kernel-SchemaRenderer-text[data-weight="bold"] {
+  font-weight: 600;
+}
+
+.kernel-SchemaRenderer-text[data-tone="muted"] {
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-SchemaRenderer-text[data-tone="success"] {
+  color: var(--kernel-color-success-text);
+}
+
+.kernel-SchemaRenderer-text[data-tone="warning"] {
+  color: var(--kernel-color-warning-text);
+}
+
+.kernel-SchemaRenderer-text[data-tone="danger"] {
+  color: var(--kernel-color-danger-text);
+}
+
+.kernel-SchemaRenderer-heading {
+  margin: 0;
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.kernel-SchemaRenderer-heading[data-level="2"] {
+  font-size: var(--kernel-font-size-xl);
+}
+
+.kernel-SchemaRenderer-heading[data-level="3"] {
+  font-size: var(--kernel-font-size-lg);
+}
+
+.kernel-SchemaRenderer-heading[data-level="4"],
+.kernel-SchemaRenderer-heading[data-level="5"],
+.kernel-SchemaRenderer-heading[data-level="6"] {
+  font-size: var(--kernel-font-size-base);
+}
+
+.kernel-SchemaRenderer-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--kernel-space-4);
+  margin: 0;
+}
+
+/* A submit row reads as one action, not a full-width bar. */
+.kernel-SchemaRenderer-form > button {
+  align-self: flex-start;
+}
+
+.kernel-SchemaRenderer-image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--kernel-radius-md);
+}
+
+.kernel-SchemaRenderer-link {
+  color: var(--kernel-color-accent-text);
+  text-decoration-line: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+  border-radius: var(--kernel-radius-sm);
+}
+
+.kernel-SchemaRenderer-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.kernel-SchemaRenderer-link:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset);
+}

@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "../Badge/Badge.css";
 import "./TagInput.css";
@@ -11,15 +11,29 @@ function escapeRegExp(value: string): string {
 
 /**
  * `<kernel-tag-input>` — freeform text that commits into discrete tags,
- * same `role="list"` of `role="listitem"` chips + trailing `listitem`
- * input as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full
- * interaction rationale: Backspace-removes-last-tag, chip remove buttons
- * excluded from the tab sequence, no autocomplete).
+ * same DOM as `@kernelui-lib/react`'s `<TagInput>`: a `role="list"` of
+ * `role="listitem"` chips (a `display: contents` wrapper, only present
+ * while there are tags) followed by a sibling text input that keeps its
+ * native textbox role, label and description. The input is deliberately
+ * not a listitem: overriding a textbox's role hides it from assistive
+ * tech. See the React file for the full interaction rationale
+ * (Backspace-removes-last-tag, chip remove buttons excluded from the tab
+ * sequence, no autocomplete).
  *
  * `value` serializes as a comma-joined attribute string — a tag
  * containing the delimiter character itself can't round-trip through
  * that encoding, so use the `tags` property (or the `change` event's
  * `detail.tags`) instead when that matters.
+ *
+ * A cancelable `beforevaluechange` is dispatched before the tags change, with
+ * `detail: { tags, reason }` — `"enter"`, `"separator"`, `"paste"`,
+ * `"remove-button"` or `"backspace"`. `preventDefault()` keeps the tags as
+ * they were: an added tag stays in the draft, and a removal (reported once
+ * the chip's exit transition has played) brings the chip back. Once the
+ * tags are committed a bubbling `valuechange` and `change` follow with the
+ * same detail, so a handler reading `tags` sees the new list. A paste or
+ * typed separator that adds several tags is a single event of each kind
+ * with all of them, as in React.
  *
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value` (comma-joined),
@@ -29,6 +43,10 @@ function escapeRegExp(value: string): string {
  * of the default inset that lines them up with the input's own text
  * padding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,
  * default `"Remove {tag}"`; or the `labels` property's `removeTag`).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner text `<input>`; an authored `aria-describedby`
+ * is added after its own hint and error ids.
  */
 export class KernelTagInput extends KernelElement {
   private readonly generatedId = `kernel-tag-input-${++tagInputCounter}`;
@@ -36,6 +54,7 @@ export class KernelTagInput extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -52,12 +71,20 @@ export class KernelTagInput extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
+  }
+
   connectedCallback() {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("TagInput");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
     const labelId = `${id}-label`;
 
     const label = document.createElement("label");
@@ -67,8 +94,6 @@ export class KernelTagInput extends KernelElement {
 
     const field = document.createElement("div");
     field.className = kernelClass("TagInput", "field");
-    field.setAttribute("role", "list");
-    field.setAttribute("aria-labelledby", labelId);
     field.addEventListener("click", (event) => {
       if (event.target === field) this.input?.focus();
     });
@@ -76,26 +101,27 @@ export class KernelTagInput extends KernelElement {
     const input = document.createElement("input");
     input.id = id;
     input.type = "text";
-    input.setAttribute("role", "listitem");
     input.className = kernelClass("TagInput", "input");
 
-    input.addEventListener("input", () => {
+    input.addEventListener("input", (event) => {
       const delimiterRegex = this.delimiterRegex;
       const next = input.value;
       if (delimiterRegex.test(next)) {
         const parts = next.split(delimiterRegex);
         const trailing = parts.pop() ?? "";
-        for (const part of parts) this.commitDraft(part);
-        input.value = trailing;
+        // One change for the whole batch, as in React; a veto keeps the
+        // typed text (minus the delimiter) as the draft.
+        input.value = this.commitParts(parts, "separator", event)
+          ? trailing
+          : next.replace(delimiterRegex, "");
       }
     });
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        this.commitDraft(input.value);
-        input.value = "";
+        if (this.commitDraft(input.value, "enter", event)) input.value = "";
       } else if (event.key === "Backspace" && input.value === "" && this.currentTags.length > 0) {
-        this.removeTag(this.currentTags[this.currentTags.length - 1]!);
+        this.removeTag(this.currentTags[this.currentTags.length - 1]!, "backspace", event);
       }
     });
     input.addEventListener("paste", (event) => {
@@ -103,7 +129,8 @@ export class KernelTagInput extends KernelElement {
       if (!text) return;
       event.preventDefault();
       const splitRegex = new RegExp(`${this.delimiterPattern}|\\r?\\n`);
-      for (const part of text.split(splitRegex)) this.commitDraft(part);
+      // One change for every pasted part; a vetoed paste leaves the draft be.
+      if (this.commitParts(text.split(splitRegex), "paste", event)) input.value = "";
     });
 
     field.append(input);
@@ -146,26 +173,71 @@ export class KernelTagInput extends KernelElement {
     return this.native?.querySelector(`.${kernelClass("TagInput", "field")}`) ?? null;
   }
 
-  private commitDraft(raw: string) {
+  /** Returns `false` only when a `change` listener vetoed the tag, so the
+   * caller can keep it in the draft; rejected input (empty, duplicate,
+   * over `max`) reports through the error event and returns `true`, as
+   * before. */
+  private commitDraft(raw: string, reason: "enter", event?: Event): boolean {
     const trimmed = raw.trim();
     if (trimmed === "") {
       if (raw !== "") this.emitError({ type: "empty", value: raw });
-      return;
+      return true;
     }
     const allowDuplicates = this.hasAttribute("allow-duplicates");
     if (!allowDuplicates && this.currentTags.includes(trimmed)) {
       this.emitError({ type: "duplicate", value: trimmed });
-      return;
+      return true;
     }
     const max = this.getAttribute("max");
     if (max != null && this.currentTags.length >= Number(max)) {
       this.emitError({ type: "max", value: trimmed });
-      return;
+      return true;
     }
-    this.currentTags = [...this.currentTags, trimmed];
+    const next = [...this.currentTags, trimmed];
+    if (!this.emitChange("beforevaluechange", { tags: next }, reason, event)) return false;
+    this.currentTags = next;
     this.renderTags();
     this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
-    this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }));
+    this.emitCommitted("valuechange", { tags: [...next] }, reason, event);
+    this.emitCommitted("change", { tags: [...next] }, reason, event);
+    return true;
+  }
+
+  /**
+   * Several parts at once (a paste, or a typed delimiter splitting the
+   * draft): each part is validated against the tags accumulated so far,
+   * but the result goes out as *one* cancelable `change`, the way React's
+   * `TagInput` batches it. Returns `false` only when a listener vetoed it.
+   */
+  private commitParts(parts: string[], reason: "separator" | "paste", event?: Event): boolean {
+    const allowDuplicates = this.hasAttribute("allow-duplicates");
+    const maxAttr = this.getAttribute("max");
+    const max = maxAttr != null ? Number(maxAttr) : null;
+    let next = this.currentTags;
+    for (const raw of parts) {
+      const trimmed = raw.trim();
+      if (trimmed === "") {
+        if (raw !== "") this.emitError({ type: "empty", value: raw });
+        continue;
+      }
+      if (!allowDuplicates && next.includes(trimmed)) {
+        this.emitError({ type: "duplicate", value: trimmed });
+        continue;
+      }
+      if (max != null && next.length >= max) {
+        this.emitError({ type: "max", value: trimmed });
+        continue;
+      }
+      next = [...next, trimmed];
+    }
+    if (next === this.currentTags) return true;
+    if (!this.emitChange("beforevaluechange", { tags: [...next] }, reason, event)) return false;
+    this.currentTags = next;
+    this.renderTags();
+    this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
+    this.emitCommitted("valuechange", { tags: [...next] }, reason, event);
+    this.emitCommitted("change", { tags: [...next] }, reason, event);
+    return true;
   }
 
   /**
@@ -184,18 +256,23 @@ export class KernelTagInput extends KernelElement {
    * captured index would then point at the wrong tag for whichever
    * removal resolves second.
    */
-  private removeTag(tag: string) {
+  private removeTag(tag: string, reason: "remove-button" | "backspace", event?: Event) {
     this.input?.focus();
     const chip = this.field?.querySelector<HTMLElement>(
       `.${kernelClass("TagInput", "tag")}[data-tag="${CSS.escape(tag)}"]`,
     );
     const finish = () => {
-      this.currentTags = this.currentTags.filter((t) => t !== tag);
+      const next = this.currentTags.filter((t) => t !== tag);
+      // The event may be long gone after a transition; the reason travels.
+      if (!this.emitChange("beforevaluechange", { tags: next }, reason, event)) {
+        chip?.removeAttribute("data-removing");
+        return;
+      }
+      this.currentTags = next;
       this.renderTags();
       this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
-      this.dispatchEvent(
-        new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }),
-      );
+      this.emitCommitted("valuechange", { tags: [...next] }, reason, event);
+      this.emitCommitted("change", { tags: [...next] }, reason, event);
     };
     if (!chip || prefersReducedMotion()) {
       finish();
@@ -217,10 +294,10 @@ export class KernelTagInput extends KernelElement {
     const hasError = invalid && this.hasAttribute("error-message");
     const ids = [
       hasError ? `${id}-error` : null,
-      this.hasAttribute("description") ? `${id}-description` : null,
+      // The error replaces the description while it shows: reference one, never a missing id.
+      !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 
@@ -262,7 +339,19 @@ export class KernelTagInput extends KernelElement {
     const field = this.field;
     const input = this.input;
     if (!field || !input) return;
-    field.querySelectorAll(`.${kernelClass("TagInput", "tag")}`).forEach((node) => node.remove());
+    // The chips live in their own role="list" before the input (never
+    // the input itself, which keeps its textbox role); rebuilt from
+    // scratch each render and left out entirely while there are no tags.
+    field.querySelector(`.${kernelClass("TagInput", "tags")}`)?.remove();
+    let list: HTMLElement | null = null;
+    if (this.currentTags.length > 0) {
+      list = document.createElement("div");
+      list.className = kernelClass("TagInput", "tags");
+      list.setAttribute("role", "list");
+      const labelId = this.native?.querySelector(`.${kernelClass("TagInput", "label")}`)?.id;
+      if (labelId) list.setAttribute("aria-labelledby", labelId);
+      field.insertBefore(list, input);
+    }
 
     this.currentTags.forEach((tag) => {
       const chip = document.createElement("span");
@@ -287,11 +376,11 @@ export class KernelTagInput extends KernelElement {
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>';
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
-        this.removeTag(tag);
+        this.removeTag(tag, "remove-button", event);
       });
 
       chip.append(text, remove);
-      field.insertBefore(chip, input);
+      list?.append(chip);
     });
 
     const max = this.getAttribute("max");

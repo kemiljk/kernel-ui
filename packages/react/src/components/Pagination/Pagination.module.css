@@ -65,6 +65,7 @@
 .item[aria-current="page"] {
   background-color: var(--kernel-color-accent);
   color: var(--kernel-color-on-accent);
+  font-weight: 500;
 }
 
 .item:focus-visible,
@@ -76,6 +77,35 @@
 .control:disabled {
   cursor: not-allowed;
   color: var(--kernel-color-text-muted);
+}
+
+/* Drawn chevrons rather than the "‹"/"›" glyphs: a text guillemet takes
+   the font's x-height and side bearings, so it sat small and low beside
+   the label and shifted with every font. A 1rem stroke icon is centred
+   on the row and matches the library's other chevrons. Logical
+   direction is kept by mirroring it in RTL (the glyphs got that from the
+   bidi algorithm for free). */
+.chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.chevron:dir(rtl),
+:where([dir="rtl"]) .chevron {
+  scale: -1 1;
+}
+
+/* The previous/next controls are ghost buttons, so their chevron's own
+   side bearing reads as extra space before "Previous". Trimming the
+   padding on the icon side keeps the icon-and-word pair visually
+   centred in its hover fill. */
+.control:has(> .chevron:first-child) {
+  padding-inline-start: var(--kernel-space-1);
+}
+
+.control:has(> .chevron:last-child) {
+  padding-inline-end: var(--kernel-space-1);
 }
 
 .ellipsis {
@@ -110,6 +140,12 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+
+  /* Icon-only here, so the chevron goes back to the centre of its square. */
+  .control:has(> .chevron:first-child),
+  .control:has(> .chevron:last-child) {
+    padding-inline: var(--kernel-space-2);
+  }
 }
 
 /* Press feedback, the same dip every Kernel control uses. */
@@ -120,5 +156,22 @@
 @media (prefers-reduced-motion: reduce) {
   .control:active:not(:disabled) {
     scale: 1;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the current page (an accent fill) would look like every
+   other page. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. Anything with text on
+   a Highlight fill also sets forced-color-adjust: none, or the browser
+   paints a Canvas backplate behind the text and hides it. */
+@media (forced-colors: active) {
+  .item[aria-current="page"] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
   }
 }

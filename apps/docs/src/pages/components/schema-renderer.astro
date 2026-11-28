@@ -1,0 +1,160 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import SchemaRendererDemo from "../../components/demos/SchemaRendererDemo";
+import SchemaRendererPlayground from "../../components/demos/SchemaRendererPlayground";
+import ApiTable from "../../components/ApiTable.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+import { SCHEMA_NODE_SPECS, SCHEMA_NODE_TYPES, SCHEMA_VERSION, schemaPrompt } from "@kernelui-lib/react";
+
+const streamingSnippet = `import { SchemaRenderer, parsePartialJson, schemaPrompt } from "@kernelui-lib/react";
+
+// 1. Tell the model what it may return.
+const system = \`You can answer with UI.\\n\${schemaPrompt}\`;
+
+// 2. Re-parse the accumulated text on every chunk.
+let text = "";
+for await (const chunk of stream) {
+  text += chunk;
+  setTree(parsePartialJson(text));
+}
+setDone(true);
+
+// 3. Render it. Buttons and forms come back as data.
+<SchemaRenderer
+  value={tree}
+  streaming={!done}
+  onAction={({ action, payload, values }) => send({ action, payload, values })}
+  onIssue={(issue) => console.debug(issue)}
+/>`;
+
+const elementsSnippet = `<kernel-schema-renderer streaming></kernel-schema-renderer>
+<script type="module">
+  import { parsePartialJson } from "@kernelui-lib/elements";
+  const renderer = document.querySelector("kernel-schema-renderer");
+  let text = "";
+  for await (const chunk of stream) {
+    text += chunk;
+    renderer.value = parsePartialJson(text);
+  }
+  renderer.removeAttribute("streaming");
+  renderer.addEventListener("action", (event) => send(event.detail));
+</script>`;
+
+const validateSnippet = `import { validateSchemaNode, kernelSchemaJson } from "@kernelui-lib/react";
+
+const issues = validateSchemaNode(JSON.parse(modelOutput));
+// [{ code: "unknown-type", path: "root.children[2]", type: "Script", message: "…" }]
+
+// Or hand the JSON Schema to the provider's structured-output option.
+// Also shipped as a file: @kernelui-lib/react/schema.json
+response_format: { type: "json_schema", json_schema: { name: "kernel_ui", schema: kernelSchemaJson } }`;
+
+const childrenText = { block: "nodes", inline: "text, Link", none: "—" } as const;
+---
+
+<BaseLayout title="Schema Renderer" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Schema Renderer</h1>
+    <p>
+      The model returns JSON; Kernel renders it with real components. A typed,
+      versioned schema of seventeen presentational and form nodes, an
+      allow-list for every prop, URL sanitising, and actions that come back to
+      you as data instead of running.
+    </p>
+
+    <div class="docs-example">
+      <SchemaRendererDemo client:visible />
+    </div>
+
+    <h2>Safe by construction</h2>
+    <p>
+      The input is untrusted, so it goes through an allow-list before anything
+      renders. An unknown node type, an unknown prop (<code>onClick</code>,
+      <code>style</code>, <code>dangerouslySetInnerHTML</code>) or a value
+      outside a prop's enum is dropped and reported to <code>onIssue</code>, or
+      to the console if you don't pass one. It never throws. There's no node
+      for raw HTML, and every string lands as a text node. Link and image URLs
+      pass only as <code>http(s)</code>, <code>mailto:</code> (links only) or
+      relative. Tabs and newlines inside a scheme are stripped first, the way a
+      browser does, so <code>java&#10;script:</code> doesn't slip through.
+    </p>
+    <p>
+      Nothing the model writes can act. A Button calls
+      <code>onAction(&#123; action, payload, values &#125;)</code>. A Form is a
+      real <code>&lt;form&gt;</code>, so <code>required</code> and
+      <code>type="email"</code> are checked natively and Enter submits it, but
+      it has no <code>action</code> attribute: submitting it calls
+      <code>onAction</code> with every named field's value.
+    </p>
+
+    <h2>Streaming</h2>
+    <p>
+      <code>parsePartialJson</code> closes whatever is open (strings, arrays,
+      objects) and drops a dangling key, comma or half-typed
+      <code>tru</code>, so every prefix of a response is a renderable tree.
+      Feed it the whole accumulated text on each chunk. While
+      <code>streaming</code> is set, a node type that's still being typed is
+      skipped quietly and issues wait until the stream ends. Nodes are keyed by
+      <code>id</code> (or type and position), so the DOM, and anything typed
+      into a field, survives as the tree grows.
+    </p>
+    <UsageAccordion code={streamingSnippet} elementsCode={elementsSnippet} lang="tsx" />
+
+    <h2>The schema</h2>
+    <p>
+      Version {SCHEMA_VERSION}. A document is
+      <code>&#123; "version": {SCHEMA_VERSION}, "root": Node | Node[] &#125;</code>
+      and a node is <code>&#123; type, id?, props?, children? &#125;</code>. A
+      bare node or array also works. The version only changes for a breaking
+      change: a new node type or optional prop keeps the number, and a document
+      from a newer version renders whatever this one understands, with an
+      <code>unsupported-version</code> issue.
+    </p>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Node types and their props.</caption>
+      <thead><tr><th scope="col">Type</th><th scope="col">Props</th><th scope="col">Children</th></tr></thead>
+      <tbody>
+        {SCHEMA_NODE_TYPES.map((type) => (
+          <tr>
+            <td><code>{type}</code></td>
+            <td>{Object.keys(SCHEMA_NODE_SPECS[type].props).map((prop, index) => (<>{index > 0 ? ", " : ""}<code>{prop}</code></>))}</td>
+            <td>{childrenText[SCHEMA_NODE_SPECS[type].children]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table></div>
+    <p>
+      <code>validateSchemaNode(value)</code> returns the issues without
+      rendering, and <code>kernelSchemaJson</code> is the same schema as JSON
+      Schema (draft 2020-12), also shipped as <code>schema.json</code> in both
+      packages.
+    </p>
+    <UsageAccordion code={validateSnippet} lang="tsx" />
+
+    <h2>Prompt</h2>
+    <p>
+      <code>schemaPrompt</code> describes all of this compactly for a system
+      prompt. It's generated from the same table the validator reads, so it
+      never offers a prop the renderer would drop. This is it, verbatim:
+    </p>
+    <CodeBlock code={schemaPrompt} lang="text" />
+
+    <h2>Playground</h2>
+    <p>Switch samples and watch the component, and the code, update live.</p>
+    <SchemaRendererPlayground client:visible />
+
+    <h2>Props</h2>
+    <ApiTable slug="schema-renderer" />
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Every node renders as the real Kernel component, so a TextField is a labelled <code>&lt;input&gt;</code>, a Switch a <code>role="switch"</code> button, a Table a real <code>&lt;table&gt;</code> with column headers.</li>
+      <li>A form control without a <code>label</code> falls back to its <code>name</code> rather than rendering unlabelled; one with neither is dropped. An Image without <code>alt</code> is reported and rendered as decorative.</li>
+      <li>The root is <code>aria-busy</code> while <code>streaming</code>, so assistive tech waits for the finished tree.</li>
+      <li>A link with <code>external</code> opens in a new tab with <code>rel="noopener noreferrer"</code>.</li>
+    </ul>
+  </div>
+</BaseLayout>

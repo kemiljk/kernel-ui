@@ -1,6 +1,14 @@
 import { KernelElement, kernelClass } from "../../base";
 import "../DropdownMenu/DropdownMenu";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import {
+  clearMenuPointerHighlight,
+  contextMenuReturnTarget,
+  focusMenuOnOpen,
+  highlightMenuItemUnderPointer,
+  returnFocusFromMenu,
+  roveMenuItems,
+} from "../../utils/menuFocus";
 import "./ContextMenu.css";
 
 const MARGIN = 8;
@@ -18,8 +26,36 @@ const MARGIN = 8;
  *
  * Children: one element tagged `slot="trigger"` — the area that opens
  * the menu on right-click — everything else becomes the menu content.
+ *
+ * A right-click focuses the menu itself, not its first item, so nothing is
+ * highlighted until the pointer reaches an item or an arrow key is pressed
+ * (ArrowDown lands on the first item, ArrowUp on the last). The keyboard's
+ * own context-menu key opens straight onto the first item. Focus and
+ * highlight are shared with `<kernel-dropdown-menu>` through
+ * `utils/menuFocus.ts`. Escape, a selection or a scroll returns focus to
+ * whatever had it before the menu opened (else the right-clicked element,
+ * else the trigger region); an outside press leaves focus where it put it.
+ *
+ * Attributes: `label` (the menu's accessible name, e.g. "File actions";
+ * falls back to the built-in `label-menu`, "Context menu"). A
+ * `role="menu"` needs a name, and the right-click area is arbitrary
+ * content that would make a poor one, so it isn't `aria-labelledby` it.
  */
 export class KernelContextMenu extends KernelElement {
+  private menu: HTMLElement | null = null;
+
+  static get observedAttributes() {
+    return ["label", "label-menu"];
+  }
+
+  protected syncAttr(name: string) {
+    if (name === "label") this.applyLabels();
+  }
+
+  protected applyLabels() {
+    this.menu?.setAttribute("aria-label", this.getAttribute("label") || this.builtInLabel("menu", "Context menu"));
+  }
+
   connectedCallback() {
     if (this.native) return;
 
@@ -39,13 +75,21 @@ export class KernelContextMenu extends KernelElement {
     content.setAttribute("role", "menu");
     content.setAttribute("popover", "manual");
     content.className = kernelClass("ContextMenu", "content");
+    content.tabIndex = -1;
     content.append(...rest);
 
     // Play the exit before hiding, the same as React's usePopoverExit: once
     // hidePopover() runs, the panel is gone and can't animate.
     let closing = false;
-    const close = async () => {
+    let returnTarget: HTMLElement | null = null;
+    // Focus as it was when the opening press began; see contextMenuReturnTarget.
+    let focusAtPress: Element | null = null;
+    triggerArea.addEventListener("pointerdown", () => {
+      focusAtPress = document.activeElement;
+    }, { capture: true });
+    const close = async (returnFocus = true) => {
       if (closing || !content.matches(":popover-open")) return;
+      if (returnFocus) returnFocusFromMenu(content, returnTarget);
       closing = true;
       content.setAttribute("data-closing", "true");
       if (!prefersReducedMotion()) await waitForExitTransition(content);
@@ -54,13 +98,29 @@ export class KernelContextMenu extends KernelElement {
       closing = false;
     };
 
+    // A selection closes through here too, so it gets the exit and the
+    // focus return instead of a bare hidePopover() from the item.
+    (content as HTMLElement & { __kernelMenuClose?: () => void }).__kernelMenuClose = () => void close();
+
     triggerArea.addEventListener("contextmenu", (event) => {
       event.preventDefault();
+      // Chromium fires contextmenu as a PointerEvent, with an empty pointerType
+      // when the context-menu key or Shift+F10 opened it. Browsers that fire a
+      // plain MouseEvent get the pointer behaviour; arrow keys still work.
+      const fromKeyboard = (event as Partial<PointerEvent>).pointerType === "";
+      const focusedBefore = fromKeyboard ? document.activeElement : (focusAtPress ?? document.activeElement);
+      focusAtPress = null;
+      // A right-click while the menu is still up (or closing) finds focus in
+      // the menu itself; keep the target recorded when it first opened.
+      if (!content.contains(focusedBefore)) {
+        returnTarget = contextMenuReturnTarget(triggerArea, event.target, focusedBefore);
+      }
       content.style.top = `${event.clientY}px`;
       content.style.left = `${event.clientX}px`;
       content.showPopover?.();
 
       requestAnimationFrame(() => {
+        focusMenuOnOpen(content, fromKeyboard ? "first" : "pointer");
         const rect = content.getBoundingClientRect();
         const maxLeft = window.innerWidth - rect.width - MARGIN;
         const maxTop = window.innerHeight - rect.height - MARGIN;
@@ -77,10 +137,13 @@ export class KernelContextMenu extends KernelElement {
         const originX = rect.width ? clamp(((event.clientX - clampedLeft) / rect.width) * 100) : 50;
         const originY = rect.height ? clamp(((event.clientY - clampedTop) / rect.height) * 100) : 50;
         content.style.setProperty("--kernel-transform-origin", `${originX}% ${originY}%`);
+        // APG menu: opening moves focus to the first item, so arrow keys
+        // work straight away, the same as <kernel-dropdown-menu>.
+        content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
       });
 
       const handlePointerDown = (pointerEvent: PointerEvent) => {
-        if (!content.contains(pointerEvent.target as Node)) close();
+        if (!content.contains(pointerEvent.target as Node)) void close(false);
       };
       const handleKeyDown = (keyEvent: KeyboardEvent) => {
         if (keyEvent.key === "Escape") close();
@@ -103,28 +166,13 @@ export class KernelContextMenu extends KernelElement {
       );
     });
 
-    content.addEventListener("keydown", (event) => {
-      const items = Array.from(
-        content.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'),
-      );
-      if (items.length === 0) return;
-      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-      let nextIndex: number | null = null;
-      switch (event.key) {
-        case "ArrowDown":
-          nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
-          break;
-        case "ArrowUp":
-          nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
-          break;
-        default:
-          return;
-      }
-      event.preventDefault();
-      items[nextIndex]?.focus();
-    });
+    content.addEventListener("keydown", (event) => roveMenuItems(content, event));
+    content.addEventListener("pointermove", (event) => highlightMenuItemUnderPointer(content, event));
+    content.addEventListener("pointerleave", () => clearMenuPointerHighlight(content));
 
     this.native = triggerArea;
+    this.menu = content;
+    this.applyLabels();
     this.append(triggerArea, content);
   }
 }

@@ -32,6 +32,7 @@ export class KernelTooltip extends KernelElement {
   private exitAbort: AbortController | null = null;
   private open = false;
   private closing = false;
+  private escapeListener: ((event: KeyboardEvent) => void) | null = null;
 
   protected createNative(): HTMLElement {
     const content = document.createElement("div");
@@ -95,6 +96,7 @@ export class KernelTooltip extends KernelElement {
         this.open = true;
         this.positioner.setOpen(true);
         content.showPopover?.();
+        document.addEventListener("keydown", onEscape);
         requestAnimationFrame(() => content.removeAttribute("data-opening"));
       };
 
@@ -131,11 +133,23 @@ export class KernelTooltip extends KernelElement {
         content.removeAttribute("data-instant");
         this.positioner.setOpen(false);
         content.hidePopover?.();
+        document.removeEventListener("keydown", onEscape);
         if (counted) {
           counted = false;
           markTooltipClosed();
         }
       };
+
+      // WCAG 1.4.13 (and the APG tooltip pattern): content shown on hover or
+      // focus must be dismissible without moving the pointer or focus.
+      // preventDefault keeps that Escape from also closing a dialog the
+      // trigger sits in, so the first press dismisses only the tooltip.
+      const onEscape = (event: KeyboardEvent) => {
+        if (event.key !== "Escape" || event.defaultPrevented || !this.open || this.closing) return;
+        event.preventDefault();
+        void hideNow();
+      };
+      this.escapeListener = onEscape;
 
       const scheduleHide = () => {
         clearTimeout(this.openTimer);
@@ -180,6 +194,7 @@ export class KernelTooltip extends KernelElement {
     clearTimeout(this.openTimer);
     clearTimeout(this.closeTimer);
     this.exitAbort?.abort();
+    if (this.escapeListener) document.removeEventListener("keydown", this.escapeListener);
     this.positioner.destroy();
   }
 }

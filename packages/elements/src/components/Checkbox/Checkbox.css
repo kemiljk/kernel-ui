@@ -93,7 +93,7 @@
   opacity: 0;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  transition: opacity var(--kernel-duration-fast) linear;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-Checkbox-input:checked + .kernel-Checkbox-control .kernel-Checkbox-checkmark {
@@ -105,12 +105,12 @@
      both firing at once. */
   transition:
     stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-out) var(--kernel-duration-stagger),
-    opacity var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-Checkbox-dash {
   opacity: 0;
-  transition: opacity var(--kernel-duration-fast) linear;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-Checkbox-input:indeterminate + .kernel-Checkbox-control .kernel-Checkbox-dash {
@@ -142,5 +142,28 @@
 
   .kernel-Checkbox-input:active:not(:disabled) + .kernel-Checkbox-control {
     scale: 1;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so a checked box would read as an outline with a faint mark.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Checkbox-input:checked + .kernel-Checkbox-control,
+  .kernel-Checkbox-input:indeterminate + .kernel-Checkbox-control {
+    background-color: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+
+  .kernel-Checkbox-input:disabled + .kernel-Checkbox-control {
+    border-color: GrayText;
+  }
+
+  .kernel-Checkbox-input:disabled:is(:checked, :indeterminate) + .kernel-Checkbox-control {
+    background-color: GrayText;
+    color: Canvas;
   }
 }

@@ -176,6 +176,8 @@
 /* transitions.dev's "error state shake" — see TextField.module.css's
    longer comment on the same recipe for why this is one-shot without
    an explicit iteration-count/fill-mode. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-fileupload-shake {
   0%,
   100% {

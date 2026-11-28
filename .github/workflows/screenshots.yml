@@ -1,0 +1,85 @@
+name: Screenshots
+
+# Visual screenshot suite (scripts/screenshot-suite.mjs): every component's
+# live docs examples under light/Sharp, light/Round, dark/Round, RTL and a
+# low-sitting font. Kept out of ci.yml because a full run takes several
+# minutes, and a visual diff is a prompt to look, not a merge gate.
+#
+# Baselines are never committed (font rendering differs between machines).
+# Instead, each push to main saves its screenshots as the baseline in the
+# Actions cache, keyed by commit. A pull request restores the newest
+# baseline from main (caches made on the base branch are readable from PRs),
+# compares against it, and fails when a shot changed by more than 0.1% of
+# pixels. Every run uploads screenshots/ (current, baseline, report/
+# index.html with diffs) as an artifact. With no baseline yet, or after
+# cache eviction (7 days unused), the PR run just captures.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run --filter '@kernelui-lib/*' build
+
+      - name: Build docs
+        run: bun run docs:build
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+
+      # main (or a manual run on main): refresh the baseline.
+      - name: Capture baseline
+        if: github.ref == 'refs/heads/main'
+        run: bun run test:screenshots --update
+
+      - name: Save baseline
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v6
+        with:
+          path: screenshots/baseline
+          key: screenshots-baseline-${{ github.sha }}
+
+      # Pull requests and manual runs on other branches: compare.
+      - name: Restore baseline from main
+        if: github.ref != 'refs/heads/main'
+        uses: actions/cache/restore@v6
+        with:
+          path: screenshots/baseline
+          key: screenshots-baseline-${{ github.event.pull_request.base.sha || github.sha }}
+          restore-keys: screenshots-baseline-
+
+      - name: Capture and compare
+        if: github.ref != 'refs/heads/main'
+        run: bun run test:screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: screenshots/
+          retention-days: 14
+          if-no-files-found: ignore

@@ -1,4 +1,6 @@
-import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, dataAttr, kernelClass } from "../../base";
+import { inputModality } from "../../utils/changeDetails";
+import { fuzzyScore, fuzzySegments } from "../../utils/fuzzy";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./Combobox.css";
@@ -37,7 +39,19 @@ interface ComboboxGroup {
  * `placeholder`, `value`, `empty-message` (default "No results"),
  * `placement` (default bottom), `align` (start/center/end, default
  * center), `offset` (px, default 8).
- * Events: `valuechange` (`event.detail.value`).
+ * Events: `beforevaluechange` (`event.detail.value`), dispatched before
+ * the selection changes with `detail.reason` — `"item-press"`,
+ * `"keyboard"` (Enter on the highlighted option) or `"clear"` (the text
+ * field emptied). It's cancelable: `preventDefault()` keeps the current
+ * selection. Then `valuechange`, with the same detail, once it has changed.
+ *
+ * Filtering is a ranked fuzzy match (`fuzzyScore`): best matches first
+ * within each group, matched characters wrapped in `<mark>`. Set the
+ * `filter` property to `(text, query) => number` to replace it (a score
+ * above 0 keeps an option, higher first).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input role="combobox">`.
  */
 export class KernelCombobox extends KernelElement {
   private readonly baseId = `kernel-combobox-${++comboboxCounter}`;
@@ -49,6 +63,9 @@ export class KernelCombobox extends KernelElement {
   private inputText = "";
   private open = false;
   private activeIndex = -1;
+  /** Replaces the built-in fuzzy match: a score above 0 keeps an option,
+   * higher ranks first; 0 hides it. */
+  filter: ((text: string, query: string) => number) | undefined;
 
   private inputEl!: HTMLInputElement;
   private listboxEl!: HTMLElement;
@@ -58,7 +75,11 @@ export class KernelCombobox extends KernelElement {
   };
 
   static get observedAttributes() {
-    return ["label", "hide-label", "no-label-offset", "placeholder", "value"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "label", "hide-label", "no-label-offset", "placeholder", "value"];
+  }
+
+  protected ariaTarget() {
+    return this.inputEl ?? null;
   }
 
   connectedCallback() {
@@ -110,10 +131,18 @@ export class KernelCombobox extends KernelElement {
     this.positioner.attach(input, listbox, { placement, align, offset });
 
     input.addEventListener("focus", () => this.openList());
-    input.addEventListener("input", () => {
+    input.addEventListener("input", (event) => {
       this.inputText = input.value;
       this.activeIndex = 0;
       this.openList();
+      // Emptying the field clears the selection rather than leaving a value
+      // selected behind a blank input.
+      if (input.value === "" && this.selectedValue !== "") {
+        if (this.emitChange("beforevaluechange", { value: "" }, "clear", event)) {
+          this.selectedValue = "";
+          this.emitCommitted("valuechange", { value: "" }, "clear", event);
+        }
+      }
       this.renderOptions();
     });
     input.addEventListener("keydown", (event) => this.handleKeyDown(event));
@@ -171,12 +200,14 @@ export class KernelCombobox extends KernelElement {
     });
   }
 
-  private selectOption(option: ComboboxOption) {
+  private selectOption(option: ComboboxOption, event?: Event) {
+    const reason = inputModality(event) === "keyboard" ? "keyboard" : "item-press";
+    if (!this.emitChange("beforevaluechange", { value: option.value }, reason, event)) return;
     this.selectedValue = option.value;
     this.inputText = option.label;
     this.inputEl.value = option.label;
     this.closeList();
-    this.dispatchEvent(new CustomEvent("valuechange", { detail: { value: option.value }, bubbles: true }));
+    this.emitCommitted("valuechange", { value: option.value }, reason, event);
   }
 
   private handleKeyDown(event: KeyboardEvent) {
@@ -204,7 +235,7 @@ export class KernelCombobox extends KernelElement {
         const active = this.filtered[this.activeIndex]?.option;
         if (this.open && active) {
           event.preventDefault();
-          this.selectOption(active);
+          this.selectOption(active, event);
         }
         break;
       }
@@ -217,11 +248,33 @@ export class KernelCombobox extends KernelElement {
   private renderOptions() {
     const isGrouped = this.groups.length > 0;
     const sourceGroups = isGrouped ? this.groups : [{ id: "__items__", items: this.options }];
+    const query = this.inputText;
+    const ranked = query.trim() !== "";
+    // Ranked fuzzy match, best first within each group; the DOM order is
+    // the ranked order, so arrow keys and screen readers agree with the eye.
+    const matches = new Map<ComboboxOption, Array<[number, number]>>();
     const filteredGroups = sourceGroups
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((option) => option.label.toLowerCase().includes(this.inputText.toLowerCase())),
-      }))
+      .map((group) => {
+        const scored: Array<{ option: ComboboxOption; score: number; index: number }> = [];
+        group.items.forEach((option, index) => {
+          if (!ranked) {
+            scored.push({ option, score: 0, index });
+            return;
+          }
+          if (this.filter) {
+            const score = this.filter(option.label, query);
+            if (score > 0) scored.push({ option, score, index });
+            return;
+          }
+          const match = fuzzyScore(query, option.label);
+          if (match) {
+            scored.push({ option, score: match.score, index });
+            matches.set(option, match.ranges);
+          }
+        });
+        if (ranked) scored.sort((a, b) => b.score - a.score || a.index - b.index);
+        return { ...group, items: scored.map((entry) => entry.option) };
+      })
       .filter((group) => group.items.length > 0);
 
     const entries: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
@@ -278,16 +331,31 @@ export class KernelCombobox extends KernelElement {
         });
         if (content !== undefined && content !== null && typeof content !== "string") {
           div.append(content as Node);
+        } else if (typeof content === "string") {
+          div.textContent = content;
         } else {
-          div.textContent = typeof content === "string" ? content : option.label;
+          for (const segment of fuzzySegments(option.label, matches.get(option) ?? [])) {
+            if (!segment.match) {
+              div.append(segment.text);
+              continue;
+            }
+            const mark = document.createElement("mark");
+            mark.className = kernelClass("Combobox", "match");
+            mark.textContent = segment.text;
+            div.append(mark);
+          }
         }
 
         div.addEventListener("pointerdown", (event) => event.preventDefault());
         div.addEventListener("pointermove", () => {
+          // Only on a change: re-rendering replaces every option node, and
+          // doing it for each move within one option swapped the node out
+          // between pointerdown and pointerup, so the click never landed.
+          if (this.activeIndex === currentIndex) return;
           this.activeIndex = currentIndex;
           this.renderOptions();
         });
-        div.addEventListener("click", () => this.selectOption(option));
+        div.addEventListener("click", (event) => this.selectOption(option, event));
         groupEl.append(div);
         if (currentIndex === this.activeIndex) this.inputEl.setAttribute("aria-activedescendant", div.id);
       }

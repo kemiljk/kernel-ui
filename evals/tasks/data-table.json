@@ -1,0 +1,126 @@
+{
+  "id": "data-table",
+  "title": "Sortable data table",
+  "package": "react",
+  "prompt": "Build a \"Team members\" table with columns Name, Email, Role and Last active, filled with 8 rows of realistic sample data. Users can sort by Name and by Last active (ascending and descending), and filter the rows with a text field. The table needs a visible caption, \"Team members\".",
+  "screenshots": [
+    {
+      "name": "Sorted by name",
+      "steps": [
+        {
+          "action": "click",
+          "within": "thead",
+          "role": "button",
+          "name": "/^name/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-table",
+      "description": "Imports DataTable or Table from @kernelui-lib/react",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "anyOf": [
+        "DataTable",
+        "Table"
+      ]
+    },
+    {
+      "id": "real-table",
+      "description": "Renders a real <table> with a caption",
+      "type": "dom",
+      "selector": "table caption",
+      "min": 1
+    },
+    {
+      "id": "column-headers",
+      "description": "Four column headers with scope=\"col\"",
+      "type": "dom",
+      "selector": "thead th[scope=col]",
+      "min": 4
+    },
+    {
+      "id": "rows",
+      "description": "Eight data rows on screen",
+      "type": "dom",
+      "selector": "tbody tr",
+      "min": 8
+    },
+    {
+      "id": "sort-buttons",
+      "description": "Sortable headers are buttons inside the <th>",
+      "type": "dom",
+      "selector": "th button",
+      "min": 2
+    },
+    {
+      "id": "sort-state",
+      "description": "Sorting by Name sets aria-sort on its header",
+      "type": "dom",
+      "selector": "th[aria-sort=ascending], th[aria-sort=descending]",
+      "min": 1,
+      "steps": [
+        {
+          "action": "click",
+          "within": "thead",
+          "role": "button",
+          "name": "/^name/i"
+        },
+        {
+          "action": "wait",
+          "ms": 150
+        }
+      ]
+    },
+    {
+      "id": "sort-reorders",
+      "description": "Sorting by Name twice reverses the first column",
+      "type": "changes",
+      "selector": "tbody tr:first-child td:first-child, tbody tr:first-child th:first-child",
+      "attribute": "textContent",
+      "steps": [
+        {
+          "action": "click",
+          "within": "thead",
+          "role": "button",
+          "name": "/^name/i"
+        },
+        {
+          "action": "wait",
+          "ms": 150
+        }
+      ],
+      "trigger": {
+        "action": "click",
+        "within": "thead",
+        "role": "button",
+        "name": "/^name/i"
+      }
+    },
+    {
+      "id": "filter-labelled",
+      "description": "The filter field is labelled",
+      "type": "check",
+      "check": "inputs-labelled"
+    },
+    {
+      "id": "filter-works",
+      "description": "Typing a non-matching filter empties the table body",
+      "type": "eval",
+      "expression": "[...document.querySelectorAll('tbody tr')].filter((tr) => tr.querySelectorAll('td').length > 1).length === 0",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "input[type=search], input[type=text], input:not([type])",
+          "value": "zzqxv-no-match"
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    }
+  ]
+}

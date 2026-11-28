@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useRef } from "react";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { inputModality, type ChangeDetails } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./Checkbox.module.css";
 
 export interface CheckboxState {
@@ -9,6 +10,9 @@ export interface CheckboxState {
   indeterminate: boolean;
   disabled: boolean;
 }
+
+/** What toggled a `Checkbox`: a click or tap (on the box or its label), or Space. */
+export type CheckboxChangeReason = "press" | "keyboard";
 
 export interface CheckboxProps
   extends Omit<
@@ -22,7 +26,9 @@ export interface CheckboxProps
    * DOM property (there is no HTML attribute for it) so `:indeterminate`
    * in CSS works without any data-attribute bookkeeping. */
   indeterminate?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
+  /** Called before the box changes, with the reason (`"press"` or
+   * `"keyboard"`); `details.cancel()` leaves it as it was. */
+  onCheckedChange?: (checked: boolean, details: ChangeDetails<CheckboxChangeReason>) => void;
   /** Label text. Wrapping the real input in a real `<label>` means
    * clicking the text toggles the box, for free. */
   children?: ReactNode;
@@ -44,7 +50,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     ref,
   ) {
     const inputRef = useRef<HTMLInputElement>(null);
-    const [isChecked, setChecked] = useControllableState({
+    const [isChecked, setChecked] = useControllableStateWithDetails({
       value: checked,
       defaultValue: defaultChecked,
       onChange: onCheckedChange,
@@ -70,7 +76,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           className={styles.input}
           checked={isChecked}
           disabled={disabled}
-          onChange={(event) => setChecked(event.target.checked)}
+          onChange={(event) =>
+            // A vetoed change needs no DOM fix-up: `checked` is controlled,
+            // so React restores it when the state doesn't move.
+            setChecked(event.target.checked, inputModality(event) === "keyboard" ? "keyboard" : "press", event)
+          }
         />
         <span className={styles.control} aria-hidden="true">
           <svg className={styles.icon} viewBox="0 0 16 16" width="14" height="14" fill="none">

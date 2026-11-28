@@ -106,6 +106,8 @@
 
 @supports (animation-timeline: scroll()) {
   .kernel-ScrollArea-root[data-edge-shadow] {
+    /* kernel-allow: literal-motion — scroll-driven: `linear` maps scroll
+       progress 1:1 to the edge cue; there is no time for a token to set. */
     animation:
       kernel-scroll-shadow-top linear both,
       kernel-scroll-shadow-bottom linear both;

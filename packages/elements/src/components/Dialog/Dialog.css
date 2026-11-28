@@ -80,6 +80,20 @@
   --kernel-dialog-translate: 100% 0;
 }
 
+/* `data-side` is logical (anchored with inset-inline-*), so under RTL "left"
+   sits on the right-hand edge and has to leave that way. `translate` has no
+   logical form, so the offset flips by hand. Both selector forms, because the
+   build rewrites `:dir()` into a `:lang()` list (see AGENTS.md). */
+.kernel-Dialog-content[data-side="left"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Dialog-content[data-side="left"] {
+  --kernel-dialog-translate: 100% 0;
+}
+
+.kernel-Dialog-content[data-side="right"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Dialog-content[data-side="right"] {
+  --kernel-dialog-translate: -100% 0;
+}
+
 .kernel-Dialog-content[data-side="top"] {
   inset-inline: 0;
   inset-block-start: 0;
@@ -176,7 +190,7 @@
 }
 
 .kernel-Dialog-content[data-backdrop="blur"]::backdrop {
-  --kernel-dialog-backdrop-bg: color-mix(in oklab, var(--kernel-color-scrim) 70%, transparent);
+  --kernel-dialog-backdrop-bg: color-mix(in oklab, var(--kernel-color-scrim) var(--kernel-opacity-frost, 70%), transparent);
   --kernel-dialog-backdrop-filter: blur(var(--kernel-blur-backdrop));
 }
 
@@ -208,6 +222,18 @@
   margin: 0;
   font-size: var(--kernel-font-size-lg);
   font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  text-wrap: balance;
+}
+
+/* Optically centre the title's first line on the close button. Both
+   start at the header's top edge, so a 32px button beside a ~22px line
+   sat visibly low, its X below the title's centre line. Padding the
+   title by half the difference lines the two up; it's applied only when
+   there is a close button, and a multi-line title still keeps its first
+   line beside the X rather than centring the X on the whole block. */
+.kernel-Dialog-header:has(> .kernel-Dialog-closeButton) > .kernel-Dialog-title {
+  padding-block-start: max(0px, calc((var(--kernel-control-height-sm) - 1lh) / 2));
 }
 
 .kernel-Dialog-closeButton {
@@ -215,9 +241,13 @@
   flex-shrink: 0;
 }
 
+/* Tucked close under the title so the two read as one heading block,
+   with the larger gap to the body below marking where the content
+   starts. */
 .kernel-Dialog-description {
-  margin-block: var(--kernel-space-2) 0;
+  margin-block: var(--kernel-space-1) 0;
   color: var(--kernel-color-text-muted);
+  text-wrap: pretty;
 }
 
 .kernel-Dialog-body {
@@ -250,5 +280,16 @@
   .kernel-Dialog-content[data-state="closing"][data-side="top"],
   .kernel-Dialog-content[data-state="closing"][data-side="bottom"] {
     translate: 0 0;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the dialog, which relies on its shadow for an edge, would
+   have none. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Dialog-content {
+    border: var(--kernel-border-width) solid CanvasText;
   }
 }

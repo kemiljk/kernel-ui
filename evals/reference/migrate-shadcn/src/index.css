@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+/* Was `mx-auto max-w-lg p-6`. */
+.page {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: var(--kernel-space-6);
+}
+
+/* Was `space-y-4`. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+}
+
+.status p {
+  margin: 0;
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.status .success {
+  color: var(--kernel-color-success-text);
+}
+
+/* Was `flex justify-between`. */
+.footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--kernel-space-2);
+}

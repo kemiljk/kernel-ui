@@ -49,6 +49,20 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("agent-activity"),
   },
   {
+    name: "Artifact Panel",
+    category: "AI",
+    slug: "artifact-panel",
+    element: "<aside> docked / <dialog> overlay + tablist",
+    summary: "The side panel beside the chat that shows a generated artifact, with views, versions and status.",
+    llmsNote:
+      "ArtifactPanel takes title (a real heading; headingLevel 2–4 when docked, always h2 as an overlay), open (default true) with onOpenChange, presentation (\"auto\" | \"docked\" | \"overlay\"; auto is docked and becomes a modal overlay below overlayBelow px of viewport, default 768), status (\"ready\" | \"streaming\" | \"error\"; a dot plus \"Generating…\"/\"Generation failed\" in a polite live region, and aria-busy while streaming), version + versionCount + onVersionChange (previous/next buttons and a \"v3 of 5\" readout when versionCount > 1), actions (your own header buttons, before the built-in close button; showCloseButton={false} hides it), views ([{ value, label, content, disabled? }], switched with Kernel's Tabs) with view/defaultView/onViewChange, or children as the body when there are no views, and labels (Partial<{ close, previousVersion, nextVersion, version: (current, total) => string, versions, views, streaming, error }>). Docked it's an <aside> named by the title, sized to its parent (put it in a Resizable pane); as an overlay it's a <dialog> opened with showModal(), so the focus trap, Escape and focus restoration are native. Full-bleed body content (an iframe) can zero --kernel-artifact-panel-body-padding. The element version reads <kernel-artifact-view value label> children as views and slot=\"actions\" children as actions, needs the open attribute to show, and fires close, versionchange (cancelable) and viewchange.",
+    status: "available",
+    reactExports: ["ArtifactPanel"],
+    elementTag: "kernel-artifact-panel",
+    elementSubTags: ["kernel-artifact-view"],
+    docsUrl: docs("artifact-panel"),
+  },
+  {
     name: "Attachment",
     category: "AI",
     slug: "attachment",
@@ -182,7 +196,7 @@ export const components: RegistryEntry[] = [
     element: "<figure> + <pre><code>",
     summary: "A code surface with line numbers, copy, and stable streaming.",
     llmsNote:
-      "Highlights nothing itself: pass pre-tokenised lines (CodeLine[] from utils/codeTokens.ts — { tokens: [{ text, className?, color? }] }) from Shiki/Prism/your own highlighter, or a plain `code` string for un-highlighted source. That's what keeps both packages dependency-free. Lines are keyed by index so appending streamed output updates the last line in place instead of re-mounting the ones above it, which is what avoids flicker and lost text selection. Line numbers are aria-hidden and unselectable so a copy contains code, not gutter. Following the live edge while `streaming` reuses StickToBottomController. In the elements package, content arrives via the `lines` or `code` DOM property, with light-DOM <pre><code> as the progressive-enhancement fallback.",
+      "Highlights nothing itself: pass pre-tokenised lines (CodeLine[] from utils/codeTokens.ts — { tokens: [{ text, className?, color? }] }) from Shiki/Prism/your own highlighter, or a plain `code` string for un-highlighted source. That's what keeps both packages dependency-free. Lines are keyed by index so appending streamed output updates the last line in place instead of re-mounting the ones above it, which is what avoids flicker and lost text selection. Line numbers are aria-hidden and unselectable so a copy contains code, not gutter. Following the live edge while `streaming` reuses StickToBottomController. `wrap` (React) / the `wrap` attribute (elements) wraps long lines instead of scrolling sideways; each line is a row of one subgrid, so numbers stay on the first visual line of a wrapped line. In the elements package, content arrives via the `lines` or `code` DOM property, with light-DOM <pre><code> as the progressive-enhancement fallback.",
     status: "available",
     reactExports: ["CodeBlock", "linesFromCode", "linesText"],
     elementTag: "kernel-code-block",
@@ -467,6 +481,19 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("message-scroller"),
   },
   {
+    name: "Model Picker",
+    category: "AI",
+    slug: "model-picker",
+    element: '<button aria-haspopup="listbox"> + popover listbox',
+    summary: "A compact composer-toolbar pill for choosing a model, with groups, badges and typeahead.",
+    llmsNote:
+      "options is ModelPickerOption[]: { value, label, description?, group?, badges?: (string | { label, variant? })[], icon?, disabled? }. Consecutive options with the same group render under one role=\"group\" heading. value/defaultValue/onValueChange via useControllableState; name submits through a hidden input. Not a native <select> because options carry descriptions, badges and logos; the popover=\"auto\" still owns top layer, light dismiss, Escape and focus return, and the WAI-ARIA listbox keyboard pattern (aria-activedescendant, arrows, Home/End, Enter/Space, typeahead, Tab closes) is added by hand. Opens upward by default (placement=\"top\") because a composer sits at the bottom of the screen; drop it into Composer's actionsLeading. In the elements package, options come from the `options` property or from light-DOM <option>s (optionally in <optgroup label>) with data-description and data-badges=\"New:accent, Fast\"; it fires `valuechange` with detail.value.",
+    status: "available",
+    reactExports: ["ModelPicker"],
+    elementTag: "kernel-model-picker",
+    docsUrl: docs("model-picker"),
+  },
+  {
     name: "Nav",
     category: "Layout",
     slug: "nav",
@@ -598,6 +625,19 @@ export const components: RegistryEntry[] = [
     radixPackages: ["react-resizable-panels"],
   },
   {
+    name: "Schema Renderer",
+    category: "AI",
+    slug: "schema-renderer",
+    element: "allow-listed JSON → real Kernel components",
+    summary: "Render a model's JSON as real Kernel components, from a typed, versioned, allow-listed schema.",
+    llmsNote:
+      "SchemaRenderer takes value (a { version: 1, root } document, a bare node or an array of nodes: { type, id?, props?, children? }), streaming, onAction({ action, payload, values }), onIssue(issue) and onValuesChange(values). Node types: Stack, Text, Heading, Button, Badge, Card, Form, TextField, Select, Checkbox, Switch, Table, Callout, Separator, Image, Link, Progress, each with an allow-list of props. Unknown types/props, invalid values and unsafe URLs (anything but http(s), mailto: for links, or relative) are dropped and reported, never thrown; there is no raw HTML. Buttons and Form submits never execute anything: they call onAction with the form controls' values keyed by name. Exports schemaPrompt (a compact system-prompt description of the schema), kernelSchemaJson (JSON Schema draft 2020-12, also the package file schema.json), validateSchemaNode(value) → issues, sanitizeSchema, sanitizeUrl, parsePartialJson(text) (closes open strings/arrays/objects so a streaming response renders progressively; pass streaming while it streams), SCHEMA_VERSION and the TypeScript types. The element version takes the value property or a JSON value attribute and fires action, issue (preventDefault silences the console warning) and valueschange.",
+    status: "available",
+    reactExports: ["SchemaRenderer"],
+    elementTag: "kernel-schema-renderer",
+    docsUrl: docs("schema-renderer"),
+  },
+  {
     name: "Scroll Area",
     category: "Layout",
     slug: "scroll-area",
@@ -648,7 +688,7 @@ export const components: RegistryEntry[] = [
     element: "<dialog> + pointer events",
     summary: "A Dialog anchored to an edge, with drag-to-dismiss.",
     llmsNote:
-      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (restricts dragging to the handle and footer; set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`, `inset` (detached and floating, all four corners rounded), `maxDisplayWidth` (closes itself above that viewport width), and `footer` (pinned below the scrolling body; it owns the bottom safe area and is a drag surface). A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. `snapPoints` (viewport percentages along the axis the sheet grows — dvh for bottom/top, dvw for left/right, and it works on every side) gives it resting sizes with `snap`/`defaultSnap`/`onSnapChange`: a flick steps exactly one snap, a slower release lands on the nearest, and dragging below the smallest dismisses. Snap settles are carried by a real spring so they leave at the speed the finger was moving; pass `spring={false}` for a CSS transition, or `{ attraction, friction }` to tune.",
+      "Takes every Dialog prop, with `side` narrowed to bottom/top/left/right and defaulting to `\"bottom\"`. Adds `showHandle`, `handleOnly` (restricts dragging to the handle and footer; set it when the body scrolls), `dismissible` (disables dragging and backdrop dismissal, not Escape), `closeThreshold`, `velocityThreshold`, `onDrag`, `onRelease`, `inset` (detached and floating, all four corners rounded), `maxDisplayWidth` (closes itself above that viewport width), and `footer` (pinned below the scrolling body; it owns the bottom safe area and is a drag surface). A gesture that starts by scrolling the body hands over to the sheet mid-drag once the scroller reaches its edge. `snapPoints` (viewport percentages along the axis the sheet grows — dvh for bottom/top, dvw for left/right, and it works on every side) gives it resting sizes with `snap`/`defaultSnap`/`onSnapChange`: a flick steps exactly one snap, a slower release lands on the nearest, and dragging below the smallest dismisses. A binary sheet dismisses on distance (`closeThreshold`, default 0.25 of its size) or release velocity (`velocityThreshold`, default 0.5px/ms over the last 100ms of the gesture), refuses a distance dismissal while the finger is pulling back, rubber-bands past the open position, and otherwise settles back on --kernel-ease-drawer / --kernel-duration-sheet. Snap settles are carried by a real spring so they leave at the speed the finger was moving; pass `spring={false}` for a CSS transition, or `{ attraction, friction }` to tune.",
     status: "available",
     reactExports: ["Sheet", "useSheetDrag"],
     elementTag: "kernel-sheet",
@@ -709,6 +749,19 @@ export const components: RegistryEntry[] = [
     elementTag: "kernel-sources",
     elementSubTags: ["kernel-source", "kernel-citation"],
     docsUrl: docs("sources"),
+  },
+  {
+    name: "Streaming Markdown",
+    category: "AI",
+    slug: "streaming-markdown",
+    element: "<div> of real <p>/<ol>/<table>/<blockquote> + CodeBlock",
+    summary: "Model Markdown rendered as real elements while it streams, without flicker or raw syntax.",
+    llmsNote:
+      "Pass the text so far as `content` and set `streaming` while it arrives. A built-in, dependency-free parser covers paragraphs, ATX headings, emphasis/strong/strikethrough, inline code, fenced code (rendered with CodeBlock, streaming while the fence is open), nested ordered/unordered lists, blockquotes, links, bare-URL autolinks, GFM tables and rules. It never produces HTML: raw HTML in content is text, links keep only http/https/mailto/relative hrefs (external ones get target=_blank rel=\"noopener noreferrer\"), and images render as links, never loaded. Top-level blocks are keyed by index and memoised on their source slice, so a new chunk re-renders only the last block. While streaming, unfinished syntax (open fence, unclosed **, half a link or table row) renders as its finished form. Not a live region: it sets aria-busy while streaming and leaves announcing to MessageScroller. React takes `components` overrides per tag plus `codeBlock` for a highlighter; parseMarkdown and safeHref are exported from both packages.",
+    status: "available",
+    reactExports: ["StreamingMarkdown", "parseMarkdown", "safeHref"],
+    elementTag: "kernel-streaming-markdown",
+    docsUrl: docs("streaming-markdown"),
   },
   {
     name: "Switch",
@@ -828,6 +881,8 @@ export const components: RegistryEntry[] = [
     slug: "toast",
     element: 'role="status" / role="alert" (queued)',
     summary: "A shared, queued live region.",
+    llmsNote:
+      "Swipe a toast toward the viewport's edge (inline-end) to dismiss: it follows the pointer that way and rubber-bands the other, and on release dismisses on 40% of its width or a release velocity above 0.5px/ms (measured over the last 100ms, the same bar as Sheet), otherwise easing back; a pointer pulling back at release keeps it. Presses on buttons, links or other controls inside a toast never start a swipe, nothing is claimed before 4px of mostly-horizontal travel, and under reduced motion the toast doesn't follow the pointer and dismisses by fading.",
     status: "available",
     reactExports: ["ToastViewport", "toast"],
     elementTag: "kernel-toast-viewport",
@@ -858,9 +913,9 @@ export const components: RegistryEntry[] = [
     element: "<details> + <ol>",
     summary: "An agent's task plan, with cross-fading status marks and a live completion count.",
     llmsNote:
-      "TodoItem takes status (\"pending\" | \"active\" | \"done\" | \"error\"), metadata, and statusLabel. All four status marks render at once and cross-fade on data-status, so a status change is one attribute write with no JS in the transition. Every item also carries its status as visually hidden text — the mark is never the only signal. TodoList derives its completion count from direct TodoItem children; pass completed/total explicitly when the items are nested inside your own wrappers. The custom element recomputes the count from a MutationObserver on child status attributes.",
+      "TodoItem takes status (\"pending\" | \"active\" | \"done\" | \"error\"), metadata, and statusLabel. All four status marks render at once and cross-fade on data-status, so a status change is one attribute write with no JS in the transition. Every item also carries its status as visually hidden text — the mark is never the only signal. TodoList derives its completion count from direct TodoItem children; pass completed/total explicitly when the items are nested inside your own wrappers. The custom element recomputes the count from a MutationObserver on child status attributes. Reorders animate: any re-render with a new child order is FLIP-animated (Web Animations API, from a layout effect) and new items fade in; wrap the state update in `animateTodoListChange(detailsRef.current, () => setItems(next))` to run it as an element-scoped view transition (`element.startViewTransition()`, Chrome 147+, update inside flushSync) with the FLIP as fallback. TodoList forwards its ref to the <details>. The element has `animateChange(() => …)` for the same, and FLIP-animates items moved by hand. Nothing moves under prefers-reduced-motion.",
     status: "available",
-    reactExports: ["TodoList", "TodoItem"],
+    reactExports: ["TodoList", "TodoItem", "animateTodoListChange"],
     elementTag: "kernel-todo-list",
     elementSubTags: ["kernel-todo-item"],
     docsUrl: docs("todo-list"),

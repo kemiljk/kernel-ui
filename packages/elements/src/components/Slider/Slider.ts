@@ -1,5 +1,6 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Slider.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let sliderCounter = 0;
 
@@ -28,6 +29,14 @@ let sliderCounter = 0;
  * `show-value` (boolean — shows the current number next to the label),
  * `variant` (`default` | `inset`), `start-label` / `end-label` (inset
  * only — captions pinned inside the track's ends), `disabled`, `name`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="range">`.
+ *
+ * Events: a bubbling, cancelable `beforevaluechange` before each move commits,
+ * `detail: { value, reason }` (`"drag"` or `"keyboard"`);
+ * `preventDefault()` puts the thumb back. Then a bubbling `valuechange`
+ * and `change` with the same detail once `value` is committed.
  */
 export class KernelSlider extends KernelElement {
   private readonly generatedId = `kernel-slider-${++sliderCounter}`;
@@ -36,6 +45,7 @@ export class KernelSlider extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -51,6 +61,10 @@ export class KernelSlider extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.input;
+  }
+
   connectedCallback() {
     if (this.native) {
       this.observeTrack();
@@ -59,7 +73,7 @@ export class KernelSlider extends KernelElement {
     const root = document.createElement("div");
     root.className = kernelClass("Slider");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const labelRow = document.createElement("div");
     labelRow.className = kernelClass("Slider", "labelRow");
@@ -78,10 +92,22 @@ export class KernelSlider extends KernelElement {
     input.step = "1";
     input.value = "0";
     input.className = kernelClass("Slider", "input");
-    input.addEventListener("input", () => {
+    // A cancelable `beforevaluechange` is dispatched before the value is
+    // committed, with `detail: { value, reason }` (`"drag"` or
+    // `"keyboard"`); a vetoed move puts the thumb back. `valuechange` and `change` follow
+    // once the value is committed, with the same detail.
+    input.addEventListener("input", (event) => {
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "drag";
+      const value = Number(input.value);
+      if (!this.emitChange("beforevaluechange", { value }, reason, event)) {
+        input.value = this.getAttribute("value") ?? input.defaultValue;
+        this.updatePercent();
+        return;
+      }
       this.updatePercent();
       this.setAttribute("value", input.value);
-      this.dispatchEvent(new Event("change", { bubbles: true }));
+      this.emitCommitted("valuechange", { value }, reason, event);
+      this.emitCommitted("change", { value }, reason, event);
     });
 
     const track = document.createElement("div");

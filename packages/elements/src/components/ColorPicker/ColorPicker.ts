@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./ColorPicker.css";
 
 let colorPickerCounter = 0;
@@ -36,6 +36,16 @@ function normalizeHex(raw: string): string | null {
  * default inset; doesn't affect `label`, which never carries the inset
  * in the first place), `invalid`, `disabled`, `name`. Built-in string:
  * `label-hex-value` (default "Hex color value"), or the `labels` property.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="color">`; an authored
+ * `aria-describedby` is added after its own hint and error ids.
+ *
+ * Events: a bubbling, cancelable `beforevaluechange` before the colour commits,
+ * `detail: { value, reason }` (`"picker"` or `"hex-input"`);
+ * `preventDefault()` keeps the current colour. Then a bubbling
+ * `valuechange` and `change` with the same detail once `value` is
+ * committed.
  */
 export class KernelColorPicker extends KernelElement {
   private readonly generatedId = `kernel-color-picker-${++colorPickerCounter}`;
@@ -43,6 +53,7 @@ export class KernelColorPicker extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -58,13 +69,21 @@ export class KernelColorPicker extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.colorInput;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
+  }
+
   connectedCallback() {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("ColorPicker");
     root.dataset.size = "md";
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("ColorPicker", "label");
@@ -86,9 +105,19 @@ export class KernelColorPicker extends KernelElement {
     colorInput.type = "color";
     colorInput.value = "#000000";
     colorInput.className = kernelClass("ColorPicker", "input");
-    colorInput.addEventListener("input", () => {
-      this.setAttribute("value", colorInput.value);
-      this.dispatchEvent(new Event("change", { bubbles: true }));
+    // A cancelable `beforevaluechange` is dispatched before the colour commits,
+    // with `detail: { value, reason }` — `"picker"` (the native colour
+    // input) or `"hex-input"`. A vetoed change keeps the current colour.
+    // `valuechange` and `change` follow once committed, with the same detail.
+    colorInput.addEventListener("input", (event) => {
+      const value = colorInput.value;
+      if (!this.emitChange("beforevaluechange", { value }, "picker", event)) {
+        colorInput.value = this.getAttribute("value") ?? colorInput.defaultValue;
+        return;
+      }
+      this.setAttribute("value", value);
+      this.emitCommitted("valuechange", { value }, "picker", event);
+      this.emitCommitted("change", { value }, "picker", event);
     });
 
     swatchLabel.append(swatch, colorInput);
@@ -102,17 +131,19 @@ export class KernelColorPicker extends KernelElement {
     hexInput.addEventListener("focus", () => {
       this.hexFocused = true;
     });
-    hexInput.addEventListener("input", () => {
+    hexInput.addEventListener("input", (event) => {
       const normalized = normalizeHex(hexInput.value);
       hexInput.setAttribute("aria-invalid", String(hexInput.value !== "" && !normalized));
-      if (normalized) {
+      if (normalized && this.emitChange("beforevaluechange", { value: normalized }, "hex-input", event)) {
         this.setAttribute("value", normalized);
-        this.dispatchEvent(new Event("change", { bubbles: true }));
+        this.emitCommitted("valuechange", { value: normalized }, "hex-input", event);
+        this.emitCommitted("change", { value: normalized }, "hex-input", event);
       }
     });
     hexInput.addEventListener("blur", () => {
       this.hexFocused = false;
-      if (!normalizeHex(hexInput.value)) hexInput.value = colorInput.value;
+      // Invalid, or valid but vetoed: show the committed colour again.
+      if (normalizeHex(hexInput.value) !== colorInput.value) hexInput.value = colorInput.value;
     });
     hexInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") hexInput.blur();
@@ -150,10 +181,10 @@ export class KernelColorPicker extends KernelElement {
     const hasError = invalid && this.hasAttribute("error-message");
     const ids = [
       hasError ? `${id}-error` : null,
-      this.hasAttribute("description") ? `${id}-description` : null,
+      // The error replaces the description while it shows: reference one, never a missing id.
+      !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 

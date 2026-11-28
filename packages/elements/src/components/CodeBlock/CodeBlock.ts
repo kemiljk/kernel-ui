@@ -35,7 +35,9 @@ const COPIED_PATH = "M3.5 8.5 6.5 11.5 12.5 5";
  *
  * Attributes: `language`, `label`, `show-line-numbers`, `highlight-lines`
  * (comma-separated 1-based numbers), `streaming`, `no-copy`,
- * `max-block-size`, and built-in strings `label-copy` ("Copy"),
+ * `max-block-size`, `wrap` (wrap long lines instead of scrolling sideways;
+ * line numbers stay on each wrapped line's first visual line, because every
+ * line is a row of one subgrid), and built-in strings `label-copy` ("Copy"),
  * `label-copied` ("Copied"), `label-copied-announcement` ("Copied to
  * clipboard") — or the `labels` property.
  */
@@ -50,7 +52,7 @@ export class KernelCodeBlock extends KernelElement {
   private ownLines: CodeLine[] = [];
 
   static get observedAttributes() {
-    return ["language", "label", "show-line-numbers", "highlight-lines", "streaming", "no-copy", "max-block-size", "label-copy", "label-copied", "label-copied-announcement"];
+    return ["language", "label", "show-line-numbers", "highlight-lines", "streaming", "wrap", "no-copy", "max-block-size", "label-copy", "label-copied", "label-copied-announcement"];
   }
 
   /** Pre-tokenised lines. Assigning re-renders the block. */
@@ -132,9 +134,9 @@ export class KernelCodeBlock extends KernelElement {
       else this.native.style.setProperty("--kernel-code-max-block-size", value);
       return;
     }
-    if (name === "streaming") {
-      if (value === null) this.native.removeAttribute("data-streaming");
-      else this.native.setAttribute("data-streaming", "true");
+    if (name === "streaming" || name === "wrap") {
+      if (value === null) this.native.removeAttribute(`data-${name}`);
+      else this.native.setAttribute(`data-${name}`, "true");
       return;
     }
     if (name === "language" || name === "label" || name === "no-copy") {

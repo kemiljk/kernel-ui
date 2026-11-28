@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 // rules are specificity-matched to Dialog's (`.sheet[open][data-side="bottom"]`
 // against `.content[open][data-side="bottom"]`), so source order is what
 // decides them. Don't reorder these two imports.
-import { Dialog, type DialogClassNames, type DialogProps } from "../Dialog/Dialog";
+import { Dialog, type DialogClassNames, type DialogOpenChangeReason, type DialogProps } from "../Dialog/Dialog";
+import type { ChangeDetails } from "../../utils/changeDetails";
 import { mergeRefs, resolveClassName } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { emitChange, useControllableState } from "../../utils/useControllableState";
 import { parseSnapPoints } from "../../utils/snapPoints";
 import {
   DEFAULT_CLOSE_THRESHOLD,
@@ -29,7 +30,16 @@ export interface SheetClassNames extends DialogClassNames {
   footer?: string;
 }
 
-export interface SheetProps extends Omit<DialogProps, "side" | "className" | "classNames"> {
+/** Why the sheet asked to close: every `Dialog` reason, plus a drag past the
+ * close threshold (`"drag-dismiss"`) and the window growing wider than
+ * `maxDisplayWidth` (`"max-display-width"`). */
+export type SheetOpenChangeReason = DialogOpenChangeReason | "drag-dismiss" | "max-display-width";
+
+export interface SheetProps extends Omit<DialogProps, "side" | "className" | "classNames" | "onOpenChange"> {
+  /** Called with `false` and the reason when the sheet asks to close: every
+   * `Dialog` reason plus `"drag-dismiss"` and `"max-display-width"`; see
+   * `Dialog`'s `onOpenChange`. */
+  onOpenChange: (open: boolean, details: ChangeDetails<SheetOpenChangeReason>) => void;
   /** Edge the sheet is anchored to and dismissed toward. */
   side?: SheetSide;
   /** Show the grabber. Purely an affordance — dragging works without it unless
@@ -102,6 +112,20 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
  * overdrag, and a backdrop that tracks the drag — the parts that make a sheet
  * feel like a sheet instead of a modal that happens to sit at the bottom.
  *
+ * The dismiss decision is distance *or* velocity: a release past 25% of the
+ * sheet's size, or one whose last 100ms moved faster than 0.5px/ms toward the
+ * edge, closes it — so a short flick works and a long, slow drag works, and a
+ * drag that parks before letting go doesn't fling the sheet away. Velocity is
+ * windowed rather than averaged over the gesture, which is why the bar is 0.5
+ * and not Vaul's 0.11 (see `gesture.ts`, shared with Toast's swipe). A finger
+ * pulling back at release keeps the sheet open even past the distance line.
+ * Anything short of dismissal eases back on `--kernel-ease-drawer` over
+ * `--kernel-duration-sheet` (the stylesheet's own open transition, so the
+ * settle and the entrance are one motion); dragging past the open position
+ * rubber-bands asymptotically instead of stopping dead. A dismissal leaves
+ * from wherever the finger let go, on the exit timing, rather than restarting
+ * from the resting position.
+ *
  * The handle is `aria-hidden` decoration (the sheet is already dismissable by
  * Escape, the close button, and the backdrop), which is why it can be
  * absolutely positioned at the anchored edge rather than needing to come first
@@ -143,9 +167,9 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     ...dialogClassNames
   } = classNames ?? {};
 
-  const handleDismiss = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
+  // Returning the veto lets the drag engine settle the sheet back instead of
+  // leaving it translated off-screen.
+  const handleDismiss = useCallback(() => emitChange(onOpenChange, false, "drag-dismiss"), [onOpenChange]);
 
   const snaps = useMemo(() => parseSnapPoints(snapPoints), [snapPoints]);
 
@@ -194,7 +218,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
   useEffect(() => {
     if (!open || maxDisplayWidth === undefined) return;
     const check = () => {
-      if (window.innerWidth > maxDisplayWidth) onOpenChange(false);
+      if (window.innerWidth > maxDisplayWidth) emitChange(onOpenChange, false, "max-display-width");
     };
     check();
     window.addEventListener("resize", check);

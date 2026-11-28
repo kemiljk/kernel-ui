@@ -69,18 +69,29 @@ kernel-menu-separator {
 
 .kernel-DropdownMenu-item {
   display: flex;
-  align-items: center;
+  /* Baseline, not centre: a trailing shortcut is a step smaller than the
+     label, and centring it would float its baseline above the label's.
+     The leading icon opts back into centring below. */
+  align-items: baseline;
   text-align: start;
   border: none;
   text-decoration: none;
   /* Concentric with .content's own rounding — see the matching comment
      in @kernelui-lib/react's DropdownMenu.module.css `.item`. */
   border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
-  padding: var(--kernel-space-3);
+  /* Compact rows, the rhythm dense menus settle on: about a control's
+     height per row instead of a full touch-target block, so a six-item
+     menu doesn't tower over the trigger that opened it. Matches
+     Combobox's options, so every list of choices reads the same. */
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  /* Room for a leading icon and a trailing shortcut (see below). */
+  gap: var(--kernel-space-2);
   background-color: transparent;
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height);
   cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
@@ -120,19 +131,116 @@ a.kernel-DropdownMenu-item {
   color: var(--kernel-color-danger-text);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .kernel-DropdownMenu-item:hover:not(:disabled) {
-    background-color: var(--kernel-color-accent-subtle);
-  }
-
-  .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled) {
-    background-color: var(--kernel-color-danger-subtle);
-  }
+/* No :hover fill. The highlight follows the pointer by moving focus
+   (utils/menuFocus.ts), so `[data-highlighted]` is the only highlight and
+   a row the pointer rests on can't stay lit while the keyboard moves on. */
+.kernel-DropdownMenu-item[data-destructive][data-highlighted] {
+  background-color: var(--kernel-color-danger-subtle);
 }
 
+/* `data-input` records whether the pointer or the keyboard moved focus
+   last. A row the pointer highlighted gets the fill but not the ring:
+   browsers can match :focus-visible on script focus after a key press. */
+[role="menu"][data-input="pointer"] .kernel-DropdownMenu-item:focus-visible {
+  outline: none;
+}
+
+/* A pointer open focuses the menu itself (tabindex="-1") so nothing is
+   highlighted yet; the panel needs no ring of its own for that. */
+.kernel-DropdownMenu-content:focus-visible,
+.kernel-DropdownMenu-morphContent:focus-visible {
+  outline: none;
+}
+
+/* A destructive row keeps its danger tint when it's reached from the
+   keyboard too, not only under the pointer, so arrowing onto "Delete"
+   reads as the same warning as hovering it. */
+.kernel-DropdownMenu-item[data-destructive][data-highlighted],
+.kernel-DropdownMenu-item[data-destructive]:focus-visible {
+  background-color: var(--kernel-color-danger-subtle);
+}
+
+/* A leading icon is a quiet, fixed 1rem glyph in the muted tone, so the
+   labels stay the strongest thing in the row and line up whether or not
+   a row has an icon. A destructive row's icon takes the row's colour. */
+.kernel-DropdownMenu-item > svg {
+  flex-shrink: 0;
+  align-self: center;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-DropdownMenu-item[data-destructive] > svg {
+  color: currentColor;
+}
+
+/* A shortcut (a <Kbd>, or any element marked data-slot="shortcut") is
+   pushed to the trailing edge, so shortcuts form one aligned column
+   down the menu instead of trailing each label at a different x. A step
+   smaller than the label, so a <Kbd> combo doesn't set the row height. */
+.kernel-DropdownMenu-item > kbd,
+.kernel-DropdownMenu-item > kernel-kbd,
+.kernel-DropdownMenu-item > [data-slot="shortcut"] {
+  margin-inline-start: auto;
+  padding-inline-start: var(--kernel-space-4);
+  color: var(--kernel-color-text-muted);
+  font-size: calc(var(--kernel-font-size-sm) / var(--kernel-font-scale));
+}
+
+/* <kernel-kbd> renders its own <kbd>, which sets a font size of its own. */
+.kernel-DropdownMenu-item > kernel-kbd > kbd {
+  font-size: calc(var(--kernel-font-size-sm) / var(--kernel-font-scale));
+}
+
+/* In a menu row a <kernel-kbd> is a hint, not a key cap — see the
+   matching comment in @kernelui-lib/react's DropdownMenu.module.css. */
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-slot="kbd"],
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-slot="kbd"] [data-slot="kbd-key"] {
+  min-inline-size: 0;
+  block-size: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  color: inherit;
+  font-weight: 400;
+  line-height: inherit;
+}
+
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-slot="kbd"]::before,
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-slot="kbd"] [data-slot="kbd-key"]::before {
+  content: none;
+}
+
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-slot="kbd"][data-combo] {
+  gap: 0;
+}
+
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-slot="kbd"] [data-slot="kbd-separator"] {
+  color: inherit;
+}
+
+:is(.kernel-DropdownMenu-item > kbd, .kernel-DropdownMenu-item > kernel-kbd > kbd)[data-platform="apple"] [data-slot="kbd-separator"] {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Runs edge to edge across the panel rather than stopping at the item
+   inset: a full-bleed rule reads as a break between groups, where an
+   inset one reads as underlining the row above it. The negative margin
+   cancels the panel's inline padding, which ContextMenu widens through
+   --menu-padding-inline. */
 .kernel-DropdownMenu-separator {
+  flex-shrink: 0;
   block-size: var(--kernel-border-width);
   margin-block: var(--kernel-space-1);
+  margin-inline: calc(-1 * var(--menu-padding-inline, var(--kernel-space-1)));
   background-color: var(--kernel-color-border);
 }
 
@@ -211,8 +319,8 @@ a.kernel-DropdownMenu-item {
     width var(--kernel-duration-base) var(--kernel-ease-overlay),
     height var(--kernel-duration-base) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-DropdownMenu-morphContent:popover-open {
@@ -226,8 +334,8 @@ a.kernel-DropdownMenu-item {
     width var(--kernel-duration-slow) var(--kernel-ease-overshoot),
     height var(--kernel-duration-slow) var(--kernel-ease-overshoot),
     border-radius var(--kernel-duration-slow) var(--kernel-ease-overshoot),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-DropdownMenu-morphContent[data-closing] {
@@ -237,8 +345,8 @@ a.kernel-DropdownMenu-item {
     width var(--kernel-duration-base) var(--kernel-ease-overlay),
     height var(--kernel-duration-base) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -310,4 +418,43 @@ a.kernel-DropdownMenu-item {
 @media (prefers-reduced-motion: reduce) {
   .kernel-DropdownMenu-disclosure::details-content,
   .kernel-DropdownMenu-content.kernel-DropdownMenu-disclosureContent { transition: none; }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the highlighted item (an accent-tinted background) would
+   vanish. ContextMenu shares these item styles. System colours survive the
+   repaint, so the state comes back in Highlight/HighlightText and the edges
+   in CanvasText. Anything with text on a Highlight fill also sets
+   forced-color-adjust: none, or the browser paints a Canvas backplate behind
+   the text and hides it. */
+@media (forced-colors: active) {
+  /* Hover is a highlight too, and listing the component's own hover
+     selectors here is what beats their tinted fills. */
+  .kernel-DropdownMenu-item[data-highlighted],
+  .kernel-DropdownMenu-item:focus-visible,
+  .kernel-DropdownMenu-item:hover:not(:disabled),
+  .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    outline-color: CanvasText;
+  }
+
+  .kernel-DropdownMenu-item[data-highlighted],
+  .kernel-DropdownMenu-item:focus-visible,
+  .kernel-DropdownMenu-item:hover:not(:disabled),
+  .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled),
+  .kernel-DropdownMenu-item[data-highlighted] *,
+  .kernel-DropdownMenu-item:focus-visible *,
+  .kernel-DropdownMenu-item:hover:not(:disabled) * {
+    color: HighlightText;
+  }
+
+  .kernel-DropdownMenu-item:disabled {
+    color: GrayText;
+  }
+
+  .kernel-DropdownMenu-separator {
+    background-color: CanvasText;
+  }
 }

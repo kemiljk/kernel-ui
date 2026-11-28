@@ -6,7 +6,8 @@ import "./Header.css";
  * pretending to be one.
  *
  * Attributes: `sticky` (boolean) — pins the header to the top of its
- * scroll container with a blurred backdrop.
+ * scroll container with a blurred backdrop, which turns solid under
+ * `prefers-reduced-transparency: reduce`.
  */
 export class KernelHeader extends KernelElement {
   static get observedAttributes() {

@@ -7,7 +7,8 @@ guidance for anyone (human or agent) making changes here.
 ## Release checklist for pull requests
 
 Any PR that changes a publishable package under `packages/react`,
-`packages/elements`, `packages/styles`, or `packages/cli` must include a
+`packages/elements`, `packages/styles`, `packages/cli`, `packages/testing`,
+`packages/eslint-plugin`, or `packages/agent` must include a
 `.changeset/<descriptive-name>.md` file describing the affected package(s) and
 the release level (`patch`, `minor`, or `major`). Run `bunx changeset` to create
 it. Docs-only changes do not need a Changeset. A bump that only edits
@@ -62,6 +63,19 @@ new component done, grep both `packages/react/src/index.ts` and
   LLM asset generation. Run `bun run build` there after changing entries.
 - `packages/cli` — `@kernelui-lib/cli`. Published integration CLI (`kernel init`,
   `kernel doctor`, `kernel docs`).
+- `plugins/kernel-ui` + `.claude-plugin/marketplace.json` — the Claude Code
+  plugin (skills + MCP server). Its `skills/` is a generated copy of
+  `packages/*/skills`; edit the originals and run `bun run plugin:sync`
+  (`bun run test:plugin` fails in CI when the copy is stale).
+- `apps/docs/public/r/` — the shadcn registry, generated (and gitignored) by
+  `apps/docs/scripts/generate-shadcn-registry.mjs` during the docs build;
+  `bun run test:shadcn` validates it against shadcn's schemas.
+- `packages/agent` — `@kernelui-lib/agent`. Framework-free agent bridge
+  (snapshot from roles/names/states, `act()` through real DOM events,
+  confirmation gates, WebMCP tools) plus a `./react` hook. Zero runtime
+  deps; its component list is generated from `packages/registry` at build
+  time. Guide: `apps/docs/src/pages/agent-bridge.astro`; browser check:
+  `bun run test:agent-bridge` (after `bun run docs:build`).
 
 ## Conventions to match, not reinvent
 
@@ -88,6 +102,17 @@ new component done, grep both `packages/react/src/index.ts` and
   re-apply it in `applyLabels()`. Defaults must match between packages.
   Strings the consumer already passes (`label`, `placeholder`,
   `emptyMessage`) stay plain props.
+- **Deprecating a prop or attribute.** Keep it working, give it a
+  JSDoc `@deprecated` tag that names the replacement, and warn where it's read with `warnDeprecated(component,
+  message)` from `utils/warnDeprecated.ts`: one `console.warn` per
+  component + message per page, development only. In React, gate the call
+  on `process.env.NODE_ENV !== "production" && prop !== undefined` so a
+  consumer's production build drops it (see `Dialog`'s `className`); in a
+  Custom Element just call it, since it checks `globalThis.KERNEL_DEV`, then
+  `process.env.NODE_ENV`, and stays silent when neither is set (an unbundled
+  CDN page). Don't read `import.meta.env` for this: the package's own Vite
+  build bakes it. List the deprecation in the Changeset; removal waits for a
+  major.
 - Real elements over ARIA-only patterns wherever a native element exists.
   Every component's top JSDoc comment explains *why* it's built the way
   it is (which native element, which ARIA pattern, what tradeoff) — write
@@ -172,8 +197,10 @@ new component done, grep both `packages/react/src/index.ts` and
   `bun run test:contrast` (`scripts/check-contrast.mjs`) checks every accent
   preset in both schemes. Add a rule there when you add a semantic colour
   token that carries meaning. A control whose border is its only outline
-  (Checkbox, Radio, a Switch track) uses `--kernel-color-border-control`,
-  not `-border-interactive`.
+  (Checkbox, Radio) uses `--kernel-color-border-control`, not
+  `-border-interactive`. Switch has no visible outline: its off track is
+  a solid `--kernel-color-track` fill behind the thumb, with a transparent
+  border kept for geometry and forced colours.
 - **Anything you click needs `user-select: none`.** Triggers, summaries,
   menu items, tabs, chips, segment buttons, the lot — a double-click on a
   disclosure otherwise selects its label, which is never what the click
@@ -302,6 +329,19 @@ new component done, grep both `packages/react/src/index.ts` and
   double-clicks a disclosure.
 - `bun run test:contrast` (`scripts/check-contrast.mjs`) — APCA and WCAG 2
   targets for the semantic colour tokens, every preset, light and dark.
+- `bun run test:css` (`scripts/check-css-conventions.mjs`) — fails on a
+  physical direction (`left`, `margin-right`, a horizontal `translate`,
+  `linear-gradient(to right …)`) with no `:dir(rtl)` + `[dir="rtl"]`
+  counterpart, a black-alpha colour in a `:hover`/`:active` rule (use
+  `--kernel-color-overlay-hover`), and a literal duration or easing in a
+  `transition`/`animation` (use the `--kernel-duration-*`/`--kernel-ease-*`
+  tokens; `--kernel-ease-fade` is the linear crossfade). Allowlist a real
+  exception in or directly above the rule with
+  `/* kernel-allow: <check> — reason */`.
+- `bun run test:size` (`scripts/check-size.mjs`, after a build) — gzip and
+  brotli size of each package's shipped entry files against
+  `scripts/size-budgets.json`. If growth is intended, run
+  `node scripts/check-size.mjs --update` and say why in the PR.
 
 - `bun run test:parity` (`scripts/check-parity.mjs`) — fails when a
   registry entry's React export or custom element tag is missing from
@@ -313,6 +353,13 @@ new component done, grep both `packages/react/src/index.ts` and
   (`bun run docs:build`). A scrolling region needs `tabIndex={0}` (and a
   name if it's a `role="region"`); ARIA states go on the role that allows
   them (a calendar's `aria-selected` is on the gridcell, not its button).
+- `bun run test:screenshots` (`scripts/screenshot-suite.mjs`) — screenshots
+  every live docs example under light/Sharp, light/Round, dark/Round, RTL
+  and a low-sitting font (`--list-variants`, `--variants=…`, slug filter
+  like `test:a11y`). Run with `--update` before a visual change to save a
+  baseline, then without it afterwards: it fails when a shot differs by
+  more than 0.1% of pixels and writes `screenshots/report/index.html`.
+  Baselines are per-machine and never committed. Needs a docs build.
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every

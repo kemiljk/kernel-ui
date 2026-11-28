@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { inputModality } from "../../utils/changeDetails";
 import { DetailsPanelAnimator } from "../../utils/detailsTransition";
 import "./Accordion.css";
 
@@ -33,6 +34,12 @@ export class KernelAccordion extends KernelElement {
  * Attributes: `title` (the summary text — for richer markup, use a
  * child tagged `slot="title"` instead), `default-open` (boolean, read
  * once at connect).
+ *
+ * Events: a bubbling, cancelable `beforetoggle` `CustomEvent` before the
+ * summary opens or closes the item, `detail: { open, reason }` with
+ * `reason` `"trigger-press"` or `"keyboard"`; `preventDefault()` keeps it
+ * as it is. (An item the browser closes because another in the same
+ * single-open accordion opened isn't reported.)
  */
 export class KernelAccordionItem extends KernelElement {
   private animator: DetailsPanelAnimator | undefined;
@@ -90,7 +97,15 @@ export class KernelAccordionItem extends KernelElement {
     content.append(...rest);
 
     details.append(summary, content);
-    this.animator = new DetailsPanelAnimator(details, content);
+    this.animator = new DetailsPanelAnimator(details, content, {
+      onBeforeOpenChange: (open, event) =>
+        this.emitChange(
+          "beforetoggle",
+          { open },
+          inputModality(event) === "keyboard" ? "keyboard" : "trigger-press",
+          event,
+        ),
+    });
     if (this.hasAttribute("default-open")) this.animator.snapOpen(true);
 
     this.native = details;

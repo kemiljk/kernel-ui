@@ -1,5 +1,6 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Select.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let selectCounter = 0;
 
@@ -21,12 +22,26 @@ let selectCounter = 0;
  * description, and error text flush left instead of the default inset
  * that lines them up with the select's own text padding), `invalid`,
  * `required`, `disabled`, `value`, `name`.
+ *
+ * Change reasons: a native `change` can't be cancelled, so a bubbling,
+ * cancelable `beforevaluechange` is dispatched from this element first, with
+ * `detail: { value, reason }` — `"item-press"`, `"keyboard"` or
+ * `"typeahead"`, worked out from the last pointer/key on the control (a
+ * platform picker that's a separate OS menu may swallow those keys, so
+ * it's best-effort there). `preventDefault()` restores the previous option
+ * and stops the native `change` at this element. Once committed, a
+ * `valuechange` with the same detail.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<select>`; an authored `aria-describedby` is
+ * added after its own hint and error ids.
  */
 export class KernelSelect extends KernelElement {
   private readonly generatedId = `kernel-select-${++selectCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -40,12 +55,20 @@ export class KernelSelect extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.select;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
+  }
+
   connectedCallback() {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("Select");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("Select", "label");
@@ -68,6 +91,37 @@ export class KernelSelect extends KernelElement {
     chevron.setAttribute("aria-hidden", "true");
     chevron.innerHTML =
       '<path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />';
+
+    let lastKey: string | null = null;
+    // The committed value a veto restores. Refreshed on every way in — focus,
+    // a press (Safari doesn't always focus a select on click) and a key —
+    // all of which run before the browser changes the value.
+    let previousValue = select.value;
+    select.addEventListener("keydown", (event) => {
+      lastKey = event.key;
+      previousValue = select.value;
+    });
+    select.addEventListener("pointerdown", () => {
+      lastKey = null;
+      previousValue = select.value;
+    });
+    select.addEventListener("focus", () => (previousValue = select.value));
+    wrapper.addEventListener("change", (event) => {
+      if (event.target !== select) return;
+      const reason =
+        inputModality(event) !== "keyboard"
+          ? "item-press"
+          : lastKey && lastKey.length === 1 && lastKey !== " "
+            ? "typeahead"
+            : "keyboard";
+      if (!this.emitChange("beforevaluechange", { value: select.value }, reason, event)) {
+        select.value = previousValue;
+        event.stopPropagation();
+        return;
+      }
+      previousValue = select.value;
+      this.emitCommitted("valuechange", { value: select.value }, reason, event);
+    });
 
     wrapper.append(select, chevron);
     root.append(label, wrapper);
@@ -92,10 +146,10 @@ export class KernelSelect extends KernelElement {
     const hasError = invalid && this.hasAttribute("error-message");
     const ids = [
       hasError ? `${id}-error` : null,
-      this.hasAttribute("description") ? `${id}-description` : null,
+      // The error replaces the description while it shows: reference one, never a missing id.
+      !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) select.setAttribute("aria-describedby", ids.join(" "));
-    else select.removeAttribute("aria-describedby");
+    this.setDescribedBy(select, ids);
     this.renderHint();
   }
 

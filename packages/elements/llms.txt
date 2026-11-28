@@ -73,10 +73,29 @@ imports.
 - **Real elements, real events**: every component wraps a genuine native
   element or ARIA pattern internally and re-dispatches its real DOM
   events (`input`, `change`, `click`) — listen for those directly, no
-  proprietary event system. `<kernel-file-upload>` additionally
-  dispatches `kernel-file-upload-error` with
-  `detail: { type: "accept" | "max-size" | "max-files" | "directory", files }`
-  when a pick or drop is rejected.
+  proprietary event system. The kernel MCP server's `get_component`
+  lists each tag's events with the exact `detail` shape.
+- **File upload validation**: `<kernel-file-upload>` checks `accept`,
+  `max-size` (bytes) and `max-files`, and on a rejected pick or drop
+  dispatches `kernel-file-upload-error` (not bubbling) with
+  `detail: { type: "accept" | "max-size" | "max-files" | "directory", files: File[] }`.
+  It doesn't show a message itself: set `invalid` and `error-message`
+  from that handler. The host's `change` fires only when the selection
+  changes (an accepted pick or drop, or a removal), never for a rejected
+  pick, so clear `invalid`/`error-message` there; read the files from the
+  inner `input[type=file]`'s `.files`.
+- **Accessible names go on the tag**: `aria-label`, `aria-labelledby` and
+  `aria-describedby` on a `<kernel-*>` tag are forwarded to the real
+  control, group or landmark inside it (the host itself is a generic
+  wrapper that names nothing). An authored `aria-describedby` is added
+  after a field's own hint and error ids. `<kernel-switch>` is named by
+  its text content; with no visible text, use
+  `<kernel-switch aria-label="Bill yearly">`.
+- **`id` stays on the tag**: `getElementById()` returns the element whose
+  events you listen to; a form field's inner control gets `<id>-control`,
+  which its own `<label for>` points at.
+- **One `<h1>` per page**: no tag renders the page heading; add it
+  yourself.
 - **Contrast**: Kernel's colour tokens are checked with APCA (the
   perceptual method proposed for WCAG 3), with WCAG 2's ratio as a floor:
   - `--kernel-color-text`: Lc 75 and 4.5:1;
@@ -126,7 +145,7 @@ This package ships agent skills in `skills/` (`kernel-ui-elements`), versioned w
 - Overlays: `kernel-command-palette`, `kernel-context-menu`, `kernel-dialog`, `kernel-dropdown-menu` (+ `kernel-dropdown-menu-morph`/`kernel-menu-item`/`kernel-menu-separator`), `kernel-hover-card`, `kernel-navigation-menu` (+ `kernel-nav-menu-item`/`kernel-nav-menu-link`/`kernel-nav-menu-trigger`/`kernel-nav-menu-content`), `kernel-popover`, `kernel-sheet`, `kernel-tooltip`
 - Navigation: `kernel-breadcrumbs` (+ `kernel-breadcrumb-item`), `kernel-pagination` (+ `kernel-pagination-item`/`kernel-pagination-previous`/`kernel-pagination-next`/`kernel-pagination-ellipsis`), `kernel-tabs` (+ `kernel-tabs-list`/`kernel-tab`/`kernel-tab-panel`)
 - Data Display: `kernel-accordion` (+ `kernel-accordion-item`), `kernel-carousel` (+ `kernel-carousel-slide`), `kernel-data-table`, `kernel-date-picker`, `kernel-date-range-picker`, `kernel-table` (+ `kernel-table-caption`/`kernel-table-header`/`kernel-table-body`/`kernel-table-row`/`kernel-table-head`/`kernel-table-cell`)
-- AI: `kernel-agent-activity` (+ `kernel-agent-activity-item`), `kernel-attachment` (+ `kernel-attachment-list`), `kernel-code-block`, `kernel-composer`, `kernel-file-diff`, `kernel-message-list` (+ `kernel-message`/`kernel-message-bubble`), `kernel-message-scroller`, `kernel-reasoning`, `kernel-sources` (+ `kernel-source`/`kernel-citation`), `kernel-suggestion` (+ `kernel-suggestion-item`), `kernel-thinking-indicator`, `kernel-todo-list` (+ `kernel-todo-item`), `kernel-tool-approval`, `kernel-tool-call`, `kernel-usage-meter`
+- AI: `kernel-agent-activity` (+ `kernel-agent-activity-item`), `kernel-artifact-panel` (+ `kernel-artifact-view`), `kernel-attachment` (+ `kernel-attachment-list`), `kernel-code-block`, `kernel-composer`, `kernel-file-diff`, `kernel-message-list` (+ `kernel-message`/`kernel-message-bubble`), `kernel-message-scroller`, `kernel-model-picker`, `kernel-reasoning`, `kernel-schema-renderer`, `kernel-sources` (+ `kernel-source`/`kernel-citation`), `kernel-streaming-markdown`, `kernel-suggestion` (+ `kernel-suggestion-item`), `kernel-thinking-indicator`, `kernel-todo-list` (+ `kernel-todo-item`), `kernel-tool-approval`, `kernel-tool-call`, `kernel-usage-meter`
 <!-- GENERATED:COMPONENTS:END -->
 
 ## Utilities

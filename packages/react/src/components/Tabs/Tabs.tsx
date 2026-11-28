@@ -1,14 +1,15 @@
 import { createContext, useContext, useEffect, useId, useRef } from "react";
-import type { KeyboardEvent, ReactNode } from "react";
+import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import { inputModality, type ChangeDetails } from "../../utils/changeDetails";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { syncScrollEdges } from "../../utils/scrollEdges";
-import { useControllableState } from "../../utils/useControllableState";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./Tabs.module.css";
 
 interface TabsContextValue {
   baseId: string;
   value: string;
-  setValue: (value: string) => void;
+  setValue: (value: string, reason: TabsChangeReason, event?: ReactMouseEvent) => boolean;
 }
 
 const TabsContext = createContext<TabsContextValue | null>(null);
@@ -19,10 +20,16 @@ function useTabsContext(component: string) {
   return context;
 }
 
+/** What selected a tab: a click or tap on it, or the arrow/Home/End keys
+ * (and Space/Enter on a focused tab). */
+export type TabsChangeReason = "trigger-press" | "keyboard";
+
 export interface TabsProps {
   value?: string;
   defaultValue: string;
-  onValueChange?: (value: string) => void;
+  /** Called before the selection moves, with the reason (`"trigger-press"` or `"keyboard"`); `details.cancel()`
+   * keeps the current tab selected. */
+  onValueChange?: (value: string, details: ChangeDetails<TabsChangeReason>) => void;
   children: ReactNode;
   className?: ClassNameValue<Record<string, never>>;
 }
@@ -37,7 +44,7 @@ export interface TabsProps {
  */
 export function Tabs({ value, defaultValue, onValueChange, children, className }: TabsProps) {
   const baseId = useId();
-  const [current, setCurrent] = useControllableState({
+  const [current, setCurrent] = useControllableStateWithDetails({
     value,
     defaultValue,
     onChange: onValueChange,
@@ -219,7 +226,7 @@ export function Tab({ value, children, disabled = false, className }: TabProps) 
       aria-controls={`${baseId}-panel-${value}`}
       tabIndex={selected ? 0 : -1}
       disabled={disabled}
-      onClick={() => setValue(value)}
+      onClick={(event) => setValue(value, inputModality(event) === "keyboard" ? "keyboard" : "trigger-press", event)}
       className={[styles.tab, resolveClassName(className, { selected })]
         .filter(Boolean)
         .join(" ")}

@@ -1,6 +1,7 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import { observePillIcons } from "../../utils/pillIcons";
 import "./Toggle.css";
+import { inputModality } from "../../utils/changeDetails";
 
 /**
  * `<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA
@@ -14,13 +15,22 @@ import "./Toggle.css";
  * concentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).
  *
  * Attributes: `pressed`, `disabled` (both boolean), `size`
- * (sm/md/lg, default md), `aria-label` (forwarded to the inner
- * `<button>`, for an icon-only toggle — on the host it would name
- * nothing). Toggling dispatches a real, bubbling `change` event.
+ * (sm/md/lg, default md). `aria-label` (for an icon-only toggle),
+ * `aria-labelledby` and `aria-describedby` are forwarded to the inner
+ * `<button>`; on the host they would name nothing.
+ *
+ * Events: a bubbling, cancelable `beforevaluechange` before the toggle flips,
+ * `detail: { pressed, reason }` (`"press"` or `"keyboard"`);
+ * `preventDefault()` leaves it as it was. Then a bubbling `valuechange`
+ * and `change` with the same detail once the new state is committed.
  */
 export class KernelToggle extends KernelElement {
   static get observedAttributes() {
-    return ["pressed", "disabled", "size", "aria-label"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "pressed", "disabled", "size"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected createNative(): HTMLElement {
@@ -30,10 +40,17 @@ export class KernelToggle extends KernelElement {
     button.setAttribute("aria-pressed", "false");
     button.dataset.size = "md";
     button.dataset.state = "off";
-    button.addEventListener("click", () => {
-      if (this.hasAttribute("pressed")) this.removeAttribute("pressed");
-      else this.setAttribute("pressed", "");
-      this.dispatchEvent(new Event("change", { bubbles: true }));
+    // A cancelable `beforevaluechange` goes out before the flip,
+    // `detail: { pressed, reason }` with `reason` `"press"` or `"keyboard"`;
+    // `preventDefault()` vetoes it. `valuechange` and `change` follow once
+    // committed.
+    button.addEventListener("click", (event) => {
+      const pressed = !this.hasAttribute("pressed");
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
+      if (!this.emitChange("beforevaluechange", { pressed }, reason, event)) return;
+      this.toggleAttribute("pressed", pressed);
+      this.emitCommitted("valuechange", { pressed }, reason, event);
+      this.emitCommitted("change", { pressed }, reason, event);
     });
     return button;
   }
@@ -61,10 +78,6 @@ export class KernelToggle extends KernelElement {
         break;
       case "size":
         button.dataset.size = value ?? "md";
-        break;
-      case "aria-label":
-        if (value === null) button.removeAttribute("aria-label");
-        else button.setAttribute("aria-label", value);
         break;
     }
   }

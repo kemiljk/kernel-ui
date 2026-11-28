@@ -104,6 +104,9 @@ function panelKeyframes(from: PanelBox, to: PanelBox, opening: boolean, fromOpac
 
 export interface DetailsPanelAnimatorOptions {
   onOpenChange?: (open: boolean) => void;
+  /** Asked before a summary click opens or closes the panel; return
+   * `false` to veto (the click is already cancelled, so nothing toggles). */
+  onBeforeOpenChange?: (open: boolean, event: MouseEvent) => boolean;
 }
 
 /**
@@ -142,6 +145,7 @@ export class DetailsPanelAnimator {
       event.preventDefault();
       const next =
         this.animatingOpen !== null ? !this.animatingOpen : !this.details.open;
+      if (this.options.onBeforeOpenChange?.(next, event) === false) return;
       void this.setOpen(next);
     };
 
@@ -272,12 +276,15 @@ export interface UseDetailsTransitionOptions {
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** See `DetailsPanelAnimatorOptions.onBeforeOpenChange`. */
+  onBeforeOpenChange?: (open: boolean, event: MouseEvent) => boolean;
 }
 
 export function useDetailsTransition({
   defaultOpen = false,
   open: openProp,
   onOpenChange,
+  onBeforeOpenChange,
 }: UseDetailsTransitionOptions = {}) {
   const isControlled = openProp !== undefined;
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
@@ -290,6 +297,8 @@ export function useDetailsTransition({
   const onOpenChangeRef = useRef(onOpenChange);
   isControlledRef.current = isControlled;
   onOpenChangeRef.current = onOpenChange;
+  const onBeforeOpenChangeRef = useRef(onBeforeOpenChange);
+  onBeforeOpenChangeRef.current = onBeforeOpenChange;
 
   useEffect(() => {
     const details = detailsRef.current;
@@ -301,6 +310,7 @@ export function useDetailsTransition({
         if (!isControlledRef.current) setUncontrolledOpen(next);
         onOpenChangeRef.current?.(next);
       },
+      onBeforeOpenChange: (next, event) => onBeforeOpenChangeRef.current?.(next, event) ?? true,
     });
     animatorRef.current = animator;
 

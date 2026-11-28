@@ -1,12 +1,33 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./Callout.css";
 
-const ICONS: Record<string, string> = {
-  info: "ℹ",
-  success: "✓",
-  warning: "!",
-  danger: "✕",
+/** Same hand-authored 16px stroke icons as @kernelui-lib/react's Callout. */
+const ICONS: Record<string, string[]> = {
+  info: ["M14.25 8A6.25 6.25 0 1 1 1.75 8A6.25 6.25 0 1 1 14.25 8Z", "M8 7.25V11", "M8 5H8.01"],
+  success: ["M14.25 8A6.25 6.25 0 1 1 1.75 8A6.25 6.25 0 1 1 14.25 8Z", "M5.5 8.25L7.25 10L10.5 6.25"],
+  warning: ["M8 2.25L14.25 13.25H1.75L8 2.25Z", "M8 6.5V9", "M8 11.25H8.01"],
+  danger: ["M14.25 8A6.25 6.25 0 1 1 1.75 8A6.25 6.25 0 1 1 14.25 8Z", "M6 6L10 10M10 6L6 10"],
 };
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function calloutIcon(variant: string): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("fill", "none");
+  for (const d of ICONS[variant] ?? []) {
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "1.5");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    svg.append(path);
+  }
+  return svg;
+}
 
 /**
  * `<kernel-callout>` — there's no `<callout>` element; ARIA live-region
@@ -63,7 +84,7 @@ export class KernelCallout extends KernelElement {
       variant === "danger" || variant === "warning" ? "alert" : "status",
     );
     const icon = this.native.querySelector(`.${kernelClass("Callout", "icon")}`);
-    if (icon) icon.textContent = ICONS[variant] ?? "";
+    if (icon) icon.replaceChildren(calloutIcon(variant));
   }
 }
 

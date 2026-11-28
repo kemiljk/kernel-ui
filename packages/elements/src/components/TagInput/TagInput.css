@@ -75,6 +75,8 @@
 /* transitions.dev's "error state shake" — see TextField.css's longer
    comment on the same recipe for why this is one-shot without an
    explicit iteration-count/fill-mode. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-taginput-shake {
   0%,
   100% {
@@ -108,6 +110,16 @@
   padding-inline-start: var(--label-offset);
 }
 
+/* The tag list exists for the accessibility tree only (a role="list"
+   that owns just the chips, with the text input as its sibling rather
+   than a fake listitem). display: contents takes its box out of layout,
+   so the chips and the input stay sibling flex items of the field and
+   keep flowing inline together. The explicit role="list" keeps the list
+   semantics that display: contents would otherwise risk dropping. */
+.kernel-TagInput-tags {
+  display: contents;
+}
+
 /* Each chip also carries kernel-Badge-root, the same as React's tags
    (which render through <Badge>), so it's an optical pill: the remove
    button is marked data-icon and sits as Badge's trailing 1lh icon
@@ -119,9 +131,9 @@
   -webkit-user-select: none;
   user-select: none;
   transition:
-    opacity var(--kernel-duration-exit-fast) linear,
+    opacity var(--kernel-duration-exit-fast) var(--kernel-ease-fade),
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
-    filter var(--kernel-duration-exit-fast) linear;
+    filter var(--kernel-duration-exit-fast) var(--kernel-ease-fade);
 }
 
 /* transitions.dev's "input clear dissolve", one tag at a time: the

@@ -14,7 +14,7 @@ beforeAll(() => {
   });
 });
 
-function ControlledSheet(props: Partial<SheetProps> & { onOpenChange?: (open: boolean) => void }) {
+function ControlledSheet(props: Omit<Partial<SheetProps>, "onOpenChange"> & { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(true);
   const { onOpenChange, ...rest } = props;
   return (
@@ -253,7 +253,7 @@ describe("Sheet", () => {
       now.mockRestore();
     }
 
-    function openSheet(props: Partial<SheetProps> = {}) {
+    function openSheet(props: Omit<Partial<SheetProps>, "onOpenChange"> & { onOpenChange?: (open: boolean) => void } = {}) {
       window.innerHeight = 900;
       render(<ControlledSheet snapPoints={SNAPS} {...props} />);
       const dialog = screen.getByRole("dialog") as HTMLDialogElement;

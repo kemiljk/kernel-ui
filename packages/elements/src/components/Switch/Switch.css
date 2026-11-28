@@ -28,8 +28,12 @@
   inline-size: var(--kernel-switch-inline);
   block-size: var(--kernel-switch-block);
   border-radius: var(--kernel-switch-radius);
-  border: var(--kernel-border-width) solid var(--kernel-color-border-control);
-  background-color: var(--kernel-color-surface-raised);
+  /* No visible outline: the off track is a solid fill, so the switch reads
+     as one shape rather than a ring with a dot in it. The border stays,
+     transparent, to keep the geometry, and because forced colours (Windows
+     High Contrast) repaint it as a real outline. */
+  border: var(--kernel-border-width) solid transparent;
+  background-color: var(--kernel-color-track);
   cursor: inherit;
   padding: 0;
   transition: background-color var(--kernel-duration-base) var(--kernel-ease-out),
@@ -43,7 +47,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-Switch-control:hover:not(:disabled):not([data-state="checked"]) {
-    border-color: var(--kernel-color-border-hover);
+    background-color: var(--kernel-color-track-hover);
   }
 }
 
@@ -106,3 +110,44 @@
   }
 }
 
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the thumb and the checked fill would vanish. System
+   colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  /* The off track's border is transparent; name the system colour so it
+     is drawn as a real outline rather than left to the UA's forcing. */
+  .kernel-Switch-control {
+    border-color: CanvasText;
+  }
+
+  .kernel-Switch-thumb {
+    background-color: CanvasText;
+  }
+
+  .kernel-Switch-control[data-state="checked"] {
+    background-color: Highlight;
+    border-color: Highlight;
+  }
+
+  .kernel-Switch-control[data-state="checked"] .kernel-Switch-thumb {
+    background-color: HighlightText;
+  }
+
+  .kernel-Switch-control:disabled {
+    border-color: GrayText;
+  }
+
+  .kernel-Switch-control:disabled .kernel-Switch-thumb {
+    background-color: GrayText;
+  }
+
+  .kernel-Switch-control[data-state="checked"]:disabled {
+    background-color: GrayText;
+  }
+
+  .kernel-Switch-control[data-state="checked"]:disabled .kernel-Switch-thumb {
+    background-color: Canvas;
+  }
+}

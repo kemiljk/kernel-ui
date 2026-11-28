@@ -167,3 +167,27 @@
     scale: 1;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the pressed state (an accent-tinted background) would
+   vanish. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. Anything with text on
+   a Highlight fill also sets forced-color-adjust: none, or the browser
+   paints a Canvas backplate behind the text and hides it. */
+@media (forced-colors: active) {
+  /* The hover selector is listed so it ties the component's own hover
+     fill on specificity and loses on order. */
+  .root[data-state="on"],
+  .root[data-state="on"]:hover:not(:disabled) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
+  }
+
+  .root:disabled {
+    color: GrayText;
+  }
+}

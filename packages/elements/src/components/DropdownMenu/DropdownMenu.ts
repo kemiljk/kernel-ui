@@ -1,7 +1,18 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { inputModality } from "../../utils/changeDetails";
+import { attachPopoverReasons, type PopoverReasonController } from "../../utils/popoverReasons";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import { findTriggerElement } from "../../utils/trigger";
 import { playMorphOpen, playMorphClose } from "../../utils/menuMorph";
+import {
+  clearMenuPointerHighlight,
+  focusMenuOnOpen,
+  highlightMenuItemUnderPointer,
+  menuTriggerKeyIntent,
+  returnFocusFromMenu,
+  roveMenuItems,
+  type MenuOpenFocus,
+} from "../../utils/menuFocus";
 import "./DropdownMenu.css";
 
 let menuCounter = 0;
@@ -10,36 +21,61 @@ let menuCounter = 0;
  * — see that class's click handler. */
 type MenuClosable = HTMLElement & {
   hidePopover?: () => void;
-  __kernelMenuClose?: () => void;
+  /** Close after an item was chosen; the click says pointer or keyboard. */
+  __kernelMenuClose?: (event?: Event) => void;
 };
 
-function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
-  const items = Array.from(
-    menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'),
-  );
-  if (items.length === 0) return;
-  const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-  let nextIndex: number | null = null;
+/**
+ * How the menu was opened decides where focus lands (see
+ * `utils/menuFocus.ts`): a pointer open focuses the menu container with
+ * nothing highlighted, a keyboard open focuses the first item, or the last
+ * for ArrowUp. The element twin of React's `useMenuOpenFocus`, shared by
+ * all three presentations, which differ only in what `open` does.
+ */
+function wireMenuOpenFocus(
+  trigger: HTMLElement | null,
+  menu: HTMLElement,
+  { isOpen, open }: { isOpen: () => boolean; open: () => void },
+  signal?: AbortSignal,
+) {
+  let intent: MenuOpenFocus = "first";
+  const focusOnOpen = () => {
+    const next = intent;
+    intent = "first";
+    focusMenuOnOpen(menu, next);
+  };
 
-  switch (event.key) {
-    case "ArrowDown":
-      nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
-      break;
-    case "ArrowUp":
-      nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
-      break;
-    case "Home":
-      nextIndex = 0;
-      break;
-    case "End":
-      nextIndex = items.length - 1;
-      break;
-    default:
-      return;
-  }
+  menu.tabIndex = -1;
+  menu.addEventListener("keydown", (event) => roveMenuItems(menu, event), { signal });
+  menu.addEventListener("pointermove", (event) => highlightMenuItemUnderPointer(menu, event), { signal });
+  menu.addEventListener("pointerleave", () => clearMenuPointerHighlight(menu), { signal });
+  trigger?.addEventListener("pointerdown", () => {
+    intent = "pointer";
+  }, { signal });
+  trigger?.addEventListener("keydown", (event) => {
+    const next = menuTriggerKeyIntent(event.key);
+    if (!next) return;
+    intent = next;
+    // Enter and Space open through the trigger's own activation.
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    if (isOpen()) focusOnOpen();
+    else open();
+  }, { signal });
 
-  event.preventDefault();
-  items[nextIndex]?.focus();
+  return {
+    focusOnOpen,
+    resetIntent: () => {
+      intent = "first";
+    },
+  };
+}
+
+/** Names the `role="menu"` after the button that opens it (APG menu
+ * button): `aria-labelledby` the trigger, giving it an id if it has none. */
+function labelMenuByTrigger(menu: HTMLElement, trigger: HTMLElement) {
+  if (!trigger.id) trigger.id = `${menu.id}-trigger`;
+  menu.setAttribute("aria-labelledby", trigger.id);
 }
 
 /**
@@ -56,12 +92,27 @@ function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
  * default center), `offset` (px, default 8). `presentation="disclosure"`
  * uses a native details/summary in the page's stacking context; provide
  * <summary slot="trigger">. CSS owns entry/exit without a top-layer backdrop.
+ *
+ * Focus follows the WAI-ARIA menu button pattern. Opening from the keyboard
+ * (Enter, Space, ArrowDown) focuses the first item, and ArrowUp opens on the
+ * last. Opening with a pointer focuses the menu itself, so no item is
+ * highlighted until the pointer reaches one or a key is pressed. After that
+ * the highlight follows the pointer by moving focus, so only one row is ever
+ * highlighted, and focus rings show only for the keyboard.
+ *
+ * Events: a bubbling, cancelable `beforetoggle` `CustomEvent` before the
+ * menu opens or closes, `detail: { open, reason }` — `"trigger-press"`,
+ * `"escape-key"`, `"outside-press"`, `"focus-out"` (disclosure only),
+ * `"item-press"`, `"item-keyboard"` or `"programmatic"`. `preventDefault()`
+ * keeps the menu as it is (e.g. veto `"item-keyboard"` to keep it open
+ * while someone works through it with the keyboard).
  */
 export class KernelDropdownMenu extends KernelElement {
   private readonly contentId = `kernel-dropdown-menu-${++menuCounter}`;
   private readonly positioner = new FloatingPositioner();
   private disclosure: HTMLDetailsElement | null = null;
   private disclosureListeners: AbortController | null = null;
+  private reasons: PopoverReasonController<"item-press" | "item-keyboard"> | null = null;
 
   protected createNative(): HTMLElement {
     const content = document.createElement("div");
@@ -90,30 +141,41 @@ export class KernelDropdownMenu extends KernelElement {
 
     const content = this.createNative();
     content.append(...rest);
-    content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event));
 
     const { placement, align, offset } = readFloatingAttributes(this);
     content.setAttribute("data-placement", placement);
     content.setAttribute("data-align", align);
 
-    if (triggerSlot) {
-      const triggerEl = findTriggerElement(triggerSlot);
+    const triggerEl = triggerSlot ? findTriggerElement(triggerSlot) : null;
+    const openFocus = wireMenuOpenFocus(triggerEl, content, {
+      isOpen: () => content.matches(":popover-open"),
+      open: () => content.showPopover?.(),
+    });
+
+    if (triggerEl) {
       triggerEl.setAttribute("popovertarget", this.contentId);
+      labelMenuByTrigger(content, triggerEl);
       triggerEl.setAttribute("aria-haspopup", "menu");
       triggerEl.setAttribute("aria-expanded", "false");
       this.positioner.attach(triggerEl, content, { placement, align, offset });
 
+      this.reasons = attachPopoverReasons<"item-press" | "item-keyboard">(
+        content,
+        () => triggerEl,
+        (open, reason, event) => this.emitChange("beforetoggle", { open }, reason, event),
+      );
+      (content as MenuClosable).__kernelMenuClose = (event) =>
+        this.reasons?.closeWith(itemReason(event), event);
       content.addEventListener("toggle", (event) => {
         const open = (event as ToggleEvent).newState === "open";
         triggerEl.setAttribute("aria-expanded", String(open));
         this.positioner.setOpen(open);
         if (open) {
           content.setAttribute("data-open", "true");
-          requestAnimationFrame(() => {
-            content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
-          });
+          requestAnimationFrame(() => openFocus.focusOnOpen());
         } else {
           content.removeAttribute("data-open");
+          openFocus.resetIntent();
         }
       });
     }
@@ -137,12 +199,17 @@ export class KernelDropdownMenu extends KernelElement {
     summary.setAttribute("aria-controls", this.contentId);
     summary.setAttribute("aria-expanded", "false");
     const content = this.createNative();
+    labelMenuByTrigger(content, summary);
     content.removeAttribute("popover");
     content.classList.add(kernelClass("DropdownMenu", "disclosureContent"));
     content.setAttribute("data-placement", placement);
     content.setAttribute("data-align", align);
     content.inert = true;
-    (content as MenuClosable).__kernelMenuClose = () => this.closeDisclosure();
+    (content as MenuClosable).__kernelMenuClose = (event) => this.closeDisclosure(itemReason(event), event);
+    // The summary's click is what toggles <details>, and it's cancelable.
+    summary.addEventListener("click", (event) => {
+      if (!this.emitChange("beforetoggle", { open: !details.open }, "trigger-press", event)) event.preventDefault();
+    });
     for (const node of Array.from(this.childNodes)) {
       if (node !== summary) content.append(node);
     }
@@ -153,8 +220,9 @@ export class KernelDropdownMenu extends KernelElement {
     this.listenToDisclosure();
   }
 
-  private closeDisclosure() {
-    if (!this.disclosure) return;
+  private closeDisclosure(reason: string, event?: Event) {
+    if (!this.disclosure?.open) return;
+    if (!this.emitChange("beforetoggle", { open: false }, reason, event)) return;
     if (this.native?.contains(document.activeElement)) {
       this.disclosure.querySelector<HTMLElement>("summary")?.focus();
     }
@@ -168,6 +236,12 @@ export class KernelDropdownMenu extends KernelElement {
     const { signal } = controller;
     const details = this.disclosure!;
     const content = this.native!;
+    const openFocus = wireMenuOpenFocus(details.querySelector("summary"), content, {
+      isOpen: () => details.open,
+      open: () => {
+        if (this.emitChange("beforetoggle", { open: true }, "trigger-press")) details.open = true;
+      },
+    }, signal);
     details.addEventListener("toggle", () => {
       details.querySelector("summary")?.setAttribute("aria-expanded", String(details.open));
       content.inert = !details.open;
@@ -175,21 +249,21 @@ export class KernelDropdownMenu extends KernelElement {
       else content.removeAttribute("data-open");
       // WebKit exposes the previously skipped details subtree after layout.
       if (details.open) requestAnimationFrame(() => requestAnimationFrame(() => {
-        if (details.open) content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
+        if (details.open) openFocus.focusOnOpen();
       }));
+      else openFocus.resetIntent();
     }, { signal });
-    content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event), { signal });
     // A transient blur during a touch tap must not pre-toggle the summary.
     document.addEventListener("focusin", (event) => {
-      if (details.open && !details.contains(event.target as Node)) this.closeDisclosure();
+      if (details.open && !details.contains(event.target as Node)) this.closeDisclosure("focus-out", event);
     }, { signal });
     document.addEventListener("pointerdown", (event) => {
-      if (details.open && !details.contains(event.target as Node)) this.closeDisclosure();
+      if (details.open && !details.contains(event.target as Node)) this.closeDisclosure("outside-press", event);
     }, { signal });
     document.addEventListener("keydown", (event) => {
       if (details.open && event.key === "Escape" && !event.defaultPrevented) {
         event.preventDefault();
-        this.closeDisclosure();
+        this.closeDisclosure("escape-key", event);
       }
     }, { signal });
   }
@@ -198,6 +272,10 @@ export class KernelDropdownMenu extends KernelElement {
     this.positioner.destroy();
     this.disclosureListeners?.abort();
   }
+}
+
+function itemReason(event?: Event): "item-press" | "item-keyboard" {
+  return inputModality(event) === "keyboard" ? "item-keyboard" : "item-press";
 }
 
 let menuMorphCounter = 0;
@@ -223,6 +301,7 @@ let menuMorphCounter = 0;
  * Children: one element tagged `slot="trigger"`, everything else
  * becomes the menu. Attributes: `placement` (default bottom), `align`
  * (start/center/end, default center), `offset` (px, default 8).
+ * Events: the same cancelable `beforetoggle` as `<kernel-dropdown-menu>`.
  */
 export class KernelDropdownMenuMorph extends KernelElement {
   private readonly contentId = `kernel-dropdown-menu-morph-${++menuMorphCounter}`;
@@ -230,6 +309,7 @@ export class KernelDropdownMenuMorph extends KernelElement {
   private open = false;
   private closeController: AbortController | null = null;
   private triggerEl: HTMLElement | null = null;
+  private openFocus: ReturnType<typeof wireMenuOpenFocus> | null = null;
 
   connectedCallback() {
     if (this.native) return;
@@ -248,20 +328,30 @@ export class KernelDropdownMenuMorph extends KernelElement {
     content.setAttribute("data-slot", "dropdown-menu-morph-content");
     content.className = kernelClass("DropdownMenu", "morphContent");
     content.append(...rest);
-    content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event));
-    (content as MenuClosable).__kernelMenuClose = () => this.close();
+    (content as MenuClosable).__kernelMenuClose = (event) => this.close(itemReason(event), event);
 
     const { placement, align, offset } = readFloatingAttributes(this);
     content.setAttribute("data-placement", placement);
     content.setAttribute("data-align", align);
 
-    if (triggerSlot) {
-      const triggerEl = findTriggerElement(triggerSlot);
+    const triggerEl = triggerSlot ? findTriggerElement(triggerSlot) : null;
+    this.openFocus = wireMenuOpenFocus(triggerEl, content, {
+      isOpen: () => this.open,
+      open: () => {
+        if (this.emitChange("beforetoggle", { open: true }, "trigger-press")) this.openMenu();
+      },
+    });
+
+    if (triggerEl) {
       this.triggerEl = triggerEl;
+      labelMenuByTrigger(content, triggerEl);
       triggerEl.setAttribute("aria-haspopup", "menu");
       triggerEl.setAttribute("aria-expanded", "false");
       this.positioner.attach(triggerEl, content, { placement, align, offset });
-      triggerEl.addEventListener("click", () => (this.open ? this.close() : this.openMenu()));
+      triggerEl.addEventListener("click", (event) => {
+        if (this.open) this.close("trigger-press", event);
+        else if (this.emitChange("beforetoggle", { open: true }, "trigger-press", event)) this.openMenu();
+      });
     }
 
     this.native = content;
@@ -305,16 +395,14 @@ export class KernelDropdownMenuMorph extends KernelElement {
       }
     });
 
-    requestAnimationFrame(() => {
-      content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
-    });
+    requestAnimationFrame(() => this.openFocus?.focusOnOpen());
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (!content.contains(target) && !trigger.contains(target)) this.close();
+      if (!content.contains(target) && !trigger.contains(target)) this.close("outside-press", event, false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") this.close();
+      if (event.key === "Escape") this.close("escape-key", event);
     };
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
@@ -330,13 +418,19 @@ export class KernelDropdownMenuMorph extends KernelElement {
     );
   }
 
-  private close() {
+  /** Focus goes back to the trigger first, as `popover="auto"` does for
+   * `<kernel-dropdown-menu>` (a manual popover gets no such restore),
+   * except after an outside press, which leaves focus where it put it. */
+  private close(reason = "programmatic", event?: Event, returnFocus = true) {
     if (!this.open) return;
     const content = this.native;
     const trigger = this.triggerEl;
     if (!content || !trigger) return;
+    if (!this.emitChange("beforetoggle", { open: false }, reason, event)) return;
+    if (returnFocus) returnFocusFromMenu(content, trigger);
 
     this.open = false;
+    this.openFocus?.resetIntent();
     this.triggerEl?.setAttribute("aria-expanded", "false");
     this.positioner.setOpen(false);
     content.removeAttribute("data-open");
@@ -395,10 +489,11 @@ export class KernelMenuItem extends KernelElement {
       // bare hidePopover() with whatever that popover's own close needs
       // to do first — `KernelDropdownMenuMorph` sets this so selecting
       // an item still plays the shrink-back-to-the-trigger animation
-      // instead of the panel vanishing outright. `KernelDropdownMenu`
-      // and `KernelContextMenu` never set it, so they fall through to
-      // the plain hidePopover() exactly as before.
-      if (popover?.__kernelMenuClose) popover.__kernelMenuClose();
+      // instead of the panel vanishing outright, and `KernelContextMenu`
+      // sets it so a selection plays its exit and returns focus.
+      // `KernelDropdownMenu`'s popover presentation never sets it: `popover="auto"` falls
+      // through to the plain hidePopover(), which restores focus natively.
+      if (popover?.__kernelMenuClose) popover.__kernelMenuClose(event);
       else popover?.hidePopover?.();
     });
     return el;

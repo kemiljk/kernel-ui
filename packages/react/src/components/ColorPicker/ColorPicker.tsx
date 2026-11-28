@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useId, useState } from "react";
 import type { CSSProperties, InputHTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import type { ChangeDetails } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./ColorPicker.module.css";
 
 export interface ColorPickerState {
@@ -16,6 +17,10 @@ export interface ColorPickerLabels {
 }
 
 const defaultColorPickerLabels: ColorPickerLabels = { hexValue: "Hex color value" };
+
+/** What changed a `ColorPicker`: the native colour picker opened from the
+ * swatch, or a valid hex typed into the hex field. */
+export type ColorPickerChangeReason = "picker" | "hex-input";
 
 export interface ColorPickerProps
   extends Omit<
@@ -32,7 +37,9 @@ export interface ColorPickerProps
    * wouldn't already produce on its own. */
   value?: string;
   defaultValue?: string;
-  onValueChange?: (value: string) => void;
+  /** Called before the colour changes, with the reason (`"picker"` or `"hex-input"`); `details.cancel()`
+   * keeps the current colour. */
+  onValueChange?: (value: string, details: ChangeDetails<ColorPickerChangeReason>) => void;
   /** Renders an editable hex text field beside the swatch. Default `true`:
    * the native swatch is the only way to open the OS picker, but it
    * communicates nothing textually and can't be typed into, and typing an
@@ -118,7 +125,7 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
     const descriptionId = `${inputId}-description`;
     const errorId = `${inputId}-error`;
 
-    const [current, setCurrent] = useControllableState({
+    const [current, setCurrent] = useControllableStateWithDetails({
       value,
       defaultValue,
       onChange: onValueChange,
@@ -137,10 +144,9 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
 
     const draftInvalid = draft !== "" && normalizeHex(draft) === null;
     const showError = invalid && Boolean(errorMessage);
-    const describedBy =
-      [showError ? errorId : null, description ? descriptionId : null]
-        .filter(Boolean)
-        .join(" ") || undefined;
+    // The error replaces the description while it shows, so only one id is
+    // ever referenced: pointing at both left a dangling aria-describedby.
+    const describedBy = showError ? errorId : description ? descriptionId : undefined;
 
     const state: ColorPickerState = { disabled, invalid };
 
@@ -177,7 +183,7 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
               value={current}
               disabled={disabled}
               aria-describedby={describedBy}
-              onChange={(event) => setCurrent(event.target.value)}
+              onChange={(event) => setCurrent(event.target.value, "picker", event)}
               className={[styles.input, resolveClassName(className, state)]
                 .filter(Boolean)
                 .join(" ")}
@@ -199,7 +205,7 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
                 const next = event.target.value;
                 setDraft(next);
                 const normalized = normalizeHex(next);
-                if (normalized) setCurrent(normalized);
+                if (normalized) setCurrent(normalized, "hex-input", event);
               }}
               onBlur={() => {
                 setHexFocused(false);

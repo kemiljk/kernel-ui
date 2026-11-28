@@ -1,0 +1,232 @@
+/* Hand-written twin of StreamingMarkdown.module.css from @kernelui-lib/react — the same
+   rules under the class names React's CSS Modules compile to (kernelClass() in
+   packages/elements/src/base.ts). */
+kernel-streaming-markdown {
+  display: block;
+}
+
+/* Prose for model output. Every element carries its own class rather than
+   being styled by descendant selectors, so nothing here reaches into the
+   nested CodeBlock (it has its own <pre>/<code>), and an element replaced
+   through `components` keeps its styling by spreading `className`. */
+.kernel-StreamingMarkdown-root {
+  min-inline-size: 0;
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-base);
+  line-height: var(--kernel-line-height);
+  /* Model output carries long unbroken strings (URLs, paths, hashes) that
+     would otherwise push a message wider than its column. */
+  overflow-wrap: anywhere;
+}
+
+/* Flow spacing: blocks own no outer margin; the gap between siblings is set
+   here, once, so the first and last block sit flush with the container. */
+.kernel-StreamingMarkdown-root > *,
+.kernel-StreamingMarkdown-blockquote > *,
+.kernel-StreamingMarkdown-item > * {
+  margin-block: 0;
+}
+
+.kernel-StreamingMarkdown-root > * + *,
+.kernel-StreamingMarkdown-blockquote > * + * {
+  margin-block-start: var(--kernel-space-3);
+}
+
+.kernel-StreamingMarkdown-item > * + * {
+  margin-block-start: var(--kernel-space-2);
+}
+
+.kernel-StreamingMarkdown-root > * + .kernel-StreamingMarkdown-heading {
+  margin-block-start: var(--kernel-space-6);
+}
+
+.kernel-StreamingMarkdown-root > .kernel-StreamingMarkdown-heading + * {
+  margin-block-start: var(--kernel-space-2);
+}
+
+.kernel-StreamingMarkdown-paragraph {
+  text-wrap: pretty;
+}
+
+.kernel-StreamingMarkdown-heading {
+  color: var(--kernel-color-text);
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  text-wrap: balance;
+}
+
+.kernel-StreamingMarkdown-heading[data-level="1"] {
+  font-size: var(--kernel-font-size-xl);
+}
+
+.kernel-StreamingMarkdown-heading[data-level="2"] {
+  font-size: var(--kernel-font-size-lg);
+}
+
+.kernel-StreamingMarkdown-heading:is([data-level="3"], [data-level="4"], [data-level="5"], [data-level="6"]) {
+  font-size: var(--kernel-font-size-base);
+}
+
+.kernel-StreamingMarkdown-strong {
+  font-weight: 600;
+}
+
+.kernel-StreamingMarkdown-inlineCode {
+  padding-inline: var(--kernel-space-1);
+  border-radius: var(--kernel-radius-sm);
+  background-color: var(--kernel-color-fill-subtle);
+  font-family: var(--kernel-font-mono);
+  font-size: 0.875em;
+  /* An inline token wraps as a whole where it can; a long one may still
+     break rather than overflow (the root's overflow-wrap). */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.kernel-StreamingMarkdown-link {
+  color: var(--kernel-color-accent-text);
+  text-decoration-line: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in oklch, currentColor 45%, transparent);
+  border-radius: var(--kernel-radius-sm);
+  transition: text-decoration-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-StreamingMarkdown-link:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* No href: an unsafe destination, or one still being written. Plain text. */
+.kernel-StreamingMarkdown-link:not([href]) {
+  color: inherit;
+  text-decoration-line: none;
+}
+
+.kernel-StreamingMarkdown-link:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset);
+}
+
+.kernel-StreamingMarkdown-list {
+  padding-inline-start: var(--kernel-space-6);
+}
+
+.kernel-StreamingMarkdown-list .kernel-StreamingMarkdown-list {
+  margin-block-start: var(--kernel-space-1);
+}
+
+.kernel-StreamingMarkdown-list:not([data-tight]) > .kernel-StreamingMarkdown-item + .kernel-StreamingMarkdown-item {
+  margin-block-start: var(--kernel-space-2);
+}
+
+.kernel-StreamingMarkdown-list[data-tight] > .kernel-StreamingMarkdown-item + .kernel-StreamingMarkdown-item {
+  margin-block-start: var(--kernel-space-1);
+}
+
+.kernel-StreamingMarkdown-item {
+  padding-inline-start: var(--kernel-space-1);
+}
+
+.kernel-StreamingMarkdown-item::marker {
+  color: var(--kernel-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.kernel-StreamingMarkdown-blockquote {
+  margin-inline: 0;
+  padding-inline-start: var(--kernel-space-4);
+  border-inline-start: calc(var(--kernel-border-width) * 3) solid var(--kernel-color-border-strong);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-StreamingMarkdown-codeBlock {
+  min-inline-size: 0;
+}
+
+.kernel-StreamingMarkdown-tableScroll {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border-radius: var(--kernel-radius-md);
+}
+
+.kernel-StreamingMarkdown-tableScroll:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset);
+}
+
+.kernel-StreamingMarkdown-table {
+  inline-size: max-content;
+  min-inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  /* A table is data, not prose: cells don't break mid-word. */
+  overflow-wrap: normal;
+}
+
+.kernel-StreamingMarkdown-table th,
+.kernel-StreamingMarkdown-table td {
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.kernel-StreamingMarkdown-table th {
+  border-block-end-color: var(--kernel-color-border-strong);
+  font-weight: 600;
+}
+
+.kernel-StreamingMarkdown-table th:first-child,
+.kernel-StreamingMarkdown-table td:first-child {
+  padding-inline-start: 0;
+}
+
+.kernel-StreamingMarkdown-table th:last-child,
+.kernel-StreamingMarkdown-table td:last-child {
+  padding-inline-end: 0;
+}
+
+.kernel-StreamingMarkdown-table tbody tr:last-child td {
+  border-block-end: none;
+}
+
+.kernel-StreamingMarkdown-rule {
+  block-size: var(--kernel-border-width);
+  border: none;
+  background-color: var(--kernel-color-border);
+}
+
+.kernel-StreamingMarkdown-root > .kernel-StreamingMarkdown-rule {
+  margin-block: var(--kernel-space-6);
+}
+
+/* A newly arrived word settles in: a short fade with a touch of blur, once,
+   when its span mounts. Words already on screen keep their spans, so they
+   never replay it. A keyframe rather than a transition because there's no
+   "from" state to transition out of: the element is new. */
+.kernel-StreamingMarkdown-fresh {
+  animation: kernel-streaming-markdown-fresh var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+@keyframes kernel-streaming-markdown-fresh {
+  from {
+    opacity: 0;
+    filter: blur(var(--kernel-blur-xs));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-StreamingMarkdown-fresh {
+    animation: none;
+  }
+
+  .kernel-StreamingMarkdown-link {
+    transition: none;
+  }
+}

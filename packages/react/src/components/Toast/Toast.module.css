@@ -61,6 +61,9 @@
      the toast. */
   -webkit-user-select: none;
   user-select: none;
+  /* Horizontal pans are the swipe's; vertical ones stay with the browser, so
+     a toast over scrollable content never traps a scroll. */
+  touch-action: pan-y;
 
   /* Collapsed default (depth 0, the front toast): no peek offset. Deeper
      toasts set their own `--y` in the `[data-depth="N"]` rules below — a
@@ -218,9 +221,9 @@
   scale: 1;
   filter: blur(0);
   transition:
-    opacity var(--kernel-duration-fast) linear var(--kernel-duration-exit-fast),
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade) var(--kernel-duration-exit-fast),
     scale var(--kernel-duration-base) var(--kernel-ease-overshoot) var(--kernel-duration-exit-fast),
-    filter var(--kernel-duration-fast) linear var(--kernel-duration-exit-fast);
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade) var(--kernel-duration-exit-fast);
 }
 
 @starting-style {
@@ -367,6 +370,18 @@
 
   .icon {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  /* The closing rule outranks the plain one above, so without this the exit
+     still slid and shrank. Reduced motion leaves by fading in place; a swipe
+     dismissal never wrote a travel to begin with (see toastSwipe.ts). */
+  .toast[data-closing] {
+    translate: 0 var(--y);
+    transition: opacity var(--kernel-duration-exit) linear;
+  }
+
+  .toast[data-closing][data-depth="0"] {
+    scale: 1;
   }
 }
 

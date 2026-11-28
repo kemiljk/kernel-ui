@@ -14,12 +14,16 @@ const pages = [
   { name: "Home", href: "/", summary: "The kernel of the web, componentised." },
   { name: "Components", href: "/components/", summary: "Every component, built and planned." },
   { name: "Platforms", href: "/platforms/", summary: "React, Web Components, and headless usage." },
+  { name: "Browser support", href: "/support/", summary: "Supported browsers, versioning and deprecation policy." },
   { name: "Installation", href: "/installation/", summary: "Install the packages and import the tokens." },
   { name: "Choosing Kernel", href: "/choosing/", summary: "When Kernel fits a project, and when another library fits better." },
   { name: "AI agents", href: "/agents/", summary: "Skills, MCP server and code check for coding agents." },
+  { name: "Agent bridge", href: "/agent-bridge/", summary: "Let an in-page agent read and operate your UI, with WebMCP tools." },
+  { name: "State & changes", href: "/state/", summary: "Controlled state, change reasons, and cancelling a change." },
   { name: "Theming", href: "/theming/", summary: "Every token that drives a component's appearance." },
   { name: "Icons", href: "/icons/", summary: "Use any icon set, tuned with two tokens." },
   { name: "CLI", href: "/cli/", summary: "Install and diagnose Kernel in a project." },
+  { name: "Testing", href: "/testing/", summary: "Check keyboard behaviour and ARIA in your own tests." },
   { name: "Migration", href: "/migration/", summary: "Move an existing app onto Kernel." },
 ] as const;
 
@@ -117,14 +121,18 @@ export default function CommandPalette() {
       </Button>
       {mounted
         ? createPortal(
-            <KernelCommandPalette
-              open={open}
-              onOpenChange={setOpen}
-              items={items}
-              placeholder="Search components…"
-              emptyMessage="No components match."
-              blur
-            />,
+            // The wrapper is only a hook for the docs' glass styles
+            // (glass.css); the dialog itself still opens in the top layer.
+            <div className="site-command-palette">
+              <KernelCommandPalette
+                open={open}
+                onOpenChange={setOpen}
+                items={items}
+                placeholder="Search components…"
+                emptyMessage="No components match."
+                blur
+              />
+            </div>,
             document.body,
           )
         : null}

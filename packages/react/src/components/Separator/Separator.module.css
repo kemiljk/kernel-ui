@@ -14,3 +14,14 @@
   block-size: 100%;
   align-self: stretch;
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the rule, which is a background colour, would vanish.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .root {
+    background-color: CanvasText;
+  }
+}

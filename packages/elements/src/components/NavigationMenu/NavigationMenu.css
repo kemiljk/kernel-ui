@@ -194,3 +194,21 @@ kernel-nav-menu-item {
     transition: none;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the current page and the open trigger (accent-tinted
+   backgrounds) would vanish. System colours survive the repaint, so the
+   state comes back in Highlight/HighlightText and the edges in CanvasText.
+   Anything with text on a Highlight fill also sets forced-color-adjust:
+   none, or the browser paints a Canvas backplate behind the text and hides
+   it. */
+@media (forced-colors: active) {
+  .kernel-NavigationMenu-link[aria-current="page"],
+  .kernel-NavigationMenu-trigger[aria-expanded="true"] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
+  }
+}

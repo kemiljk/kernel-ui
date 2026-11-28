@@ -12,9 +12,14 @@
  *
  * Elements: for every tag, finds the class passed to `customElements.define`,
  * its `observedAttributes`, the `CustomEvent`s it dispatches, and its JSDoc.
+ * A `...FORWARDED_ARIA_ATTRIBUTES` spread expands to the list in base.ts and
+ * is also recorded as `forwardedAttributes`: the ARIA attributes the host
+ * hands to its native control.
  *
- * Purely syntactic (no type checker), so it stays fast and never needs the
- * React or DOM type graph resolved.
+ * Each tag also gets `eventDetails`: what each dispatched event carries in
+ * `detail`. Syntactic (no type checker) except for `eventDetails`, which
+ * type-checks the elements sources alone (see `eventDetailsByClass`). It
+ * never needs the React type graph resolved, so it stays fast.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
@@ -85,9 +90,153 @@ function defaultsFor(sourceFile, componentName) {
   return defaults;
 }
 
+/**
+ * What each element's events carry, keyed by tag file and event name:
+ * `{ "kernel-file-upload-error": "{ type: "accept" | …; files: File[] }",
+ * change: null }`. A `CustomEvent`'s `detail` type is printed with its
+ * properties spelled out, so an agent sees `{ tags: string[] }` rather than
+ * guessing a shape; a plain `new Event(…)` is recorded with `null` (no
+ * detail). The one place this script uses the type checker: a detail like
+ * `result.error` has no readable shape without it. Only the elements
+ * sources go into the program, so it stays quick.
+ */
+/** `import("/abs/path/to/module").Name` → `Name`: a type from another module
+ * prints with the absolute path of the machine that ran the build, which
+ * must not end up in the published API data. */
+const IMPORT_PREFIX = /import\("[^"]*"\)\./g;
+
+function eventDetailsByClass(elementFiles) {
+  const program = ts.createProgram(
+    elementFiles.map((sf) => sf.fileName),
+    {
+      target: ts.ScriptTarget.ESNext,
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+      lib: ["lib.esnext.d.ts", "lib.dom.d.ts", "lib.dom.iterable.d.ts"],
+      types: [],
+      noEmit: true,
+      skipLibCheck: true,
+    },
+  );
+  const checker = program.getTypeChecker();
+  const flags = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType;
+  const print = (type, at) => {
+    if (type.isUnion() || !(type.flags & ts.TypeFlags.Object) || checker.isArrayType(type)) {
+      return checker.typeToString(type, at, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, "");
+    }
+    const props = checker.getPropertiesOfType(type);
+    if (props.length === 0) return checker.typeToString(type, at, flags);
+    return `{ ${props
+      .map((p) => `${p.name}: ${checker.typeToString(checker.getTypeOfSymbolAtLocation(p, at), at, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, "")}`)
+      .join("; ")} }`;
+  };
+
+  /** "file:classStart" → { eventName: detail | null } */
+  const byClass = new Map();
+  for (const source of elementFiles) {
+    const sf = program.getSourceFile(source.fileName);
+    if (!sf) continue;
+    const visitClass = (cls) => {
+      const details = {};
+      /** emitChange/emitCommitted calls: event name → { props, reasons }, merged below. */
+      const changes = {};
+      const visit = (n) => {
+        if (
+          ts.isNewExpression(n) &&
+          (n.expression.getText(sf) === "CustomEvent" || n.expression.getText(sf) === "Event") &&
+          n.arguments?.[0] &&
+          ts.isStringLiteralLike(n.arguments[0])
+        ) {
+          const name = n.arguments[0].text;
+          const init = n.arguments[1];
+          const detailProp =
+            init && ts.isObjectLiteralExpression(init)
+              ? init.properties.find((p) => p.name?.getText(sf) === "detail")
+              : undefined;
+          let detail = null;
+          if (detailProp && (ts.isPropertyAssignment(detailProp) || ts.isShorthandPropertyAssignment(detailProp))) {
+            const expr = ts.isPropertyAssignment(detailProp) ? detailProp.initializer : detailProp.name;
+            detail = print(checker.getTypeAtLocation(expr), expr);
+          }
+          // The first dispatch with a detail wins; others of the same name
+          // carry the same type (a shared interface) in practice.
+          if (!(name in details) || (details[name] === null && detail !== null)) details[name] = detail;
+        } else if (
+          // `this.emitChange("valuechange", { tags }, reason, event)` and
+          // `this.emitCommitted("change", …)` (KernelElement's before/after
+          // change events) build the CustomEvent inside the base class, so
+          // read the shape from the call: the detail object's properties
+          // plus the `reason` and optional triggering `event`.
+          ts.isCallExpression(n) &&
+          ts.isPropertyAccessExpression(n.expression) &&
+          (n.expression.name.text === "emitChange" || n.expression.name.text === "emitCommitted") &&
+          n.arguments[0] &&
+          ts.isStringLiteralLike(n.arguments[0]) &&
+          n.arguments[1]
+        ) {
+          const name = n.arguments[0].text;
+          const detailArg = n.arguments[1];
+          const reasonArg = n.arguments[2];
+          const props = checker.getPropertiesOfType(checker.getTypeAtLocation(detailArg));
+          const parts = props.map(
+            (p) =>
+              `${p.name}: ${checker.typeToString(checker.getTypeOfSymbolAtLocation(p, detailArg), detailArg, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, "")}`,
+          );
+          // Spelled out literal by literal: a reason union aliased in another
+          // module would otherwise print as an `import("/abs/path")` type.
+          const reasonType = reasonArg ? checker.getTypeAtLocation(reasonArg) : undefined;
+          const reasonParts = reasonType
+            ? (reasonType.isUnion() ? reasonType.types : [reasonType]).map((t) =>
+                t.isStringLiteral() ? JSON.stringify(t.value) : checker.typeToString(t, reasonArg, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, ""),
+              )
+            : ["string"];
+          const reason = reasonParts.join(" | ");
+          // One event is usually emitted from several places, each with its
+          // own reason: report the union of them.
+          const entry = (changes[name] ??= { parts, reasons: new Set() });
+          for (const r of reason.split(" | ")) entry.reasons.add(r);
+        }
+        ts.forEachChild(n, visit);
+      };
+      visit(cls);
+      for (const [name, { parts, reasons }] of Object.entries(changes)) {
+        const reason = reasons.has("string") ? "string" : [...reasons].sort().join(" | ");
+        if (!(name in details) || details[name] === null) {
+          details[name] = `{ ${[...parts, `reason: ${reason}`, "event?: Event"].join("; ")} }`;
+        }
+      }
+      byClass.set(`${source.fileName}:${cls.getStart(sf)}`, details);
+    };
+    const find = (n) => {
+      if (ts.isClassDeclaration(n) || ts.isClassExpression(n)) visitClass(n);
+      ts.forEachChild(n, find);
+    };
+    find(sf);
+  }
+  return byClass;
+}
+
 export function extractApi(registryComponents, repoRoot) {
   const reactFiles = walk(path.join(repoRoot, "packages/react/src/components"), [".tsx", ".ts"]).map(parse);
   const elementFiles = walk(path.join(repoRoot, "packages/elements/src/components"), [".ts"]).map(parse);
+  const detailsByClass = eventDetailsByClass(elementFiles);
+
+  // `...FORWARDED_ARIA_ATTRIBUTES` in an element's `observedAttributes`
+  // means the host hands those attributes to its native control
+  // (`KernelElement.ariaTarget()`). Read the list from base.ts itself.
+  const forwardedAria = [];
+  const baseFile = parse(path.join(repoRoot, "packages/elements/src/base.ts"));
+  const findForwarded = (n) => {
+    if (ts.isVariableDeclaration(n) && n.name.getText() === "FORWARDED_ARIA_ATTRIBUTES" && n.initializer) {
+      const visitList = (m) => {
+        if (ts.isStringLiteralLike(m)) forwardedAria.push(m.text);
+        ts.forEachChild(m, visitList);
+      };
+      visitList(n.initializer);
+    }
+    ts.forEachChild(n, findForwarded);
+  };
+  findForwarded(baseFile);
 
   // Named types, so `ButtonState["variant"]` or `Variant` can be shown as the
   // literal union an agent actually needs ("primary" | "secondary" | …).
@@ -221,11 +370,18 @@ export function extractApi(registryComponents, repoRoot) {
       if (!found) continue;
       const { cls, sourceFile } = found;
       const attributes = [];
+      let forwardedAttributes = [];
       for (const member of cls.members) {
         if (ts.isGetAccessorDeclaration(member) && member.name.getText() === "observedAttributes") {
           const visit = (n) => {
             if (ts.isArrayLiteralExpression(n)) {
-              for (const el of n.elements) if (ts.isStringLiteralLike(el)) attributes.push(el.text);
+              for (const el of n.elements) {
+                if (ts.isStringLiteralLike(el)) attributes.push(el.text);
+                else if (ts.isSpreadElement(el) && el.expression.getText() === "FORWARDED_ARIA_ATTRIBUTES") {
+                  attributes.push(...forwardedAria);
+                  forwardedAttributes = forwardedAria;
+                }
+              }
             }
             ts.forEachChild(n, visit);
           };
@@ -240,12 +396,14 @@ export function extractApi(registryComponents, repoRoot) {
         ts.forEachChild(n, visit);
       };
       visit(cls);
+      const eventDetails = detailsByClass.get(`${sourceFile.fileName}:${cls.getStart(sourceFile)}`) ?? {};
       elements[tag] = {
         ...(docOf(cls) ? { description: docOf(cls) } : {}),
         attributes,
+        ...(forwardedAttributes.length ? { forwardedAttributes } : {}),
         events: [...events],
+        ...(Object.keys(eventDetails).length ? { eventDetails } : {}),
       };
-      void sourceFile;
     }
 
     api[entry.slug] = { name: entry.name, react, elements };

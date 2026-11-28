@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./UsageMeter.css";
 
 let nextId = 0;
@@ -49,6 +49,10 @@ export function usageMeterLevel(options: {
  * Attributes: `label`, `value`, `min` (default 0), `max`, `low`, `high`,
  * `optimum` (default `min`: less is better), `unit`, `locale`,
  * `hide-label` (boolean), `description`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the `<meter>`; an authored `aria-describedby` is added
+ * after the description's id.
  */
 export class KernelUsageMeter extends KernelElement {
   private readonly meterId = `kernel-usage-meter-${++nextId}`;
@@ -58,7 +62,15 @@ export class KernelUsageMeter extends KernelElement {
   private descriptionEl: HTMLParagraphElement | null = null;
 
   static get observedAttributes() {
-    return ["label", "value", "min", "max", "low", "high", "optimum", "unit", "locale", "hide-label", "description"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "label", "value", "min", "max", "low", "high", "optimum", "unit", "locale", "hide-label", "description"];
+  }
+
+  protected ariaTarget() {
+    return this.meterEl;
+  }
+
+  protected syncDescribedBy() {
+    this.render();
   }
 
   connectedCallback() {
@@ -96,6 +108,7 @@ export class KernelUsageMeter extends KernelElement {
     this.replaceChildren(root);
     this.native = root;
     this.render();
+    for (const name of FORWARDED_ARIA_ATTRIBUTES) this.forwardAria(name, this.getAttribute(name));
   }
 
   protected syncAttr() {
@@ -145,8 +158,7 @@ export class KernelUsageMeter extends KernelElement {
     const description = this.getAttribute("description");
     descriptionEl.textContent = description ?? "";
     descriptionEl.hidden = !description;
-    if (description) meterEl.setAttribute("aria-describedby", descriptionEl.id);
-    else meterEl.removeAttribute("aria-describedby");
+    this.setDescribedBy(meterEl, [description && descriptionEl.id]);
   }
 }
 

@@ -36,6 +36,15 @@
       ]
     },
     {
+      "source": "/r/(.*)\\.json",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
       "source": "/.well-known/(.*)",
       "headers": [
         {

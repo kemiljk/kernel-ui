@@ -1,13 +1,17 @@
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { inputModality, type ChangeDetails } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./Switch.module.css";
 
 export interface SwitchState {
   checked: boolean;
   disabled: boolean;
 }
+
+/** What toggled a `Switch`: a click or tap, or Space/Enter. */
+export type SwitchChangeReason = "press" | "keyboard";
 
 export interface SwitchProps
   extends Omit<
@@ -16,7 +20,9 @@ export interface SwitchProps
   > {
   checked?: boolean;
   defaultChecked?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
+  /** Called before the switch flips, with the reason (`"press"` or
+   * `"keyboard"`); `details.cancel()` keeps it as it is. */
+  onCheckedChange?: (checked: boolean, details: ChangeDetails<SwitchChangeReason>) => void;
   children?: ReactNode;
   className?: ClassNameValue<SwitchState>;
 }
@@ -42,7 +48,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     },
     ref,
   ) {
-    const [isChecked, setChecked] = useControllableState({
+    const [isChecked, setChecked] = useControllableStateWithDetails({
       value: checked,
       defaultValue: defaultChecked,
       onChange: onCheckedChange,
@@ -65,7 +71,9 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           .join(" ")}
         onClick={(event) => {
           rest.onClick?.(event);
-          if (!event.defaultPrevented) setChecked(!isChecked);
+          if (!event.defaultPrevented) {
+            setChecked(!isChecked, inputModality(event) === "keyboard" ? "keyboard" : "press", event);
+          }
         }}
       >
         <span className={styles.thumb} />

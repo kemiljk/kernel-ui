@@ -1,5 +1,4 @@
 import { KernelElement, kernelClass } from "../../base";
-import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import {
   dismissToast,
   getToastSnapshot,
@@ -10,6 +9,7 @@ import {
   type ToastRecord,
   type ToastVariant,
 } from "./toastStore";
+import { attachToastSwipe } from "./toastSwipe";
 import "./Toast.css";
 
 export { toast } from "./toastStore";
@@ -23,18 +23,12 @@ const icons: Partial<Record<ToastVariant, string>> = {
 
 const STACK_GAP = 8;
 const MAX_COLLAPSED_DEPTH = 3;
-const DISMISS_VELOCITY = 0.5;
 
 interface TrackedToast {
   el: HTMLElement;
-  dragging: boolean;
-  dragStart: { x: number; time: number } | null;
   measuredHeight: number;
-  settleAbort: AbortController | null;
-}
-
-function writeSwipe(node: HTMLElement, x: number) {
-  node.style.translate = `${x}px var(--y)`;
+  /** Removes the swipe engine's listeners and aborts any settle in flight. */
+  detachSwipe: () => void;
 }
 
 function setContent(target: HTMLElement, content: ToastContent | undefined) {
@@ -49,6 +43,14 @@ function setContent(target: HTMLElement, content: ToastContent | undefined) {
  * `toast()` function (also `toast.success`/`.warning`/`.danger`/
  * `.dismiss`), identical API to `@kernelui-lib/react`'s own `toast()`. Same
  * hover-to-expand stack, swipe-to-dismiss, and pause-on-hover behaviour.
+ *
+ * Swipe a toast toward the viewport's edge (inline-end) to dismiss it: it
+ * follows the pointer that way and rubber-bands the other, and on release
+ * leaves on 40% of its width *or* a flick faster than 0.5px/ms over the last
+ * 100ms (Sheet's bar), otherwise easing back. The gesture never starts on a
+ * control inside the toast, claims nothing until 4px of mostly-horizontal
+ * travel, and fades instead of sliding under reduced motion. Same engine as
+ * the React version (`toastSwipe.ts`) — see `ToastViewport` there for why.
  *
  * Built-in strings: `label-dismiss` (default "Dismiss"), or the `labels`
  * property — see `ToastLabels` in `@kernelui-lib/react`.
@@ -92,7 +94,7 @@ export class KernelToastViewport extends KernelElement {
     this.unsubscribe?.();
     this.unsubscribe = null;
     clearTimeout(this.collapseTimer);
-    for (const entry of this.tracked.values()) entry.settleAbort?.abort();
+    for (const entry of this.tracked.values()) entry.detachSwipe();
   }
 
   private expand() {
@@ -121,7 +123,7 @@ export class KernelToastViewport extends KernelElement {
 
     for (const [id, entry] of this.tracked) {
       if (!toasts.some((item) => item.id === id)) {
-        entry.settleAbort?.abort();
+        entry.detachSwipe();
         entry.el.remove();
         this.tracked.delete(id);
       }
@@ -161,8 +163,6 @@ export class KernelToastViewport extends KernelElement {
     el.setAttribute("data-depth", String(depth));
     if (item.closing) el.setAttribute("data-closing", "true");
     else el.removeAttribute("data-closing");
-    if (entry.dragging) el.setAttribute("data-dragging", "true");
-    else el.removeAttribute("data-dragging");
 
     el.style.setProperty("--offset", `${offset}px`);
     el.style.setProperty("--z-index", String(zIndex));
@@ -219,84 +219,14 @@ export class KernelToastViewport extends KernelElement {
 
     el.append(content, close);
 
+    // The swipe engine owns `translate` and `data-dragging` on this element;
+    // `render()` never touches either, so a re-render mid-drag (another toast
+    // arriving, the stack expanding) can't reset the gesture.
     const entry: TrackedToast = {
       el,
-      dragging: false,
-      dragStart: null,
       measuredHeight: 60,
-      settleAbort: null,
+      detachSwipe: attachToastSwipe(el, () => ({ onDismiss: () => dismissToast(item.id) })),
     };
-
-    const releasePointer = (event: PointerEvent) => {
-      if (el.hasPointerCapture?.(event.pointerId)) el.releasePointerCapture(event.pointerId);
-    };
-
-    const settleBack = () => {
-      entry.settleAbort?.abort();
-      const controller = new AbortController();
-      entry.settleAbort = controller;
-
-      el.removeAttribute("data-dragging");
-      void el.offsetWidth;
-      writeSwipe(el, 0);
-
-      void waitForExitTransition(el, { signal: controller.signal }).then(() => {
-        if (controller.signal.aborted) return;
-        el.style.removeProperty("translate");
-        if (entry.settleAbort === controller) entry.settleAbort = null;
-      });
-    };
-
-    el.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0) return;
-      if ((event.target as HTMLElement).closest("button")) return;
-      entry.settleAbort?.abort();
-      entry.settleAbort = null;
-      entry.dragStart = { x: event.clientX, time: performance.now() };
-      entry.dragging = true;
-      el.setPointerCapture(event.pointerId);
-      el.setAttribute("data-dragging", "true");
-    });
-
-    el.addEventListener("pointermove", (event) => {
-      if (!entry.dragStart) return;
-      writeSwipe(el, event.clientX - entry.dragStart.x);
-    });
-
-    const endDrag = (event: PointerEvent) => {
-      const start = entry.dragStart;
-      if (!start) return;
-      entry.dragStart = null;
-      entry.dragging = false;
-      releasePointer(event);
-
-      const deltaX = event.clientX - start.x;
-      const elapsed = Math.max(1, performance.now() - start.time);
-      const velocity = Math.abs(deltaX) / elapsed;
-      const width = el.offsetWidth;
-
-      if (Math.abs(deltaX) > width * 0.4 || velocity > DISMISS_VELOCITY) {
-        el.removeAttribute("data-dragging");
-        void el.offsetWidth;
-        if (prefersReducedMotion()) el.style.removeProperty("translate");
-        else writeSwipe(el, deltaX > 0 ? width * 1.5 : -width * 1.5);
-        dismissToast(item.id);
-        return;
-      }
-
-      settleBack();
-    };
-
-    const cancelDrag = (event: PointerEvent) => {
-      if (!entry.dragStart) return;
-      entry.dragStart = null;
-      entry.dragging = false;
-      releasePointer(event);
-      settleBack();
-    };
-
-    el.addEventListener("pointerup", endDrag);
-    el.addEventListener("pointercancel", cancelDrag);
 
     return entry;
   }

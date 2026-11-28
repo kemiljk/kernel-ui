@@ -14,6 +14,15 @@
  * it, rather than snapping back to a keyframe's starting position first.
  */
 
+import {
+  capturePointer,
+  damp,
+  DRAG_START_THRESHOLD,
+  FLICK_VELOCITY,
+  releasePointer,
+  shouldDismiss,
+  VelocityTracker,
+} from "./gesture";
 import { parseSnapPoints, resolveSnapTarget, snapsToPx, SNAP_EPSILON } from "./snapPoints";
 
 export type SheetSide = "bottom" | "top" | "left" | "right";
@@ -23,90 +32,11 @@ export type SheetSide = "bottom" | "top" | "left" | "right";
  * how velocity is measured affects it. */
 export const DEFAULT_CLOSE_THRESHOLD = 0.25;
 
-/**
- * Dismiss speed, px/ms.
- *
- * Not Vaul's 0.11, and the difference isn't a retune for its own sake: Vaul
- * averages over the whole gesture, this measures the last {@link VELOCITY_WINDOW_MS}.
- * A windowed reading is far higher than a whole-gesture average for the same
- * flick, so keeping 0.11 here would dismiss on almost any release. The pair
- * (measure, threshold) has to move together; only the pair is meaningful.
- */
-export const DEFAULT_VELOCITY_THRESHOLD = 0.5;
+/** Dismiss speed, px/ms. The shared flick bar — see `FLICK_VELOCITY` in
+ * `gesture.ts` for why it isn't Vaul's 0.11. */
+export const DEFAULT_VELOCITY_THRESHOLD = FLICK_VELOCITY;
 
-/** How much of the gesture's tail the velocity is measured over. */
-const VELOCITY_WINDOW_MS = 100;
-
-/** Upward speed, px/ms, past which a release counts as "pulling it back" and a
- * distance-based dismissal is refused. Small on purpose: it only has to catch a
- * deliberate reversal, not ordinary jitter at the end of a drag. */
-const REVERSAL_VELOCITY = 0.05;
-
-/**
- * Release speed along the dismiss axis, from a short window of recent samples
- * rather than the whole gesture.
- *
- * Averaging the whole gesture gets two things wrong that users notice. A drag
- * that travels a long way and then stops dead still reports a fast flick, so
- * the sheet leaves when the finger had visibly parked. And a drag that reverses
- * before release keeps reporting the direction it came from, so the sheet exits
- * *away* from the finger that just pulled it back.
- */
-export class VelocityTracker {
-  #samples: { coord: number; time: number }[] = [];
-
-  add(coord: number, time: number) {
-    this.#samples.push({ coord, time });
-    const cutoff = time - VELOCITY_WINDOW_MS;
-    let oldest = this.#samples[0];
-    while (this.#samples.length > 2 && oldest && oldest.time < cutoff) {
-      this.#samples.shift();
-      oldest = this.#samples[0];
-    }
-  }
-
-  /** Signed for the dismiss direction, like every other measure in here. */
-  get velocity() {
-    const samples = this.#samples;
-    const last = samples[samples.length - 1];
-    if (!last || samples.length < 2) return 0;
-
-    // Walk back from the newest sample and stop at the first reversal, so a
-    // gesture that turned around reports only the part after the turn. Steps of
-    // zero are skipped rather than counted as a turn — a slow drag quantises to
-    // them constantly, and treating those as reversals would zero the velocity
-    // of every deliberate, slow flick.
-    let direction = 0;
-    let start = samples.length - 1;
-    while (start > 0) {
-      const newer = samples[start];
-      const older = samples[start - 1];
-      if (!newer || !older) break;
-      const step = Math.sign(newer.coord - older.coord);
-      if (step !== 0) {
-        if (direction === 0) direction = step;
-        else if (step !== direction) break;
-      }
-      start--;
-    }
-
-    const first = samples[start];
-    if (!first) return 0;
-    const elapsed = last.time - first.time;
-    return elapsed === 0 ? 0 : (last.coord - first.coord) / elapsed;
-  }
-
-  reset() {
-    this.#samples = [];
-  }
-}
-
-/** Movement, in px along the dismiss axis, before the gesture is claimed. Below
- * this a pointerdown is still a tap, so buttons and links inside keep working. */
-const DRAG_START_THRESHOLD = 4;
-
-/** Rubber-band constant. Lower is stiffer; 0.55 is the iOS-ish feel. */
-const OVERDRAG_RESISTANCE = 0.55;
+export { VelocityTracker };
 
 interface SheetAxis {
   /** Which coordinate moves the sheet. */
@@ -145,22 +75,6 @@ function viewportAlong(axis: "x" | "y") {
   return axis === "y" ? window.innerHeight : window.innerWidth;
 }
 
-/**
- * Resistance for dragging *away* from the dismiss direction. Things in the
- * real world slow down before they stop, so rather than clamping at zero the
- * overdrag is compressed asymptotically — it keeps answering the finger, just
- * less and less, and can never exceed the sheet's own size.
- *
- * The derivative at zero is `OVERDRAG_RESISTANCE`, so movement starts slower
- * than the finger and decays from there. (A logarithmic curve is the obvious
- * alternative and is wrong here: its slope at zero exceeds 1, so the first few
- * pixels of overdrag would outrun the finger.)
- */
-function damp(overdrag: number, extent: number): number {
-  if (overdrag <= 0 || extent <= 0) return 0;
-  return (1 - 1 / ((overdrag * OVERDRAG_RESISTANCE) / extent + 1)) * extent;
-}
-
 /** Nearest scrollable ancestor between `from` and `boundary`, inclusive of
  * `from` and exclusive of `boundary`. Null when nothing in that chain actually
  * scrolls, which is the common case for a short sheet. */
@@ -176,26 +90,6 @@ function findScrollable(from: Element | null, boundary: Element, axis: "x" | "y"
     node = node.parentElement;
   }
   return null;
-}
-
-/** Pointer capture is a progressive enhancement: it keeps the gesture tracking
- * once the finger leaves the sheet. Every engine that ships pointer events has
- * it, but test environments (jsdom) don't, and the drag works without it — so
- * neither call is allowed to throw. */
-function capturePointer(node: HTMLElement, pointerId: number) {
-  try {
-    node.setPointerCapture?.(pointerId);
-  } catch {
-    // Element detached mid-gesture; the pointerup path still cleans up.
-  }
-}
-
-function releasePointer(node: HTMLElement, pointerId: number) {
-  try {
-    if (node.hasPointerCapture?.(pointerId)) node.releasePointerCapture(pointerId);
-  } catch {
-    // Same.
-  }
 }
 
 function isAtEdge(el: Element, axis: "x" | "y", edge: "start" | "end"): boolean {
@@ -238,7 +132,10 @@ export interface SheetDragOptions {
    * attach. Null falls back to the largest snap — a sheet asked to appear should
    * show as much of itself as it's allowed to. */
   snap: number | null;
-  onDismiss: () => void;
+  /** Asked when a release crosses the dismiss threshold, *before* the exit
+   * plays. Return `false` to refuse (a cancelled close): the sheet settles
+   * back where it rested instead of being left translated off-screen. */
+  onDismiss: () => boolean | void;
   onDrag?: (percent: number) => void;
   onRelease?: (open: boolean) => void;
   /** Fires once per settle with the snap actually landed on. */
@@ -661,10 +558,14 @@ export function attachSheetDrag(
     }
 
     if (belowLowest > 0) {
-      const dismiss =
-        velocity > opts.velocityThreshold ||
-        (belowLowest / snapsPx[0]! > opts.closeThreshold && velocity > -REVERSAL_VELOCITY);
-      if (dismiss) {
+      const dismiss = shouldDismiss({
+        travel: belowLowest,
+        extent: snapsPx[0]!,
+        velocity,
+        closeThreshold: opts.closeThreshold,
+        velocityThreshold: opts.velocityThreshold,
+      });
+      if (dismiss && opts.onDismiss() !== false) {
         // Height stays where it is; the exit is a translate, exactly as in the
         // binary path, so `Dialog`'s closing rule can carry it the rest of the way.
         delete node.dataset.dragging;
@@ -674,9 +575,9 @@ export function attachSheetDrag(
         opts.onDrag?.(1);
         clearDragState();
         opts.onRelease?.(false);
-        opts.onDismiss();
         return;
       }
+      // Not far enough, or the close was refused: back to the shortest snap.
       settleTo(lowest, opts, velocity);
       clearDragState();
       opts.onRelease?.(true);
@@ -691,13 +592,19 @@ export function attachSheetDrag(
     });
 
     if (targetPx === null) {
+      if (opts.onDismiss() === false) {
+        // Refused: settle back onto the snap it rested on.
+        settleTo(activeSnap ?? lowest, opts, 0);
+        clearDragState();
+        opts.onRelease?.(true);
+        return;
+      }
       delete node.dataset.dragging;
       void node.offsetHeight;
       node.style.translate = `0 ${node.getBoundingClientRect().height}px`;
       setDragProgress(0);
       clearDragState();
       opts.onRelease?.(false);
-      opts.onDismiss();
       return;
     }
 
@@ -736,18 +643,21 @@ export function attachSheetDrag(
       return;
     }
 
-    const percent = extent > 0 ? travel / extent : 0;
     // Velocity, not distance alone — a short fast flick should dismiss even
-    // though it never travelled 25% of the sheet. And distance alone must not
-    // dismiss when the finger was already travelling back the other way at
-    // release: position stays past the threshold through an entire reversal, so
-    // it's intent, not position, that decides.
-    const dismiss =
-      travel > 0 &&
-      (velocity > opts.velocityThreshold ||
-        (percent > opts.closeThreshold && velocity > -REVERSAL_VELOCITY));
+    // though it never travelled 25% of the sheet — with a reversal guard so a
+    // finger pulling back at release keeps the sheet. `shouldDismiss` is the
+    // same decision Toast's swipe makes.
+    const dismiss = shouldDismiss({
+      travel,
+      extent,
+      velocity,
+      closeThreshold: opts.closeThreshold,
+      velocityThreshold: opts.velocityThreshold,
+    });
 
-    if (dismiss) {
+    // Asked before the exit plays, so a refused (cancelled) close falls
+    // through to the snap-back below instead of stranding the sheet off-screen.
+    if (dismiss && opts.onDismiss() !== false) {
       // The exit can't be left to the stylesheet: an inline `translate`
       // outranks any rule, so the `[data-closing]` rule could never move a
       // sheet the drag had positioned. Drive the exit inline too — drop
@@ -759,7 +669,6 @@ export function attachSheetDrag(
       applyOffset(extent * sign, axis, opts.onDrag);
       clearDragState();
       opts.onRelease?.(false);
-      opts.onDismiss();
       return;
     }
 
@@ -778,7 +687,7 @@ export function attachSheetDrag(
     currentSnap: () => activeSnap,
     snapTo(snap: number) {
       const opts = readOptions();
-      const snaps = parseSnapPoints(opts.side === "bottom" ? opts.snapPoints : []);
+      const snaps = parseSnapPoints(opts.snapPoints);
       if (!snaps.includes(snap) || snap === activeSnap) return;
       // No release velocity to inherit — this is a programmatic move, so it
       // starts from rest.

@@ -250,7 +250,12 @@
   inline-size: var(--thumb);
   block-size: var(--track-height);
   border: none;
+  border-radius: 0;
   background: transparent;
+  /* iOS Safari's own stylesheet gives the thumb a drop shadow, and
+     `appearance: none` doesn't remove it. On this invisible, full-height
+     thumb that shadow draws a grey box around the handle. */
+  box-shadow: none;
 }
 
 .insetInput::-moz-range-thumb {
@@ -259,6 +264,7 @@
   border: none;
   border-radius: 0;
   background: transparent;
+  box-shadow: none;
 }
 
 /* On-accent rather than --kernel-color-thumb: this bar only ever sits on
@@ -333,5 +339,75 @@
 
   .input:active::-webkit-slider-thumb {
     scale: 1;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the track, its fill and the thumb would all vanish. The
+   native track's fill is a gradient, which the repaint removes outright, so
+   that input opts out of the repaint and draws itself in system colours.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. Anything with text on
+   a Highlight fill also sets forced-color-adjust: none, or the browser
+   paints a Canvas backplate behind the text and hides it. */
+@media (forced-colors: active) {
+  .input {
+    forced-color-adjust: none;
+  }
+
+  .input::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      var(--fill-direction, to right),
+      Highlight var(--fill-stop),
+      CanvasText var(--fill-stop)
+    );
+  }
+
+  .input::-moz-range-track {
+    background: CanvasText;
+  }
+
+  .input::-moz-range-progress {
+    background: Highlight;
+  }
+
+  .input::-webkit-slider-thumb {
+    border: 2px solid ButtonText;
+    background-color: ButtonFace;
+  }
+
+  .input::-moz-range-thumb {
+    border: 2px solid ButtonText;
+    background-color: ButtonFace;
+  }
+
+  /* Separate rules: an unknown vendor pseudo in a selector list drops
+     the whole list. */
+  .input:focus-visible::-webkit-slider-thumb {
+    outline-color: CanvasText;
+  }
+
+  .input:focus-visible::-moz-range-thumb {
+    outline-color: CanvasText;
+  }
+
+  .input:disabled::-webkit-slider-runnable-track {
+    background: GrayText;
+  }
+
+  .track {
+    outline: var(--kernel-border-width) solid CanvasText;
+    outline-offset: calc(var(--kernel-border-width) * -1);
+  }
+
+  .fill {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  .bar {
+    background-color: HighlightText;
   }
 }

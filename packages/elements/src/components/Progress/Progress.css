@@ -56,3 +56,30 @@
     animation-duration: calc(var(--kernel-duration-shimmer) * 2);
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the track and its fill would vanish. The indeterminate
+   sweep is a gradient, which the repaint removes outright, so that state
+   opts out and draws itself in system colours. System colours survive the
+   repaint, so the state comes back in Highlight/HighlightText and the edges
+   in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Progress-root {
+    border: var(--kernel-border-width) solid CanvasText;
+  }
+
+  .kernel-Progress-root::-webkit-progress-value {
+    background-color: Highlight;
+  }
+
+  .kernel-Progress-root::-moz-progress-bar {
+    background-color: Highlight;
+  }
+
+  .kernel-Progress-root:indeterminate {
+    forced-color-adjust: none;
+    background-color: Canvas;
+    background-image: linear-gradient(90deg, transparent, Highlight, transparent);
+  }
+}

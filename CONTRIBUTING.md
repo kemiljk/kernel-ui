@@ -32,6 +32,18 @@ CI runs on pull requests (typecheck, tests, package builds, and a docs build). P
    ```
 4. If you changed docs content, run `bun run --cwd apps/docs typecheck`.
 
+### Visual screenshots
+
+`bun run test:screenshots` screenshots every component's live docs examples across a small theme matrix (light and dark, Sharp and Round radius, right-to-left, and a font whose metrics sit text low, which catches pill text drifting off-centre). Build the docs first (`bun run docs:build`).
+
+```bash
+bun run test:screenshots --update badge button      # save a baseline (before your change)
+bun run test:screenshots badge button               # capture again and compare
+bun run test:screenshots --list-variants            # see or pick variants with --variants=a,b
+```
+
+Output goes to `screenshots/` (gitignored): `current/`, `baseline/`, and `report/index.html` with baseline, current and diff side by side. Baselines are not committed, because font rendering differs between operating systems, so a baseline is only meaningful on the machine that made it. CI keeps its own Linux baseline from `main` and attaches each run's screenshots and report as a workflow artifact.
+
 ### Using AI tools
 
 Using an LLM to explore the codebase, draft a patch, or write tests is welcome. Drive-by, untested spam is not: bulk-generated PRs with no context, no review, and no author accountability do not help.

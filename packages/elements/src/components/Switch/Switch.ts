@@ -1,5 +1,6 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Switch.css";
+import { inputModality } from "../../utils/changeDetails";
 
 /**
  * `<kernel-switch>` — there's no native "switch" element, so this follows
@@ -10,12 +11,24 @@ import "./Switch.css";
  *
  * Attributes: `checked`, `disabled` (both boolean). Text content, if
  * any, becomes a real `<label>` wrapping the button — omit it for a
- * bare switch. Toggling dispatches a real, bubbling `change` event,
- * same as any native form control.
+ * bare switch. Toggling first dispatches a bubbling, cancelable
+ * `beforevaluechange` with `detail: { checked, reason }` (`reason` is `"press"`
+ * or `"keyboard"`); `preventDefault()` on it leaves the switch as it was.
+ * Then the switch flips and a bubbling `valuechange` and `change` follow
+ * with the same detail, after the commit as with any native control, so a `change`
+ * handler reading `checked` sees the new state.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<button role="switch">`. With no text content,
+ * give the switch a name this way (`aria-label="Bill yearly"`).
  */
 export class KernelSwitch extends KernelElement {
   static get observedAttributes() {
-    return ["checked", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "checked", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   connectedCallback() {
@@ -31,10 +44,13 @@ export class KernelSwitch extends KernelElement {
     thumb.className = kernelClass("Switch", "thumb");
     button.append(thumb);
 
-    button.addEventListener("click", () => {
-      if (this.hasAttribute("checked")) this.removeAttribute("checked");
-      else this.setAttribute("checked", "");
-      this.dispatchEvent(new Event("change", { bubbles: true }));
+    button.addEventListener("click", (event) => {
+      const checked = !this.hasAttribute("checked");
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
+      if (!this.emitChange("beforevaluechange", { checked }, reason, event)) return;
+      this.toggleAttribute("checked", checked);
+      this.emitCommitted("valuechange", { checked }, reason, event);
+      this.emitCommitted("change", { checked }, reason, event);
     });
 
     this.native = button;

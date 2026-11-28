@@ -156,6 +156,38 @@ export {
   formatFileSize,
 } from "./components/Attachment/Attachment";
 export { KernelUsageMeter, usageMeterLevel } from "./components/UsageMeter/UsageMeter";
+export { KernelArtifactPanel, KernelArtifactView } from "./components/ArtifactPanel/ArtifactPanel";
+export { KernelSchemaRenderer } from "./components/SchemaRenderer/SchemaRenderer";
+export {
+  SCHEMA_VERSION,
+  SCHEMA_NODE_TYPES,
+  SCHEMA_LIMITS,
+  SCHEMA_NODE_SPECS,
+  kernelSchemaJson,
+  schemaPrompt,
+  sanitizeSchema,
+  sanitizeUrl,
+  validateSchemaNode,
+  parsePartialJson,
+} from "./components/SchemaRenderer/schema";
+export type * from "./components/SchemaRenderer/schema";
+
+export { KernelStreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
+export { parseMarkdown, safeHref } from "./utils/markdown";
+export type {
+  MarkdownBlock,
+  MarkdownInline,
+  MarkdownListItem,
+  MarkdownAlign,
+  MarkdownTopBlock,
+  ParseMarkdownOptions,
+} from "./utils/markdown";
+export { KernelModelPicker } from "./components/ModelPicker/ModelPicker";
+export type {
+  ModelPickerOption,
+  ModelPickerBadge,
+  ModelPickerBadgeVariant,
+} from "./components/ModelPicker/ModelPicker";
 
 export { attachSheetDrag } from "./utils/sheetDrag";
 export type {
@@ -171,4 +203,15 @@ export type { SpringConfig, SpringRunOptions } from "./utils/spring";
 export { DetailsPanelAnimator } from "./utils/detailsTransition";
 export type { DetailsPanelAnimatorOptions } from "./utils/detailsTransition";
 
-export { KernelElement, kernelClass, dataAttr } from "./base";
+// Change reasons: the `detail` shape of every cancelable change event.
+export type { KernelChangeDetail } from "./utils/changeDetails";
+
+// Ranked fuzzy matching (Combobox, CommandPalette) and 2-D grid movement
+// (the calendar grids) — the same functions `@kernelui-lib/react` exports.
+export { fuzzyScore, fuzzyFilter, fuzzySegments, normalizeFuzzyQuery } from "./utils/fuzzy";
+export type { FuzzyMatch, FuzzyResult } from "./utils/fuzzy";
+export { spatialMove, gridDirectionForKey } from "./utils/spatialMove";
+export type { SpatialCell, SpatialDirection } from "./utils/spatialMove";
+
+export { KernelElement, kernelClass, dataAttr, FORWARDED_ARIA_ATTRIBUTES } from "./base";
+export type { ForwardedAriaAttribute } from "./base";

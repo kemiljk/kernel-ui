@@ -8,6 +8,7 @@ import styles from "./CodeBlock.module.css";
 export interface CodeBlockState {
   streaming: boolean;
   copied: boolean;
+  wrap: boolean;
 }
 
 /** Built-in strings, overridable for translation via `labels`. */
@@ -45,6 +46,11 @@ export interface CodeBlockProps
   copyable?: boolean;
   /** Height at which the block starts scrolling. */
   maxBlockSize?: string;
+  /** Wrap long lines instead of scrolling sideways. Off by default: code
+   * reads best with its own line breaks, but a narrow column (a chat
+   * message, a phone) is often better wrapped. Line numbers stay on the
+   * first visual line of each wrapped line. */
+  wrap?: boolean;
   className?: ClassNameValue<CodeBlockState>;
   /** Override built-in strings (e.g. for translation); unset keys keep
    * their English default. */
@@ -71,6 +77,14 @@ export interface CodeBlockProps
  * unselectable: a screen reader reading "one const two import three…" is
  * noise, and a copy that interleaves line numbers with code is worse than no
  * copy button at all.
+ *
+ * Each line is one row of a single grid (a CSS subgrid), so the number column
+ * is as wide as the widest number and every line's code starts at the same x.
+ * That is also what makes `wrap` safe: a wrapped line just grows taller in its
+ * own row, and its number stays baseline-aligned with the first visual line
+ * instead of drifting to the middle or needing a second column kept in sync
+ * by script. Wrapping is off by default because scrolling keeps the author's
+ * own line breaks, which is what code is usually read by.
  */
 export function CodeBlock({
   lines,
@@ -82,6 +96,7 @@ export function CodeBlock({
   streaming = false,
   copyable = true,
   maxBlockSize,
+  wrap = false,
   className,
   style,
   labels,
@@ -107,7 +122,7 @@ export function CodeBlock({
     if (streaming && pinned) scrollToBottom("instant");
   }, [streaming, pinned, resolvedLines, scrollToBottom]);
 
-  const state: CodeBlockState = { streaming, copied };
+  const state: CodeBlockState = { streaming, copied, wrap };
   const heading = label ?? language;
 
   async function copy() {
@@ -127,6 +142,7 @@ export function CodeBlock({
     <figure
       {...rest}
       data-streaming={dataAttr(streaming)}
+      data-wrap={dataAttr(wrap)}
       style={{ ...style, ["--kernel-code-max-block-size" as string]: maxBlockSize }}
       className={[styles.root, resolveClassName(className, state)].filter(Boolean).join(" ")}
     >

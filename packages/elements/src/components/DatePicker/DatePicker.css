@@ -29,10 +29,14 @@
   justify-content: center;
   inline-size: var(--kernel-space-8);
   block-size: var(--kernel-space-8);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  /* Quiet chevrons, not outlined boxes: the month heading is the
+     header's focal point, and two bordered squares either side of it
+     competed with it. The border stays (transparent) so the box size
+     doesn't change, and hover still shows the fill. */
+  border: var(--kernel-border-width) solid transparent;
+  color: var(--kernel-color-text-muted);
   border-radius: var(--kernel-radius-control);
   background-color: transparent;
-  color: var(--kernel-color-text);
   cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
@@ -40,14 +44,14 @@
   user-select: none;
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-DatePicker-navButton:hover {
     background-color: var(--kernel-color-fill);
-    border-color: var(--kernel-color-border-hover);
+    color: var(--kernel-color-text);
   }
 }
 
@@ -69,11 +73,17 @@
   border-collapse: collapse;
   table-layout: fixed;
   font-size: var(--kernel-font-size-sm);
+  /* Tabular figures, so "11" is as wide as "28" and every column of
+     dates sits on the same centre line. */
+  font-variant-numeric: tabular-nums;
 }
 
 .kernel-DatePicker-weekdayHead {
   padding-block-end: var(--kernel-space-2);
   font-weight: 500;
+  /* A step below the dates: the header labels columns, it isn't a row
+     of choices, and at the same size it read as one. */
+  font-size: calc(var(--kernel-font-size-sm) / var(--kernel-font-scale));
   color: var(--kernel-color-text-muted);
   text-align: center;
 }
@@ -174,5 +184,27 @@
   .kernel-DatePicker-navButton:active,
   .kernel-DatePicker-dayButton:active:not(:disabled) {
     scale: 1;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the selected day (an accent fill) and today's dot would
+   vanish. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. Anything with text on
+   a Highlight fill also sets forced-color-adjust: none, or the browser
+   paints a Canvas backplate behind the text and hides it. */
+@media (forced-colors: active) {
+  .kernel-DatePicker-dayButton[data-selected],
+  .kernel-DatePicker-dayButton[data-selected]:hover:not(:disabled) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
+  }
+
+  .kernel-DatePicker-dayButton[data-today]:not([data-selected])::after {
+    background-color: CanvasText;
   }
 }

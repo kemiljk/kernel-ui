@@ -1,0 +1,130 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import StreamingMarkdownDemo from "../../components/demos/StreamingMarkdownDemo";
+import StreamingMarkdownPlayground from "../../components/demos/StreamingMarkdownPlayground";
+import ApiTable from "../../components/ApiTable.astro";
+---
+
+<BaseLayout title="Streaming Markdown" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Streaming Markdown</h1>
+    <p>
+      Markdown from a model, rendered as real elements — <code>&lt;p&gt;</code>,
+      <code>&lt;ol&gt;</code>, <code>&lt;table&gt;</code>,
+      <code>&lt;blockquote&gt;</code>, and Kernel's
+      <a href="/components/code-block/">Code Block</a> for fences — while it is
+      still arriving. Finished blocks never re-render, and half-written syntax
+      never flashes on screen as raw asterisks and pipes.
+    </p>
+
+    <div class="docs-example">
+      <StreamingMarkdownDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Type Markdown into <code>content</code>, and toggle <code>streaming</code> to see how unfinished syntax is read.</p>
+    <StreamingMarkdownPlayground client:visible />
+
+    <h2>Props</h2>
+    <ApiTable slug="streaming-markdown" />
+
+    <h2>Stable streaming</h2>
+    <p>
+      The top level is split into blocks, and each block remembers the exact
+      source slice it came from. Blocks are keyed by index and memoised on that
+      slice, so a new chunk re-renders only the last block: earlier paragraphs,
+      tables and code blocks keep their DOM nodes, their layout and the
+      reader's text selection. Inside the live block, each word is its own
+      span, also keyed by index, so words already on screen stay put and only
+      the new ones mount — which is what the optional fade-in
+      (<code>animate</code>) keys off. The fade is a short opacity and blur
+      settle on the motion tokens, and it is off under reduced motion.
+    </p>
+    <p>
+      While <code>streaming</code> is true, unfinished constructs render as
+      their finished form would:
+    </p>
+    <ul>
+      <li>an unterminated fence is an open code block, following its last line;</li>
+      <li><code>**bold</code> with no closer yet is bold so far, and a marker with nothing after it yet is hidden;</li>
+      <li><code>[text](https://exa</code> shows <em>text</em> and hides the half-written destination;</li>
+      <li>a table renders as soon as its header row arrives, and a half row is a row;</li>
+      <li>a last line that is only the start of a marker (<code>-</code>, <code>#</code>, <code>&gt;</code>) is held back until it means something.</li>
+    </ul>
+    <p>
+      In the elements package, assign <code>el.content</code> as chunks arrive.
+      Unchanged blocks are left alone and the last one is patched in place,
+      element by element and text node by text node — React's index-keyed
+      reconciliation in miniature.
+    </p>
+
+    <h2>What it parses</h2>
+    <p>
+      A compact, dependency-free subset of CommonMark plus GitHub's tables:
+      paragraphs, ATX headings, emphasis, strong, strikethrough, inline code,
+      fenced code, nested ordered and unordered lists, blockquotes, links,
+      autolinks (<code>&lt;https://…&gt;</code> and bare URLs) and horizontal
+      rules. Deliberately left out: raw HTML (always text), indented code
+      blocks, setext headings, reference-style links, footnotes and task-list
+      checkboxes. <code>parseMarkdown</code> is exported from both packages if
+      you want the tree itself.
+    </p>
+
+    <h2>Safety</h2>
+    <ul>
+      <li>
+        The parser produces data, never an HTML string, and the renderer builds
+        elements from it — so model text can only ever become text. A
+        <code>&lt;script&gt;</code> or <code>&lt;img onerror&gt;</code> in the
+        content renders as those characters.
+      </li>
+      <li>
+        Links keep only <code>http:</code>, <code>https:</code>,
+        <code>mailto:</code> and relative destinations, with control characters
+        stripped before the scheme is read. An unsafe link renders as its text.
+        External links open in a new tab with
+        <code>rel="noopener noreferrer"</code>.
+      </li>
+      <li>
+        Images render as a link to the image and are never loaded. An image URL
+        written by a model is a known way to leak a conversation to a
+        third-party server the moment it renders.
+      </li>
+    </ul>
+
+    <h2>Overriding elements</h2>
+    <p>
+      <code>components</code> replaces any element by tag — each override gets
+      the props the default would have had, so spread them to keep Kernel's
+      styling. <code>codeBlock</code> replaces the fence renderer, which is
+      where a highlighter plugs in. Pass a stable object: a new one every
+      render re-renders every block.
+    </p>
+    <pre class="docs-pre"><code>{`const components = {
+  a: (props) => <a {...props} onClick={trackClick} />,
+  codeBlock: ({ code, language, streaming }) => (
+    <CodeBlock lines={highlight(code, language)} language={language} streaming={streaming} />
+  ),
+};
+
+<StreamingMarkdown content={text} streaming={!done} components={components} />`}</code></pre>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>
+        It is deliberately not a live region. A container that announces every
+        appended token reads a stream back word by word, or re-reads the whole
+        answer. Announcing belongs to the transcript:
+        <a href="/components/message-scroller/">Message Scroller</a> is
+        <code>role="log"</code> with polite announcements, and this component
+        sets <code>aria-busy</code> while <code>streaming</code> so assistive
+        tech can hold its updates and read the finished text once.
+      </li>
+      <li>Headings, lists and tables are the real elements, so screen-reader rotors and table navigation work.</li>
+      <li>A table wider than the message scrolls inside a focusable wrapper, so it is reachable by keyboard.</li>
+      <li>Links that open a new tab say so, in a visually hidden suffix you can translate through <code>labels</code>.</li>
+    </ul>
+  </div>
+</BaseLayout>

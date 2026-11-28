@@ -346,6 +346,17 @@
   --kernel-dialog-translate: calc(100% + var(--kernel-sheet-inset-inline)) 0;
 }
 
+/* Mirrors Dialog's RTL flip: a logical side parks off its own edge. */
+.kernel-Sheet-sheet.kernel-Sheet-inset[data-side="left"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Sheet-sheet.kernel-Sheet-inset[data-side="left"] {
+  --kernel-dialog-translate: calc(100% + var(--kernel-sheet-inset-inline)) 0;
+}
+
+.kernel-Sheet-sheet.kernel-Sheet-inset[data-side="right"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Sheet-sheet.kernel-Sheet-inset[data-side="right"] {
+  --kernel-dialog-translate: calc(-100% - var(--kernel-sheet-inset-inline)) 0;
+}
+
 /* The handle sits in the padding band reserved above, positioned against the
    dialog rather than flowing in the content wrapper — see the component's
    JSDoc for why it can't simply be the first child. Its box stops at the band
@@ -427,5 +438,21 @@
      isn't decoration — but the settle afterwards shouldn't animate. */
   .kernel-Sheet-sheet[open][data-snapping] {
     transition: none;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the sheet, which relies on its shadow for an edge, would
+   have none, and the drag handle would vanish. System colours survive the
+   repaint, so the state comes back in Highlight/HighlightText and the edges
+   in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Sheet-sheet {
+    border: var(--kernel-border-width) solid CanvasText;
+  }
+
+  .kernel-Sheet-handleBar {
+    background: CanvasText;
   }
 }

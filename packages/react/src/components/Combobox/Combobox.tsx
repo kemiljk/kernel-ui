@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { InputHTMLAttributes, KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { inputModality, type ChangeDetails, type ChangeEventSource } from "../../utils/changeDetails";
+import { fuzzyScore, fuzzySegments } from "../../utils/fuzzy";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import {
   useFloatingPosition,
   type FloatingAlign,
@@ -21,6 +23,14 @@ export interface ComboboxGroup {
   items: ComboboxOption[];
 }
 
+/** What changed a `Combobox`'s selection: a click or tap on an option,
+ * Enter on the highlighted option, or emptying the text field. */
+export type ComboboxChangeReason = "item-press" | "keyboard" | "clear";
+
+/** A custom filter: return a score above 0 to keep an option (higher ranks
+ * first) or 0 to hide it. Same shape as cmdk's `filter`. */
+export type ComboboxFilter = (text: string, query: string, keywords?: string[]) => number;
+
 export interface ComboboxProps {
   label: ReactNode;
   /** Visually hides the label without removing it from the accessibility
@@ -34,10 +44,15 @@ export interface ComboboxProps {
   groups?: ComboboxGroup[];
   value?: string;
   defaultValue?: string;
-  onValueChange?: (value: string) => void;
+  /** Called before the selection changes, with the reason (`"item-press"`, `"keyboard"` or `"clear"`); `details.cancel()`
+   * keeps the current selection (and the listbox open). */
+  onValueChange?: (value: string, details: ChangeDetails<ComboboxChangeReason>) => void;
   placeholder?: string;
   emptyMessage?: ReactNode;
   shouldFilter?: boolean;
+  /** Replace the built-in ranked fuzzy match (see `fuzzyScore`). Return a
+   * score above 0 to keep an option, higher first; 0 hides it. */
+  filter?: ComboboxFilter;
   /** Which side of the field the listbox opens on. */
   placement?: FloatingPlacement;
   /** Cross-axis alignment relative to the field. */
@@ -46,7 +61,15 @@ export interface ComboboxProps {
   offset?: number;
   renderOption?: (
     option: ComboboxOption,
-    state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number },
+    state: {
+      active: boolean;
+      selected: boolean;
+      group?: ComboboxGroup;
+      index: number;
+      /** Matched `[start, end)` spans of `option.label` for the current
+       * query, for drawing your own highlight. Empty with a custom `filter`. */
+      matches: Array<[number, number]>;
+    },
   ) => ReactNode;
   children?: ReactNode;
 }
@@ -82,6 +105,9 @@ interface RegisteredOption {
 }
 
 interface CompoundComboboxContext {
+  /** The id Combobox's own <label htmlFor> points at. */
+  inputId: string;
+  open: boolean;
   listboxId: string;
   query: string;
   selectedValue: string;
@@ -91,7 +117,7 @@ interface CompoundComboboxContext {
   setQuery: (value: string) => void;
   registerOption: (option: RegisteredOption) => () => void;
   setActiveId: (id: string) => void;
-  selectOption: (option: RegisteredOption) => void;
+  selectOption: (option: RegisteredOption, event?: ChangeEventSource) => void;
   isVisible: (option: RegisteredOption) => boolean;
   openList: () => void;
   closeList: () => void;
@@ -109,9 +135,28 @@ function useCompoundCombobox() {
   return context;
 }
 
-function compoundMatches(option: RegisteredOption, query: string) {
-  const normalized = query.trim().toLowerCase();
-  return !normalized || [option.value, ...option.keywords].some((text) => text.toLowerCase().includes(normalized));
+function compoundMatches(option: RegisteredOption, query: string, filter?: ComboboxFilter) {
+  if (!query.trim()) return true;
+  if (filter) return filter(option.value, query, option.keywords) > 0;
+  return [option.value, ...option.keywords].some((text) => fuzzyScore(query, text) !== null);
+}
+
+/** Matched label text wrapped in `<mark>`, the rest plain. */
+function Highlighted({ text, ranges }: { text: string; ranges: Array<[number, number]> }) {
+  if (ranges.length === 0) return <>{text}</>;
+  return (
+    <>
+      {fuzzySegments(text, ranges).map((segment, index) =>
+        segment.match ? (
+          <mark key={index} className={styles.match}>
+            {segment.text}
+          </mark>
+        ) : (
+          segment.text
+        ),
+      )}
+    </>
+  );
 }
 
 function CompoundComboboxInput({ value, onValueChange, ...props }: ComboboxInputProps) {
@@ -125,12 +170,15 @@ function CompoundComboboxInput({ value, onValueChange, ...props }: ComboboxInput
     <input
       {...props}
       ref={context.setInputElement}
+      // Combobox renders the <label htmlFor>; without this id the input was
+      // unlabelled (named only by its placeholder).
+      id={props.id ?? context.inputId}
       type={props.type ?? "text"}
       role="combobox"
-      aria-expanded="true"
+      aria-expanded={context.open}
       aria-controls={context.listboxId}
       aria-autocomplete="list"
-      aria-activedescendant={context.activeId ?? undefined}
+      aria-activedescendant={context.open ? context.activeId ?? undefined : undefined}
       value={value ?? context.query}
       autoComplete="off"
       onFocus={context.openList}
@@ -146,7 +194,7 @@ function CompoundComboboxInput({ value, onValueChange, ...props }: ComboboxInput
           context.setActiveId(selectable[nextIndex]?.id ?? "");
         } else if (event.key === "Enter") {
           const active = selectable[activeIndex];
-          if (active) { event.preventDefault(); context.selectOption(active); }
+          if (active) { event.preventDefault(); context.selectOption(active, event); }
         } else if (event.key === "Escape") context.closeList();
       }}
       className={[styles.input, props.className].filter(Boolean).join(" ")}
@@ -169,7 +217,7 @@ function CompoundComboboxItem({ id, value, keywords, disabled = false, onSelect,
     <div id={optionId} role="option" aria-selected={selected} aria-disabled={disabled || undefined} data-active={dataAttr(active)} className={styles.option}
       onPointerDown={(event) => event.preventDefault()}
       onPointerMove={() => { if (!disabled) context.setActiveId(optionId); }}
-      onClick={() => { if (!disabled) context.selectOption(option); }}>
+      onClick={(event) => { if (!disabled) context.selectOption(option, event); }}>
       {typeof children === "function" ? children({ active, selected }) : children}
     </div>
   );
@@ -214,13 +262,14 @@ export function Combobox({
   placeholder,
   emptyMessage = "No results",
   shouldFilter = true,
+  filter,
   placement = "bottom",
   align = "center",
   offset = 8,
   renderOption,
   children,
 }: ComboboxProps) {
-  const [selectedValue, setSelectedValue] = useControllableState({
+  const [selectedValue, setSelectedValue] = useControllableStateWithDetails<string, ComboboxChangeReason>({
     value,
     defaultValue,
     onChange: onValueChange,
@@ -248,11 +297,38 @@ export function Combobox({
   const filtered = useMemo(() => {
     const isGrouped = Boolean(groups && groups.length > 0);
     const sourceGroups = isGrouped ? (groups as ComboboxGroup[]) : [{ id: "__items__", items: options }];
+    const query = shouldFilter ? inputText : "";
+    const ranked = query.trim() !== "";
+    // Ranked fuzzy match, best first within each group (groups keep their
+    // order). The DOM order is the ranked order, so arrow keys, screen
+    // readers and the eye all agree on what's "next".
+    const matchesByOption = new Map<ComboboxOption, Array<[number, number]>>();
     const filteredGroups = sourceGroups
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((option) => !shouldFilter || option.label.toLowerCase().includes(inputText.toLowerCase())),
-      }))
+      .map((group) => {
+        const scored: Array<{ option: ComboboxOption; score: number; index: number }> = [];
+        group.items.forEach((option, index) => {
+          if (!ranked) {
+            scored.push({ option, score: 0, index });
+            matchesByOption.set(option, []);
+            return;
+          }
+          if (filter) {
+            const score = filter(option.label, query);
+            if (score > 0) {
+              scored.push({ option, score, index });
+              matchesByOption.set(option, []);
+            }
+            return;
+          }
+          const match = fuzzyScore(query, option.label);
+          if (match) {
+            scored.push({ option, score: match.score, index });
+            matchesByOption.set(option, match.ranges);
+          }
+        });
+        if (ranked) scored.sort((a, b) => b.score - a.score || a.index - b.index);
+        return { ...group, items: scored.map((entry) => entry.option) };
+      })
       .filter((group) => group.items.length > 0);
 
     const entries: Array<{ option: ComboboxOption; group?: ComboboxGroup; flatIndex: number }> = [];
@@ -262,8 +338,8 @@ export function Combobox({
       }
     }
 
-    return { filteredGroups, entries, isGrouped };
-  }, [groups, inputText, options, shouldFilter]);
+    return { filteredGroups, entries, isGrouped, matchesByOption };
+  }, [filter, groups, inputText, options, shouldFilter]);
 
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLInputElement, HTMLDivElement>({
     open,
@@ -279,8 +355,8 @@ export function Combobox({
     return () => setCompoundOptions((current) => current.filter((entry) => entry.id !== option.id));
   }, []);
   const compoundVisible = useCallback(
-    (option: RegisteredOption) => !shouldFilter || compoundMatches(option, compoundQuery),
-    [compoundQuery, shouldFilter],
+    (option: RegisteredOption) => !shouldFilter || compoundMatches(option, compoundQuery, filter),
+    [compoundQuery, filter, shouldFilter],
   );
   const compoundSelectable = useMemo(
     () => compoundOptions.filter((option) => !option.disabled && compoundVisible(option)),
@@ -314,14 +390,16 @@ export function Combobox({
     void playExit();
   }
 
-  function selectOption(option: ComboboxOption) {
-    setSelectedValue(option.value);
+  function selectOption(option: ComboboxOption, event: ChangeEventSource) {
+    const reason = inputModality(event) === "keyboard" ? "keyboard" : "item-press";
+    if (!setSelectedValue(option.value, reason, event)) return;
     setInputText(option.label);
     closeList();
   }
 
-  const selectCompoundOption = useCallback((option: RegisteredOption) => {
-    setSelectedValue(option.value);
+  const selectCompoundOption = useCallback((option: RegisteredOption, event?: ChangeEventSource) => {
+    const reason = inputModality(event) === "keyboard" ? "keyboard" : "item-press";
+    if (!setSelectedValue(option.value, reason, event)) return;
     setCompoundQuery(option.value);
     option.onSelect?.();
     closeList();
@@ -364,6 +442,8 @@ export function Combobox({
   }, [compoundSelectable]);
 
   const compoundContext = useMemo<CompoundComboboxContext>(() => ({
+    inputId: id,
+    open,
     listboxId,
     query: compoundQuery,
     selectedValue,
@@ -379,7 +459,7 @@ export function Combobox({
     closeList,
     setInputElement,
     setListboxElement,
-  }), [closeList, compoundActiveId, compoundOptions, compoundQuery, compoundSetActiveId, compoundVisible, listboxId, openList, registerOption, selectCompoundOption, selectedValue, setInputElement, setListboxElement, shouldFilter]);
+  }), [closeList, compoundActiveId, compoundOptions, compoundQuery, compoundSetActiveId, compoundVisible, id, listboxId, open, openList, registerOption, selectCompoundOption, selectedValue, setInputElement, setListboxElement, shouldFilter]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     const maxIndex = filtered.entries.length - 1;
@@ -405,7 +485,7 @@ export function Combobox({
         const active = filtered.entries[activeIndex]?.option;
         if (open && active) {
           event.preventDefault();
-          selectOption(active);
+          selectOption(active, event);
         }
         break;
       }
@@ -448,6 +528,9 @@ export function Combobox({
           setInputText(event.target.value);
           setActiveIndex(0);
           openList();
+          // Emptying the field clears the selection, rather than leaving a
+          // value selected behind a blank input.
+          if (event.target.value === "" && selectedValue !== "") setSelectedValue("", "clear", event);
         }}
         onKeyDown={handleKeyDown}
         className={styles.input}
@@ -488,7 +571,7 @@ export function Combobox({
                     className={styles.option}
                     onPointerDown={(event) => event.preventDefault()}
                     onPointerMove={() => setActiveIndex(currentIndex)}
-                    onClick={() => selectOption(option)}
+                    onClick={(event) => selectOption(option, event)}
                   >
                     {typeof renderOption === "function"
                       ? renderOption(option, {
@@ -496,8 +579,9 @@ export function Combobox({
                           selected: isSelected,
                           group: filtered.isGrouped ? group : undefined,
                           index: currentIndex,
+                          matches: filtered.matchesByOption.get(option) ?? [],
                         })
-                      : option.label}
+                      : <Highlighted text={option.label} ranges={filtered.matchesByOption.get(option) ?? []} />}
                   </div>
                 );
               });

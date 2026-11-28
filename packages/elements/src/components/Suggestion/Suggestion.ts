@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import { observePillIcons } from "../../utils/pillIcons";
 import "./Suggestion.css";
 
@@ -48,10 +48,17 @@ export class KernelSuggestion extends KernelElement {
  * the button text), `disabled`.
  *
  * Events: `select` CustomEvent with `detail.value`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the chip's `<button>`.
  */
 export class KernelSuggestionItem extends KernelElement {
   static get observedAttributes() {
-    return ["value", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "value", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.native?.querySelector("button") ?? null;
   }
 
   connectedCallback() {

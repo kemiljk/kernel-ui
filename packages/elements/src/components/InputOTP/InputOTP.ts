@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./InputOTP.css";
 
 /**
@@ -15,6 +15,9 @@ import "./InputOTP.css";
  * `complete` CustomEvent (`event.detail.value`) once when the code
  * first reaches `length` characters — not on every subsequent event
  * where it's still complete, same as the React version's `onComplete`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the `<fieldset>` that groups the digits.
  */
 export class KernelInputOTP extends KernelElement {
   private cells: HTMLInputElement[] = [];
@@ -26,7 +29,11 @@ export class KernelInputOTP extends KernelElement {
   private isInternalValueUpdate = false;
 
   static get observedAttributes() {
-    return ["length", "value", "label", "disabled", "label-digit"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "length", "value", "label", "disabled", "label-digit"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected applyLabels() {

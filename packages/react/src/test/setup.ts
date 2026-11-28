@@ -36,6 +36,12 @@ if (typeof globalThis.PointerEvent === "undefined") {
   globalThis.PointerEvent = PointerEventShim as unknown as typeof PointerEvent;
 }
 
+// jsdom has no `scrollIntoView` (no layout); Combobox calls it to keep the
+// highlighted option in view as arrow keys move it.
+if (typeof Element.prototype.scrollIntoView !== "function") {
+  Element.prototype.scrollIntoView = function scrollIntoView() {};
+}
+
 // jsdom has no `matchMedia`; components read it for `prefers-reduced-motion`
 // (Tabs' indicator, overlay exits). Report "no match" for every query.
 if (typeof window.matchMedia !== "function") {

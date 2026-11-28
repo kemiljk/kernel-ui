@@ -23,3 +23,10 @@ examples/**/node_modules
 examples/**/dist
 .vercel
 .vercel
+
+# Generated at build time by apps/docs/scripts/generate-shadcn-registry.mjs
+apps/docs/public/r/
+# Screenshot suite output (scripts/screenshot-suite.mjs); baselines are per-machine
+screenshots/
+# Agent eval output (screenshots, transcripts, built files)
+evals/results/

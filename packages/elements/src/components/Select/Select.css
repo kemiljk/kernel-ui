@@ -93,6 +93,8 @@
    explicit iteration-count/fill-mode. No `:user-invalid` variant here:
    a native `<select>` is always a valid choice among its own options,
    so `invalid` can only ever be set explicitly via the prop. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-select-shake {
   0%,
   100% {
@@ -227,7 +229,10 @@
     display: flex;
     align-items: center;
     gap: var(--kernel-space-3);
-    padding: var(--kernel-space-3);
+    /* Same compact row as DropdownMenu's items and Combobox's options,
+       so every list of choices in the library shares one rhythm. */
+    padding-block: var(--kernel-space-2);
+    padding-inline: var(--kernel-space-3);
     border: none;
     border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
     background-color: transparent;
@@ -237,8 +242,16 @@
     user-select: none;
   }
 
-  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:is(:checked, :focus-visible) {
+  /* The checkmark marks the chosen option; the fill marks where the
+     pointer or keyboard is. Giving the checked row the same fill as the
+     hovered one made the two states indistinguishable, so with the
+     pointer over "Germany" two rows looked selected. */
+  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:focus-visible {
     background-color: var(--kernel-color-accent-subtle);
+  }
+
+  .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:checked {
+    font-weight: 500;
   }
 
   .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:focus-visible {
@@ -253,11 +266,29 @@
   .kernel-Select-select option::checkmark {
     order: 1;
     margin-inline-start: auto;
+    color: var(--kernel-color-accent-text);
   }
 
   @media (hover: hover) and (pointer: fine) {
     .kernel-Select-select:where(:not([multiple]):not([size]), :not([multiple])[size="1"]) option:hover:not(:disabled) {
       background-color: var(--kernel-color-accent-subtle);
     }
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the checked option in the customisable picker would
+   vanish. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. Anything with text on
+   a Highlight fill also sets forced-color-adjust: none, or the browser
+   paints a Canvas backplate behind the text and hides it. */
+@media (forced-colors: active) {
+  .kernel-Select-select option:is(:checked, :focus-visible),
+  .kernel-Select-select option:hover:not(:disabled) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
   }
 }

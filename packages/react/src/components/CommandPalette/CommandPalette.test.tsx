@@ -11,7 +11,7 @@ describe("CommandPalette", () => {
 
     expect(dialog).toHaveAttribute("open");
     fireEvent(dialog, new Event("cancel", { cancelable: true }));
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledWith(false, expect.objectContaining({ reason: "escape-key" }));
 
     rerender(<CommandPalette open={false} onOpenChange={onOpenChange} />);
     expect(dialog).not.toHaveAttribute("open");
@@ -38,7 +38,7 @@ describe("CommandPalette", () => {
     expect(screen.getByRole("option")).toHaveAttribute("id", "save");
     fireEvent.keyDown(input, { key: "Enter" });
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledWith(false, expect.objectContaining({ reason: "item-keyboard" }));
   });
 
   it("supports controlled query state and compound rich options", async () => {
@@ -104,5 +104,62 @@ describe("CommandPalette", () => {
     fireEvent.click(screen.getByRole("button", { name: "Replace" }));
     await waitFor(() => expect(input).toHaveAttribute("aria-activedescendant", "two"));
     expect(document.getElementById("two")).toBeInTheDocument();
+  });
+});
+
+describe("CommandPalette highlight", () => {
+  const items = ["Go to Dashboard", "Go to Settings", "Go to Billing", "New project"].map((label) => ({
+    id: label.toLowerCase().replace(/\s+/g, "-"),
+    label,
+  }));
+
+  function Example({ onRun }: { onRun: (label: string) => void }) {
+    const [open, setOpen] = useState(false);
+    // Stable the way an app would memoise them: nothing re-registers on reopen.
+    const [stableItems] = useState(() => items.map((item) => ({ ...item, onSelect: () => onRun(item.label) })));
+    return (
+      <>
+        <button type="button" onClick={() => setOpen(true)}>Search commands</button>
+        <CommandPalette open={open} onOpenChange={setOpen} items={stableItems} placeholder="Search" />
+      </>
+    );
+  }
+
+  it("highlights the first match on open, including a reopen over the same items", async () => {
+    const onRun = vi.fn();
+    render(<Example onRun={onRun} />);
+    const trigger = screen.getByRole("button", { name: "Search commands" });
+
+    fireEvent.click(trigger);
+    const input = screen.getByRole("combobox");
+    await waitFor(() => expect(input).toHaveAttribute("aria-activedescendant", "go-to-dashboard"));
+    fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    fireEvent.click(trigger);
+    await waitFor(() => expect(input).toHaveAttribute("aria-activedescendant", "go-to-dashboard"));
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onRun).toHaveBeenCalledWith("Go to Dashboard");
+  });
+
+  it("moves the highlight to the first match when the query changes", async () => {
+    const onRun = vi.fn();
+    render(<Example onRun={onRun} />);
+    fireEvent.click(screen.getByRole("button", { name: "Search commands" }));
+    const input = screen.getByRole("combobox");
+    await waitFor(() => expect(input).toHaveAttribute("aria-activedescendant", "go-to-dashboard"));
+
+    // Arrow to Settings, then type a query Settings still matches: the
+    // highlight goes to the top-ranked result instead of staying put. The
+    // three "Go to" items tie on score, so the shortest, Billing, ranks first.
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(input).toHaveAttribute("aria-activedescendant", "go-to-settings");
+    fireEvent.change(input, { target: { value: "go to" } });
+    await waitFor(() => expect(input).toHaveAttribute("aria-activedescendant", "go-to-billing"));
+
+    fireEvent.change(input, { target: { value: "set" } });
+    await waitFor(() => expect(input).toHaveAttribute("aria-activedescendant", "go-to-settings"));
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onRun).toHaveBeenCalledWith("Go to Settings");
   });
 });

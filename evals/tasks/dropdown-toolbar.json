@@ -1,0 +1,137 @@
+{
+  "id": "dropdown-toolbar",
+  "title": "Toolbar with dropdown menus",
+  "package": "react",
+  "prompt": "Build a document editor toolbar above a placeholder document. It has Bold, Italic and Underline formatting buttons that toggle on and off and show their pressed state, an \"Insert\" dropdown menu with Image, Table and Divider, and an icon-only \"More actions\" dropdown menu with Rename, Duplicate and Delete (Delete is destructive). Choosing any menu item shows \"Last action: <item>\" below the toolbar. The toolbar should be announced as a toolbar to assistive technology.",
+  "screenshots": [
+    {
+      "name": "Insert menu open",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^insert/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-menu",
+      "description": "Imports DropdownMenu, MenuItem and Toggle",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "DropdownMenu",
+        "MenuItem",
+        "Toggle"
+      ]
+    },
+    {
+      "id": "no-raw-controls",
+      "description": "No hand-rolled <button> or role=\"menu\"",
+      "type": "source",
+      "pattern": "<button\\b|role=[\"']menu",
+      "absent": true
+    },
+    {
+      "id": "toolbar",
+      "description": "A role=\"toolbar\" with an accessible name",
+      "type": "dom",
+      "selector": "[role=toolbar][aria-label], [role=toolbar][aria-labelledby]",
+      "min": 1
+    },
+    {
+      "id": "toggles",
+      "description": "Three buttons expose aria-pressed",
+      "type": "dom",
+      "selector": "[aria-pressed]",
+      "min": 3
+    },
+    {
+      "id": "toggle-presses",
+      "description": "Clicking Bold flips aria-pressed",
+      "type": "changes",
+      "attribute": "aria-pressed",
+      "trigger": {
+        "action": "click",
+        "role": "button",
+        "name": "/bold/i"
+      }
+    },
+    {
+      "id": "icon-button-named",
+      "description": "The icon-only menu button is named \"More actions\"",
+      "type": "role",
+      "role": "button",
+      "name": "/more/i"
+    },
+    {
+      "id": "menu-opens",
+      "description": "Insert opens a menu with three items",
+      "type": "role",
+      "role": "menuitem",
+      "min": 3,
+      "max": 3,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^insert/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "menu-selects",
+      "description": "Choosing Table shows \"Last action: Table\"",
+      "type": "eval",
+      "expression": "/last action:\\s*table/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^insert/i"
+        },
+        {
+          "action": "click",
+          "role": "menuitem",
+          "name": "/table/i"
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "escape-closes",
+      "description": "Escape closes the menu",
+      "type": "role",
+      "role": "menuitem",
+      "max": 0,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^insert/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        },
+        {
+          "action": "press",
+          "key": "Escape"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    }
+  ]
+}

@@ -13,7 +13,7 @@ import { parse } from "node-html-parser";
 
 const distDir = path.join(import.meta.dirname, "..", "dist");
 const componentsDir = path.join(distDir, "components");
-const guideSlugs = ["choosing", "agents", "installation", "cli", "migration", "theming", "icons", "platforms"];
+const guideSlugs = ["choosing", "agents", "agent-bridge", "installation", "cli", "testing", "migration", "state", "theming", "icons", "platforms", "support"];
 
 // JSX/HTML whitespace collapse means a `<strong>`/`<em>` can abut its
 // neighbouring text with no source space at all (`word<strong>bold</strong>word`),
@@ -273,12 +273,14 @@ async function main() {
     "- MCP server: `npx -y @kernelui-lib/cli mcp` (stdio). Tools: list_components, search_components, get_component (exact props), get_tokens, get_conventions, check_code.",
     "- Check generated code: `npx @kernelui-lib/cli check <files>` reports foreign props (asChild, leftIcon), invalid values, missing labels and more, with fixes.",
     "- Skills: in each package's `skills/` folder, versioned with the code; also discoverable at /.well-known/agent-skills/index.json.",
+    "- Claude Code plugin (skills + MCP server in every project): `/plugin marketplace add kemiljk/kernel-ui`, then `/plugin install kernel-ui@kernel-ui`.",
     "",
     "## Install",
     "",
     "- React: `npm install @kernelui-lib/react @kernelui-lib/styles`, then `import \"@kernelui-lib/styles\"; import \"@kernelui-lib/react/styles.css\";`",
     "- Custom Elements: `npm install @kernelui-lib/elements @kernelui-lib/styles`, then `import \"@kernelui-lib/styles\"; import \"@kernelui-lib/elements/styles.css\"; import \"@kernelui-lib/elements\";`",
     "- Or `npx @kernelui-lib/cli init` to detect the framework and wire up the imports.",
+    "- In a shadcn/ui project: `npx shadcn@latest add https://www.kernelui.com/r/<slug>.json` installs the package and adds a re-export file (see Installation).",
     "",
     "## Guides",
     "",
@@ -288,6 +290,7 @@ async function main() {
     "",
     "- [api.json](/api.json): every component's exact props, attributes and events, generated from source",
     "- [registry.json](/registry.json): structured component metadata (shadcn aliases, migration caveats, docs URLs)",
+    "- [r/registry.json](/r/registry.json): the components as a shadcn registry, for the shadcn CLI and MCP server",
     "- [llms-full.txt](/llms-full.txt): every guide and component page in one file",
     "- Any page as markdown: append `.md` to its URL",
     "",

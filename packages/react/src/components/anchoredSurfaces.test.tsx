@@ -143,7 +143,7 @@ describe("anchored surfaces", () => {
 
     fireEvent.focus(screen.getByRole("combobox", { name: "Framework" }));
     fireEvent.click(screen.getByTestId("option-react"));
-    expect(onValueChange).toHaveBeenCalledWith("react");
+    expect(onValueChange).toHaveBeenCalledWith("react", expect.objectContaining({ reason: "item-press" }));
   });
 
   it("scrolls the active option into view on keyboard nav but not on hover", () => {

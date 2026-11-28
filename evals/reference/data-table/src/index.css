@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+.page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: var(--kernel-space-8) var(--kernel-space-4);
+}

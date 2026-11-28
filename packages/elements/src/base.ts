@@ -20,6 +20,12 @@
  * element (a genuine `<button>`) still ends up in the DOM either way.
  */
 
+import { trackInputModality } from "./utils/changeDetails";
+
+// Change reasons need to know whether the last interaction was a pointer
+// or a key; start listening as soon as any element module loads.
+trackInputModality();
+
 /** A built-in string override: plain text, a `{name}` template, or a
  * function given the same arguments as the React `labels` function. */
 export type KernelLabelValue = string | ((...args: never[]) => string);
@@ -27,6 +33,18 @@ export type KernelLabels = Record<string, KernelLabelValue | readonly string[] |
 
 function kebab(key: string): string {
   return key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+}
+
+/**
+ * ARIA attributes an element hands from its host to the native control
+ * it wraps (see `KernelElement.ariaTarget()`). `title` isn't one: it's
+ * also a tooltip, and several elements read it as their heading text.
+ */
+export const FORWARDED_ARIA_ATTRIBUTES = ["aria-label", "aria-labelledby", "aria-describedby"] as const;
+export type ForwardedAriaAttribute = (typeof FORWARDED_ARIA_ATTRIBUTES)[number];
+
+function isForwardedAria(name: string): name is ForwardedAriaAttribute {
+  return (FORWARDED_ARIA_ATTRIBUTES as readonly string[]).includes(name);
 }
 
 export class KernelElement extends HTMLElement {
@@ -95,6 +113,38 @@ export class KernelElement extends HTMLElement {
     return [];
   }
 
+  /**
+   * Dispatches a change event *before* the change is committed: bubbling,
+   * cancelable, with `reason` (and the triggering `event`) added to
+   * `detail`. Returns `false` when a listener called `preventDefault()` —
+   * the caller then keeps its current state and skips side effects. Value
+   * controls use `beforevaluechange` for this, then announce the commit
+   * with `valuechange` (and `change` where they have one) through
+   * `emitCommitted`; see `utils/changeDetails.ts`.
+   */
+  protected emitChange(type: string, detail: object, reason: string, event?: Event): boolean {
+    return this.dispatchEvent(
+      new CustomEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        detail: { ...detail, reason, event },
+      }),
+    );
+  }
+
+  /**
+   * The after-the-fact half of a change: a bubbling, non-cancelable event
+   * dispatched once the change is committed, with the same `detail` shape
+   * (`reason` and the triggering `event` included): `valuechange`, and
+   * `change` on elements that have one. Paired with a cancelable
+   * `beforevaluechange` (via `emitChange`), the way `beforeinput`/`input`
+   * and `beforetoggle`/`toggle` pair, so a handler reading `el.checked`,
+   * `el.tags` or an attribute sees the new value, as with a native control.
+   */
+  protected emitCommitted(type: string, detail: object, reason: string, event?: Event): void {
+    this.dispatchEvent(new CustomEvent(type, { bubbles: true, detail: { ...detail, reason, event } }));
+  }
+
   connectedCallback() {
     if (this.native) return; // already built — e.g. re-inserted into the DOM
     const native = this.createNative();
@@ -119,6 +169,19 @@ export class KernelElement extends HTMLElement {
     return "";
   }
 
+  /** The id for the native control an element labels itself (the
+   * `<input>` behind its own `<label for>`). An author's `id` stays on
+   * the host, so `getElementById()` and `#id` selectors keep finding the
+   * element and the events it dispatches; the control gets `<id>-control`.
+   * Copying the host's id onto the control instead left two elements
+   * sharing it, and `<label for>` resolved to the host, which isn't
+   * labelable, so the control went unnamed. Without a host id, the
+   * element's generated `fallback`. */
+  protected controlId(fallback: string): string {
+    const id = this.getAttribute("id");
+    return id ? `${id}-control` : fallback;
+  }
+
   /** Moves this custom element's own light-DOM children (whatever the
    * author wrote between its open/close tags) into `target`, once. */
   protected moveChildrenInto(target: Node) {
@@ -128,6 +191,7 @@ export class KernelElement extends HTMLElement {
   attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
     if (!this.native) return; // not connected yet — syncAllAttrs() will catch up
     if (name.startsWith("label-")) this.applyLabels();
+    else if (isForwardedAria(name)) this.forwardAria(name, newValue);
     else this.syncAttr(name, newValue);
   }
 
@@ -135,9 +199,57 @@ export class KernelElement extends HTMLElement {
   protected syncAllAttrs() {
     const ctor = this.constructor as typeof KernelElement;
     for (const name of ctor.observedAttributes) {
-      if (!name.startsWith("label-")) this.syncAttr(name, this.getAttribute(name));
+      if (name.startsWith("label-")) continue;
+      if (isForwardedAria(name)) this.forwardAria(name, this.getAttribute(name));
+      else this.syncAttr(name, this.getAttribute(name));
     }
     this.applyLabels();
+  }
+
+  /**
+   * The native element that should carry the host's `aria-label`,
+   * `aria-labelledby` and `aria-describedby`: the real `<button>`,
+   * `<input>`, `<select>` or `<progress>` that assistive tech lands on.
+   * Left on the host, the attributes name nothing: the host is a generic
+   * wrapper, not the control. Elements that wrap a control override this
+   * and add `...FORWARDED_ARIA_ATTRIBUTES` to their `observedAttributes`;
+   * the default `null` leaves the attributes where they are. The host
+   * keeps its copy either way, so reading the attribute back still works.
+   */
+  protected ariaTarget(): Element | null {
+    return null;
+  }
+
+  /** Copies one forwarded ARIA attribute onto `ariaTarget()`.
+   * `aria-describedby` goes through `syncDescribedBy()` instead, since
+   * many controls already point it at their own hint or error text. */
+  protected forwardAria(name: ForwardedAriaAttribute, value: string | null) {
+    if (name === "aria-describedby") {
+      this.syncDescribedBy();
+      return;
+    }
+    const target = this.ariaTarget();
+    if (!target) return;
+    if (value === null) target.removeAttribute(name);
+    else target.setAttribute(name, value);
+  }
+
+  /** Re-applies the control's `aria-describedby`. Elements that describe
+   * their control with their own hint or error text override this to
+   * re-run that update, which goes through `setDescribedBy()`. */
+  protected syncDescribedBy() {
+    const target = this.ariaTarget();
+    if (target) this.setDescribedBy(target, []);
+  }
+
+  /** Sets `target`'s `aria-describedby` to the element's own ids followed
+   * by the ids the author put on the host, or removes it when there are
+   * none. */
+  protected setDescribedBy(target: Element, ownIds: readonly (string | null | undefined | false)[]) {
+    const authored = this.getAttribute("aria-describedby")?.split(/\s+/) ?? [];
+    const ids = [...new Set([...ownIds, ...authored].filter((id): id is string => Boolean(id)))];
+    if (ids.length) target.setAttribute("aria-describedby", ids.join(" "));
+    else target.removeAttribute("aria-describedby");
   }
 
   /** Default: mirror the attribute onto `native` as `data-{name}`,

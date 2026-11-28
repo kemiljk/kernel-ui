@@ -113,17 +113,17 @@
   scale: var(--kernel-scale-enter);
   filter: blur(var(--kernel-blur-sm));
   transition:
-    opacity var(--kernel-duration-fast) linear,
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
     scale var(--kernel-duration-base) var(--kernel-ease-out),
-    filter var(--kernel-duration-fast) linear;
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .copyLabelLayer {
   opacity: 0;
   filter: blur(var(--kernel-blur-sm));
   transition:
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 /* dataAttr() omits the attribute entirely rather than writing
@@ -175,6 +175,21 @@
   font: inherit;
 }
 
+/* With line numbers the code is one grid, and each line a subgrid row of it
+   (below), so the number column is as wide as the widest number: "9" and
+   "10" start their code at the same x. The code column's minimum is its
+   longest line, so an unwrapped block still scrolls sideways as one piece. */
+.code:has(> .line > .number) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+/* `wrap`: the code column may shrink to the viewport, and lines wrap inside
+   it. */
+.root[data-wrap] .code:has(> .line > .number) {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
 /* With a header above it, the first line's clearance from the top corners is
    already the header's job — only the bottom corners are still this box's. */
 .root:has(> .header:not([hidden])) .pre {
@@ -193,6 +208,13 @@
 
 .line:not(:has(> .number)) {
   grid-template-columns: 1fr;
+}
+
+/* A browser without subgrid keeps `auto 1fr` from the rule above: every line
+   is then its own grid, which is the pre-subgrid behaviour. */
+.code:has(> .line > .number) > .line {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
 }
 
 .line[data-highlight] {
@@ -215,6 +237,15 @@
 .lineText {
   min-inline-size: 0;
   white-space: pre;
+}
+
+/* Wrapped lines keep their indentation and spaces (pre-wrap, not normal) and
+   may break anywhere, since a long identifier or URL has no space to break
+   at. The line's `align-items: baseline` keeps the number on the first
+   visual line. */
+.root[data-wrap] .lineText {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -244,5 +275,19 @@
 @media (prefers-reduced-motion: reduce) {
   .copy:active:not(:disabled) {
     scale: 1;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so an emphasised line (an accent tint plus an inset
+   box-shadow bar) would look like every other line. An outline marks it
+   instead of a fill, so the tokens inside keep their own readable colour.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .line[data-highlight] {
+    outline: var(--kernel-border-width) solid Highlight;
+    outline-offset: calc(var(--kernel-border-width) * -1);
   }
 }

@@ -1,6 +1,7 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import { syncScrollEdges } from "../../utils/scrollEdges";
 import "./Tabs.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let tabsCounter = 0;
 
@@ -13,8 +14,11 @@ let tabsCounter = 0;
  *
  * Attributes: `value` (controlled — set it to change tabs
  * externally), `default-value` (required if `value` is never set).
- * Fires a `valuechange` `CustomEvent` (`event.detail.value`) when the
- * active tab changes. A tablist wider than its container scrolls
+ * Before the active tab changes, a cancelable `beforevaluechange`
+ * `CustomEvent` (`event.detail.value`, `detail.reason`: `"trigger-press"`,
+ * `"keyboard"`, or `"programmatic"` for a `setValue()` call);
+ * `preventDefault()` keeps the current tab. Once it has changed, a
+ * `valuechange` with the same detail. A tablist wider than its container scrolls
  * sideways (scrollbar hidden, an edge fade where tabs are cut off) rather
  * than widening the page, and selecting a tab scrolls it into view.
  */
@@ -53,15 +57,20 @@ export class KernelTabs extends KernelElement {
     return Array.from(this.querySelectorAll("kernel-tab-panel"));
   }
 
-  setValue(value: string) {
+  setValue(
+    value: string,
+    reason: "trigger-press" | "keyboard" | "programmatic" = "programmatic",
+    event?: Event,
+  ) {
     if (this.currentValue === value) return;
+    if (!this.emitChange("beforevaluechange", { value }, reason, event)) return;
     this.currentValue = value;
     if (!this.hasAttribute("value")) {
       this.render();
     } else {
       this.setAttribute("value", value);
     }
-    this.dispatchEvent(new CustomEvent("valuechange", { detail: { value }, bubbles: true }));
+    this.emitCommitted("valuechange", { value }, reason, event);
   }
 
   protected syncAttr(name: string, value: string | null) {
@@ -107,7 +116,10 @@ export class KernelTabs extends KernelElement {
 /** `<kernel-tabs-list>` — `role="tablist"`. Attributes: `aria-label`
  * (required), `shape` (`default` follows the theme's control radius,
  * `pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`
- * children and the animated sliding indicator. */
+ * children and the animated sliding indicator.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the `role="tablist"`. */
 export class KernelTabsList extends KernelElement {
   private resizeObserver: ResizeObserver | null = null;
   private readonly onScroll = () => {
@@ -169,18 +181,16 @@ export class KernelTabsList extends KernelElement {
   }
 
   static get observedAttributes() {
-    return ["aria-label", "shape"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "shape"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
-    if (name === "shape") {
-      this.native.dataset.shape = value === "pill" ? "pill" : "default";
-      return;
-    }
-    if (name !== "aria-label") return;
-    if (value === null) this.native.removeAttribute("aria-label");
-    else this.native.setAttribute("aria-label", value);
+    if (name === "shape") this.native.dataset.shape = value === "pill" ? "pill" : "default";
   }
 
   private handleKeyDown(event: KeyboardEvent) {
@@ -255,10 +265,15 @@ export class KernelTabsList extends KernelElement {
 }
 
 /** `<kernel-tab>` — a real `<button role="tab">`. Attributes: `value`
- * (required), `disabled`. */
+ * (required), `disabled`; `aria-label`, `aria-labelledby` and
+ * `aria-describedby` are forwarded to the button. */
 export class KernelTab extends KernelElement {
   static get observedAttributes() {
-    return ["value", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "value", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected createNative(): HTMLElement {
@@ -266,10 +281,11 @@ export class KernelTab extends KernelElement {
     button.type = "button";
     button.setAttribute("role", "tab");
     button.className = kernelClass("Tabs", "tab");
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
       const tabsHost = this.closest("kernel-tabs") as KernelTabs | null;
       const value = this.getAttribute("value");
-      if (tabsHost && value !== null) tabsHost.setValue(value);
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "trigger-press";
+      if (tabsHost && value !== null) tabsHost.setValue(value, reason, event);
     });
     return button;
   }

@@ -4,6 +4,7 @@ import DocsSidebar from "../../components/DocsSidebar.astro";
 import CodeBlockDemo from "../../components/demos/CodeBlockDemo";
 import CodeBlockPlayground from "../../components/demos/CodeBlockPlayground";
 import ApiTable from "../../components/ApiTable.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
 ---
 
 <BaseLayout title="Code Block" withSidebar>
@@ -38,12 +39,15 @@ import ApiTable from "../../components/ApiTable.astro";
       highlighters that emit classes, <code>color</code> for the ones that emit
       inline colours. Shiki's <code>codeToTokens</code> maps over directly:
     </p>
-    <pre class="docs-pre"><code>{`import { codeToTokens } from "shiki";
+    <CodeBlock
+      lang="tsx"
+      code={`import { codeToTokens } from "shiki";
 
 const { tokens } = await codeToTokens(source, { lang: "ts", theme: "github-dark" });
 const lines = tokens.map((line) => ({ tokens: line }));
 
-<CodeBlock lines={lines} language="ts" showLineNumbers />`}</code></pre>
+<CodeBlock lines={lines} language="ts" showLineNumbers />`}
+    />
     <p>
       That's documentation, not a dependency —
       <code>@kernelui-lib/react</code> and
@@ -55,6 +59,19 @@ const lines = tokens.map((line) => ({ tokens: line }));
       <code>&lt;pre&gt;&lt;code&gt;</code> written inside the tag is read once
       at connect, so the code is real page content before any script runs.
     </p>
+
+    <h2>Wrapping</h2>
+    <p>
+      Long lines scroll sideways by default, because code reads best with its
+      author's own line breaks. In a narrow column (a chat message, a phone)
+      set <code>wrap</code> (the <code>wrap</code> attribute on
+      <code>&lt;kernel-code-block&gt;</code>) and lines wrap instead, keeping
+      their indentation and breaking anywhere a long identifier or URL needs
+      to. Every line is a row of one CSS subgrid, so the number column is as
+      wide as the widest number and each number stays on the first visual
+      line of its wrapped line.
+    </p>
+    <pre class="docs-pre"><code>{`<CodeBlock code={source} showLineNumbers wrap />`}</code></pre>
 
     <h2>Stable streaming</h2>
     <p>

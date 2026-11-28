@@ -22,7 +22,8 @@
      framing it, so the items need a bit more inset to read as
      comfortably inside the panel rather than pinned to its edges. */
   padding-block: var(--kernel-space-1);
-  padding-inline: var(--kernel-space-2);
+  --menu-padding-inline: var(--kernel-space-2);
+  padding-inline: var(--menu-padding-inline);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-md);
   background-color: var(--kernel-color-surface-raised);
@@ -76,6 +77,12 @@
   pointer-events: none;
   transition:
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
+}
+
+/* A right-click focuses the menu itself (tabindex="-1") so no item is
+   highlighted yet; the panel needs no ring of its own for that. */
+.content:focus-visible {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

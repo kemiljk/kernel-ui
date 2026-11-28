@@ -200,7 +200,7 @@ export type {
 } from "./components/NavigationMenu/NavigationMenu";
 
 export { ContextMenu } from "./components/ContextMenu/ContextMenu";
-export type { ContextMenuProps } from "./components/ContextMenu/ContextMenu";
+export type { ContextMenuProps, ContextMenuLabels } from "./components/ContextMenu/ContextMenu";
 
 export { HoverCard } from "./components/HoverCard/HoverCard";
 export type { HoverCardProps, HoverCardState } from "./components/HoverCard/HoverCard";
@@ -326,7 +326,7 @@ export type {
   MessageLabels,
 } from "./components/Message/Message";
 
-export { TodoList, TodoItem } from "./components/TodoList/TodoList";
+export { TodoList, TodoItem, animateTodoListChange } from "./components/TodoList/TodoList";
 export type {
   TodoListProps,
   TodoListState,
@@ -393,6 +393,94 @@ export type {
   UsageMeterState,
   UsageMeterLevel,
 } from "./components/UsageMeter/UsageMeter";
+
+// Change reasons: the second argument of every change callback, and each
+// component's own reason union.
+export { createChangeDetails } from "./utils/changeDetails";
+export type { ChangeDetails, ChangeEventSource } from "./utils/changeDetails";
+export type { CheckboxChangeReason } from "./components/Checkbox/Checkbox";
+export type { SwitchChangeReason } from "./components/Switch/Switch";
+export type { ToggleChangeReason } from "./components/Toggle/Toggle";
+export type { AccordionOpenChangeReason } from "./components/Accordion/Accordion";
+export type { DialogOpenChangeReason } from "./components/Dialog/Dialog";
+export type { RadioGroupChangeReason } from "./components/RadioGroup/RadioGroup";
+export type { SelectChangeReason } from "./components/Select/Select";
+export type { TabsChangeReason } from "./components/Tabs/Tabs";
+export type { SliderChangeReason } from "./components/Slider/Slider";
+export type { PopoverOpenChangeReason } from "./components/Popover/Popover";
+export type { DropdownMenuOpenChangeReason } from "./components/DropdownMenu/DropdownMenu";
+export type { ComboboxChangeReason, ComboboxFilter } from "./components/Combobox/Combobox";
+export type {
+  CommandPaletteOpenChangeReason,
+  CommandPaletteFilter,
+} from "./components/CommandPalette/CommandPalette";
+export type { DatePickerChangeReason } from "./components/DatePicker/DatePicker";
+export type { DateRangePickerChangeReason } from "./components/DateRangePicker/DateRangePicker";
+export type { ColorPickerChangeReason } from "./components/ColorPicker/ColorPicker";
+export type { TagInputChangeReason } from "./components/TagInput/TagInput";
+export type { NumberFieldChangeReason } from "./components/NumberField/NumberField";
+export type { SheetOpenChangeReason } from "./components/Sheet/Sheet";
+
+// Ranked fuzzy matching (Combobox, CommandPalette) and 2-D grid movement
+// (the calendar grids), exported for consumers building their own.
+export { fuzzyScore, fuzzyFilter, fuzzySegments, normalizeFuzzyQuery } from "./utils/fuzzy";
+export type { FuzzyMatch, FuzzyResult } from "./utils/fuzzy";
+export { spatialMove, gridDirectionForKey } from "./utils/spatialMove";
+export type { SpatialCell, SpatialDirection } from "./utils/spatialMove";
+
+export { StreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
+export type {
+  StreamingMarkdownProps,
+  StreamingMarkdownState,
+  StreamingMarkdownLabels,
+  StreamingMarkdownTag,
+  StreamingMarkdownComponents,
+  StreamingMarkdownCodeBlockProps,
+} from "./components/StreamingMarkdown/StreamingMarkdown";
+export { parseMarkdown, safeHref } from "./utils/markdown";
+export type {
+  MarkdownBlock,
+  MarkdownInline,
+  MarkdownListItem,
+  MarkdownAlign,
+  MarkdownTopBlock,
+  ParseMarkdownOptions,
+} from "./utils/markdown";
+
+export { ModelPicker } from "./components/ModelPicker/ModelPicker";
+export type {
+  ModelPickerProps,
+  ModelPickerState,
+  ModelPickerLabels,
+  ModelPickerOption,
+  ModelPickerBadge,
+} from "./components/ModelPicker/ModelPicker";
+
+export { ArtifactPanel, defaultArtifactPanelLabels } from "./components/ArtifactPanel/ArtifactPanel";
+export type {
+  ArtifactPanelProps,
+  ArtifactPanelState,
+  ArtifactPanelLabels,
+  ArtifactPanelView,
+  ArtifactPanelPresentation,
+  ArtifactPanelStatus,
+} from "./components/ArtifactPanel/ArtifactPanel";
+
+export { SchemaRenderer } from "./components/SchemaRenderer/SchemaRenderer";
+export type { SchemaRendererProps, SchemaRendererState } from "./components/SchemaRenderer/SchemaRenderer";
+export {
+  SCHEMA_VERSION,
+  SCHEMA_NODE_TYPES,
+  SCHEMA_LIMITS,
+  SCHEMA_NODE_SPECS,
+  kernelSchemaJson,
+  schemaPrompt,
+  sanitizeSchema,
+  sanitizeUrl,
+  validateSchemaNode,
+  parsePartialJson,
+} from "./components/SchemaRenderer/schema";
+export type * from "./components/SchemaRenderer/schema";
 
 export {
   renderElement,

@@ -90,6 +90,25 @@ jobs:
           # OIDC exchange.
           NPM_CONFIG_PROVENANCE: true
 
+      # The MCP Registry (registry.modelcontextprotocol.io) lists the CLI's
+      # `kernel mcp` server from packages/cli/server.json. Its version must
+      # equal the npm version, which the CLI build syncs during `bun run
+      # release` above, so publish it here, only after a CLI release. GitHub
+      # OIDC proves the io.github.kemiljk/* namespace; no secret is stored.
+      - name: Publish the MCP server to the MCP Registry
+        if: steps.changesets.outputs.published == 'true' && contains(steps.changesets.outputs.publishedPackages, '"@kernelui-lib/cli"')
+        working-directory: packages/cli
+        env:
+          MCP_PUBLISHER_VERSION: 1.8.21
+          MCP_PUBLISHER_SHA256: ca2e5b24e8fc2718be4bb58ab086b39b7d60c79840c24b2057bc3f36d6ab2a59
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/v${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum --check
+          tar -xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
+          rm -f mcp-publisher mcp-publisher.tar.gz
+
       # changesets/action pushes changeset-release/main with GITHUB_TOKEN, so
       # the pull_request CI run is attributed to github-actions[bot]. When the
       # repo requires approval for outside collaborators, that run is created

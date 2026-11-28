@@ -1,0 +1,70 @@
+{
+  "name": "@kernelui-lib/agent",
+  "version": "0.0.0",
+  "description": "Let an in-page AI agent read and operate your UI through its real semantics: an accessibility-tree snapshot, act() steps that fire real DOM events, confirmation gates and WebMCP tools.",
+  "license": "MIT",
+  "author": "Karl Koch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiljk/kernel-ui.git",
+    "directory": "packages/agent"
+  },
+  "homepage": "https://www.kernelui.com/agent-bridge/",
+  "bugs": "https://github.com/kemiljk/kernel-ui/issues",
+  "keywords": [
+    "kernel",
+    "accessibility",
+    "ai",
+    "agents",
+    "webmcp",
+    "mcp",
+    "model-context",
+    "browser-automation",
+    "semantic-html"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "generate": "node scripts/generate-components.mjs",
+    "build": "bun run --cwd ../registry build && node scripts/generate-components.mjs && node scripts/clean.mjs && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "jsdom": "^26.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.7"
+  }
+}

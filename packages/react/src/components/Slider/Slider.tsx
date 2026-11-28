@@ -1,8 +1,13 @@
 import { forwardRef, useEffect, useId, useRef } from "react";
 import type { CSSProperties, InputHTMLAttributes, ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { inputModality, type ChangeDetails } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./Slider.module.css";
+
+/** What moved a `Slider`: dragging (or pressing) the track, or the arrow,
+ * Page Up/Down, Home and End keys. */
+export type SliderChangeReason = "drag" | "keyboard";
 
 export interface SliderProps
   extends Omit<
@@ -15,7 +20,9 @@ export interface SliderProps
   hideLabel?: boolean;
   value?: number;
   defaultValue?: number;
-  onValueChange?: (value: number) => void;
+  /** Called before the value moves, with the reason (`"drag"` or `"keyboard"`); `details.cancel()`
+   * keeps the thumb where it was. */
+  onValueChange?: (value: number, details: ChangeDetails<SliderChangeReason>) => void;
   min?: number;
   max?: number;
   step?: number;
@@ -84,7 +91,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   const trackRef = useRef<HTMLDivElement>(null);
   const sliderId = id ?? generatedId;
 
-  const [current, setCurrent] = useControllableState({
+  const [current, setCurrent] = useControllableStateWithDetails({
     value,
     defaultValue,
     onChange: onValueChange,
@@ -126,7 +133,13 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
       max={max}
       step={step}
       value={current}
-      onChange={(event) => setCurrent(Number(event.target.value))}
+      onChange={(event) =>
+        setCurrent(
+          Number(event.target.value),
+          inputModality(event) === "keyboard" ? "keyboard" : "drag",
+          event,
+        )
+      }
       className={[inset ? styles.insetInput : styles.input, resolveClassName(className, {})]
         .filter(Boolean)
         .join(" ")}

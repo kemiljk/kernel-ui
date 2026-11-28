@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-18T06:49:57.130Z",
+  "generatedAt": "2026-11-28T17:20:25.709Z",
   "components": [
     {
       "name": "Accordion",
@@ -47,6 +47,25 @@
         "kernel-agent-activity-item"
       ],
       "docsUrl": "https://www.kernelui.com/components/agent-activity/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Artifact Panel",
+      "category": "AI",
+      "slug": "artifact-panel",
+      "element": "<aside> docked / <dialog> overlay + tablist",
+      "summary": "The side panel beside the chat that shows a generated artifact, with views, versions and status.",
+      "status": "available",
+      "reactExports": [
+        "ArtifactPanel"
+      ],
+      "elementTag": "kernel-artifact-panel",
+      "elementSubTags": [
+        "kernel-artifact-view"
+      ],
+      "docsUrl": "https://www.kernelui.com/components/artifact-panel/",
       "shadcnAliases": [],
       "radixPackages": [],
       "migrationCaveats": []
@@ -702,6 +721,23 @@
       "migrationCaveats": []
     },
     {
+      "name": "Model Picker",
+      "category": "AI",
+      "slug": "model-picker",
+      "element": "<button aria-haspopup=\"listbox\"> + popover listbox",
+      "summary": "A compact composer-toolbar pill for choosing a model, with groups, badges and typeahead.",
+      "status": "available",
+      "reactExports": [
+        "ModelPicker"
+      ],
+      "elementTag": "kernel-model-picker",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/model-picker/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "Nav",
       "category": "Layout",
       "slug": "nav",
@@ -903,6 +939,23 @@
       "migrationCaveats": []
     },
     {
+      "name": "Schema Renderer",
+      "category": "AI",
+      "slug": "schema-renderer",
+      "element": "allow-listed JSON → real Kernel components",
+      "summary": "Render a model's JSON as real Kernel components, from a typed, versioned, allow-listed schema.",
+      "status": "available",
+      "reactExports": [
+        "SchemaRenderer"
+      ],
+      "elementTag": "kernel-schema-renderer",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/schema-renderer/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "Scroll Area",
       "category": "Layout",
       "slug": "scroll-area",
@@ -1074,6 +1127,25 @@
         "kernel-citation"
       ],
       "docsUrl": "https://www.kernelui.com/components/sources/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Streaming Markdown",
+      "category": "AI",
+      "slug": "streaming-markdown",
+      "element": "<div> of real <p>/<ol>/<table>/<blockquote> + CodeBlock",
+      "summary": "Model Markdown rendered as real elements while it streams, without flicker or raw syntax.",
+      "status": "available",
+      "reactExports": [
+        "StreamingMarkdown",
+        "parseMarkdown",
+        "safeHref"
+      ],
+      "elementTag": "kernel-streaming-markdown",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/streaming-markdown/",
       "shadcnAliases": [],
       "radixPackages": [],
       "migrationCaveats": []
@@ -1318,7 +1390,8 @@
       "status": "available",
       "reactExports": [
         "TodoList",
-        "TodoItem"
+        "TodoItem",
+        "animateTodoListChange"
       ],
       "elementTag": "kernel-todo-list",
       "elementSubTags": [

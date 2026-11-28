@@ -4,6 +4,7 @@ import { computeAccessibleDescription, computeAccessibleName } from "dom-accessi
 import { afterEach, describe, expect, it } from "vitest";
 import "../../elements/src/index";
 import { Accordion, AccordionItem } from "./components/Accordion/Accordion";
+import { ArtifactPanel } from "./components/ArtifactPanel/ArtifactPanel";
 import { Badge } from "./components/Badge/Badge";
 import { Button } from "./components/Button/Button";
 import { Callout } from "./components/Callout/Callout";
@@ -12,6 +13,7 @@ import { Dialog } from "./components/Dialog/Dialog";
 import { Label } from "./components/Label/Label";
 import { NumberField } from "./components/NumberField/NumberField";
 import { Progress } from "./components/Progress/Progress";
+import { SchemaRenderer } from "./components/SchemaRenderer/SchemaRenderer";
 import { RadioGroup, RadioGroupItem } from "./components/RadioGroup/RadioGroup";
 import { Select, SelectOption } from "./components/Select/Select";
 import { Separator } from "./components/Separator/Separator";
@@ -25,6 +27,20 @@ import { Textarea } from "./components/Textarea/Textarea";
 import { TextField } from "./components/TextField/TextField";
 import { Toggle } from "./components/Toggle/Toggle";
 import { Tooltip } from "./components/Tooltip/Tooltip";
+import { StreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
+import { ModelPicker } from "./components/ModelPicker/ModelPicker";
+
+const MARKDOWN = "# Plan\n\nRead **this** and [the docs](https://example.com), then `run`.\n\n1. One\n   - nested\n2. Two\n\n> Quoted\n\n| a | b |\n|:--|--:|\n| 1 | 2 |\n\n---";
+// CodeBlock (inside StreamingMarkdown's fences) follows its last line with a
+// ResizeObserver, which jsdom doesn't have.
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+}
+const escapeAttr = (value: string) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 /*
  * DOM parity between @kernelui-lib/react and @kernelui-lib/elements.
@@ -49,6 +65,52 @@ interface Case {
   /** An interaction run against both renders, compared again afterwards. */
   interact?: (root: HTMLElement) => void;
 }
+
+/** One tree touching every SchemaRenderer node type, including a dropped
+ * unknown type and an unsafe URL, rendered by both packages. */
+const schemaTree = {
+  version: 1,
+  root: [
+    { type: "Heading", props: { text: "Your trip", level: 2 } },
+    {
+      type: "Stack",
+      props: { direction: "horizontal", gap: "sm", wrap: true },
+      children: [
+        { type: "Badge", props: { text: "Confirmed", variant: "success" } },
+        { type: "Badge", props: { text: "2 guests" } },
+      ],
+    },
+    {
+      type: "Card",
+      props: { title: "Lisbon", description: "3 nights" },
+      children: [
+        { type: "Text", props: { text: "Check-in from 3pm. ", tone: "muted" }, children: [{ type: "Link", props: { href: "https://example.com/map", text: "Map", external: true } }] },
+        { type: "Image", props: { src: "/hotel.jpg", alt: "Hotel lobby", width: 320, height: 180 } },
+        { type: "Progress", props: { label: "Trip planned", value: 60 } },
+      ],
+    },
+    {
+      type: "Table",
+      props: { caption: "Flights", columns: [{ key: "leg", label: "Leg" }, { key: "time", label: "Time" }], rows: [{ leg: "LHR → LIS", time: "08:10" }, { leg: "LIS → LHR", time: null }] },
+    },
+    { type: "Callout", props: { variant: "warning", title: "Passport", text: "Valid for 6 months." } },
+    { type: "Separator" },
+    {
+      type: "Form",
+      props: { action: "save" },
+      children: [
+        { type: "TextField", props: { name: "name", label: "Full name", defaultValue: "Ada", required: true } },
+        { type: "Select", props: { name: "seat", label: "Seat", options: ["Aisle", "Window"], defaultValue: "Window" } },
+        { type: "Checkbox", props: { name: "bag", label: "Checked bag", defaultChecked: true } },
+        { type: "Switch", props: { name: "sms", label: "Text me updates" } },
+        { type: "Button", props: { label: "Save", variant: "primary", submit: true } },
+      ],
+    },
+    { type: "Button", props: { label: "Cancel trip", variant: "danger", action: "cancel" } },
+    { type: "Link", props: { href: "javascript:alert(1)", text: "Unsafe" } },
+    { type: "Marquee", props: { text: "dropped" } },
+  ],
+};
 
 const click = (selector: string) => (root: HTMLElement) => {
   const target = root.querySelectorAll<HTMLElement>(selector);
@@ -204,6 +266,13 @@ const cases: Case[] = [
     element: `<kernel-tag-input label="Tags" value="design,a11y"></kernel-tag-input>`,
   },
   {
+    // No tags yet: neither package renders the (empty) tag list, and the
+    // input stays a plain, described textbox rather than a listitem.
+    name: "TagInput (empty, described)",
+    react: () => <TagInput label="Tags" description="Press Enter to add" />,
+    element: `<kernel-tag-input label="Tags" description="Press Enter to add"></kernel-tag-input>`,
+  },
+  {
     name: "Toggle",
     react: () => (
       <Toggle defaultPressed aria-label="Bold">
@@ -266,6 +335,70 @@ const cases: Case[] = [
     name: "Skeleton",
     react: () => <Skeleton />,
     element: `<kernel-skeleton></kernel-skeleton>`,
+  },
+  {
+    name: "StreamingMarkdown",
+    react: () => <StreamingMarkdown content={MARKDOWN} />,
+    element: `<kernel-streaming-markdown content="${escapeAttr(MARKDOWN)}"></kernel-streaming-markdown>`,
+  },
+  {
+    name: "StreamingMarkdown (streaming)",
+    react: () => <StreamingMarkdown content={"Done.\n\nStill **going"} streaming />,
+    element: `<kernel-streaming-markdown streaming content="Done.\n\nStill **going"></kernel-streaming-markdown>`.replace(/\\n/g, "\n"),
+  },
+  {
+    name: "StreamingMarkdown (code fence)",
+    react: () => <StreamingMarkdown content={"```ts\nconst a = 1\n```"} />,
+    element: `<kernel-streaming-markdown content="\`\`\`ts&#10;const a = 1&#10;\`\`\`"></kernel-streaming-markdown>`,
+  },
+  {
+    name: "ModelPicker",
+    react: () => (
+      <ModelPicker
+        defaultValue="sonnet"
+        name="model"
+        options={[
+          { value: "opus", label: "Opus", description: "Most capable", group: "Anthropic", badges: [{ label: "New", variant: "accent" }] },
+          { value: "sonnet", label: "Sonnet", group: "Anthropic", badges: ["Fast"] },
+          { value: "mini", label: "Mini", disabled: true },
+        ]}
+      />
+    ),
+    element: `<kernel-model-picker value="sonnet" name="model"><optgroup label="Anthropic"><option value="opus" data-description="Most capable" data-badges="New:accent">Opus</option><option value="sonnet" data-badges="Fast">Sonnet</option></optgroup><option value="mini" disabled>Mini</option></kernel-model-picker>`,
+  },
+  {
+    name: "SchemaRenderer",
+    react: () => <SchemaRenderer value={schemaTree} onIssue={() => {}} />,
+    element: `<kernel-schema-renderer value='${JSON.stringify(schemaTree).replace(/'/g, "&#39;")}'></kernel-schema-renderer>`,
+    attrs: ["href", "target", "rel", "src", "alt", "width", "height", "loading", "scope", "name", "data-level"],
+    interact: click('button[role="switch"]'),
+  },
+  {
+    name: "ArtifactPanel (docked, views, versions, streaming)",
+    react: () => (
+      <ArtifactPanel
+        title="Landing page"
+        presentation="docked"
+        status="streaming"
+        version={2}
+        versionCount={3}
+        views={[
+          { value: "preview", label: "Preview", content: "Rendered" },
+          { value: "code", label: "Code", content: "Source" },
+        ]}
+      />
+    ),
+    element: `<kernel-artifact-panel title="Landing page" open presentation="docked" status="streaming" version="2" version-count="3"><kernel-artifact-view value="preview" label="Preview">Rendered</kernel-artifact-view><kernel-artifact-view value="code" label="Code">Source</kernel-artifact-view></kernel-artifact-panel>`,
+    interact: click('[role="tab"]'),
+  },
+  {
+    name: "ArtifactPanel (body, error)",
+    react: () => (
+      <ArtifactPanel title="Report" presentation="docked" status="error">
+        Body
+      </ArtifactPanel>
+    ),
+    element: `<kernel-artifact-panel title="Report" open presentation="docked" status="error">Body</kernel-artifact-panel>`,
   },
 ];
 

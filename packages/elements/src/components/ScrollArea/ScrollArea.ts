@@ -1,9 +1,13 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./ScrollArea.css";
 
 /* Matches the ambient layer extent in ScrollArea.css (~40px) so the
  * opacity ramp finishes as the soft falloff fully reads. */
 const EDGE_FADE_DISTANCE = 48;
+
+function supportsScrollTimeline() {
+  return typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("animation-timeline", "scroll()");
+}
 
 /**
  * `<kernel-scroll-area>` — a native overflow container. Attributes:
@@ -13,17 +17,23 @@ const EDGE_FADE_DISTANCE = 48;
  * edge fade + layered inset shadow at whichever edge still has content
  * to scroll toward, hidden again once that edge is scrolled into view;
  * the fade masks into the host surface so it stays context-aware).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the focusable scroll box, which is what a keyboard user
+ * tabs to.
  */
-function supportsScrollTimeline() {
-  return typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("animation-timeline", "scroll()");
-}
-
 export class KernelScrollArea extends KernelElement {
   private resizeObserver: ResizeObserver | null = null;
   private frame: number | null = null;
 
   static get observedAttributes() {
-    return ["max-block-size", "edge-shadow"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "max-block-size", "edge-shadow"];
+  }
+
+  /** The focusable scroll box, which is what a screen reader lands on
+   * when a keyboard user tabs in to scroll it. */
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected createNative(): HTMLElement {

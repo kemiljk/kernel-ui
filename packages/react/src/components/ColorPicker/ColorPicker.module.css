@@ -132,6 +132,8 @@
    is the external `invalid` prop — so a bad hex shakes just the text
    field, while a parent form's validation failure shakes the swatch,
    the part that represents the whole field. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-colorpicker-shake {
   0%,
   100% {
@@ -207,5 +209,18 @@
 @media (prefers-reduced-motion: reduce) {
   .swatchLabel:active:not(:disabled) {
     scale: 1;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the swatch would lose the very colour it exists to show.
+   It opts out of the repaint: the colour is the content, not decoration.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .swatch {
+    forced-color-adjust: none;
+    border-color: CanvasText;
   }
 }

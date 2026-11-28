@@ -22,7 +22,13 @@ const codexSnippet = `# .codex/config.toml (or ~/.codex/config.toml)
 command = "npx"
 args = ["-y", "@kernelui-lib/cli", "mcp"]`;
 
-const promptSnippet = `Build this UI with Kernel UI (@kernelui-lib/react). Before writing markup,
+const pluginSnippet = `/plugin marketplace add kemiljk/kernel-ui
+/plugin install kernel-ui@kernel-ui`;
+
+const pluginShellSnippet = `claude plugin marketplace add kemiljk/kernel-ui
+claude plugin install kernel-ui@kernel-ui`;
+
+const promptSnippet =`Build this UI with Kernel UI (@kernelui-lib/react). Before writing markup,
 look up components and their exact props with the kernel MCP server (or
 npx @kernelui-lib/cli docs <name> --markdown). Style only with --kernel-*
 tokens. When you're done, run npx @kernelui-lib/cli check on the files you
@@ -72,6 +78,29 @@ export default [kernel.configs.recommended];`;
       </li>
     </ul>
     <CodeBlock code={clientsSnippet} lang="bash" />
+
+    <h2 id="claude-code-plugin">Claude Code plugin</h2>
+    <p>
+      To have Kernel in every Claude Code project rather than one, install it
+      as a plugin. The Kernel repository is a plugin marketplace. Inside a
+      Claude Code session, run:
+    </p>
+    <CodeBlock code={pluginSnippet} lang="bash" />
+    <p>Or from your shell:</p>
+    <CodeBlock code={pluginShellSnippet} lang="bash" />
+    <p>
+      The plugin bundles the same four skills (they appear as
+      <code>kernel-ui:kernel-ui</code>, <code>kernel-ui:kernel-ui-theming</code>,
+      <code>kernel-ui:kernel-ui-migrate</code> and
+      <code>kernel-ui:kernel-ui-elements</code>) and the Kernel MCP server,
+      run with <code>npx -y @kernelui-lib/cli@latest mcp</code>. Its version
+      follows <code>@kernelui-lib/react</code>, so the skills update with each
+      release; <code>claude plugin update kernel-ui</code> picks up a new one. The
+      plugin's skills describe the latest release. If a project is pinned to an
+      older Kernel, use <code>npx @kernelui-lib/cli agents</code> there instead,
+      which installs the skills from the version in
+      <code>node_modules</code>.
+    </p>
 
     <h2>The MCP server</h2>
     <p>
@@ -130,6 +159,16 @@ export default [kernel.configs.recommended];`;
       </tbody>
     </table></div>
 
+    <h2>Agents that use your UI</h2>
+    <p>
+      Everything above helps an agent <em>build</em> with Kernel. To let an
+      agent <em>use</em> the UI you built, from inside the page, add the
+      <a href="/agent-bridge/">agent bridge</a>. It gives the agent a snapshot
+      built from roles, names and states, <code>act()</code> steps that fire
+      real events, prompts a person must approve before risky steps, and
+      experimental WebMCP tools.
+    </p>
+
     <h2>A prompt that works</h2>
     <p>If your agent doesn't have the skills or MCP server yet, start with this:</p>
     <CodeBlock code={promptSnippet} lang="bash" />
@@ -141,6 +180,7 @@ export default [kernel.configs.recommended];`;
       <li>Any page as markdown: add <code>.md</code> to its URL, for example <a href="/components/button.md">/components/button.md</a></li>
       <li><a href="/api.json">/api.json</a>: every component's exact props, attributes and events, generated from source</li>
       <li><a href="/registry.json">/registry.json</a>: the component catalogue, with shadcn aliases and migration notes</li>
+      <li><a href="/r/registry.json">/r/registry.json</a>: the same components as a <a href="/installation/#shadcn">shadcn registry</a>, which the shadcn CLI and the shadcn MCP server can browse and install from</li>
       <li><code>llms.txt</code> and <code>skills/</code> inside each npm package, versioned with the code</li>
     </ul>
   </div>

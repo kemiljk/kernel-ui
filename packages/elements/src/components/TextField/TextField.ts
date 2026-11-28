@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./TextField.css";
 
 let textFieldCounter = 0;
@@ -19,12 +19,17 @@ let textFieldCounter = 0;
  * that lines them up with the input's own text padding), `invalid`,
  * `required`, `disabled`, `size` (sm/md/lg, default md), `type` (default
  * text), `placeholder`, `value`, `name`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input>`; an authored `aria-describedby` is
+ * added after the field's own hint and error ids.
  */
 export class KernelTextField extends KernelElement {
   private readonly generatedId = `kernel-text-field-${++textFieldCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -41,6 +46,14 @@ export class KernelTextField extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
+  }
+
   connectedCallback() {
     if (this.native) return;
     const root = document.createElement("div");
@@ -48,7 +61,7 @@ export class KernelTextField extends KernelElement {
     root.dataset.size = "md";
     root.setAttribute("data-slot", "text-field");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("TextField", "label");
@@ -100,10 +113,10 @@ export class KernelTextField extends KernelElement {
     const hasError = invalid && this.hasAttribute("error-message");
     const ids = [
       hasError ? `${id}-error` : null,
-      this.hasAttribute("description") ? `${id}-description` : null,
+      // The error replaces the description while it shows: reference one, never a missing id.
+      !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 

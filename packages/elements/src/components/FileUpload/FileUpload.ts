@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./FileUpload.css";
 
 let fileUploadCounter = 0;
@@ -126,6 +126,20 @@ const PREVIEW_GRID_CAP = 4;
  * `type: "directory"` for a dropped folder, which the platform hands over
  * as an unreadable 0-byte `File` rather than refusing outright.
  *
+ * Events: `change` (bubbling) fires on the host only when the selection
+ * changes, after a pick or drop passes validation or a file is removed;
+ * read the files from the inner `input[type=file]`'s `.files`. The inner
+ * input's own native `change` is stopped at the input, so a rejected pick
+ * never reaches a host `change` listener. `kernel-file-upload-error`
+ * (not bubbling) carries `detail: { type, files }`, where `type` is
+ * `"accept"`, `"max-size"`, `"max-files"` or `"directory"` and `files`
+ * is the rejected `File[]`. The element doesn't show the message itself:
+ * set `invalid` and `error-message` from the handler, and clear them on
+ * the next `change`.
+ *
+ * `id` stays on the host (so `getElementById()` finds the element whose
+ * events you listen to); the inner input gets `<id>-control`.
+ *
  * Attributes: `label` (required, still contributes to the dropzone's
  * accessible name even when `hide-label` is set), `hide-label`
  * (boolean — hides the label heading only, the hint text underneath
@@ -151,6 +165,10 @@ const PREVIEW_GRID_CAP = 4;
  * `dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and
  * `visibilitychange` listeners — force-clears the drag-active state if the
  * drag goes silent, so the dropzone can't get stuck lit with scroll locked.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="file">`; an authored
+ * `aria-describedby` is added after the error id.
  */
 export class KernelFileUpload extends KernelElement {
   private readonly generatedId = `kernel-file-upload-${++fileUploadCounter}`;
@@ -189,6 +207,7 @@ export class KernelFileUpload extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -208,13 +227,21 @@ export class KernelFileUpload extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
+  }
+
   connectedCallback() {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("FileUpload");
     root.setAttribute("data-slot", "file-upload");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const dropzone = document.createElement("label");
     dropzone.className = kernelClass("FileUpload", "dropzone");
@@ -238,7 +265,13 @@ export class KernelFileUpload extends KernelElement {
     input.id = id;
     input.type = "file";
     input.className = kernelClass("FileUpload", "input");
-    input.addEventListener("change", () => {
+    input.addEventListener("change", (event) => {
+      // The host dispatches its own `change` once a selection passes
+      // validation. Letting the input's native one bubble out as well
+      // fired a host `change` for rejected picks too, after
+      // `kernel-file-upload-error`, so a listener that clears the error
+      // on `change` wiped the message the error handler had just set.
+      event.stopPropagation();
       const incoming = Array.from(input.files ?? []);
       input.value = "";
       if (incoming.length === 0) return;
@@ -451,8 +484,7 @@ export class KernelFileUpload extends KernelElement {
     const id = input.id;
     const invalid = this.hasAttribute("invalid");
     const hasError = invalid && this.hasAttribute("error-message");
-    if (hasError) input.setAttribute("aria-describedby", `${id}-error`);
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, [hasError && `${id}-error`]);
     this.renderError();
   }
 

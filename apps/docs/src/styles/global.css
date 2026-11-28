@@ -708,6 +708,66 @@ dialog.mobile-nav-panel[data-side="left"] {
   }
 }
 
+.site-nav-desktop {
+  margin-inline: var(--kernel-space-8);
+}
+
+/* Compact desktop header. With every label showing, the desktop row
+   needs about 1060px (measured as header.scrollWidth), so between the
+   mobile collapse and that width the right-hand cluster drops its text
+   and keeps its icons: GitHub and npm become icon links (their
+   aria-labels already name them), Search and Theme become icon buttons
+   whose labels stay in the accessibility tree, and the ⌘K hint goes.
+   The compact row needs about 700px, so it fits from 800px up. Re-measure
+   with header.scrollWidth if the header gains an item. */
+@media (800px <= width < 1120px) {
+  .site-nav-desktop {
+    margin-inline: var(--kernel-space-4);
+  }
+
+  .site-header-toggle-desktop {
+    gap: var(--kernel-space-2);
+  }
+
+  .site-header-registry-link {
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+  }
+
+  .site-header-registry-link > span,
+  .command-palette-kbd {
+    display: none;
+  }
+
+  /* The same shape Button gives an icon-only button: square, or a circle
+     at Round, with the icon centred. The label is hidden visually but
+     still names the button. A fixed inline size, because padding alone
+     let the flex row squeeze the button narrower than it is tall. */
+  .command-palette-trigger,
+  .theme-menu-trigger {
+    flex-shrink: 0;
+    inline-size: var(--pill-height);
+    padding-inline: 0;
+    gap: 0;
+  }
+
+  .command-palette-trigger > .kernel-Button-icon,
+  .theme-menu-trigger > .kernel-Button-icon {
+    margin-inline: 0;
+  }
+
+  .command-palette-trigger > .kernel-Button-label,
+  .theme-menu-trigger > .kernel-Button-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 @media (width < 800px) {
   .site-nav-desktop,
   .site-header-toggle-desktop {
@@ -1872,10 +1932,18 @@ dialog.mobile-nav-panel[data-side="left"] {
    Button, so it covers the characters beneath it cleanly while it's
    there); on touch screens, where it has to be visible all the time,
    it sits below the block instead of on top of the code. */
+/* Long lines wrap rather than scroll: on a phone a sideways-scrolling
+   block hides half of every token and fights the page's own vertical
+   scroll. `pre-wrap` keeps indentation and breaks at spaces; `anywhere`
+   only splits a run with no spaces (a long `var(--kernel-…)` value or
+   URL) when it can't fit on a line by itself. `overflow-x` stays as a
+   safety net for anything that still can't break. */
 .code-block pre {
   margin: 0;
   padding: var(--kernel-space-4);
   overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .code-block-copy {
@@ -2185,6 +2253,48 @@ dialog.mobile-nav-panel[data-side="left"] {
   position: static;
   flex-shrink: 0;
   opacity: 1;
+}
+
+/* Theming page: the same form at both densities, side by side. The gaps
+   read Kernel's space tokens, so they tighten with the card they're in. */
+.density-demo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--kernel-space-4);
+  margin-block: var(--kernel-space-4);
+}
+
+.density-demo-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--kernel-space-4);
+}
+
+.density-demo-content > :is(.density-demo-label, .density-demo-actions) {
+  margin: 0;
+}
+
+.density-demo-label {
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.density-demo-actions {
+  display: flex;
+  gap: var(--kernel-space-2);
+  align-self: stretch;
+  justify-content: flex-end;
+}
+
+/* Sharp pins the container radii to 0 on <html> (lib/theme.ts). A density
+   scope recomputes those radii from its own padding, so the pin has to be
+   carried in: the style query reads the value the scope inherits. */
+@container style(--kernel-radius-container: 0px) {
+  [data-kernel-density] {
+    --kernel-radius-container: 0px;
+    --kernel-radius-sheet: 0px;
+  }
 }
 
 /* Theme builder: a launch button in the page, the controls in a panel

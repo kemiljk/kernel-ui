@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./NumberField.css";
 
 let numberFieldCounter = 0;
@@ -43,12 +43,17 @@ function glyph(path: string): SVGSVGElement {
  * that lines them up with the input's own text padding), `invalid`,
  * `disabled`, `required`, `name`. Built-in strings: `label-increment`
  * ("Increment"), `label-decrement` ("Decrement"), or the `labels` property.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input>`; an authored `aria-describedby` is
+ * added after its own hint and error ids.
  */
 export class KernelNumberField extends KernelElement {
   private readonly generatedId = `kernel-number-field-${++numberFieldCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -68,13 +73,21 @@ export class KernelNumberField extends KernelElement {
     ];
   }
 
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
+  }
+
   connectedCallback() {
     if (this.native) return;
     const root = document.createElement("div");
     root.className = kernelClass("NumberField");
     root.dataset.size = "md";
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("NumberField", "label");
@@ -89,8 +102,27 @@ export class KernelNumberField extends KernelElement {
     input.inputMode = "decimal";
     input.step = "1";
     input.className = kernelClass("NumberField", "input");
-    input.addEventListener("change", () => {
+    // Change reasons: every change dispatches a cancelable, bubbling
+    // `beforevaluechange` first (then `valuechange` once committed), `detail: { value, reason }` with `reason`
+    // `"input"`, `"keyboard"` (ArrowUp/Down), `"wheel"` or `"step-button"`.
+    // `preventDefault()` restores the previous value; for typed changes it
+    // also stops the native `change` at this element.
+    let pendingReason: "input" | "keyboard" | "wheel" = "input";
+    input.addEventListener("keydown", (event) => {
+      pendingReason = event.key === "ArrowUp" || event.key === "ArrowDown" ? "keyboard" : "input";
+    });
+    input.addEventListener("wheel", () => (pendingReason = "wheel"), { passive: true });
+    input.addEventListener("change", (event) => {
+      const reason = pendingReason;
+      pendingReason = "input";
+      const value = input.value === "" ? undefined : Number(input.value);
+      if (!this.emitChange("beforevaluechange", { value }, reason, event)) {
+        input.value = this.getAttribute("value") ?? "";
+        event.stopPropagation();
+        return;
+      }
       this.setAttribute("value", input.value);
+      this.emitCommitted("valuechange", { value }, reason, event);
     });
 
     const stepper = document.createElement("div");
@@ -102,7 +134,7 @@ export class KernelNumberField extends KernelElement {
     down.className = kernelClass("NumberField", "stepperButton");
     down.dataset.step = "down";
     down.append(glyph(MINUS));
-    down.addEventListener("click", () => this.stepBy(-1));
+    down.addEventListener("click", (event) => this.stepBy(-1, event));
 
     const up = document.createElement("button");
     up.type = "button";
@@ -110,7 +142,7 @@ export class KernelNumberField extends KernelElement {
     up.className = kernelClass("NumberField", "stepperButton");
     up.dataset.step = "up";
     up.append(glyph(PLUS));
-    up.addEventListener("click", () => this.stepBy(1));
+    up.addEventListener("click", (event) => this.stepBy(1, event));
 
     // − then +, reading in the direction the value moves.
     stepper.append(down, up);
@@ -126,12 +158,20 @@ export class KernelNumberField extends KernelElement {
     return this.native?.querySelector(`.${kernelClass("NumberField", "input")}`) ?? null;
   }
 
-  private stepBy(direction: 1 | -1) {
+  private stepBy(direction: 1 | -1, event?: Event) {
     const input = this.input;
     if (!input) return;
+    const previous = input.value;
     if (direction === 1) input.stepUp();
     else input.stepDown();
+    const value = input.value === "" ? undefined : Number(input.value);
+    if (!this.emitChange("beforevaluechange", { value }, "step-button", event)) {
+      input.value = previous;
+      input.focus();
+      return;
+    }
     this.setAttribute("value", input.value);
+    this.emitCommitted("valuechange", { value }, "step-button", event);
     this.dispatchEvent(new Event("change", { bubbles: true }));
     input.focus();
   }
@@ -144,10 +184,10 @@ export class KernelNumberField extends KernelElement {
     const hasError = invalid && this.hasAttribute("error-message");
     const ids = [
       hasError ? `${id}-error` : null,
-      this.hasAttribute("description") ? `${id}-description` : null,
+      // The error replaces the description while it shows: reference one, never a missing id.
+      !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 

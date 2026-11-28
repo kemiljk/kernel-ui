@@ -4,13 +4,13 @@ import CopyButton from "./CopyButton";
 
 interface Props {
   code: string;
-  lang: "css" | "tsx" | "html" | "bash" | "json";
+  lang: "css" | "tsx" | "html" | "bash" | "json" | "text";
 }
 
 const { code, lang } = Astro.props;
 ---
 
 <div class="code-block">
-  <Code code={code} lang={lang} theme="css-variables" />
+  <Code code={code} lang={lang} theme="css-variables" wrap />
   <CopyButton client:visible text={code} />
 </div>

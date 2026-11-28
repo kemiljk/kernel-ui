@@ -91,7 +91,19 @@
 
     /* Accent scale. Chroma peaks at step 9, "the purest step", per the
        Radix model, and tapers off towards the background and text
-       ends of the ramp. */
+       ends of the ramp.
+
+       Steps 9 and 10 are solid fills that carry a label, so their
+       lightness is set by the label, not by the ramp. White text only
+       reaches APCA Lc 60 and 4.5:1 on a fill at about L 54-57% or below,
+       and near-black text only on a fill at about L 75% or above; a fill
+       in between fails with either. Dark mode used to put step 9 at 58%
+       and step 10 (hover) at 64%, in that gap. It now sits at 51% with a
+       55% hover: still lighter on hover, as dark mode expects, and still
+       under the white-text ceiling. The danger and success solids below
+       follow the same rule. Step 11 in dark mode is 80% so tinted text on
+       step 3 (Badge) clears Lc 60. scripts/check-contrast.mjs checks all
+       of these pairs. */
     --kernel-accent-1: light-dark(oklch(99% calc(var(--kernel-chroma-accent) * 0.04) var(--kernel-hue-accent)), oklch(15% calc(var(--kernel-chroma-accent) * 0.3) var(--kernel-hue-accent)));
     --kernel-accent-2: light-dark(oklch(97% calc(var(--kernel-chroma-accent) * 0.08) var(--kernel-hue-accent)), oklch(19% calc(var(--kernel-chroma-accent) * 0.4) var(--kernel-hue-accent)));
     --kernel-accent-3: light-dark(oklch(94% calc(var(--kernel-chroma-accent) * 0.18) var(--kernel-hue-accent)), oklch(24% calc(var(--kernel-chroma-accent) * 0.55) var(--kernel-hue-accent)));
@@ -100,9 +112,9 @@
     --kernel-accent-6: light-dark(oklch(81% calc(var(--kernel-chroma-accent) * 0.5) var(--kernel-hue-accent)), oklch(37% calc(var(--kernel-chroma-accent) * 0.85) var(--kernel-hue-accent)));
     --kernel-accent-7: light-dark(oklch(74% calc(var(--kernel-chroma-accent) * 0.6) var(--kernel-hue-accent)), oklch(43% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)));
     --kernel-accent-8: light-dark(oklch(65% calc(var(--kernel-chroma-accent) * 0.75) var(--kernel-hue-accent)), oklch(50% calc(var(--kernel-chroma-accent) * 0.95) var(--kernel-hue-accent)));
-    --kernel-accent-9: light-dark(oklch(56% var(--kernel-chroma-accent) var(--kernel-hue-accent)), oklch(58% var(--kernel-chroma-accent) var(--kernel-hue-accent)));
-    --kernel-accent-10: light-dark(oklch(50% calc(var(--kernel-chroma-accent) * 0.95) var(--kernel-hue-accent)), oklch(64% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)));
-    --kernel-accent-11: light-dark(oklch(46% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)), oklch(76% calc(var(--kernel-chroma-accent) * 0.75) var(--kernel-hue-accent)));
+    --kernel-accent-9: light-dark(oklch(56% var(--kernel-chroma-accent) var(--kernel-hue-accent)), oklch(51% var(--kernel-chroma-accent) var(--kernel-hue-accent)));
+    --kernel-accent-10: light-dark(oklch(50% calc(var(--kernel-chroma-accent) * 0.95) var(--kernel-hue-accent)), oklch(55% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)));
+    --kernel-accent-11: light-dark(oklch(46% calc(var(--kernel-chroma-accent) * 0.9) var(--kernel-hue-accent)), oklch(80% calc(var(--kernel-chroma-accent) * 0.75) var(--kernel-hue-accent)));
     --kernel-accent-12: light-dark(oklch(24% calc(var(--kernel-chroma-accent) * 0.6) var(--kernel-hue-accent)), oklch(93% calc(var(--kernel-chroma-accent) * 0.35) var(--kernel-hue-accent)));
 
     /* Status scales get the same treatment, but only the steps the
@@ -110,17 +122,17 @@
        11 = text). Expanding these to full 12-step scales later is a
        drop-in change, same formula, same shape as gray/accent above. */
     --kernel-danger-3: light-dark(oklch(94% calc(var(--kernel-chroma-danger) * 0.18) var(--kernel-hue-danger)), oklch(24% calc(var(--kernel-chroma-danger) * 0.55) var(--kernel-hue-danger)));
-    --kernel-danger-9: light-dark(oklch(54% var(--kernel-chroma-danger) var(--kernel-hue-danger)), oklch(60% var(--kernel-chroma-danger) var(--kernel-hue-danger)));
-    --kernel-danger-10: light-dark(oklch(48% calc(var(--kernel-chroma-danger) * 0.95) var(--kernel-hue-danger)), oklch(66% calc(var(--kernel-chroma-danger) * 0.9) var(--kernel-hue-danger)));
-    --kernel-danger-11: light-dark(oklch(46% calc(var(--kernel-chroma-danger) * 0.9) var(--kernel-hue-danger)), oklch(76% calc(var(--kernel-chroma-danger) * 0.75) var(--kernel-hue-danger)));
+    --kernel-danger-9: light-dark(oklch(54% var(--kernel-chroma-danger) var(--kernel-hue-danger)), oklch(52% var(--kernel-chroma-danger) var(--kernel-hue-danger)));
+    --kernel-danger-10: light-dark(oklch(48% calc(var(--kernel-chroma-danger) * 0.95) var(--kernel-hue-danger)), oklch(56% calc(var(--kernel-chroma-danger) * 0.9) var(--kernel-hue-danger)));
+    --kernel-danger-11: light-dark(oklch(46% calc(var(--kernel-chroma-danger) * 0.9) var(--kernel-hue-danger)), oklch(81% calc(var(--kernel-chroma-danger) * 0.75) var(--kernel-hue-danger)));
 
     --kernel-success-3: light-dark(oklch(94% calc(var(--kernel-chroma-success) * 0.18) var(--kernel-hue-success)), oklch(24% calc(var(--kernel-chroma-success) * 0.55) var(--kernel-hue-success)));
-    --kernel-success-9: light-dark(oklch(54% var(--kernel-chroma-success) var(--kernel-hue-success)), oklch(60% var(--kernel-chroma-success) var(--kernel-hue-success)));
-    --kernel-success-11: light-dark(oklch(44% calc(var(--kernel-chroma-success) * 0.9) var(--kernel-hue-success)), oklch(74% calc(var(--kernel-chroma-success) * 0.75) var(--kernel-hue-success)));
+    --kernel-success-9: light-dark(oklch(54% var(--kernel-chroma-success) var(--kernel-hue-success)), oklch(51% var(--kernel-chroma-success) var(--kernel-hue-success)));
+    --kernel-success-11: light-dark(oklch(44% calc(var(--kernel-chroma-success) * 0.9) var(--kernel-hue-success)), oklch(80% calc(var(--kernel-chroma-success) * 0.75) var(--kernel-hue-success)));
 
     --kernel-warning-3: light-dark(oklch(95% calc(var(--kernel-chroma-warning) * 0.2) var(--kernel-hue-warning)), oklch(26% calc(var(--kernel-chroma-warning) * 0.55) var(--kernel-hue-warning)));
-    --kernel-warning-9: light-dark(oklch(68% var(--kernel-chroma-warning) var(--kernel-hue-warning)), oklch(64% var(--kernel-chroma-warning) var(--kernel-hue-warning)));
-    --kernel-warning-11: light-dark(oklch(48% calc(var(--kernel-chroma-warning) * 0.9) var(--kernel-hue-warning)), oklch(78% calc(var(--kernel-chroma-warning) * 0.7) var(--kernel-hue-warning)));
+    --kernel-warning-9: light-dark(oklch(79% calc(var(--kernel-chroma-warning) * 0.75) var(--kernel-hue-warning)), oklch(79% calc(var(--kernel-chroma-warning) * 0.75) var(--kernel-hue-warning)));
+    --kernel-warning-11: light-dark(oklch(48% calc(var(--kernel-chroma-warning) * 0.9) var(--kernel-hue-warning)), oklch(80% calc(var(--kernel-chroma-warning) * 0.7) var(--kernel-hue-warning)));
 
     /* ---------------------------------------------------------------- */
     /* Semantic aliases: what components actually read                  */
@@ -171,6 +183,13 @@
        for every preset. Fields keep the softer border-interactive, because
        their fill, label and placeholder identify them as well. */
     --kernel-color-border-control: light-dark(var(--kernel-gray-9), var(--kernel-gray-11));
+    /* A Switch's off track: a solid fill instead of an outline. The white
+       thumb and its shadow identify the control; the track only has to read
+       as a shape. gray-7 in light (1.75:1 to the thumb, so the thumb's
+       shadow still does work) and gray-6 in dark, where the thumb is over
+       10:1 against it. Hover steps one darker/lighter. */
+    --kernel-color-track: light-dark(var(--kernel-gray-7), var(--kernel-gray-6));
+    --kernel-color-track-hover: light-dark(var(--kernel-gray-8), var(--kernel-gray-7));
     /* Kept as an alias so nothing else has to change: "strong" always
        meant "the more prominent of the two borders in use". */
     --kernel-color-border-strong: var(--kernel-color-border-hover);
@@ -210,9 +229,10 @@
        yellow and mint for instance, need dark text even at step 9).
        Limited browser support today, so it only takes over where
        supported; the fixed white default above covers everything
-       else and, checked numerically (4.79:1), is still correct for
-       the default gold accent (hue 70) even though this flat curve's
-       L56% renders it as a dark amber rather than a bright one; see
+       else and, checked numerically (Lc 76 and 4.65:1 light, Lc 77 and
+       4.84:1 dark), is still correct for the default gold accent (hue
+       70) even though this flat curve's L56% renders it as a dark amber
+       rather than a bright one; see
        the note on --kernel-hue-accent above for why the curated
        "amber" preset exists for a punchier version of this hue.
 
@@ -231,16 +251,16 @@
     --kernel-color-danger: var(--kernel-danger-9);
     /* Step 10, the same as --kernel-color-accent-hover. It goes darker in
        light mode and lighter in dark mode, so it moves away from the canvas
-       in both schemes and towards more contrast with --kernel-color-on-danger
-       in both. Mixing in black, as Button's hover used to, darkened the dark
-       fill under its black label. */
+       in both schemes. Dark mode's lighter hover stays under the L 57%
+       ceiling where the white label still clears Lc 60 and 4.5:1. */
     --kernel-color-danger-hover: var(--kernel-danger-10);
     --kernel-color-danger-subtle: var(--kernel-danger-3);
     --kernel-color-danger-text: var(--kernel-danger-11);
-    /* Checked numerically against danger-9: white wins in light mode
-       (5.58:1) but flips to black in dark mode (4.85:1 vs white's
-       4.33:1, since dark mode's danger-9 is lighter). */
-    --kernel-color-on-danger: light-dark(oklch(99% 0 0), oklch(15% 0 0));
+    /* White in both schemes. Dark mode's danger-9 used to sit at L60%,
+       where neither label works (black measured Lc 35); it's now L52%
+       with a 56% hover, so white measures Lc 77 and 4.93:1 dark, Lc 79
+       and 5.42:1 light. */
+    --kernel-color-on-danger: oklch(99% 0 0);
     @supports (color: contrast-color(white)) {
       --kernel-color-on-danger: contrast-color(var(--kernel-color-danger));
     }
@@ -248,9 +268,9 @@
     --kernel-color-success: var(--kernel-success-9);
     --kernel-color-success-subtle: var(--kernel-success-3);
     --kernel-color-success-text: var(--kernel-success-11);
-    /* Same light/dark flip as danger, for the same reason (measured:
-       white 4.77:1 light, black 5.64:1 dark). */
-    --kernel-color-on-success: light-dark(oklch(99% 0 0), oklch(15% 0 0));
+    /* White in both schemes, for the same reason as danger (measured:
+       Lc 76 and 4.63:1 light, Lc 80 and 5.26:1 dark). */
+    --kernel-color-on-success: oklch(99% 0 0);
     @supports (color: contrast-color(white)) {
       --kernel-color-on-success: contrast-color(var(--kernel-color-success));
     }
@@ -258,8 +278,11 @@
     --kernel-color-warning: var(--kernel-warning-9);
     --kernel-color-warning-subtle: var(--kernel-warning-3);
     --kernel-color-warning-text: var(--kernel-warning-11);
-    /* Warning-9 is light enough in both modes that black wins either
-       way (6.87:1 light, 5.87:1 dark) — no light-dark() split needed. */
+    /* Near-black in both schemes, so warning-9 sits at L79% in both:
+       near-black text needs a fill of about L75% or lighter to reach
+       APCA Lc 60. The old 68%/64% fill passed WCAG 2 but measured only
+       Lc 47/41. Chroma is scaled to 0.75 because hue 45 runs out of sRGB
+       gamut at that lightness. Measured: Lc 65 and 9.8:1. */
     --kernel-color-on-warning: oklch(15% 0 0);
     @supports (color: contrast-color(white)) {
       --kernel-color-on-warning: contrast-color(var(--kernel-color-warning));
@@ -269,7 +292,7 @@
        WCAG 2.4.13's 3:1 as a floor. Accent-9 missed in two ways: the amber
        preset is too light on the light canvas (Lc 35, 1.95:1), and every
        preset falls to about Lc 30 in dark mode, which WCAG 2's ratio
-       (about 4.2:1) overrates. Accent-11 clears Lc 57 in dark and Lc 77 in
+       (about 4.2:1) overrates. Accent-11 clears Lc 65 in dark and Lc 77 in
        light for every preset. */
     --kernel-color-focus-ring: var(--kernel-accent-11);
 
@@ -454,6 +477,9 @@
     /* ---------------------------------------------------------------- */
     /* Space: one unit, every gap and pad is a multiple of it           */
     /* ---------------------------------------------------------------- */
+    /* The default is the "comfortable" density. `data-kernel-density`
+       (see the density block after this one) swaps the unit for a whole
+       subtree and makes everything built from it re-resolve there. */
     --kernel-space-unit: 0.25rem;
     --kernel-space-1: calc(var(--kernel-space-unit) * 1);
     --kernel-space-2: calc(var(--kernel-space-unit) * 2);
@@ -630,6 +656,13 @@
        Fading linearly over the same duration is what looks smooth, and
        is what the platforms' own scrims do. */
     --kernel-ease-scrim: linear;
+    /* For an in-place crossfade: opacity and blur on content that changes
+       without moving (an icon swap, a checkmark appearing, a morphing
+       panel's contents). Linear for the reason --kernel-ease-scrim gives:
+       with no travel to read, a front-loaded curve just looks like a pop.
+       Kept apart from the scrim token so tuning one doesn't move the
+       other. Reduced-motion fallbacks may still write `linear` directly. */
+    --kernel-ease-fade: linear;
     /* transitions.dev's `--ease-bounce` — a genuine overshoot (past 1,
        back to 1). Scoped deliberately narrow: only for a one-shot
        size/shape change that runs to completion and clips nothing (a
@@ -664,6 +697,18 @@
     --kernel-blur-sm: 2px;
     --kernel-blur-md: 6px;
     --kernel-blur-backdrop: 8px;
+
+    /* Translucency — how much of a see-through surface is actually
+       surface. -glass is a sticky bar that content scrolls under
+       (Header's `sticky`); -frost is a scrim that blurs what's behind it
+       (Dialog's `backdrop="blur"`, CommandPalette's `blur`). Components mix
+       these into their own colour (`color-mix(in oklch, <colour>
+       var(--kernel-opacity-glass), transparent)`) rather than reading a
+       pre-mixed colour token, so a subtree that overrides
+       --kernel-color-surface still gets its own surface back. Both go to
+       100% under prefers-reduced-transparency (below). */
+    --kernel-opacity-glass: 85%;
+    --kernel-opacity-frost: 70%;
 
     /* ---------------------------------------------------------------- */
     /* Elevation                                                        */
@@ -725,6 +770,101 @@
        another) stays a small local `z-index`, which is correct — not an
        arbitrary global value. */
     --kernel-z-overlay: 100;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Density                                                            */
+  /* ------------------------------------------------------------------ */
+  /*
+   * `data-kernel-density="compact" | "comfortable"` on any element sets the
+   * density for everything inside it. "comfortable" is the default, the
+   * spacing Kernel has always shipped, so it never needs writing on :root;
+   * it exists to put a comfortable island back inside a compact page.
+   *
+   * compact is a 3px unit instead of 4px: every gap, padding and control
+   * height drops by a quarter, and the type scale doesn't move — density is
+   * about how much room sits around the text, not how big the text is. 3px
+   * is the floor because it keeps the small control height at 24px, the
+   * WCAG 2.2 minimum target size (2.5.8); go lower and `size="sm"` controls
+   * stop being reliably hittable.
+   *
+   * Why the block below repeats formulas from :root: a custom property
+   * built with calc() resolves on the element that declares it, and
+   * descendants inherit the *result*. Changing --kernel-space-unit on a
+   * <section> would change nothing, because --kernel-space-4 was already
+   * worked out from :root's unit. So every token derived from the unit is
+   * declared again on any element carrying the attribute, and re-resolves
+   * there. The container/sheet radii come along because they're derived
+   * from the padding: a compact padding under a comfortable-sized curve
+   * would break the clearance rule in AGENTS.md at Round.
+   *
+   * Any value of the attribute re-resolves the derived set, so a custom
+   * unit works on a subtree too:
+   *   <section data-kernel-density="custom" style="--kernel-space-unit: 0.3rem">
+   *
+   * One consequence to know: a derived token you pin yourself on :root
+   * (`--kernel-radius-container: 0` for square cards, say) is recomputed
+   * inside a density scope like the rest. Pin it on both:
+   *   :root, [data-kernel-density] { --kernel-radius-container: 0; }
+   *
+   * These formulas mirror the :root declarations above exactly;
+   * scripts/check-shape-pairing.mjs fails if the two drift.
+   */
+  [data-kernel-density] {
+    --kernel-space-1: calc(var(--kernel-space-unit) * 1);
+    --kernel-space-2: calc(var(--kernel-space-unit) * 2);
+    --kernel-space-3: calc(var(--kernel-space-unit) * 3);
+    --kernel-space-4: calc(var(--kernel-space-unit) * 4);
+    --kernel-space-6: calc(var(--kernel-space-unit) * 6);
+    --kernel-space-8: calc(var(--kernel-space-unit) * 8);
+    --kernel-space-12: calc(var(--kernel-space-unit) * 12);
+    --kernel-padding-container: var(--kernel-space-4);
+    --kernel-padding-sheet: var(--kernel-space-6);
+    --kernel-radius-container: calc(var(--kernel-radius-md) + var(--kernel-padding-container));
+    --kernel-radius-sheet: calc(var(--kernel-radius-md) + var(--kernel-padding-sheet));
+    --kernel-padding-container-curve: calc(
+      var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4
+    );
+    --kernel-padding-sheet-curve: calc(
+      var(--kernel-padding-sheet) + var(--kernel-radius-base) * 0.4
+    );
+    --kernel-label-inset: var(--kernel-space-3);
+    --kernel-control-height-sm: calc(var(--kernel-space-unit) * 8);
+    --kernel-control-height-md: calc(var(--kernel-space-unit) * 10);
+    --kernel-control-height-lg: calc(var(--kernel-space-unit) * 12);
+    --kernel-control-inset: var(--kernel-space-1);
+    --kernel-radius-control-inner: max(
+      0px,
+      calc(var(--kernel-radius-control) - var(--kernel-control-inset))
+    );
+  }
+
+  [data-kernel-density="comfortable"] {
+    --kernel-space-unit: 0.25rem;
+  }
+
+  [data-kernel-density="compact"] {
+    --kernel-space-unit: 0.1875rem;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Reduced transparency                                               */
+  /* ------------------------------------------------------------------ */
+  /* People who turn on "Reduce transparency" (macOS, iOS, Windows) find
+     content showing through a surface hard to read past. Every see-through
+     surface in Kernel reads one of these tokens, so they go solid here in
+     one place: glass and frost become fully opaque, backdrop blur stops,
+     and the modal scrim gets dark enough that the page behind it stops
+     competing with the dialog. The scrim stays a little short of black on
+     purpose: a fully opaque wash hides that the page is still there, which
+     reads as navigating away rather than opening something on top. */
+  @media (prefers-reduced-transparency: reduce) {
+    :root {
+      --kernel-opacity-glass: 100%;
+      --kernel-opacity-frost: 100%;
+      --kernel-blur-backdrop: 0px;
+      --kernel-color-scrim: oklch(0% 0 0 / 0.8);
+    }
   }
 
   [data-theme="light"] {

@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, type ForwardedAriaAttribute, KernelElement, kernelClass } from "../../base";
 import "./Composer.css";
 
 let composerCounter = 0;
@@ -27,12 +27,27 @@ let composerCounter = 0;
  * value — the textarea is cleared automatically afterward. A trailing
  * send button can trigger the same path by calling the element's own
  * public `submit()` method from its click handler.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<textarea>`; a host `aria-label` wins over the
+ * placeholder and the built-in "Message".
  */
 export class KernelComposer extends KernelElement {
   private readonly generatedId = `kernel-composer-${++composerCounter}`;
 
   static get observedAttributes() {
-    return ["value", "placeholder", "disabled", "thinking", "id", "label-message"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "value", "placeholder", "disabled", "thinking", "id", "label-message"];
+  }
+
+  protected ariaTarget() {
+    return this.textarea;
+  }
+
+  /** The textarea always has a name: the host's `aria-label`, else the
+   * placeholder, else the built-in "Message". */
+  protected forwardAria(name: ForwardedAriaAttribute, value: string | null) {
+    if (name === "aria-label") this.syncAttr("placeholder", this.getAttribute("placeholder"));
+    else super.forwardAria(name, value);
   }
 
   private get textarea(): HTMLTextAreaElement | null {
@@ -56,7 +71,7 @@ export class KernelComposer extends KernelElement {
     root.className = kernelClass("Composer");
 
     const textarea = document.createElement("textarea");
-    textarea.id = this.getAttribute("id") || this.generatedId;
+    textarea.id = this.controlId(this.generatedId);
     textarea.className = kernelClass("Composer", "input");
     textarea.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
@@ -125,7 +140,10 @@ export class KernelComposer extends KernelElement {
         break;
       case "placeholder":
         textarea.placeholder = value ?? "";
-        textarea.setAttribute("aria-label", value || this.builtInLabel("message", "Message"));
+        textarea.setAttribute(
+          "aria-label",
+          this.getAttribute("aria-label") || value || this.builtInLabel("message", "Message"),
+        );
         break;
       case "disabled":
         textarea.disabled = value !== null;
@@ -137,7 +155,7 @@ export class KernelComposer extends KernelElement {
         else root.removeAttribute("data-thinking");
         break;
       case "id":
-        textarea.id = value || this.generatedId;
+        textarea.id = this.controlId(this.generatedId);
         break;
     }
   }

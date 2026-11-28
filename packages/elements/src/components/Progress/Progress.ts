@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, type ForwardedAriaAttribute, KernelElement, kernelClass } from "../../base";
 import "./Progress.css";
 
 /**
@@ -8,11 +8,17 @@ import "./Progress.css";
  * `aria-valuenow` bookkeeping.
  *
  * Attributes: `value`, `max` (default 100), `label` (sets
- * `aria-label`).
+ * `aria-label`). `aria-label`, `aria-labelledby` and `aria-describedby`
+ * on the host are forwarded to the `<progress>`; a host `aria-label`
+ * wins over `label`.
  */
 export class KernelProgress extends KernelElement {
   static get observedAttributes() {
-    return ["value", "max", "label"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "value", "max", "label"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected createNative(): HTMLElement {
@@ -38,10 +44,20 @@ export class KernelProgress extends KernelElement {
         progress.max = value === null ? 100 : Number(value);
         break;
       case "label":
-        if (value === null) progress.removeAttribute("aria-label");
-        else progress.setAttribute("aria-label", value);
+        this.syncLabel();
         break;
     }
+  }
+
+  protected forwardAria(name: ForwardedAriaAttribute, value: string | null) {
+    if (name === "aria-label") this.syncLabel();
+    else super.forwardAria(name, value);
+  }
+
+  private syncLabel() {
+    const label = this.getAttribute("aria-label") ?? this.getAttribute("label");
+    if (label === null) this.native?.removeAttribute("aria-label");
+    else this.native?.setAttribute("aria-label", label);
   }
 }
 

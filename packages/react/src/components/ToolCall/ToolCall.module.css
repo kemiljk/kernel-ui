@@ -76,9 +76,9 @@
   filter: blur(var(--kernel-blur-sm));
   pointer-events: none;
   transition:
-    opacity var(--kernel-duration-fast) linear,
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
     scale var(--kernel-duration-base) var(--kernel-ease-in-out),
-    filter var(--kernel-duration-fast) linear;
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .statusLayer {

@@ -30,6 +30,20 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * What's added here is drag-to-dismiss with velocity, damped overdrag, and a
  * backdrop that tracks the drag.
  *
+ * The dismiss decision is distance *or* velocity: a release past 25% of the
+ * sheet's size, or one whose last 100ms moved faster than 0.5px/ms toward the
+ * edge, closes it — so a short flick works and a long, slow drag works, and a
+ * drag that parks before letting go doesn't fling the sheet away. Velocity is
+ * windowed rather than averaged over the gesture, which is why the bar is 0.5
+ * and not Vaul's 0.11 (see `gesture.ts`, shared with Toast's swipe). A finger
+ * pulling back at release keeps the sheet open even past the distance line.
+ * Anything short of dismissal eases back on `--kernel-ease-drawer` over
+ * `--kernel-duration-sheet` (the stylesheet's own open transition, so the
+ * settle and the entrance are one motion); dragging past the open position
+ * rubber-bands asymptotically instead of stopping dead. A dismissal leaves
+ * from wherever the finger let go, on the exit timing, rather than restarting
+ * from the resting position.
+ *
  * Attributes, on top of every `<kernel-dialog>` attribute: `side`
  * (bottom/top/left/right, default **bottom** rather than the dialog's centre),
  * `show-handle` (default true — set `"false"` to omit the grabber),
@@ -55,7 +69,8 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * `data-slot="sheet-footer"` that owns the bottom safe area and is a drag
  * surface in its own right.
  *
- * Events: `close` (inherited), plus `sheetdrag` (`detail.percent`, 0–1, on
+ * Events: `close` and the cancelable `cancel` (inherited; `cancel`'s
+ * `detail.reason` adds `"drag-dismiss"` and `"max-display-width"`), plus `sheetdrag` (`detail.percent`, 0–1, on
  * every drag frame), `sheetrelease` (`detail.open`, whether the sheet stayed
  * open), and `snapchange` (`detail.from` / `detail.to`, once per settle that
  * actually moves). All bubble.
@@ -146,11 +161,17 @@ export class KernelSheet extends KernelDialog {
   private enforceDisplayWidth() {
     if (!this.hasAttribute("open")) return;
     const limit = this.number("max-display-width", Number.POSITIVE_INFINITY);
-    if (window.innerWidth > limit) this.removeAttribute("open");
+    if (window.innerWidth > limit) this.requestClose("max-display-width");
   }
 
   private get dismissible() {
     return this.getAttribute("dismissible") !== "false";
+  }
+
+  /** A non-dismissible sheet ignores backdrop presses, including the
+   * browser's own `closedby="any"` light dismiss. */
+  protected backdropDismissible(): boolean {
+    return this.dismissible && super.backdropDismissible();
   }
 
   /** Present-and-not-`"false"`, the shape every boolean-ish Kernel attribute
@@ -207,7 +228,7 @@ export class KernelSheet extends KernelDialog {
       // Removing the attribute is the same path every other close takes:
       // KernelDialog's own `syncAttr` picks it up, runs the exit transition, and
       // only then calls the native `close()`.
-      onDismiss: () => this.removeAttribute("open"),
+      onDismiss: () => this.requestClose("drag-dismiss"),
       onDrag: (percent) =>
         this.dispatchEvent(new CustomEvent("sheetdrag", { detail: { percent }, bubbles: true })),
       onRelease: (open) =>

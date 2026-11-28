@@ -32,7 +32,7 @@ const morphSnippet = `import { DropdownMenuMorph, MenuItem, MenuSeparator } from
   <MenuItem onSelect={() => {}}>Upload</MenuItem>
 </DropdownMenuMorph>`;
 
-const usageSnippet = `import { Button, DropdownMenu, MenuChevron, MenuItem, MenuSeparator } from "@kernelui-lib/react";
+const usageSnippet = `import { Button, DropdownMenu, Kbd, MenuChevron, MenuItem, MenuSeparator } from "@kernelui-lib/react";
 
 function ActionsMenu() {
   return (
@@ -42,15 +42,27 @@ function ActionsMenu() {
       className="my-menu"
       render={<Button variant="secondary" iconEnd={<MenuChevron />}>Actions</Button>}
     >
-      <MenuItem onSelect={() => {}}>Edit</MenuItem>
-      <MenuItem render={<a href="/docs" />}>Documentation</MenuItem>
+      <MenuItem onSelect={() => {}}>
+        <EditIcon />
+        Edit
+        <Kbd keys={["mod", "E"]} />
+      </MenuItem>
+      <MenuItem onSelect={() => {}}>
+        <DuplicateIcon />
+        Duplicate
+        <Kbd keys={["mod", "D"]} />
+      </MenuItem>
       <MenuSeparator />
       <MenuItem destructive onSelect={() => {}}>
+        <DeleteIcon />
         Delete
       </MenuItem>
     </DropdownMenu>
   );
-}`;
+}
+
+// EditIcon, DuplicateIcon and DeleteIcon are your own 16×16 inline
+// <svg aria-hidden="true"> icons drawn with stroke="currentColor".`;
 ---
 
 <BaseLayout title="Dropdown Menu" withSidebar>
@@ -72,6 +84,17 @@ function ActionsMenu() {
     </div>
 
     <UsageAccordion code={usageSnippet} lang="tsx" />
+
+    <p>
+      An <code>svg</code> placed first in a <code>MenuItem</code> becomes a
+      muted 16px leading icon. A <code>Kbd</code> (or any element with
+      <code>data-slot="shortcut"</code>) placed last is pushed to the
+      trailing edge, one step smaller and muted, so shortcuts line up in
+      a column. Inside a menu row the <code>Kbd</code> drops its key-cap
+      chrome and prints the way native menus do: <code>⌘E</code> on Apple
+      platforms, <code>Ctrl+E</code> elsewhere, still announced as
+      "Command plus E".
+    </p>
 
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
