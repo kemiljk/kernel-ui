@@ -22,6 +22,8 @@
     "test:motion": "node scripts/disclosure-motion-check.mjs",
     "test:shape": "node scripts/check-shape-pairing.mjs",
     "test:svg": "node scripts/check-svg-size.mjs",
+    "test:contrast": "node scripts/check-contrast.mjs",
+    "test:parity": "node scripts/check-parity.mjs",
     "test:motion:docs": "node scripts/disclosure-docs-check.mjs",
     "test:motion:filmstrip": "node scripts/disclosure-filmstrip.mjs",
     "check:changeset": "node scripts/check-changeset.mjs",

@@ -61,7 +61,7 @@
   inline-size: 1.25em;
   block-size: 1.25em;
   border-radius: var(--kernel-radius-full);
-  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-control);
   background-color: var(--kernel-color-surface);
   transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out);
