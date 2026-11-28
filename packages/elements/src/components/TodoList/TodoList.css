@@ -84,11 +84,23 @@ kernel-todo-item {
 }
 
 .kernel-TodoList-list {
+  /* The reorder animation measures items with offsetLeft/offsetTop, which
+     are only list-relative when the list is their offset parent. */
+  position: relative;
   display: flex;
   margin: 0;
   padding: 0;
   flex-direction: column;
   list-style: none;
+}
+
+/* An element-scoped view transition (listMotion.ts) hangs its pseudo-tree off
+   the list itself, so it's timed here rather than at `:root`. Items move
+   between two visible positions, hence the in-out curve; the old/new
+   cross-fade for items arriving or leaving inherits the group's timing. */
+.kernel-TodoList-list::view-transition-group(*) {
+  animation-duration: var(--kernel-duration-slow);
+  animation-timing-function: var(--kernel-ease-in-out);
 }
 
 .kernel-TodoList-item {

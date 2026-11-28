@@ -34,6 +34,9 @@
      the toast. */
   -webkit-user-select: none;
   user-select: none;
+  /* Horizontal pans are the swipe's; vertical ones stay with the browser, so
+     a toast over scrollable content never traps a scroll. */
+  touch-action: pan-y;
 
   --y: 0px;
   opacity: 1;
@@ -284,6 +287,18 @@
 
   .kernel-Toast-icon {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+
+  /* The closing rule outranks the plain one above, so without this the exit
+     still slid and shrank. Reduced motion leaves by fading in place; a swipe
+     dismissal never wrote a travel to begin with (see toastSwipe.ts). */
+  .kernel-Toast-toast[data-closing] {
+    translate: 0 var(--y);
+    transition: opacity var(--kernel-duration-exit) linear;
+  }
+
+  .kernel-Toast-toast[data-closing][data-depth="0"] {
+    scale: 1;
   }
 }
 

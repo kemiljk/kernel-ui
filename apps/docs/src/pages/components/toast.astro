@@ -38,6 +38,35 @@ import ApiTable from "../../components/ApiTable.astro";
       <code>options</code>: <code>&#123; description?, duration? &#125;</code>. <code>duration</code> defaults to 4000ms; pass <code>0</code> to require a manual dismiss.
     </p>
 
+    <h2>Swipe to dismiss</h2>
+    <p>
+      Drag a toast toward the edge of the screen it's anchored to (right in a
+      left-to-right page) and it follows the pointer; drag it the other way and
+      it resists, compressed asymptotically so it answers without pretending
+      that direction does anything. Let go and it leaves if it travelled 40% of
+      its width <em>or</em> was still moving faster than 0.5px/ms — so a short
+      flick works as well as a long drag — and otherwise eases back. A pointer
+      pulling back at the moment it lifts keeps the toast even past the
+      distance line: it's intent that decides, not where the toast happens to
+      sit.
+    </p>
+    <p>
+      Speed is measured over the last 100ms of the gesture, not averaged across
+      all of it, which is why the bar is 0.5 rather than the 0.11 you'll see
+      in libraries that average: a drag that parks before release shouldn't
+      read as a flick. It's the same measure and threshold as{" "}
+      <a href="/components/sheet/">Sheet</a>, so one throw works on both.
+    </p>
+    <p>
+      The gesture stays out of the way. A press on the close button, or any
+      link or control you put inside a toast, is a click, never a swipe. Nothing
+      is claimed until the pointer has moved 4px, mostly sideways, so a click is
+      still a click and a vertical pan still scrolls the page; only then is the
+      pointer captured. Under reduced motion the toast doesn't slide under the
+      pointer — a swipe still dismisses it, by a fade. The close button remains
+      the accessible way to dismiss; the swipe is a shortcut.
+    </p>
+
     <h2>Props</h2>
     <ApiTable slug="toast" />
   </div>

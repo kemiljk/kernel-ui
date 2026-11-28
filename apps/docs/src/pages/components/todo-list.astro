@@ -51,6 +51,29 @@ import ApiTable from "../../components/ApiTable.astro";
       in the transition at all. The count uses tabular figures so ticking
       9/12 → 10/12 doesn't shift the label beside it.
     </p>
+    <p>
+      Reordering animates too — press <strong>Reprioritise</strong> above. Any
+      re-render that changes the items' order is animated with FLIP: positions
+      are cached after every commit, and when the order changes each task
+      glides from where it was to where it now is, on the in-out curve used for
+      movement between two visible positions. New tasks fade in. It happens in a
+      layout effect, after React writes the new order and before the browser
+      paints it, so there's never a frame of the jump.
+    </p>
+    <p>
+      Wrap the update in <code>animateTodoListChange(ref.current, () =&gt;
+      setTasks(next))</code> to have the browser run it as an element-scoped
+      view transition instead (<code>element.startViewTransition()</code>,
+      Chrome 147 and later), with the update inside <code>flushSync</code> so
+      React commits while the transition is capturing. It falls back to the
+      FLIP everywhere else. It's never a document-level view transition, which
+      would freeze the entire page for the sake of one list. The custom element
+      has the same thing as <code>todoList.animateChange(() =&gt; …)</code>,
+      and FLIP-animates items you move by hand. Under
+      <code>prefers-reduced-motion</code> nothing moves; the order just changes.
+      Either way the DOM order is the new order, so screen readers get the new
+      sequence immediately.
+    </p>
 
     <h2>Accessibility</h2>
     <ul>

@@ -326,7 +326,7 @@ export type {
   MessageLabels,
 } from "./components/Message/Message";
 
-export { TodoList, TodoItem } from "./components/TodoList/TodoList";
+export { TodoList, TodoItem, animateTodoListChange } from "./components/TodoList/TodoList";
 export type {
   TodoListProps,
   TodoListState,

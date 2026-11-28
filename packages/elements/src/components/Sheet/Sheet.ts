@@ -30,6 +30,20 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * What's added here is drag-to-dismiss with velocity, damped overdrag, and a
  * backdrop that tracks the drag.
  *
+ * The dismiss decision is distance *or* velocity: a release past 25% of the
+ * sheet's size, or one whose last 100ms moved faster than 0.5px/ms toward the
+ * edge, closes it — so a short flick works and a long, slow drag works, and a
+ * drag that parks before letting go doesn't fling the sheet away. Velocity is
+ * windowed rather than averaged over the gesture, which is why the bar is 0.5
+ * and not Vaul's 0.11 (see `gesture.ts`, shared with Toast's swipe). A finger
+ * pulling back at release keeps the sheet open even past the distance line.
+ * Anything short of dismissal eases back on `--kernel-ease-drawer` over
+ * `--kernel-duration-sheet` (the stylesheet's own open transition, so the
+ * settle and the entrance are one motion); dragging past the open position
+ * rubber-bands asymptotically instead of stopping dead. A dismissal leaves
+ * from wherever the finger let go, on the exit timing, rather than restarting
+ * from the resting position.
+ *
  * Attributes, on top of every `<kernel-dialog>` attribute: `side`
  * (bottom/top/left/right, default **bottom** rather than the dialog's centre),
  * `show-handle` (default true — set `"false"` to omit the grabber),

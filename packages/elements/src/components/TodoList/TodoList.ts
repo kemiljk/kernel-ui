@@ -1,6 +1,7 @@
 import { KernelElement, kernelClass } from "../../base";
 import { DetailsPanelAnimator } from "../../utils/detailsTransition";
 import { adoptLateChildren } from "../../utils/lateChildren";
+import { ListMotion, listItemsOf } from "../../utils/listMotion";
 import "./TodoList.css";
 
 const CHEVRON_PATH = "M4 6L8 10L12 6";
@@ -56,6 +57,16 @@ function circle(r: string, attrs: Record<string, string> = {}): SVGCircleElement
  * The count is recomputed from the `status` attributes of child
  * `<kernel-todo-item>`s whenever they change — no explicit bookkeeping in
  * the consumer's update path.
+ *
+ * Reordering animates. Move `<kernel-todo-item>`s however you like and the
+ * list FLIP-animates the change (Web Animations API, from positions cached
+ * after every mutation), with new items fading in. Or pass the change to
+ * `animateChange(() => …)` to have the browser run it as an element-scoped
+ * view transition (`element.startViewTransition()`, Chrome 147+) on the
+ * `<ol>`, falling back to a measured FLIP. Never a document-level view
+ * transition, which would freeze the whole page for a list's sake, and no
+ * motion under `prefers-reduced-motion`. Same engine and reasoning as
+ * `@kernelui-lib/react`'s `<TodoList>` / `animateTodoListChange`.
  */
 export class KernelTodoList extends KernelElement {
   private summaryEl: HTMLElement | null = null;
@@ -63,6 +74,8 @@ export class KernelTodoList extends KernelElement {
   private animator: DetailsPanelAnimator | undefined;
   private childObserver: MutationObserver | null = null;
   private statusObserver: MutationObserver | null = null;
+  private motion: ListMotion | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   static get observedAttributes() {
     return ["label", "metadata", "completed", "total"];
@@ -103,9 +116,23 @@ export class KernelTodoList extends KernelElement {
       () => this.listEl,
       (node) => node === this.native,
     );
+    this.motion = new ListMotion(list, listItemsOf);
+    this.motion.snapshot();
+    // Text that re-wraps on resize moves items without a mutation; keep the
+    // cached positions honest so the next reorder starts from the truth.
+    if (typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(() => this.motion?.snapshot());
+      this.resizeObserver.observe(list);
+    }
+
     // A plan's items change status as work lands; the summary count has to
-    // follow without the consumer telling it to.
-    this.statusObserver = new MutationObserver(() => this.renderSummary());
+    // follow without the consumer telling it to. The same observer is what
+    // notices a reorder: it fires after the DOM has changed but before the
+    // browser paints, which is exactly when a FLIP has to start.
+    this.statusObserver = new MutationObserver(() => {
+      this.renderSummary();
+      this.motion?.play();
+    });
     this.statusObserver.observe(list, {
       childList: true,
       subtree: true,
@@ -121,6 +148,24 @@ export class KernelTodoList extends KernelElement {
     this.childObserver = null;
     this.statusObserver?.disconnect();
     this.statusObserver = null;
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.motion?.destroy();
+    this.motion = null;
+  }
+
+  /**
+   * Run a change to the items — `update` must move, add or remove
+   * `<kernel-todo-item>`s synchronously — as an element-scoped view transition
+   * where supported, or a measured FLIP otherwise. Resolves once the motion
+   * has finished. Without this, changes still FLIP-animate on their own.
+   */
+  animateChange(update: () => void): Promise<void> {
+    if (!this.motion) {
+      update();
+      return Promise.resolve();
+    }
+    return this.motion.run(update);
   }
 
   protected syncAttr() {
