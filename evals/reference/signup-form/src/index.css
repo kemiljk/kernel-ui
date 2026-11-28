@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+.page {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: var(--kernel-space-8) var(--kernel-space-4);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+}
+
+.error {
+  margin: var(--kernel-space-1) 0 0;
+  color: var(--kernel-color-danger-text);
+  font-size: var(--kernel-font-size-sm);
+}

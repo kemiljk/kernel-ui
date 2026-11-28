@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  max-width: 44rem;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: var(--kernel-space-6) var(--kernel-space-4);
+  box-sizing: border-box;
+}
+
+.chat h1 {
+  margin: 0;
+  font-size: var(--kernel-font-size-xl);
+}
+
+.transcript {
+  flex: 1;
+  min-height: 0;
+}

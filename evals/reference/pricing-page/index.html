@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing</title>
+  </head>
+  <body>
+    <main class="page">
+      <header class="intro">
+        <h1>Pricing</h1>
+        <p>Start free for 14 days on any plan. Cancel any time.</p>
+        <kernel-switch id="billing">Yearly billing (save 20%)</kernel-switch>
+      </header>
+
+      <div class="plans">
+        <kernel-card as="article" class="plan">
+          <kernel-card-header>
+            <kernel-card-title level="2">Starter</kernel-card-title>
+            <kernel-card-description>For individuals and side projects.</kernel-card-description>
+          </kernel-card-header>
+          <kernel-card-content>
+            <p class="price"><span data-monthly="9"></span> <span class="per">per month</span></p>
+            <ul>
+              <li>3 projects</li>
+              <li>5 GB storage</li>
+              <li>Community support</li>
+            </ul>
+          </kernel-card-content>
+          <kernel-card-footer>
+            <kernel-button>Choose Starter</kernel-button>
+          </kernel-card-footer>
+        </kernel-card>
+
+        <kernel-card as="article" class="plan featured">
+          <kernel-card-header>
+            <kernel-card-title level="2">Pro</kernel-card-title>
+            <kernel-badge variant="accent">Most popular</kernel-badge>
+            <kernel-card-description>For professionals who ship every week.</kernel-card-description>
+          </kernel-card-header>
+          <kernel-card-content>
+            <p class="price"><span data-monthly="29"></span> <span class="per">per month</span></p>
+            <ul>
+              <li>Unlimited projects</li>
+              <li>100 GB storage</li>
+              <li>Priority email support</li>
+              <li>Version history</li>
+            </ul>
+          </kernel-card-content>
+          <kernel-card-footer>
+            <kernel-button variant="primary">Choose Pro</kernel-button>
+          </kernel-card-footer>
+        </kernel-card>
+
+        <kernel-card as="article" class="plan">
+          <kernel-card-header>
+            <kernel-card-title level="2">Team</kernel-card-title>
+            <kernel-card-description>For teams that work together.</kernel-card-description>
+          </kernel-card-header>
+          <kernel-card-content>
+            <p class="price"><span data-monthly="79"></span> <span class="per">per month</span></p>
+            <ul>
+              <li>Everything in Pro</li>
+              <li>1 TB shared storage</li>
+              <li>Roles and permissions</li>
+              <li>Single sign-on</li>
+            </ul>
+          </kernel-card-content>
+          <kernel-card-footer>
+            <kernel-button>Choose Team</kernel-button>
+          </kernel-card-footer>
+        </kernel-card>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

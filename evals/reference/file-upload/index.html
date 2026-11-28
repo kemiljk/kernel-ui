@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload documents</title>
+  </head>
+  <body>
+    <main class="page">
+      <h1>Upload documents</h1>
+      <p>Add receipts, scans or signed forms. Images and PDFs up to 5 MB each.</p>
+
+      <kernel-file-upload
+        label="Documents"
+        description="Drag and drop images or PDFs, or click to browse"
+        accept="image/*,application/pdf"
+        max-size="5242880"
+        multiple
+      ></kernel-file-upload>
+
+      <section class="uploads" aria-labelledby="uploads-heading" hidden>
+        <h2 id="uploads-heading">Uploads</h2>
+        <ul id="upload-list"></ul>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

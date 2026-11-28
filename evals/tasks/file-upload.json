@@ -1,0 +1,179 @@
+{
+  "id": "file-upload",
+  "title": "File upload with progress (elements)",
+  "package": "elements",
+  "prompt": "Build an \"Upload documents\" page in plain HTML and TypeScript with @kernelui-lib/elements (no React). It has a file upload field labelled \"Documents\" that accepts images and PDFs, allows several files at once, and rejects files over 5 MB with an error message. As soon as files are chosen, list each one with its name and a progress bar that fills over about 1.5 seconds (simulated), then marks the file \"Uploaded\".",
+  "screenshots": [
+    {
+      "name": "Uploading",
+      "steps": [
+        {
+          "action": "setFiles",
+          "selector": "input[type=file]",
+          "files": [
+            {
+              "name": "report.pdf",
+              "mimeType": "application/pdf",
+              "size": 20480
+            }
+          ]
+        },
+        {
+          "action": "wait",
+          "ms": 500
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-elements",
+      "description": "Renders <kernel-file-upload>",
+      "type": "dom",
+      "selector": "kernel-file-upload",
+      "min": 1
+    },
+    {
+      "id": "no-react",
+      "description": "No React imports",
+      "type": "source",
+      "pattern": "from [\"']react[\"']|@kernelui-lib/react",
+      "absent": true
+    },
+    {
+      "id": "file-input",
+      "description": "A real file input that accepts images and PDFs",
+      "type": "eval",
+      "expression": "(() => { const i = document.querySelector('input[type=file]'); const a = (i?.accept ?? '').toLowerCase(); return Boolean(i) && /image/.test(a) && /pdf/.test(a); })()"
+    },
+    {
+      "id": "multiple",
+      "description": "Several files at once",
+      "type": "dom",
+      "selector": "input[type=file][multiple]",
+      "min": 1
+    },
+    {
+      "id": "labelled",
+      "description": "The file input is labelled \"Documents\"",
+      "type": "eval",
+      "expression": "(() => { const i = document.querySelector(\"input[type=file]\"); if (!i) return false; const ids = (i.getAttribute(\"aria-labelledby\") ?? \"\").split(/\\s+/).filter(Boolean); const text = [...(i.labels ?? [])].map((l) => l.textContent).join(\" \") + \" \" + (i.getAttribute(\"aria-label\") ?? \"\") + \" \" + ids.map((id) => document.getElementById(id)?.textContent ?? \"\").join(\" \"); return /documents/i.test(text); })()"
+    },
+    {
+      "id": "progress",
+      "description": "Choosing a file shows a progress bar",
+      "type": "dom",
+      "selector": "progress, [role=progressbar]",
+      "min": 1,
+      "steps": [
+        {
+          "action": "setFiles",
+          "selector": "input[type=file]",
+          "files": [
+            {
+              "name": "report.pdf",
+              "mimeType": "application/pdf",
+              "size": 20480
+            }
+          ]
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "progress-named",
+      "description": "The progress bar has an accessible name",
+      "type": "eval",
+      "expression": "[...document.querySelectorAll('progress, [role=progressbar]')].some((p) => p.getAttribute('aria-label') || p.getAttribute('aria-labelledby') || (p.labels && p.labels.length))",
+      "steps": [
+        {
+          "action": "setFiles",
+          "selector": "input[type=file]",
+          "files": [
+            {
+              "name": "report.pdf",
+              "mimeType": "application/pdf",
+              "size": 20480
+            }
+          ]
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "lists-file",
+      "description": "The chosen file's name is listed",
+      "type": "eval",
+      "expression": "/report\\.pdf/.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "setFiles",
+          "selector": "input[type=file]",
+          "files": [
+            {
+              "name": "report.pdf",
+              "mimeType": "application/pdf",
+              "size": 20480
+            }
+          ]
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "completes",
+      "description": "After ~1.5s the file shows \"Uploaded\"",
+      "type": "eval",
+      "expression": "/uploaded/i.test(document.body.innerText.replace(/upload documents/ig, ''))",
+      "steps": [
+        {
+          "action": "setFiles",
+          "selector": "input[type=file]",
+          "files": [
+            {
+              "name": "report.pdf",
+              "mimeType": "application/pdf",
+              "size": 20480
+            }
+          ]
+        },
+        {
+          "action": "wait",
+          "ms": 2500
+        }
+      ]
+    },
+    {
+      "id": "rejects-large",
+      "description": "A 6 MB file shows an error",
+      "type": "eval",
+      "expression": "[...document.querySelectorAll(\"[role=alert]\")].some((el) => el.textContent?.trim()) || document.querySelector(\"[aria-invalid=true]\") !== null || /too large|too big|exceeds|larger than/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "setFiles",
+          "selector": "input[type=file]",
+          "files": [
+            {
+              "name": "huge.pdf",
+              "mimeType": "application/pdf",
+              "size": 6291456
+            }
+          ]
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    }
+  ]
+}

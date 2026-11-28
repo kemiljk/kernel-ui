@@ -1,0 +1,164 @@
+{
+  "id": "signup-form",
+  "title": "Sign-up form with validation",
+  "package": "react",
+  "prompt": "Build a sign-up form with these fields: Full name, Email, Password (at least 8 characters), Confirm password, and an \"I agree to the terms\" checkbox, plus a \"Create account\" submit button. Validate when the form is submitted: every invalid field shows its own error message next to it and is marked invalid for assistive technology, and the form is not submitted. When everything is valid, replace the form with a message that says \"Account created\".",
+  "screenshots": [
+    {
+      "name": "Submitted empty",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/create account|sign up|submit|register/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-fields",
+      "description": "Imports TextField, Checkbox and Button from @kernelui-lib/react",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "TextField",
+        "Checkbox",
+        "Button"
+      ]
+    },
+    {
+      "id": "no-raw-controls",
+      "description": "No hand-rolled <input>, <button> or <label>",
+      "type": "source",
+      "pattern": "<input\\b|<button\\b|<label\\b",
+      "absent": true
+    },
+    {
+      "id": "form",
+      "description": "Renders a real <form>",
+      "type": "dom",
+      "selector": "form",
+      "min": 1
+    },
+    {
+      "id": "labelled",
+      "description": "Every input has a label",
+      "type": "check",
+      "check": "inputs-labelled"
+    },
+    {
+      "id": "email-type",
+      "description": "Email uses type=\"email\"",
+      "type": "dom",
+      "selector": "input[type=email]",
+      "min": 1
+    },
+    {
+      "id": "password-type",
+      "description": "Both password fields use type=\"password\"",
+      "type": "dom",
+      "selector": "input[type=password]",
+      "min": 2
+    },
+    {
+      "id": "errors-on-empty",
+      "description": "Submitting empty marks fields invalid and shows messages",
+      "type": "eval",
+      "expression": "document.querySelectorAll('[aria-invalid=true]').length >= 3 && document.querySelector('form') !== null",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/create account|sign up|submit|register/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "short-password",
+      "description": "A 5-character password is rejected",
+      "type": "eval",
+      "expression": "document.querySelector('form') !== null && document.querySelector('input[type=password][aria-invalid=true]') !== null",
+      "steps": [
+        {
+          "action": "fill",
+          "label": "/full name|^name/i",
+          "value": "Ada Lovelace"
+        },
+        {
+          "action": "fill",
+          "label": "/email/i",
+          "value": "ada@example.com"
+        },
+        {
+          "action": "fill",
+          "label": "/^password/i",
+          "value": "abcde"
+        },
+        {
+          "action": "fill",
+          "label": "/confirm/i",
+          "value": "abcde"
+        },
+        {
+          "action": "check",
+          "role": "checkbox"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/create account|sign up|submit|register/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "valid-submits",
+      "description": "A valid form shows \"Account created\"",
+      "type": "eval",
+      "expression": "/account created/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "fill",
+          "label": "/full name|^name/i",
+          "value": "Ada Lovelace"
+        },
+        {
+          "action": "fill",
+          "label": "/email/i",
+          "value": "ada@example.com"
+        },
+        {
+          "action": "fill",
+          "label": "/^password/i",
+          "value": "correct-horse"
+        },
+        {
+          "action": "fill",
+          "label": "/confirm/i",
+          "value": "correct-horse"
+        },
+        {
+          "action": "check",
+          "role": "checkbox"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/create account|sign up|submit|register/i"
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ]
+    }
+  ]
+}

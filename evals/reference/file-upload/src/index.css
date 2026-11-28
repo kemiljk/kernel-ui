@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--kernel-space-8) var(--kernel-space-4);
+}
+
+.uploads h2 {
+  margin: var(--kernel-space-6) 0 var(--kernel-space-2);
+  font-size: var(--kernel-font-size-lg);
+}
+
+#upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.upload {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem auto;
+  align-items: center;
+  gap: var(--kernel-space-3);
+}
+
+.upload[data-done] {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.upload-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-status {
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+}
+
+.upload[data-done] .upload-status {
+  color: var(--kernel-color-success-text);
+}

@@ -1,0 +1,50 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+.page {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--kernel-space-8) var(--kernel-space-4);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kernel-space-3);
+  margin-block-end: var(--kernel-space-8);
+  text-align: center;
+}
+
+.intro h1,
+.intro p {
+  margin: 0;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--kernel-space-4);
+}
+
+.featured {
+  outline: 2px solid var(--kernel-color-accent);
+  outline-offset: var(--kernel-focus-offset);
+  border-radius: var(--kernel-radius-container);
+}
+
+.price {
+  margin: 0 0 var(--kernel-space-3);
+}
+
+.price [data-monthly] {
+  font-size: var(--kernel-font-size-xl);
+  font-weight: 700;
+}
+
+.per {
+  color: var(--kernel-color-text-muted);
+}

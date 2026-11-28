@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  background: var(--kernel-color-canvas);
+  color: var(--kernel-color-text);
+}
+
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--kernel-space-8) var(--kernel-space-4);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--kernel-space-2);
+}

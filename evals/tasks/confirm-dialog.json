@@ -1,0 +1,176 @@
+{
+  "id": "confirm-dialog",
+  "title": "Confirm dialog",
+  "package": "react",
+  "prompt": "Build a small project settings page for a project called \"Atlas\". It has a short description of the project and a \"Delete project\" button styled as a dangerous action. Clicking it opens a confirmation dialog that says the deletion can't be undone, with a \"Cancel\" button and a \"Delete\" button. Cancel (or Escape) closes the dialog and changes nothing. Delete closes the dialog and replaces the button with a status message reading \"Project deleted\" that screen readers announce.",
+  "screenshots": [
+    {
+      "name": "Dialog open",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-dialog",
+      "description": "Imports Dialog and Button from @kernelui-lib/react",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "Dialog",
+        "Button"
+      ]
+    },
+    {
+      "id": "no-raw-dialog",
+      "description": "No hand-rolled <dialog>, <button> or window.confirm",
+      "type": "source",
+      "pattern": "<dialog\\b|<button\\b|window\\.confirm|\\bconfirm\\(",
+      "absent": true
+    },
+    {
+      "id": "trigger",
+      "description": "A \"Delete project\" button is on the page",
+      "type": "role",
+      "role": "button",
+      "name": "/delete project/i"
+    },
+    {
+      "id": "opens-modal",
+      "description": "Clicking it opens a modal <dialog>",
+      "type": "dom",
+      "selector": "dialog[open]",
+      "min": 1,
+      "max": 1,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        }
+      ]
+    },
+    {
+      "id": "dialog-named",
+      "description": "The open dialog has an accessible name",
+      "type": "eval",
+      "expression": "(() => { const d = document.querySelector('dialog[open]'); if (!d) return false; const id = d.getAttribute('aria-labelledby'); return Boolean(d.getAttribute('aria-label') || (id && document.getElementById(id)?.textContent?.trim())); })()",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        }
+      ]
+    },
+    {
+      "id": "warns",
+      "description": "The dialog says the action can't be undone",
+      "type": "eval",
+      "expression": "/undo|undone|irreversible|permanent/i.test(document.querySelector('dialog[open]')?.textContent ?? '')",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        }
+      ]
+    },
+    {
+      "id": "cancel-closes",
+      "description": "Cancel closes the dialog without deleting",
+      "type": "eval",
+      "expression": "!document.querySelector('dialog[open]') && !/project deleted/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        },
+        {
+          "action": "click",
+          "within": "dialog[open]",
+          "role": "button",
+          "name": "/^cancel$/i"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "escape-closes",
+      "description": "Escape closes the dialog",
+      "type": "dom",
+      "selector": "dialog[open]",
+      "max": 0,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        },
+        {
+          "action": "press",
+          "key": "Escape"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "confirm-deletes",
+      "description": "Delete closes the dialog and shows \"Project deleted\"",
+      "type": "eval",
+      "expression": "!document.querySelector('dialog[open]') && /project deleted/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        },
+        {
+          "action": "click",
+          "within": "dialog[open]",
+          "role": "button",
+          "name": "/^delete/i"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "announced",
+      "description": "The status message is in a live region",
+      "type": "eval",
+      "expression": "[...document.querySelectorAll('[role=status],[role=alert],[aria-live]:not([aria-live=off]),output')].some((el) => /project deleted/i.test(el.textContent ?? ''))",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/delete project/i"
+        },
+        {
+          "action": "click",
+          "within": "dialog[open]",
+          "role": "button",
+          "name": "/^delete/i"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    }
+  ]
+}
