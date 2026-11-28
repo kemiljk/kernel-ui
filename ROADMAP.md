@@ -16,6 +16,7 @@ Checks that stop regressions before review, so the rest of the roadmap can move 
 | Run `test:shape` in CI | in review | [#111](https://github.com/kemiljk/kernel-ui/pull/111) | AGENTS.md required it, CI never ran it |
 | Parity check: registry ↔ React exports ↔ custom elements | in review | [#111](https://github.com/kemiljk/kernel-ui/pull/111) | `scripts/check-parity.mjs` |
 | DOM parity tests: render React and elements, compare classes and ARIA | next | | `@kernelui-lib/elements` has no tests today |
+| Contrast check in CI: APCA Lc + WCAG 2 floor, every preset, light and dark | in review | [#116](https://github.com/kemiljk/kernel-ui/pull/116) | `test:contrast`; APCA is Kernel's standard |
 | Screenshot suite: light, dark, Round, Sharp, RTL, low-sitting font | next | | Grow from the harness used for #109/#110 |
 | axe accessibility checks in CI | blocked | | Needs a new dev dependency; awaiting approval |
 | Bundle-size budget per package | later | | |
@@ -40,10 +41,10 @@ From the full audit. P0 = broken or inaccessible, P1 = visibly unpolished, P2 = 
 
 | Item | Priority | Status | PR | Notes |
 | --- | --- | --- | --- | --- |
-| Focus ring fails 3:1 contrast in light mode | P0 | next | | `--kernel-color-focus-ring` is accent-9 (2.06:1) |
-| Unchecked control borders too faint | P0 | next | | gray-7 is 1.75:1 light, 2.36:1 dark |
-| Switch thumb breaks in RTL | P0 | next | | Physical translate on a logical inset |
-| Checkbox becomes a circle at Round | P0 | next | | Cap small-control radii by size |
+| Focus ring fails 3:1 contrast in light mode | P0 | in review | [#116](https://github.com/kemiljk/kernel-ui/pull/116) | `--kernel-color-focus-ring` is accent-9 (2.06:1) |
+| Unchecked control borders too faint | P0 | in review | [#116](https://github.com/kemiljk/kernel-ui/pull/116) | gray-7 is 1.75:1 light, 2.36:1 dark |
+| Switch thumb breaks in RTL | P0 | in review | [#116](https://github.com/kemiljk/kernel-ui/pull/116) | Physical translate on a logical inset |
+| Checkbox becomes a circle at Round | P0 | in review | [#116](https://github.com/kemiljk/kernel-ui/pull/116) | Cap small-control radii by size |
 | NumberField steppers cramped at Round; sub-24px targets | P1 | next | | |
 | Tabs, InputOTP and Pagination overflow or wrap at 390px | P1 | next | | |
 | Slider fill and directional icons don't mirror in RTL | P1 | next | | Shared `--dir` and icon-flip utility |
@@ -95,4 +96,5 @@ From the full audit. P0 = broken or inaccessible, P1 = visibly unpolished, P2 = 
 | Translatable built-in strings (`labels`) | next | | 7 hard-coded English strings in React |
 | Density token (compact / comfortable) | later | | |
 | `forced-colors` and reduced-transparency support | later | | |
+| Decide: move field borders to the 3:1 control border | next | | Needs Karl's call; bigger visual change |
 | Browser support matrix and semver/deprecation policy in docs | later | | |
