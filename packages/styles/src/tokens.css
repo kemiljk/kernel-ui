@@ -150,6 +150,14 @@
     --kernel-color-fill-subtle: var(--kernel-gray-2);
     --kernel-color-fill: var(--kernel-gray-3);
     --kernel-color-fill-strong: var(--kernel-gray-4);
+    /* A hover wash for a small control sitting on a coloured or tinted
+       surface (a TagInput chip's remove ×), where a gray fill step would
+       read as a patch of the wrong colour. Mixed from currentColor, so it
+       darkens dark-on-light text and lightens light-on-dark text: one
+       token that stays visible in both schemes, where a fixed
+       `oklch(0% 0 0 / .1)` vanished on dark mode. currentColor resolves
+       where the token is used, not here. */
+    --kernel-color-overlay-hover: color-mix(in oklch, currentColor 12%, transparent);
 
     --kernel-color-border: var(--kernel-gray-6);
     --kernel-color-border-interactive: var(--kernel-gray-7);

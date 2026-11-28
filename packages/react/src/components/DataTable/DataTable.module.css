@@ -20,6 +20,9 @@
 .sortButton {
   display: inline-flex;
   align-items: center;
+  /* 24px minimum target (WCAG 2.5.8): a bare text button is only one
+     line of 14px text tall. */
+  min-block-size: var(--kernel-space-6);
   gap: var(--kernel-space-1);
   border: none;
   background: none;
@@ -56,8 +59,11 @@
   rotate: 180deg;
 }
 
+/* Stretched, not centred: Pagination is an inline-size container (its
+   Previous/Next labels collapse when narrow), so it can't be sized by its
+   own content. The list inside does the centring. */
 .pagination {
-  align-self: center;
+  align-self: stretch;
 }
 
 .pagination ol {

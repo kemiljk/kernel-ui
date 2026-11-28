@@ -149,7 +149,7 @@
 @media (hover: hover) and (pointer: fine) {
   .kernel-TagInput-tagRemove:hover {
     opacity: 1;
-    background-color: oklch(0% 0 0 / 0.1);
+    background-color: var(--kernel-color-overlay-hover);
   }
 }
 

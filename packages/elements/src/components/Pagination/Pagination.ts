@@ -62,6 +62,7 @@ abstract class KernelPaginationControl extends KernelElement {
   }
 
   protected abstract defaultLabel(): string;
+  protected abstract chevronFirst(): boolean;
   /** Named to avoid colliding with the native, public
    * `HTMLElement.ariaLabel` ARIA-reflection property. */
   protected abstract controlAriaLabel(): string;
@@ -79,8 +80,17 @@ abstract class KernelPaginationControl extends KernelElement {
     button.type = "button";
     button.className = kernelClass("Pagination", "control");
     button.setAttribute("aria-label", this.controlAriaLabel());
-    if (this.labelNodes.length) button.append(...this.labelNodes);
-    else button.textContent = this.defaultLabel();
+    // Chevron and word in separate spans, like React's controls: below a
+    // narrow container the word is visually hidden (Pagination.css).
+    const chevron = document.createElement("span");
+    chevron.setAttribute("aria-hidden", "true");
+    chevron.textContent = this.chevronFirst() ? "‹" : "›";
+    const label = document.createElement("span");
+    label.className = kernelClass("Pagination", "label");
+    if (this.labelNodes.length) label.append(...this.labelNodes);
+    else label.textContent = this.defaultLabel();
+    if (this.chevronFirst()) button.append(chevron, label);
+    else button.append(label, chevron);
     li.append(button);
     this.native = li;
     this.append(li);
@@ -98,7 +108,10 @@ abstract class KernelPaginationControl extends KernelElement {
  * "previous page" changes state on the same view. */
 export class KernelPaginationPrevious extends KernelPaginationControl {
   protected defaultLabel() {
-    return "‹ Previous";
+    return "Previous";
+  }
+  protected chevronFirst() {
+    return true;
   }
   protected controlAriaLabel() {
     return "Go to previous page";
@@ -108,7 +121,10 @@ export class KernelPaginationPrevious extends KernelPaginationControl {
 /** `<kernel-pagination-next>` — see `KernelPaginationPrevious`. */
 export class KernelPaginationNext extends KernelPaginationControl {
   protected defaultLabel() {
-    return "Next ›";
+    return "Next";
+  }
+  protected chevronFirst() {
+    return false;
   }
   protected controlAriaLabel() {
     return "Go to next page";

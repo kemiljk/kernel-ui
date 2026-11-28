@@ -32,6 +32,17 @@
   cursor: pointer;
 }
 
+/* A range input fills from its inline start, so in RTL the fill grows
+   from the right and has to meet the thumb from that side. Paired
+   selector, not `:dir(rtl)` alone: the build rewrites `:dir()` to
+   `:lang()`, which no longer tracks `dir`. Inherited into the track
+   pseudo-element below. */
+.input:dir(rtl),
+:where([dir="rtl"]) .input {
+  --fill-direction: to left;
+}
+
+
 .input::-webkit-slider-runnable-track {
   --fill-stop: calc(0.875rem + (100% - 1.75rem) * var(--ratio, 0));
   block-size: 6px;
@@ -40,7 +51,7 @@
      the thumb only travels (track − thumb width), so a plain percentage
      stop leads the thumb near the start and trails it near the end. */
   background: linear-gradient(
-    to right,
+    var(--fill-direction, to right),
     var(--kernel-color-accent) var(--fill-stop),
     var(--kernel-color-fill-strong) var(--fill-stop)
   );

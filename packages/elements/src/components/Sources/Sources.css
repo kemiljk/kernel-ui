@@ -97,20 +97,38 @@
   opacity: 0.7;
 }
 
+/* A small pill, not a fixed square: a 1.15em square fit "1" but not "12".
+   `min-inline-size` keeps single digits round, inline padding lets wider
+   numbers grow. The radius is the optical-pill rule — the theme's
+   control radius, but never more than half the chip's height, so it's a
+   pill at Round and a softened square at Sharp without ever pinching.
+
+   Raised with a length, not `vertical-align: super`, and `line-height:
+   0` so the chip contributes nothing to its line box: `super` grew the
+   line it sat on and made paragraph spacing jump wherever a citation
+   appeared. Margin on the start side only, so "claim[1], next" keeps the
+   comma hard against the chip. */
 .kernel-Sources-citation {
+  position: relative;
   display: inline-grid;
   place-items: center;
-  inline-size: 1.15em;
-  block-size: 1.15em;
-  margin-inline: 0.15em;
-  border-radius: var(--kernel-radius-control);
+  box-sizing: border-box;
+  min-inline-size: 1.4em;
+  block-size: 1.4em;
+  padding-inline: 0.35em;
+  margin-inline-start: 0.2em;
+  border-radius: min(var(--kernel-radius-control), 0.7em);
   background-color: var(--kernel-color-accent-subtle);
   color: var(--kernel-color-accent-text);
   font-size: 0.7em;
   font-weight: 600;
-  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  line-height: 0;
   text-decoration: none;
-  vertical-align: super;
+  vertical-align: 0.35em;
+  /* Same convention as every other clickable control. */
+  -webkit-user-select: none;
+  user-select: none;
   transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
@@ -118,6 +136,16 @@
   .kernel-Sources-citation:hover {
     background-color: color-mix(in oklch, var(--kernel-color-accent-subtle) 70%, var(--kernel-color-accent));
   }
+}
+
+/* The chip stays small; an invisible box around it makes the target
+   24px tall (WCAG 2.5.8). Only a little wider than the chip, so two
+   citations side by side ("[1][2]") don't steal each other's clicks. */
+.kernel-Sources-citation::after {
+  content: "";
+  position: absolute;
+  inset-block: calc((100% - var(--kernel-space-6)) / 2);
+  inset-inline: calc(var(--kernel-space-1) / -2);
 }
 
 .kernel-Sources-citation:focus-visible {

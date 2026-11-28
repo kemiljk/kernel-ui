@@ -18,14 +18,33 @@
   color: var(--kernel-color-text-muted);
 }
 
+/* Flexible cells, not fixed ones: six 48px cells plus gaps overflowed a
+   390px screen. Each column is minmax(2rem, 48px) — the cells share the
+   row equally, top out at the old 48px and never get narrower than a
+   digit plus breathing room.
+
+   A grid rather than `flex: 1 1 0` with min/max widths, because of how
+   the row is measured from outside. An <input>'s min-content width is
+   its full ~20ch default, so a flex row of them reports 6 × 48px as the
+   narrowest it can go and a content-sized parent (a centred demo, a
+   flex row) never lets it shrink. Fixed minmax() tracks report 6 × 2rem
+   as the minimum and 6 × 48px as the preference, which is the truth. */
 .kernel-InputOTP-cells {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(2rem, var(--kernel-space-12));
+  justify-content: start;
   gap: var(--kernel-space-2);
 }
 
 .kernel-InputOTP-cell {
-  inline-size: var(--kernel-space-12);
-  block-size: var(--kernel-space-12);
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  /* Square at every width: a cell squeezed narrower keeps its shape (a
+     circle at Round) instead of stretching into a tall oval. */
+  block-size: auto;
+  aspect-ratio: 1;
   border-radius: var(--kernel-radius-control);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);

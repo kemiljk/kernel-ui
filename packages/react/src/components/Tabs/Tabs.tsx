@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useId, useRef } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { syncScrollEdges } from "../../utils/scrollEdges";
 import { useControllableState } from "../../utils/useControllableState";
 import styles from "./Tabs.module.css";
 
@@ -30,7 +31,9 @@ export interface TabsProps {
  * There's no native tabs element, this is the WAI-ARIA `tablist` pattern.
  * `TabPanel` uses the native `hidden` attribute for the inactive panels,
  * so they're genuinely removed from layout and the accessibility tree,
- * not just visually hidden.
+ * not just visually hidden. A tablist wider than its container scrolls
+ * sideways (scrollbar hidden, an edge fade where tabs are cut off) rather
+ * than widening the page, and selecting a tab scrolls it into view.
  */
 export function Tabs({ value, defaultValue, onValueChange, children, className }: TabsProps) {
   const baseId = useId();
@@ -96,6 +99,21 @@ export function TabsList({ children, className, shape = "default", ...rest }: Ta
     indicator.style.setProperty("--kernel-tabs-indicator-x", `${nextX}px`);
     indicator.style.setProperty("--kernel-tabs-indicator-width", `${nextWidth}px`);
 
+    // A tablist wider than its container scrolls (see Tabs.module.css),
+    // so a selection made by arrow key or from outside can land on a tab
+    // that's scrolled out of view. "nearest" on both axes only scrolls
+    // what it must — never the page vertically for a visible list.
+    // Skipped on first render, where nothing was selected by the user and
+    // a scroll would be a surprise. Optional call: jsdom (consumers' unit
+    // tests) doesn't implement scrollIntoView.
+    if (!isFirstRender) {
+      activeTab.scrollIntoView?.({
+        block: "nearest",
+        inline: "nearest",
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    }
+
     previousXRef.current = nextX;
   }, [activeValue]);
 
@@ -118,9 +136,19 @@ export function TabsList({ children, className, shape = "default", ...rest }: Ta
       indicator.style.setProperty("--kernel-tabs-indicator-x", `${activeTab.offsetLeft}px`);
       indicator.style.setProperty("--kernel-tabs-indicator-width", `${activeTab.offsetWidth}px`);
       previousXRef.current = activeTab.offsetLeft;
+      syncScrollEdges(list);
     });
     observer.observe(list);
-    return () => observer.disconnect();
+    // Tabs growing (fonts loading) change the scroll width without
+    // resizing a list that's already capped at its container.
+    for (const tab of list.querySelectorAll('[role="tab"]')) observer.observe(tab);
+    const onScroll = () => syncScrollEdges(list);
+    list.addEventListener("scroll", onScroll, { passive: true });
+    syncScrollEdges(list);
+    return () => {
+      observer.disconnect();
+      list.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {

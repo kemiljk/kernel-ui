@@ -85,6 +85,7 @@ export const Source = forwardRef<HTMLAnchorElement, SourceProps>(function Source
         ) : null}
         <svg
           className={styles.arrow}
+          data-icon-directional=""
           viewBox="0 0 16 16"
           width="12"
           height="12"

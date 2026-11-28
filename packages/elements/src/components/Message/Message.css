@@ -282,6 +282,8 @@ kernel-message:nth-child(n + 9) .kernel-Message-item[data-animate] {
 .kernel-Message-expandTrigger {
   display: inline-flex;
   align-items: center;
+  /* 24px minimum target (WCAG 2.5.8) for a one-line text summary. */
+  min-block-size: var(--kernel-space-6);
   gap: var(--kernel-space-1);
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);

@@ -863,7 +863,11 @@ dialog.mobile-nav-panel[data-side="left"] {
   margin-block: var(--kernel-space-12) var(--kernel-space-3);
 }
 
-.docs-prose :where(p, ul, ol) {
+/* Not a Kernel component's own text: the same equal-specificity, later-
+   source-wins clobbering as the headings above. Toast's title (a <p>,
+   in a viewport mounted inside the article) came out in this muted grey
+   on its green/red tint instead of the component's own text colour. */
+.docs-prose :where(p, ul, ol):where(:not([class*="kernel-"])) {
   color: var(--kernel-color-text-muted);
   line-height: var(--kernel-line-height);
 }
