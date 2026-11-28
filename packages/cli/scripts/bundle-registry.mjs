@@ -5,7 +5,7 @@
  * can run without a workspace or npm dependency on registry.
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { cpSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -132,6 +132,14 @@ writeFileSync(
   join(outDir, "agent-bundle.cjs"),
   `"use strict";\n// Bundled at build time from @kernelui-lib/registry and @kernelui-lib/styles\nmodule.exports = ${JSON.stringify(agentData)};\n`,
 );
+
+// ── 6. Skills: a fallback copy for projects that haven't installed the
+// packages yet. `kernel agents` prefers the copy in node_modules, which
+// always matches the installed version.
+rmSync(join(outDir, "skills"), { recursive: true, force: true });
+for (const pkg of ["react", "elements"]) {
+  cpSync(join(root, pkg, "skills"), join(outDir, "skills", pkg), { recursive: true });
+}
 
 console.log(
   `[bundle-registry] Bundled ${components.length} components → dist/registry-bundle.*, ` +

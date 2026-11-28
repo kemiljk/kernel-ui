@@ -1,7 +1,7 @@
 {
   "name": "@kernelui-lib/elements",
   "version": "1.6.2",
-  "description": "Kernel's components as native Custom Elements — framework-agnostic, light DOM, zero runtime dependencies.",
+  "description": "Kernel's components as native Custom Elements \u2014 framework-agnostic, light DOM, zero runtime dependencies.",
   "license": "MIT",
   "author": "Karl Koch",
   "repository": {
@@ -16,7 +16,9 @@
     "custom-elements",
     "components",
     "accessibility",
-    "design-system"
+    "design-system",
+    "agent-skills",
+    "tanstack-intent"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -32,6 +34,7 @@
   },
   "files": [
     "dist",
+    "skills",
     "llms.txt",
     "LICENSE",
     "README.md"

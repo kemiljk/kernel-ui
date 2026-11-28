@@ -43,6 +43,15 @@ kernel docs dialog --markdown
 kernel docs input
 ```
 
+### `kernel agents`
+
+Makes a project agent-ready: installs Kernel's skills (`kernel-ui`, `kernel-ui-theming`, `kernel-ui-migrate`, `kernel-ui-elements`) into `.claude/skills`, registers the MCP server, and adds a Kernel UI section to `AGENTS.md` (and `CLAUDE.md` if present). Safe to re-run.
+
+```bash
+kernel agents
+kernel agents --client cursor --dir .agents/skills
+```
+
 ### `kernel mcp`
 
 Runs a Model Context Protocol server over stdio so coding agents can look Kernel up: `list_components`, `search_components`, `get_component` (exact props, attributes, events), `get_tokens`, `get_conventions` and `check_code`. Answers come from data bundled into the CLI, so they work offline and match the installed version.

@@ -21,9 +21,9 @@ async function version() {
   return pkg.default.version as string;
 }
 
-async function init(global: GlobalOptions, rest: string[]) {
+export async function initMcp(global: GlobalOptions, rest: string[]) {
   const flag = rest.find((arg) => arg.startsWith("--client"));
-  const client = (flag?.includes("=") ? flag.split("=")[1] : rest[rest.indexOf("--client") + 1]) ?? "claude";
+  const client = !flag ? "claude" : flag.includes("=") ? flag.split("=")[1]! : (rest[rest.indexOf(flag) + 1] ?? "claude");
   if (!(client in CLIENTS)) {
     throw new Error(`Unknown client "${client}". Use one of: ${Object.keys(CLIENTS).join(", ")}.`);
   }
@@ -54,7 +54,7 @@ async function init(global: GlobalOptions, rest: string[]) {
 
 export async function runMcp(global: GlobalOptions, rest: string[]) {
   if (rest[0] === "init") {
-    await init(global, rest.slice(1));
+    await initMcp(global, rest.slice(1));
     return;
   }
   startServer(await version());
