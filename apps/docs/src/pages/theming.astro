@@ -70,6 +70,44 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       survives navigation.
     </p>
 
+    <h2>Contrast</h2>
+    <p>
+      Kernel measures colour contrast with
+      <a href="https://github.com/Myndex/SAPC-APCA">APCA</a>, the
+      Accessible Perceptual Contrast Algorithm proposed for WCAG 3. It keeps
+      the WCAG 2 contrast ratio as a floor, because that's still the standard
+      most accessibility requirements cite.
+    </p>
+    <p>
+      APCA models how light and dark colours are actually perceived. That
+      matters most in dark mode, where WCAG 2's ratio overrates contrast:
+      Kernel's old focus ring passed WCAG 2 at about 4.2:1 in dark mode but
+      scored only Lc 30 under APCA, and it was visibly faint.
+    </p>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Contrast targets for Kernel's semantic tokens, on the canvas and surface.</caption>
+      <thead><tr><th scope="col">Token</th><th scope="col">Used for</th><th scope="col">APCA</th><th scope="col">WCAG 2 floor</th></tr></thead>
+      <tbody>
+        <tr><td><code>--kernel-color-text</code></td><td>Body text</td><td>Lc 75</td><td>4.5:1</td></tr>
+        <tr><td><code>--kernel-color-text-muted</code></td><td>Secondary text</td><td>Lc 60</td><td>4.5:1</td></tr>
+        <tr><td><code>--kernel-color-focus-ring</code></td><td>Focus outlines</td><td>Lc 45</td><td>3:1</td></tr>
+        <tr><td><code>--kernel-color-border-control</code></td><td>Checkbox, radio and switch edges</td><td>Lc 45</td><td>3:1</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      The text levels are APCA's own minimums for body text and for other
+      content text. Focus rings and control borders are 1–2px lines, which
+      APCA treats as fine detail with a higher minimum than solid shapes, so
+      Kernel holds them to Lc 45, its level for fine-detail icons.
+    </p>
+    <p>
+      Every accent preset is checked in light and dark mode on every change
+      (<code>bun run test:contrast</code>). If you override these tokens,
+      check your values with an APCA calculator such as
+      <a href="https://apcacontrast.com">apcacontrast.com</a> against the
+      same targets. APCA is still a draft and may change.
+    </p>
+
     <h2>Shape</h2>
     <p>
       One radius token, <code>--kernel-radius-base</code>, drives every

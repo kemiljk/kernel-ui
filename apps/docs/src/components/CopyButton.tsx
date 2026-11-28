@@ -35,8 +35,7 @@ export default function CopyButton({ text }: CopyButtonProps) {
       className="code-block-copy"
       aria-label={copied ? "Copied" : "Copy code"}
       onClick={handleCopy}
-    >
-      {copied ? <CheckIcon width="14" height="14" /> : <CopyIcon width="14" height="14" />}
-    </Button>
+      iconStart={copied ? <CheckIcon width="14" height="14" /> : <CopyIcon width="14" height="14" />}
+    />
   );
 }

@@ -16,6 +16,7 @@ const pages = [
   { name: "Platforms", href: "/platforms/", summary: "React, Web Components, and headless usage." },
   { name: "Installation", href: "/installation/", summary: "Install the packages and import the tokens." },
   { name: "Theming", href: "/theming/", summary: "Every token that drives a component's appearance." },
+  { name: "Icons", href: "/icons/", summary: "Use any icon set, tuned with two tokens." },
   { name: "CLI", href: "/cli/", summary: "Install and diagnose Kernel in a project." },
   { name: "Migration", href: "/migration/", summary: "Move an existing app onto Kernel." },
 ] as const;
