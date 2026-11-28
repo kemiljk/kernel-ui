@@ -17,6 +17,18 @@ kernel doctor --path ./apps/web`;
 const docsSnippet = `kernel docs
 kernel docs text-field --json
 kernel docs dialog --markdown`;
+
+const mcpSnippet = `kernel mcp init                  # Claude Code: writes .mcp.json
+kernel mcp init --client cursor  # .cursor/mcp.json
+kernel mcp init --client vscode  # .vscode/mcp.json`;
+
+const mcpManualSnippet = `{
+  "mcpServers": {
+    "kernel": { "command": "npx", "args": ["-y", "@kernelui-lib/cli", "mcp"] }
+  }
+}`;
+
+const checkSnippet = `kernel check src/App.tsx src/Settings.tsx`;
 ---
 
 <BaseLayout title="CLI" description="Use the Kernel CLI to install packages, wire up styles, diagnose setup, and look up component metadata locally." withSidebar>
@@ -66,6 +78,38 @@ kernel docs dialog --markdown`;
     </p>
     <CodeBlock code={docsSnippet} lang="bash" />
 
+    <h2><code>kernel mcp</code></h2>
+    <p>
+      Runs a Model Context Protocol server, so a coding agent can look Kernel
+      up instead of guessing. It answers from data bundled into the CLI,
+      so it works offline and always matches the version you installed.
+      Register it with your agent once:
+    </p>
+    <CodeBlock code={mcpSnippet} lang="bash" />
+    <p>Or add it by hand to any MCP client:</p>
+    <CodeBlock code={mcpManualSnippet} lang="tsx" />
+    <p>Its tools:</p>
+    <ul>
+      <li><code>list_components</code> and <code>search_components</code>: what exists, and the right component for a need described in plain words.</li>
+      <li><code>get_component</code>: exact React props (types, defaults, notes), custom element attributes and events, why the component is built on its native element, and notes for migrating from shadcn or Radix.</li>
+      <li><code>get_tokens</code>: design tokens with their values and what each is for.</li>
+      <li><code>get_conventions</code>: install steps and the conventions every component shares.</li>
+      <li><code>check_code</code>: reviews code the agent just wrote (see <code>kernel check</code> below).</li>
+    </ul>
+
+    <h2><code>kernel check</code></h2>
+    <p>
+      Reviews files for the mistakes that come up most when people and agents
+      write Kernel code, with the fix spelled out: props from other libraries
+      (<code>asChild</code>, <code>leftIcon</code>), invalid values
+      (<code>variant="primry"</code>), fields with no <code>label</code>,
+      icon-only buttons with no <code>aria-label</code>, clickable
+      <code>&lt;div&gt;</code>s, raw colours, hand-picked pill radii, and
+      shadcn or Radix imports Kernel replaces. It exits with an error when it
+      finds one, so it can run in CI.
+    </p>
+    <CodeBlock code={checkSnippet} lang="bash" />
+
     <h2>LLM assets</h2>
     <p>
       Kernel publishes several machine-readable surfaces:
@@ -74,7 +118,8 @@ kernel docs dialog --markdown`;
       <li><code>llms.txt</code> in <code>@kernelui-lib/react</code> and <code>@kernelui-lib/elements</code> (shipped with npm)</li>
       <li><a href="/llms.txt">/llms.txt</a> and <a href="/llms-full.txt">/llms-full.txt</a> on the docs site</li>
       <li><a href="/registry.json">/registry.json</a> — structured component catalog with shadcn aliases and migration caveats</li>
-      <li><code>kernel docs &lt;component&gt; --json</code> for local lookup</li>
+      <li><a href="/api.json">/api.json</a> — every component's exact props, attributes and events, generated from source</li>
+      <li><code>kernel docs &lt;component&gt; --json</code> for local lookup, and <code>kernel mcp</code> for agents</li>
     </ul>
     <p>
       Exact prop types always live in <code>dist/index.d.ts</code> inside each

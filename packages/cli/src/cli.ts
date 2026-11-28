@@ -1,6 +1,8 @@
+import { runCheck } from "./commands/check.js";
 import { runDoctor } from "./commands/doctor.js";
 import { runDocs } from "./commands/docs.js";
 import { runInit } from "./commands/init.js";
+import { runMcp } from "./commands/mcp.js";
 import { printHelp } from "./lib/output.js";
 import type { GlobalOptions } from "./lib/types.js";
 
@@ -62,6 +64,12 @@ export async function runCli(argv: string[]) {
       return;
     case "docs":
       await runDocs(global, rest);
+      return;
+    case "mcp":
+      await runMcp(global, rest);
+      return;
+    case "check":
+      await runCheck(global, rest);
       return;
     default:
       throw new Error(`Unknown command "${command}". Run kernel --help.`);
