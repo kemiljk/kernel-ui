@@ -13,8 +13,8 @@ Checks that stop regressions before review, so the rest of the roadmap can move 
 
 | Item | Status | PR | Notes |
 | --- | --- | --- | --- |
-| Run `test:shape` in CI | in review | this PR | AGENTS.md required it, CI never ran it |
-| Parity check: registry ↔ React exports ↔ custom elements | in review | this PR | `scripts/check-parity.mjs` |
+| Run `test:shape` in CI | in review | [#111](https://github.com/kemiljk/kernel-ui/pull/111) | AGENTS.md required it, CI never ran it |
+| Parity check: registry ↔ React exports ↔ custom elements | in review | [#111](https://github.com/kemiljk/kernel-ui/pull/111) | `scripts/check-parity.mjs` |
 | DOM parity tests: render React and elements, compare classes and ARIA | next | | `@kernelui-lib/elements` has no tests today |
 | Screenshot suite: light, dark, Round, Sharp, RTL, low-sitting font | next | | Grow from the harness used for #109/#110 |
 | axe accessibility checks in CI | blocked | | Needs a new dev dependency; awaiting approval |
@@ -27,12 +27,12 @@ Checks that stop regressions before review, so the rest of the roadmap can move 
 | Optical pills: Badge, TagInput tags, Suggestion | in review | [#109](https://github.com/kemiljk/kernel-ui/pull/109) | |
 | Optical Button and `<kernel-button>` icon slots | in review | [#110](https://github.com/kemiljk/kernel-ui/pull/110) | Stacked on #109 |
 | Icon tokens: `--kernel-icon-size`, `--kernel-icon-stroke-width` | in review | #109 | |
-| Docs page that swaps icon packages | blocked | | Docs-only icon dependencies need approval |
+| Docs page that swaps icon packages | in review | [#112](https://github.com/kemiljk/kernel-ui/pull/112) | Lucide, Phosphor, Heroicons, Tabler, Radix, each tuned by measurement |
 | Roll the recipe out to Toggle, Tabs, Select, TextField at Round, citation chips | next | | |
 | Cap-height centring for inputs and Tabs | next | | |
 | Full design audit of all components | in progress | | Findings land as items below |
 | TagInput remove hover invisible in dark mode | next | | Hard-coded translucent black |
-| UI polish references from Mobbin | blocked | | Mobbin MCP not connected |
+| UI polish references from Mobbin | next | | Mobbin MCP installed and signed in; needs a fresh session to load |
 
 ## 3. Agent-native
 
