@@ -9,8 +9,9 @@ const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "
 const billing = document.querySelector<HTMLElement>("#billing")!;
 const prices = document.querySelectorAll<HTMLElement>("[data-monthly]");
 
-function render() {
-  const yearly = billing.hasAttribute("checked");
+// `change` fires before the switch commits (it's cancelable), so the new
+// state is `event.detail.checked`; the attribute still has the old one.
+function render(yearly = billing.hasAttribute("checked")) {
   for (const price of prices) {
     const monthly = Number(price.dataset.monthly);
     price.textContent = currency.format(yearly ? monthly * (1 - YEARLY_DISCOUNT) : monthly);
@@ -19,5 +20,5 @@ function render() {
   }
 }
 
-billing.addEventListener("change", render);
+billing.addEventListener("change", (event) => render((event as CustomEvent<{ checked: boolean }>).detail.checked));
 render();
