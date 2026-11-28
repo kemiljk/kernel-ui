@@ -79,10 +79,13 @@ export class KernelDialog extends KernelElement {
       closeButton.className = `${kernelClass("Button")} ${kernelClass("Dialog", "closeButton")}`;
       closeButton.dataset.variant = "ghost";
       closeButton.dataset.size = "sm";
+      // Same shape React's <Button> renders for a lone icon: an icon slot,
+      // flagged at both edges, so the button is a concentric square.
+      closeButton.dataset.iconStart = "true";
+      closeButton.dataset.iconEnd = "true";
       closeButton.innerHTML =
-        '<span class="' +
-        kernelClass("Button", "label") +
-        '"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">' +
+        `<span class="${kernelClass("Button", "icon")}" aria-hidden="true">` +
+        '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">' +
         '<path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg></span>';
       closeButton.addEventListener("click", () => this.requestClose());
       header.append(closeButton);

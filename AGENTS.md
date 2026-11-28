@@ -132,7 +132,7 @@ new component done, grep both `packages/react/src/index.ts` and
 - **Pills are optical, not just rounded.** A pill's end caps eat into the
   space beside its text and leave an edge icon off-centre. Lopsided font
   metrics also make text sit low. `Badge.module.css` holds the full recipe;
-  `Suggestion` and `TagInput`'s tags reuse it. In short:
+  `Suggestion`, `TagInput`'s tags and `Button` reuse it. In short:
   - The radius is `min(--kernel-radius-control, half the box height)`,
     never `--kernel-radius-full`, because 999px breaks the maths.
   - Inline padding adds the r² × (1 − π/4) / pill the corners cut away.
