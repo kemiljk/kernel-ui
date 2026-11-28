@@ -181,4 +181,5 @@ export type { FuzzyMatch, FuzzyResult } from "./utils/fuzzy";
 export { spatialMove, gridDirectionForKey } from "./utils/spatialMove";
 export type { SpatialCell, SpatialDirection } from "./utils/spatialMove";
 
-export { KernelElement, kernelClass, dataAttr } from "./base";
+export { KernelElement, kernelClass, dataAttr, FORWARDED_ARIA_ATTRIBUTES } from "./base";
+export type { ForwardedAriaAttribute } from "./base";

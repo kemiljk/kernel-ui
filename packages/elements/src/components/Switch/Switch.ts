@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Switch.css";
 import { inputModality } from "../../utils/changeDetails";
 
@@ -15,10 +15,18 @@ import { inputModality } from "../../utils/changeDetails";
  * the switch flips, with `detail: { checked, reason }` (`reason` is
  * `"press"` or `"keyboard"`); it's cancelable, and `preventDefault()`
  * leaves the switch as it was.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<button role="switch">`. With no text content,
+ * give the switch a name this way (`aria-label="Bill yearly"`).
  */
 export class KernelSwitch extends KernelElement {
   static get observedAttributes() {
-    return ["checked", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "checked", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   connectedCallback() {

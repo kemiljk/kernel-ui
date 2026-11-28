@@ -35,6 +35,18 @@ function kebab(key: string): string {
   return key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
 
+/**
+ * ARIA attributes an element hands from its host to the native control
+ * it wraps (see `KernelElement.ariaTarget()`). `title` isn't one: it's
+ * also a tooltip, and several elements read it as their heading text.
+ */
+export const FORWARDED_ARIA_ATTRIBUTES = ["aria-label", "aria-labelledby", "aria-describedby"] as const;
+export type ForwardedAriaAttribute = (typeof FORWARDED_ARIA_ATTRIBUTES)[number];
+
+function isForwardedAria(name: string): name is ForwardedAriaAttribute {
+  return (FORWARDED_ARIA_ATTRIBUTES as readonly string[]).includes(name);
+}
+
 export class KernelElement extends HTMLElement {
   /** The real native element this custom element renders through.
    * Built once in connectedCallback and reused across reconnects. */
@@ -165,6 +177,7 @@ export class KernelElement extends HTMLElement {
   attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
     if (!this.native) return; // not connected yet — syncAllAttrs() will catch up
     if (name.startsWith("label-")) this.applyLabels();
+    else if (isForwardedAria(name)) this.forwardAria(name, newValue);
     else this.syncAttr(name, newValue);
   }
 
@@ -172,9 +185,57 @@ export class KernelElement extends HTMLElement {
   protected syncAllAttrs() {
     const ctor = this.constructor as typeof KernelElement;
     for (const name of ctor.observedAttributes) {
-      if (!name.startsWith("label-")) this.syncAttr(name, this.getAttribute(name));
+      if (name.startsWith("label-")) continue;
+      if (isForwardedAria(name)) this.forwardAria(name, this.getAttribute(name));
+      else this.syncAttr(name, this.getAttribute(name));
     }
     this.applyLabels();
+  }
+
+  /**
+   * The native element that should carry the host's `aria-label`,
+   * `aria-labelledby` and `aria-describedby`: the real `<button>`,
+   * `<input>`, `<select>` or `<progress>` that assistive tech lands on.
+   * Left on the host, the attributes name nothing: the host is a generic
+   * wrapper, not the control. Elements that wrap a control override this
+   * and add `...FORWARDED_ARIA_ATTRIBUTES` to their `observedAttributes`;
+   * the default `null` leaves the attributes where they are. The host
+   * keeps its copy either way, so reading the attribute back still works.
+   */
+  protected ariaTarget(): Element | null {
+    return null;
+  }
+
+  /** Copies one forwarded ARIA attribute onto `ariaTarget()`.
+   * `aria-describedby` goes through `syncDescribedBy()` instead, since
+   * many controls already point it at their own hint or error text. */
+  protected forwardAria(name: ForwardedAriaAttribute, value: string | null) {
+    if (name === "aria-describedby") {
+      this.syncDescribedBy();
+      return;
+    }
+    const target = this.ariaTarget();
+    if (!target) return;
+    if (value === null) target.removeAttribute(name);
+    else target.setAttribute(name, value);
+  }
+
+  /** Re-applies the control's `aria-describedby`. Elements that describe
+   * their control with their own hint or error text override this to
+   * re-run that update, which goes through `setDescribedBy()`. */
+  protected syncDescribedBy() {
+    const target = this.ariaTarget();
+    if (target) this.setDescribedBy(target, []);
+  }
+
+  /** Sets `target`'s `aria-describedby` to the element's own ids followed
+   * by the ids the author put on the host, or removes it when there are
+   * none. */
+  protected setDescribedBy(target: Element, ownIds: readonly (string | null | undefined | false)[]) {
+    const authored = this.getAttribute("aria-describedby")?.split(/\s+/) ?? [];
+    const ids = [...new Set([...ownIds, ...authored].filter((id): id is string => Boolean(id)))];
+    if (ids.length) target.setAttribute("aria-describedby", ids.join(" "));
+    else target.removeAttribute("aria-describedby");
   }
 
   /** Default: mirror the attribute onto `native` as `data-{name}`,

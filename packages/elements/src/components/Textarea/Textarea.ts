@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Textarea.css";
 
 let textareaCounter = 0;
@@ -16,12 +16,17 @@ let textareaCounter = 0;
  * description, and error text flush left instead of the default inset
  * that lines them up with the textarea's own text padding), `invalid`,
  * `required`, `disabled`, `placeholder`, `value`, `name`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<textarea>`; an authored `aria-describedby` is
+ * added after its own hint and error ids.
  */
 export class KernelTextarea extends KernelElement {
   private readonly generatedId = `kernel-textarea-${++textareaCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -34,6 +39,14 @@ export class KernelTextarea extends KernelElement {
       "value",
       "name",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.textarea;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -97,8 +110,7 @@ export class KernelTextarea extends KernelElement {
       // The error replaces the description while it shows: reference one, never a missing id.
       !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) textarea.setAttribute("aria-describedby", ids.join(" "));
-    else textarea.removeAttribute("aria-describedby");
+    this.setDescribedBy(textarea, ids);
     this.renderHint();
   }
 

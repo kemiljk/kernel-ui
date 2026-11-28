@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Select.css";
 import { inputModality } from "../../utils/changeDetails";
 
@@ -30,12 +30,17 @@ let selectCounter = 0;
  * platform picker that's a separate OS menu may swallow those keys, so
  * it's best-effort there). `preventDefault()` restores the previous option
  * and stops the native `change` at this element.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<select>`; an authored `aria-describedby` is
+ * added after its own hint and error ids.
  */
 export class KernelSelect extends KernelElement {
   private readonly generatedId = `kernel-select-${++selectCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -47,6 +52,14 @@ export class KernelSelect extends KernelElement {
       "value",
       "name",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.select;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -134,8 +147,7 @@ export class KernelSelect extends KernelElement {
       // The error replaces the description while it shows: reference one, never a missing id.
       !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) select.setAttribute("aria-describedby", ids.join(" "));
-    else select.removeAttribute("aria-describedby");
+    this.setDescribedBy(select, ids);
     this.renderHint();
   }
 

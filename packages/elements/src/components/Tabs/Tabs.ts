@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import { syncScrollEdges } from "../../utils/scrollEdges";
 import "./Tabs.css";
 import { inputModality } from "../../utils/changeDetails";
@@ -114,7 +114,10 @@ export class KernelTabs extends KernelElement {
 /** `<kernel-tabs-list>` — `role="tablist"`. Attributes: `aria-label`
  * (required), `shape` (`default` follows the theme's control radius,
  * `pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`
- * children and the animated sliding indicator. */
+ * children and the animated sliding indicator.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the `role="tablist"`. */
 export class KernelTabsList extends KernelElement {
   private resizeObserver: ResizeObserver | null = null;
   private readonly onScroll = () => {
@@ -176,18 +179,16 @@ export class KernelTabsList extends KernelElement {
   }
 
   static get observedAttributes() {
-    return ["aria-label", "shape"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "shape"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
-    if (name === "shape") {
-      this.native.dataset.shape = value === "pill" ? "pill" : "default";
-      return;
-    }
-    if (name !== "aria-label") return;
-    if (value === null) this.native.removeAttribute("aria-label");
-    else this.native.setAttribute("aria-label", value);
+    if (name === "shape") this.native.dataset.shape = value === "pill" ? "pill" : "default";
   }
 
   private handleKeyDown(event: KeyboardEvent) {
@@ -262,10 +263,15 @@ export class KernelTabsList extends KernelElement {
 }
 
 /** `<kernel-tab>` — a real `<button role="tab">`. Attributes: `value`
- * (required), `disabled`. */
+ * (required), `disabled`; `aria-label`, `aria-labelledby` and
+ * `aria-describedby` are forwarded to the button. */
 export class KernelTab extends KernelElement {
   static get observedAttributes() {
-    return ["value", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "value", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected createNative(): HTMLElement {

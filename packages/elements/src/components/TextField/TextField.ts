@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./TextField.css";
 
 let textFieldCounter = 0;
@@ -19,12 +19,17 @@ let textFieldCounter = 0;
  * that lines them up with the input's own text padding), `invalid`,
  * `required`, `disabled`, `size` (sm/md/lg, default md), `type` (default
  * text), `placeholder`, `value`, `name`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input>`; an authored `aria-describedby` is
+ * added after the field's own hint and error ids.
  */
 export class KernelTextField extends KernelElement {
   private readonly generatedId = `kernel-text-field-${++textFieldCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -39,6 +44,14 @@ export class KernelTextField extends KernelElement {
       "value",
       "name",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -103,8 +116,7 @@ export class KernelTextField extends KernelElement {
       // The error replaces the description while it shows: reference one, never a missing id.
       !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 

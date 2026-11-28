@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./RadioGroup.css";
 import { inputModality } from "../../utils/changeDetails";
 
@@ -25,12 +25,19 @@ let radioGroupCounter = 0;
  * `detail: { value, reason }` (`reason` is `"press"` or `"keyboard"`).
  * `preventDefault()` on it re-checks the previous option and stops the
  * native `change` at the group.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the `<fieldset>`.
  */
 export class KernelRadioGroup extends KernelElement {
   private readonly generatedName = `kernel-radio-group-${++radioGroupCounter}`;
 
   static get observedAttributes() {
-    return ["label", "disabled", "value"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "label", "disabled", "value"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   get resolvedName(): string {
@@ -92,11 +99,17 @@ export class KernelRadioGroup extends KernelElement {
 
 /**
  * `<kernel-radio-group-item>` — one option inside a `<kernel-radio-group>`.
- * Attributes: `value` (required), `disabled`.
+ * Attributes: `value` (required), `disabled`. Text content is the
+ * radio's label; `aria-label`, `aria-labelledby` and `aria-describedby`
+ * on the host are forwarded to the real `<input type="radio">`.
  */
 export class KernelRadioGroupItem extends KernelElement {
   static get observedAttributes() {
-    return ["value", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "value", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.input;
   }
 
   connectedCallback() {

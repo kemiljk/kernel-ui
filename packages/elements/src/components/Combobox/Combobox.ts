@@ -1,4 +1,4 @@
-import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, dataAttr, kernelClass } from "../../base";
 import { inputModality } from "../../utils/changeDetails";
 import { fuzzyScore, fuzzySegments } from "../../utils/fuzzy";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
@@ -48,6 +48,9 @@ interface ComboboxGroup {
  * within each group, matched characters wrapped in `<mark>`. Set the
  * `filter` property to `(text, query) => number` to replace it (a score
  * above 0 keeps an option, higher first).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input role="combobox">`.
  */
 export class KernelCombobox extends KernelElement {
   private readonly baseId = `kernel-combobox-${++comboboxCounter}`;
@@ -71,7 +74,11 @@ export class KernelCombobox extends KernelElement {
   };
 
   static get observedAttributes() {
-    return ["label", "hide-label", "no-label-offset", "placeholder", "value"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "label", "hide-label", "no-label-offset", "placeholder", "value"];
+  }
+
+  protected ariaTarget() {
+    return this.inputEl ?? null;
   }
 
   connectedCallback() {

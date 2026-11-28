@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Checkbox.css";
 import { inputModality } from "../../utils/changeDetails";
 
@@ -20,10 +20,17 @@ import { inputModality } from "../../utils/changeDetails";
  * `preventDefault()` on it puts the box back and stops the native `change`
  * at this element (a listener on the inner `<input>` itself has already
  * seen it).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="checkbox">`.
  */
 export class KernelCheckbox extends KernelElement {
   static get observedAttributes() {
-    return ["checked", "disabled", "required", "name", "value"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "checked", "disabled", "required", "name", "value"];
+  }
+
+  protected ariaTarget() {
+    return this.input;
   }
 
   protected createNative(): HTMLElement {
