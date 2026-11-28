@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import AgentActivityDemo from "../../components/demos/AgentActivityDemo";
 import AgentActivityPlayground from "../../components/demos/AgentActivityPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Agent Activity" withSidebar>
@@ -26,17 +27,7 @@ import AgentActivityPlayground from "../../components/demos/AgentActivityPlaygro
     <AgentActivityPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Agent Activity Item.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>label</code></td><td>ReactNode</td><td>required</td></tr>
-        <tr><td><code>kind</code></td><td>"reasoning" | "search" | "tool" | "trace"</td><td>"trace"</td></tr>
-        <tr><td><code>status</code></td><td>"pending" | "running" | "complete" | "error"</td><td>"complete"</td></tr>
-        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>open</code> / <code>onOpenChange</code></td><td>boolean / (open) =&gt; void</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="agent-activity" />
     <p>
       <code>AgentActivity</code> itself takes only <code>label</code>, the
       stream's accessible name (default "Activity").

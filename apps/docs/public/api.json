@@ -256,6 +256,12 @@
               "name": "className",
               "type": "ClassNameValue<Record<string, never>>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<BreadcrumbsLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         },
@@ -291,8 +297,10 @@
       },
       "elements": {
         "kernel-breadcrumbs": {
-          "description": "`<kernel-breadcrumbs>` — a real `<nav aria-label=\"Breadcrumb\">`\nwrapping a real `<ol>`; it's an ordered trail, so list semantics are\ncorrect. Compose with `<kernel-breadcrumb-item>`.",
-          "attributes": [],
+          "description": "`<kernel-breadcrumbs>` — a real `<nav aria-label=\"Breadcrumb\">`\nwrapping a real `<ol>`; it's an ordered trail, so list semantics are\ncorrect. Compose with `<kernel-breadcrumb-item>`.\n\nBuilt-in string: `label-navigation` (the `<nav>`'s name, default\n\"Breadcrumb\"), or the `labels` property.",
+          "attributes": [
+            "label-navigation"
+          ],
           "events": []
         },
         "kernel-breadcrumb-item": {
@@ -494,17 +502,25 @@
             {
               "name": "children",
               "type": "ReactNode",
-              "optional": false
+              "optional": false,
+              "description": "The slides: each direct child is one slide (wrap each in `CarouselSlide`)."
             },
             {
               "name": "aria-label",
               "type": "string",
-              "optional": false
+              "optional": false,
+              "description": "Accessible name for the carousel region. Required: there's no visible heading to name it."
             },
             {
               "name": "className",
               "type": "ClassNameValue<Record<string, never>>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<CarouselLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         },
@@ -522,9 +538,12 @@
       },
       "elements": {
         "kernel-carousel": {
-          "description": "`<kernel-carousel>` — a real scroll container: `scroll-snap-type` +\nnative overflow scrolling do the actual carousel work (touch,\ntrackpad, momentum, arrow keys once focused), not a JS drag engine.\nThe only JS here is wiring Prev/Next/dots to `scrollIntoView` and an\n`IntersectionObserver` that watches which slide is actually visible.\n\nUnlike `@kernelui-lib/react`'s version (which supports slides mounting\nand unmounting dynamically via a register/unregister callback), this\nreads its `<kernel-carousel-slide>` children once at connect — the\ncommon case for a declarative-markup custom element. A future pass\ncould add a `MutationObserver` if dynamic slide lists turn out to be\nneeded.\n\nAttributes: `aria-label` (required).",
+          "description": "`<kernel-carousel>` — a real scroll container: `scroll-snap-type` +\nnative overflow scrolling do the actual carousel work (touch,\ntrackpad, momentum, arrow keys once focused), not a JS drag engine.\nThe only JS here is wiring Prev/Next/dots to `scrollIntoView` and an\n`IntersectionObserver` that watches which slide is actually visible.\n\nUnlike `@kernelui-lib/react`'s version (which supports slides mounting\nand unmounting dynamically via a register/unregister callback), this\nreads its `<kernel-carousel-slide>` children once at connect — the\ncommon case for a declarative-markup custom element. A future pass\ncould add a `MutationObserver` if dynamic slide lists turn out to be\nneeded.\n\nAttributes: `aria-label` (required). Built-in strings:\n`label-previous-slide` (\"Previous slide\"), `label-next-slide`\n(\"Next slide\"), `label-go-to-slide` (template, default\n`\"Go to slide {slide}\"`), or the `labels` property.",
           "attributes": [
-            "aria-label"
+            "aria-label",
+            "label-previous-slide",
+            "label-next-slide",
+            "label-go-to-slide"
           ],
           "events": []
         },
@@ -663,13 +682,19 @@
               "name": "className",
               "type": "ClassNameValue<CodeBlockState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<CodeBlockLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-code-block": {
-          "description": "`<kernel-code-block>` — a real `<pre><code>` in a `<figure>`, with optional\nline numbers, emphasised lines, copy, and stable streaming. See\n`@kernelui-lib/react`'s `<CodeBlock>` for why it highlights nothing itself\nand why line numbers are unselectable and `aria-hidden`.\n\nContent comes in three ways, in precedence order:\n\n  1. `el.lines = [{ tokens: [{ text, className?, color? }] }]` — a DOM\n     property, because structured data can't travel through an attribute\n     and shouldn't pretend to.\n  2. `el.code = \"...\"` — un-highlighted source.\n  3. Light-DOM `<pre><code>…</code></pre>` written into the tag, read once\n     at connect. That's the progressive-enhancement path: the code is real\n     page content before any script sets a property.\n\nAttributes: `language`, `label`, `show-line-numbers`, `highlight-lines`\n(comma-separated 1-based numbers), `streaming`, `no-copy`,\n`max-block-size`.",
+          "description": "`<kernel-code-block>` — a real `<pre><code>` in a `<figure>`, with optional\nline numbers, emphasised lines, copy, and stable streaming. See\n`@kernelui-lib/react`'s `<CodeBlock>` for why it highlights nothing itself\nand why line numbers are unselectable and `aria-hidden`.\n\nContent comes in three ways, in precedence order:\n\n  1. `el.lines = [{ tokens: [{ text, className?, color? }] }]` — a DOM\n     property, because structured data can't travel through an attribute\n     and shouldn't pretend to.\n  2. `el.code = \"...\"` — un-highlighted source.\n  3. Light-DOM `<pre><code>…</code></pre>` written into the tag, read once\n     at connect. That's the progressive-enhancement path: the code is real\n     page content before any script sets a property.\n\nAttributes: `language`, `label`, `show-line-numbers`, `highlight-lines`\n(comma-separated 1-based numbers), `streaming`, `no-copy`,\n`max-block-size`, and built-in strings `label-copy` (\"Copy\"),\n`label-copied` (\"Copied\"), `label-copied-announcement` (\"Copied to\nclipboard\") — or the `labels` property.",
           "attributes": [
             "language",
             "label",
@@ -677,7 +702,10 @@
             "highlight-lines",
             "streaming",
             "no-copy",
-            "max-block-size"
+            "max-block-size",
+            "label-copy",
+            "label-copied",
+            "label-copied-announcement"
           ],
           "events": []
         }
@@ -766,13 +794,19 @@
               "name": "wrapperClassName",
               "type": "ClassNameValue<ColorPickerState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ColorPickerLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-color-picker": {
-          "description": "`<kernel-color-picker>` — a real `<input type=\"color\">`, same\ninvisible-real-input-under-a-decorative-swatch approach as\n`@kernelui-lib/react`'s `<ColorPicker>` (see that file for the full\nrationale). A real `<label>` wraps both the swatch and the input, so\nclicking anywhere opens the OS picker natively.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (default\n`#000000`), `no-hex-input` (boolean — hides the editable hex field;\npresent by default the hex field shows, matching the React version's\n`showHexInput` defaulting to `true`), `size` (sm/md/lg, default md),\n`description`, `error-message`, `no-label-offset` (boolean — hard-\naligns the description and error text flush left instead of the\ndefault inset; doesn't affect `label`, which never carries the inset\nin the first place), `invalid`, `disabled`, `name`.",
+          "description": "`<kernel-color-picker>` — a real `<input type=\"color\">`, same\ninvisible-real-input-under-a-decorative-swatch approach as\n`@kernelui-lib/react`'s `<ColorPicker>` (see that file for the full\nrationale). A real `<label>` wraps both the swatch and the input, so\nclicking anywhere opens the OS picker natively.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (default\n`#000000`), `no-hex-input` (boolean — hides the editable hex field;\npresent by default the hex field shows, matching the React version's\n`showHexInput` defaulting to `true`), `size` (sm/md/lg, default md),\n`description`, `error-message`, `no-label-offset` (boolean — hard-\naligns the description and error text flush left instead of the\ndefault inset; doesn't affect `label`, which never carries the inset\nin the first place), `invalid`, `disabled`, `name`. Built-in string:\n`label-hex-value` (default \"Hex color value\"), or the `labels` property.",
           "attributes": [
             "label",
             "hide-label",
@@ -784,7 +818,8 @@
             "no-label-offset",
             "invalid",
             "disabled",
-            "name"
+            "name",
+            "label-hex-value"
           ],
           "events": []
         }
@@ -939,18 +974,20 @@
             {
               "name": "placeholder",
               "type": "string",
-              "optional": true
+              "optional": true,
+              "description": "Filter field placeholder, also its accessible name. Defaults to `\"Filter commands\"`."
             },
             {
               "name": "emptyMessage",
               "type": "ReactNode",
-              "optional": true
+              "optional": true,
+              "description": "Shown when nothing matches. Defaults to `\"No results\"`."
             },
             {
               "name": "blur",
               "type": "boolean",
               "optional": true,
-              "description": "Light frost on the `::backdrop` (`backdrop-filter: blur(8px)`)."
+              "description": "Light frost on the `::backdrop` (`backdrop-filter: blur(8px)`). Defaults to `false`."
             },
             {
               "name": "shouldFilter",
@@ -967,18 +1004,25 @@
               "name": "children",
               "type": "ReactNode",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<CommandPaletteLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-command-palette": {
-          "description": "`<kernel-command-palette>` — a real `<dialog>`, opened with\n`showModal()`, same reasoning as `<kernel-dialog>`: native top-layer\nstacking, a native focus trap, native Escape-to-close. The filter\ninput follows the same WAI-ARIA combobox pattern as\n`<kernel-combobox>`: a `role=\"listbox\"` of `role=\"option\"` items, an\n`aria-activedescendant` pointing at whichever is highlighted, focus\nstaying on the input throughout.\n\nOpening and closing are immediate because this keyboard-driven surface\nshould respond in the same frame as its shortcut.\n\nItems carry an `onSelect` callback, which isn't expressible as an\nHTML attribute — set them via the `items` property (not attribute):\n`paletteEl.items = [{ id, label, description?, onSelect }]`.\n\nAttributes: `open` (toggle to show/hide), `placeholder` (default\n\"Filter commands\"), `empty-message` (default \"No results\"), `blur`\n(boolean — light frost on the `::backdrop`).",
+          "description": "`<kernel-command-palette>` — a real `<dialog>`, opened with\n`showModal()`, same reasoning as `<kernel-dialog>`: native top-layer\nstacking, a native focus trap, native Escape-to-close. The filter\ninput follows the same WAI-ARIA combobox pattern as\n`<kernel-combobox>`: a `role=\"listbox\"` of `role=\"option\"` items, an\n`aria-activedescendant` pointing at whichever is highlighted, focus\nstaying on the input throughout.\n\nOpening and closing are immediate because this keyboard-driven surface\nshould respond in the same frame as its shortcut.\n\nItems carry an `onSelect` callback, which isn't expressible as an\nHTML attribute — set them via the `items` property (not attribute):\n`paletteEl.items = [{ id, label, description?, onSelect }]`.\n\nAttributes: `open` (toggle to show/hide), `placeholder` (default\n\"Filter commands\"), `empty-message` (default \"No results\"), `blur`\n(boolean — light frost on the `::backdrop`), and the built-in string\n`label-dialog` (default \"Command palette\") — or the `labels` property.",
           "attributes": [
             "open",
             "placeholder",
             "empty-message",
-            "blur"
+            "blur",
+            "label-dialog"
           ],
           "events": []
         }
@@ -1056,19 +1100,26 @@
               "name": "className",
               "type": "ClassNameValue<ComposerState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ComposerLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-composer": {
-          "description": "`<kernel-composer>` — a chat message input: a real `<textarea>`\ngrowing with `field-sizing: content` (same mechanism as\n`<kernel-textarea>`), plus leading/trailing action rows for\nattachments, model pickers, a send button, etc.\n\nAttributes: `value`, `placeholder`, `disabled`, `thinking` (shows the\nanimated border sweep and blocks submission — the same \"actively\nworking\" language most AI products use), `submit-on`\n(`mod+enter` default | `enter`).\n\nLight-DOM children tagged `slot=\"leading\"` / `slot=\"trailing\"` (no\nreal shadow DOM here, so this is a plain attribute convention, not\nthe native `<slot>` mechanism) are moved into the matching action\nrow once, at connect.\n\nEvents: native `input` bubbles from the textarea as usual. A\n`submit` `CustomEvent` (`event.detail.value`) fires when Enter (per\n`submit-on`) is pressed with a non-empty, non-disabled, non-thinking\nvalue — the textarea is cleared automatically afterward. A trailing\nsend button can trigger the same path by calling the element's own\npublic `submit()` method from its click handler.",
+          "description": "`<kernel-composer>` — a chat message input: a real `<textarea>`\ngrowing with `field-sizing: content` (same mechanism as\n`<kernel-textarea>`), plus leading/trailing action rows for\nattachments, model pickers, a send button, etc.\n\nAttributes: `value`, `placeholder`, `disabled`, `thinking` (shows the\nanimated border sweep and blocks submission — the same \"actively\nworking\" language most AI products use), `submit-on`\n(`mod+enter` default | `enter`), and the built-in string\n`label-message` (the textarea's accessible name when there's no\n`placeholder`, default \"Message\") — or the `labels` property.\n\nLight-DOM children tagged `slot=\"leading\"` / `slot=\"trailing\"` (no\nreal shadow DOM here, so this is a plain attribute convention, not\nthe native `<slot>` mechanism) are moved into the matching action\nrow once, at connect.\n\nEvents: native `input` bubbles from the textarea as usual. A\n`submit` `CustomEvent` (`event.detail.value`) fires when Enter (per\n`submit-on`) is pressed with a non-empty, non-disabled, non-thinking\nvalue — the textarea is cleared automatically afterward. A trailing\nsend button can trigger the same path by calling the element's own\npublic `submit()` method from its click handler.",
           "attributes": [
             "value",
             "placeholder",
             "disabled",
             "thinking",
-            "id"
+            "id",
+            "label-message"
           ],
           "events": [
             "submit"
@@ -1092,7 +1143,8 @@
             {
               "name": "children",
               "type": "ReactNode",
-              "optional": false
+              "optional": false,
+              "description": "The menu's content: `MenuItem`s and `MenuSeparator`s."
             }
           ]
         }
@@ -1150,18 +1202,30 @@
               "name": "caption",
               "type": "ReactNode",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<DataTableLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-data-table": {
-          "description": "`<kernel-data-table>` — `<kernel-table>` + a filter input +\n`<kernel-pagination>`, composed together (reusing their exact CSS\nclasses directly rather than nesting the custom elements themselves,\nsince this rebuilds its content on every filter/sort/page change and\nplain DOM sidesteps any custom-element upgrade-timing concerns for\ncontent that's this dynamic). Filter, sort, and page state live\ninside the component.\n\nColumns and data carry render callbacks, which aren't expressible as\nHTML attributes — set them via properties:\n`tableEl.columns = [...]`, `tableEl.data = [...]`,\n`tableEl.rowKey = (row) => row.id`.\n\nAttributes: `filter-label` (the field's visible label, falling back to\n`filter-placeholder`), `filter-placeholder` (default \"Filter\"),\n`page-size` (default 10), `caption`.",
+          "description": "`<kernel-data-table>` — `<kernel-table>` + a filter input +\n`<kernel-pagination>`, composed together (reusing their exact CSS\nclasses directly rather than nesting the custom elements themselves,\nsince this rebuilds its content on every filter/sort/page change and\nplain DOM sidesteps any custom-element upgrade-timing concerns for\ncontent that's this dynamic). Filter, sort, and page state live\ninside the component.\n\nColumns and data carry render callbacks, which aren't expressible as\nHTML attributes — set them via properties:\n`tableEl.columns = [...]`, `tableEl.data = [...]`,\n`tableEl.rowKey = (row) => row.id`.\n\nAttributes: `filter-label` (the field's visible label, falling back to\n`filter-placeholder`), `filter-placeholder` (default \"Filter\"),\n`page-size` (default 10), `caption`. Built-in strings (React's\n`DataTableLabels`): `label-results` (template applied to every count,\ne.g. `\"{count} rows\"`; the default is \"1 result\" / \"{count} results\" —\nset `labels.results` to a function for real plural rules),\n`label-navigation`, `label-previous-page`, `label-next-page`,\n`label-previous`, `label-next` — or the `labels` property.",
           "attributes": [
             "filter-label",
             "filter-placeholder",
             "page-size",
-            "caption"
+            "caption",
+            "label-results",
+            "label-navigation",
+            "label-previous-page",
+            "label-next-page",
+            "label-previous",
+            "label-next"
           ],
           "events": []
         }
@@ -1198,17 +1262,26 @@
               "name": "maxDate",
               "type": "Date",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<DatePickerLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-date-picker": {
-          "description": "`<kernel-date-picker>` — the real WAI-ARIA \"grid\" pattern applied to\nan actual `<table>`: rows are weeks, columns are days of the week.\nDays outside the displayed month render as dimmed, non-interactive\ntext, not disabled buttons — they're a different month's day shown\nfor layout, not \"this month's grid, minus some options\".\n\nKeyboard support moves focus within the days currently rendered in\nthe grid (arrow keys clamp at the grid's edges rather than\nauto-paging to the adjacent month); crossing a month boundary\nrequires the Previous/Next month buttons.\n\nAttributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.\nEvents: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string).",
+          "description": "`<kernel-date-picker>` — the real WAI-ARIA \"grid\" pattern applied to\nan actual `<table>`: rows are weeks, columns are days of the week.\nDays outside the displayed month render as dimmed, non-interactive\ntext, not disabled buttons — they're a different month's day shown\nfor layout, not \"this month's grid, minus some options\".\n\nKeyboard support moves focus within the days currently rendered in\nthe grid (arrow keys clamp at the grid's edges rather than\nauto-paging to the adjacent month); crossing a month boundary\nrequires the Previous/Next month buttons.\n\nBuilt-in strings: `label-previous-month` (\"Previous month\"),\n`label-next-month` (\"Next month\"), `label-weekdays` (comma-separated,\nSunday first; default \"Su,Mo,Tu,We,Th,Fr,Sa\"), or the `labels` property.\n\nAttributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.\nEvents: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string).",
           "attributes": [
             "value",
             "min-date",
-            "max-date"
+            "max-date",
+            "label-previous-month",
+            "label-next-month",
+            "label-weekdays"
           ],
           "events": [
             "valuechange"
@@ -1231,7 +1304,8 @@
             {
               "name": "defaultValue",
               "type": "DateRange",
-              "optional": true
+              "optional": true,
+              "description": "Defaults to `{}` (no range selected)."
             },
             {
               "name": "onValueChange",
@@ -1247,18 +1321,27 @@
               "name": "maxDate",
               "type": "Date",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<DateRangePickerLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-date-range-picker": {
-          "description": "`<kernel-date-range-picker>` — same table-grid markup and month\nnavigation as `<kernel-date-picker>`, but tracking two endpoints\ninstead of one. A click either starts a fresh range or completes the\nopen one; once both ends are set, the next click starts over. The\nin-progress second half of a range (before it's clicked) is a hover\npreview only — it never reaches the `valuechange` event.\n\nAttributes: `value-from`, `value-to`, `min-date`, `max-date` — all\n`YYYY-MM-DD`. Events: `valuechange`\n(`event.detail` = `{ from?, to? }`, each a `YYYY-MM-DD` string).",
+          "description": "`<kernel-date-range-picker>` — same table-grid markup and month\nnavigation as `<kernel-date-picker>`, but tracking two endpoints\ninstead of one. A click either starts a fresh range or completes the\nopen one; once both ends are set, the next click starts over. The\nin-progress second half of a range (before it's clicked) is a hover\npreview only — it never reaches the `valuechange` event.\n\nBuilt-in strings: `label-previous-month` (\"Previous month\"),\n`label-next-month` (\"Next month\"), `label-weekdays` (comma-separated,\nSunday first; default \"Su,Mo,Tu,We,Th,Fr,Sa\"), or the `labels` property.\n\nAttributes: `value-from`, `value-to`, `min-date`, `max-date` — all\n`YYYY-MM-DD`. Events: `valuechange`\n(`event.detail` = `{ from?, to? }`, each a `YYYY-MM-DD` string).",
           "attributes": [
             "value-from",
             "value-to",
             "min-date",
-            "max-date"
+            "max-date",
+            "label-previous-month",
+            "label-next-month",
+            "label-weekdays"
           ],
           "events": [
             "valuechange"
@@ -1342,20 +1425,27 @@
               "type": "DialogClassNames",
               "optional": true,
               "description": "Typed class hooks for every structural slot."
+            },
+            {
+              "name": "labels",
+              "type": "Partial<DialogLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-dialog": {
-          "description": "`<kernel-dialog>` — a real `<dialog>`, opened with `showModal()`.\nThat single call gets a native top-layer stacking context, a native\nfocus trap, native Escape-to-close, and a native `::backdrop`, none\nof it reimplemented here. Closing is delayed until exit transitions\nfinish so consumer animations can run; focus restores when the final\nnative `close()` fires.\n\nAttributes: `open` (toggle to show/hide — set it, don't call\n`showModal()` yourself), `title` (required — or use a child tagged\n`slot=\"title\"` for richer markup), `description`,\n`close-on-backdrop-click` (default true — set to `\"false\"` to\nrequire an explicit close), `show-close-button` (default true — set\nto `\"false\"` to omit), `backdrop` (default/blur/opaque/transparent),\n`side` (center/left/right/top/bottom, default center — a side turns\nthe dialog into an edge-anchored sheet that slides in by translate\ninstead of the default scale settle, for drawers like a mobile nav).\n\nPart classes (stable `data-slot` hooks too): dialog, header, title,\ndescription, content, close.\n\nEvents: a `close` event fires (bubbling, matching the native\n`<dialog>` event name) whenever the dialog finishes closing via any\npath — Escape, backdrop click, or the close button — with the `open`\nattribute already removed by the time it fires.",
+          "description": "`<kernel-dialog>` — a real `<dialog>`, opened with `showModal()`.\nThat single call gets a native top-layer stacking context, a native\nfocus trap, native Escape-to-close, and a native `::backdrop`, none\nof it reimplemented here. Closing is delayed until exit transitions\nfinish so consumer animations can run; focus restores when the final\nnative `close()` fires.\n\nAttributes: `open` (toggle to show/hide — set it, don't call\n`showModal()` yourself), `title` (required — or use a child tagged\n`slot=\"title\"` for richer markup), `description`,\n`close-on-backdrop-click` (default true — set to `\"false\"` to\nrequire an explicit close), `show-close-button` (default true — set\nto `\"false\"` to omit), `backdrop` (default/blur/opaque/transparent),\n`side` (center/left/right/top/bottom, default center — a side turns\nthe dialog into an edge-anchored sheet that slides in by translate\ninstead of the default scale settle, for drawers like a mobile nav).\n\nBuilt-in strings: `label-close` (default \"Close\"), or the `labels`\nproperty (`{ close }`) — see `DialogLabels` in `@kernelui-lib/react`.\n\nPart classes (stable `data-slot` hooks too): dialog, header, title,\ndescription, content, close.\n\nEvents: a `close` event fires (bubbling, matching the native\n`<dialog>` event name) whenever the dialog finishes closing via any\npath — Escape, backdrop click, or the close button — with the `open`\nattribute already removed by the time it fires.",
           "attributes": [
             "open",
             "title",
             "description",
             "backdrop",
             "show-close-button",
-            "side"
+            "side",
+            "label-close"
           ],
           "events": []
         }
@@ -1377,7 +1467,8 @@
             {
               "name": "render",
               "type": "RenderProp<{ open: boolean }>",
-              "optional": false
+              "optional": false,
+              "description": "The trigger."
             },
             {
               "name": "children",
@@ -1387,19 +1478,20 @@
             {
               "name": "placement",
               "type": "FloatingPlacement",
-              "optional": true
+              "optional": true,
+              "description": "Which side of the trigger the menu opens on. Defaults to `\"bottom\"`."
             },
             {
               "name": "align",
               "type": "FloatingAlign",
               "optional": true,
-              "description": "Cross-axis alignment relative to the trigger."
+              "description": "Cross-axis alignment relative to the trigger. Defaults to `\"center\"`."
             },
             {
               "name": "offset",
               "type": "number",
               "optional": true,
-              "description": "Gap between the trigger and the menu, in pixels."
+              "description": "Gap between the trigger and the menu, in pixels. Defaults to `8`."
             },
             {
               "name": "className",
@@ -1422,7 +1514,8 @@
             {
               "name": "render",
               "type": "RenderProp<{ open: boolean }>",
-              "optional": false
+              "optional": false,
+              "description": "The trigger, same shape as `DropdownMenu`'s."
             },
             {
               "name": "children",
@@ -1566,36 +1659,50 @@
             {
               "name": "defaultOpen",
               "type": "boolean",
-              "optional": true
+              "optional": true,
+              "description": "Defaults to `true`."
             },
             {
               "name": "additions",
               "type": "number",
               "optional": true,
-              "description": "Explicit counts, when `rows` is a window onto a larger diff."
+              "description": "Explicit counts, when `rows` is a window onto a larger diff. Derived from `rows` when omitted."
             },
             {
               "name": "deletions",
               "type": "number",
-              "optional": true
+              "optional": true,
+              "description": "Same as `additions`: derived from `rows` when omitted."
             },
             {
               "name": "className",
               "type": "ClassNameValue<FileDiffState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<FileDiffLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-file-diff": {
-          "description": "`<kernel-file-diff>` — a file's changes as a real `<table>` inside a\n`<details>`. A diff *is* tabular data (old line, new line, marker, content);\nsee `@kernelui-lib/react`'s `<FileDiff>` for that reasoning, for why the\n`+`/`−` marker stays in the DOM as text, and for why the streaming edge\ndrives the disclosure.\n\nRows arrive through a DOM property, since a diff can't travel through an\nattribute:\n\n  el.rows = [{ kind: \"add\", newLine: 12, content: \"…\" }, …]\n\nAttributes: `path`, `streaming`, `no-line-numbers`, `collapse-on-complete`,\n`additions` / `deletions` (override the derived counts), `default-open=\"false\"`.",
+          "description": "`<kernel-file-diff>` — a file's changes as a real `<table>` inside a\n`<details>`. A diff *is* tabular data (old line, new line, marker, content);\nsee `@kernelui-lib/react`'s `<FileDiff>` for that reasoning, for why the\n`+`/`−` marker stays in the DOM as text, and for why the streaming edge\ndrives the disclosure.\n\nRows arrive through a DOM property, since a diff can't travel through an\nattribute:\n\n  el.rows = [{ kind: \"add\", newLine: 12, content: \"…\" }, …]\n\nAttributes: `path`, `streaming`, `no-line-numbers`, `collapse-on-complete`,\n`additions` / `deletions` (override the derived counts), `default-open=\"false\"`.\nBuilt-in (screen-reader) strings: `label-old-line`, `label-new-line`,\n`label-change`, `label-content`, `label-unnamed-file` (\"the file\"),\n`label-caption` (template, default\n`\"Changes to {path}: {additions} added, {deletions} removed\"`), or the\n`labels` property.",
           "attributes": [
             "path",
             "streaming",
             "no-line-numbers",
             "additions",
-            "deletions"
+            "deletions",
+            "label-old-line",
+            "label-new-line",
+            "label-change",
+            "label-content",
+            "label-unnamed-file",
+            "label-caption"
           ],
           "events": []
         }
@@ -1718,13 +1825,19 @@
               "name": "wrapperClassName",
               "type": "ClassNameValue<FileUploadState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<FileUploadLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-file-upload": {
-          "description": "`<kernel-file-upload>` — a real `<input type=\"file\">` wrapped entirely\ninside a real `<label>` that IS the drop zone, same approach as\n`@kernelui-lib/react`'s `<FileUpload>` (see that file for the full\nrationale). No `files` attribute: a `FileList` can't serialize into a\nstring, and the real input's own `.files` is already the correct\nsource of truth, so this element reads it directly after every\n`change`/drop and re-renders its own file-list DOM from it. Validation\nrejections dispatch a `kernel-file-upload-error` `CustomEvent` (there's\nno prop-callback equivalent for a vanilla element) — including\n`type: \"directory\"` for a dropped folder, which the platform hands over\nas an unreadable 0-byte `File` rather than refusing outright.\n\nAttributes: `label` (required, still contributes to the dropzone's\naccessible name even when `hide-label` is set), `hide-label`\n(boolean — hides the label heading only, the hint text underneath\nstill shows), `description` (replaces the default \"Drag and drop, or\nclick to browse\" hint), `accept`, `multiple` (boolean), `max-files`,\n`max-size` (bytes), `preview` (boolean — moulds the dropzone around\nthe current selection with image object-URL thumbnails / file chips;\noff by default), `aspect-ratio=\"square\"` (locks a 1:1 Card-radius\ntile; omit or `\"auto\"` for the default full-width field),\n`error-message`, `no-label-offset` (boolean —\nhard-aligns the error text flush left instead of the default inset;\ndoesn't affect `label` or the hint text, which sit above the dropzone\nas a heading rather than inset text-field content), `invalid`,\n`disabled`, `name`.\n\nWhile a drag is over the dropzone, page scroll is locked (`documentElement`\n`overflow`/`touch-action`) so mobile browsers don't scroll/rubber-band the\npage out from under the gesture. Touch-originated drags don't reliably\nfire a matching `dragleave`/`drop` (backgrounded tab, OS-aborted gesture,\ndropped outside the window), so a watchdog timer re-armed on every\n`dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and\n`visibilitychange` listeners — force-clears the drag-active state if the\ndrag goes silent, so the dropzone can't get stuck lit with scroll locked.",
+          "description": "`<kernel-file-upload>` — a real `<input type=\"file\">` wrapped entirely\ninside a real `<label>` that IS the drop zone, same approach as\n`@kernelui-lib/react`'s `<FileUpload>` (see that file for the full\nrationale). No `files` attribute: a `FileList` can't serialize into a\nstring, and the real input's own `.files` is already the correct\nsource of truth, so this element reads it directly after every\n`change`/drop and re-renders its own file-list DOM from it. Validation\nrejections dispatch a `kernel-file-upload-error` `CustomEvent` (there's\nno prop-callback equivalent for a vanilla element) — including\n`type: \"directory\"` for a dropped folder, which the platform hands over\nas an unreadable 0-byte `File` rather than refusing outright.\n\nAttributes: `label` (required, still contributes to the dropzone's\naccessible name even when `hide-label` is set), `hide-label`\n(boolean — hides the label heading only, the hint text underneath\nstill shows), `description` (replaces the default \"Drag and drop, or\nclick to browse\" hint), `accept`, `multiple` (boolean), `max-files`,\n`max-size` (bytes), `preview` (boolean — moulds the dropzone around\nthe current selection with image object-URL thumbnails / file chips;\noff by default), `aspect-ratio=\"square\"` (locks a 1:1 Card-radius\ntile; omit or `\"auto\"` for the default full-width field),\n`error-message`, `no-label-offset` (boolean —\nhard-aligns the error text flush left instead of the default inset;\ndoesn't affect `label` or the hint text, which sit above the dropzone\nas a heading rather than inset text-field content), `invalid`,\n`disabled`, `name`. Built-in strings: `label-selected-files` (default\n\"Selected files\"), `label-remove-file` (template, default\n`\"Remove {fileName}\"`), or the `labels` property.\n\nWhile a drag is over the dropzone, page scroll is locked (`documentElement`\n`overflow`/`touch-action`) so mobile browsers don't scroll/rubber-band the\npage out from under the gesture. Touch-originated drags don't reliably\nfire a matching `dragleave`/`drop` (backgrounded tab, OS-aborted gesture,\ndropped outside the window), so a watchdog timer re-armed on every\n`dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and\n`visibilitychange` listeners — force-clears the drag-active state if the\ndrag goes silent, so the dropzone can't get stuck lit with scroll locked.",
           "attributes": [
             "label",
             "hide-label",
@@ -1739,7 +1852,9 @@
             "no-label-offset",
             "invalid",
             "disabled",
-            "name"
+            "name",
+            "label-selected-files",
+            "label-remove-file"
           ],
           "events": [
             "kernel-file-upload-error"
@@ -1931,18 +2046,25 @@
               "name": "className",
               "type": "ClassNameValue<Record<string, never>>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<InputOTPLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-input-otp": {
-          "description": "`<kernel-input-otp>` — a row of real `<input>` elements sharing one\nlogical value: the concatenated code string. Unlike RadioGroup's\narrow-key roving, focus here advances automatically as each digit is\ntyped, mirroring how native OTP autofill and every OTP UI users\nalready know behaves. Mirrors `@kernelui-lib/react`'s `<InputOTP>`.\n\nAttributes: `length` (default 6), `value`, `label`, `disabled`.\nDispatches a real, bubbling `change` event on every edit, and a\n`complete` CustomEvent (`event.detail.value`) once when the code\nfirst reaches `length` characters — not on every subsequent event\nwhere it's still complete, same as the React version's `onComplete`.",
+          "description": "`<kernel-input-otp>` — a row of real `<input>` elements sharing one\nlogical value: the concatenated code string. Unlike RadioGroup's\narrow-key roving, focus here advances automatically as each digit is\ntyped, mirroring how native OTP autofill and every OTP UI users\nalready know behaves. Mirrors `@kernelui-lib/react`'s `<InputOTP>`.\n\nAttributes: `length` (default 6), `value`, `label`, `disabled`, and\nthe built-in string `label-digit` (template, default\n`\"Digit {digit} of {length}\"`) — or the `labels` property.\nDispatches a real, bubbling `change` event on every edit, and a\n`complete` CustomEvent (`event.detail.value`) once when the code\nfirst reaches `length` characters — not on every subsequent event\nwhere it's still complete, same as the React version's `onComplete`.",
           "attributes": [
             "length",
             "value",
             "label",
-            "disabled"
+            "disabled",
+            "label-digit"
           ],
           "events": [
             "complete"
@@ -2071,6 +2193,12 @@
               "name": "bodyClassName",
               "type": "ClassNameValue<MessageState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<MessageLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         },
@@ -2134,14 +2262,15 @@
           "events": []
         },
         "kernel-message": {
-          "description": "`<kernel-message>` — one row of a conversation: a real `<li>` wrapping an\n`<article>`, matching `@kernelui-lib/react`'s `<Message>` (read its JSDoc\nfor why `<article>`, and why the avatar is `aria-hidden`).\n\nThe host is `display: contents` so its `<li>` is a direct child of the\nparent `<ol>` — custom elements can't *be* `<li>`, and a wrapper element\nbetween them would break the list's content model and its announced item\ncount. Same trick as `<kernel-suggestion-item>`.\n\nAttributes: `author` (\"user\" | \"assistant\" | \"system\", default\n\"assistant\"), `name`, `metadata`, `grouped`, `live`, `no-animate` to\nsuppress the one-shot enter animation.\n\nAn avatar is a child marked `data-slot=\"avatar\"`; everything else becomes\nthe message body.",
+          "description": "`<kernel-message>` — one row of a conversation: a real `<li>` wrapping an\n`<article>`, matching `@kernelui-lib/react`'s `<Message>` (read its JSDoc\nfor why `<article>`, and why the avatar is `aria-hidden`).\n\nThe host is `display: contents` so its `<li>` is a direct child of the\nparent `<ol>` — custom elements can't *be* `<li>`, and a wrapper element\nbetween them would break the list's content model and its announced item\ncount. Same trick as `<kernel-suggestion-item>`.\n\nAttributes: `author` (\"user\" | \"assistant\" | \"system\", default\n\"assistant\"), `name`, `metadata`, `grouped`, `live`, `no-animate` to\nsuppress the one-shot enter animation, and the built-in string\n`label-writing` (\"Writing\", the live mark) — or the `labels` property.\n\nAn avatar is a child marked `data-slot=\"avatar\"`; everything else becomes\nthe message body.",
           "attributes": [
             "author",
             "name",
             "metadata",
             "grouped",
             "live",
-            "no-animate"
+            "no-animate",
+            "label-writing"
           ],
           "events": []
         },
@@ -2187,7 +2316,7 @@
               "name": "threshold",
               "type": "number",
               "optional": true,
-              "description": "Pixels from the bottom that still count as pinned."
+              "description": "Pixels from the bottom that still count as pinned. Defaults to `24`."
             },
             {
               "name": "onPinnedChange",
@@ -2514,13 +2643,19 @@
               "name": "wrapperClassName",
               "type": "ClassNameValue<NumberFieldState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<NumberFieldLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-number-field": {
-          "description": "`<kernel-number-field>` — `<kernel-text-field>`'s exact label/\ndescription/error scaffold around a real `<input type=\"number\">`.\nThe up/down buttons call the input's own native `stepUp()`/\n`stepDown()` rather than reimplementing increment logic; since those\nmethods change `.value` without dispatching an event, this reads it\nback and fires `change` by hand afterward. See\n`@kernelui-lib/react`'s `NumberField.tsx` for the full rationale\n(native spinner arrows hidden in CSS, buttons excluded from the tab\norder since focused ArrowUp/ArrowDown already does the same thing\nnatively).\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value`, `min`, `max`,\n`step` (default 1), `size` (sm/md/lg, default md), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the input's own text padding), `invalid`,\n`disabled`, `required`, `name`.",
+          "description": "`<kernel-number-field>` — `<kernel-text-field>`'s exact label/\ndescription/error scaffold around a real `<input type=\"number\">`.\nThe up/down buttons call the input's own native `stepUp()`/\n`stepDown()` rather than reimplementing increment logic; since those\nmethods change `.value` without dispatching an event, this reads it\nback and fires `change` by hand afterward. See\n`@kernelui-lib/react`'s `NumberField.tsx` for the full rationale\n(native spinner arrows hidden in CSS, buttons excluded from the tab\norder since focused ArrowUp/ArrowDown already does the same thing\nnatively).\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value`, `min`, `max`,\n`step` (default 1), `size` (sm/md/lg, default md), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the input's own text padding), `invalid`,\n`disabled`, `required`, `name`. Built-in strings: `label-increment`\n(\"Increment\"), `label-decrement` (\"Decrement\"), or the `labels` property.",
           "attributes": [
             "label",
             "hide-label",
@@ -2535,7 +2670,9 @@
             "invalid",
             "disabled",
             "required",
-            "name"
+            "name",
+            "label-increment",
+            "label-decrement"
           ],
           "events": []
         }
@@ -2559,6 +2696,12 @@
               "name": "className",
               "type": "ClassNameValue<Record<string, never>>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<PaginationLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         },
@@ -2583,8 +2726,10 @@
       },
       "elements": {
         "kernel-pagination": {
-          "description": "`<kernel-pagination>` — a real `<nav aria-label=\"Pagination\">`\nwrapping a real `<ol>` of page links; an ordered trail of pages is\nexactly what an ordered list is for. Compose with\n`<kernel-pagination-item>`, `<kernel-pagination-previous>`,\n`<kernel-pagination-next>`, and `<kernel-pagination-ellipsis>`.",
-          "attributes": [],
+          "description": "`<kernel-pagination>` — a real `<nav aria-label=\"Pagination\">`\nwrapping a real `<ol>` of page links; an ordered trail of pages is\nexactly what an ordered list is for. Compose with\n`<kernel-pagination-item>`, `<kernel-pagination-previous>`,\n`<kernel-pagination-next>`, and `<kernel-pagination-ellipsis>`.\n\nBuilt-in strings (same keys as React's `PaginationLabels`, each part\nreading its own): `label-navigation` here (\"Pagination\");\n`label-previous-page` / `label-previous` on the previous control\n(\"Go to previous page\" / \"Previous\"), `label-next-page` / `label-next`\non the next control — or the `labels` property on each part.",
+          "attributes": [
+            "label-navigation"
+          ],
           "events": []
         },
         "kernel-pagination-item": {
@@ -2790,10 +2935,11 @@
       },
       "elements": {
         "kernel-radio-group": {
-          "description": "`<kernel-radio-group>` — a real `<fieldset>` + `<legend>` grouping\nreal `<input type=\"radio\">` elements (via `<kernel-radio-group-item>`)\nthat share one `name`. Arrow-key roving between options, \"exactly one\nselected\", and disabling every option at once (a real `<fieldset\ndisabled>` cascades to every form control inside it, no JS needed)\nare all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s\n`<RadioGroup>` + `<RadioGroupItem>`.\n\nAttributes: `label` (required — a `<fieldset>` needs a `<legend>` the\nsame way a form field needs a label), `name` (generated if omitted,\nso items still share a real name without the author inventing one),\n`disabled`.",
+          "description": "`<kernel-radio-group>` — a real `<fieldset>` + `<legend>` grouping\nreal `<input type=\"radio\">` elements (via `<kernel-radio-group-item>`)\nthat share one `name`. Arrow-key roving between options, \"exactly one\nselected\", and disabling every option at once (a real `<fieldset\ndisabled>` cascades to every form control inside it, no JS needed)\nare all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s\n`<RadioGroup>` + `<RadioGroupItem>`.\n\nAttributes: `label` (required — a `<fieldset>` needs a `<legend>` the\nsame way a form field needs a label), `name` (generated if omitted,\nso items still share a real name without the author inventing one),\n`disabled`, `value` (the selected item's value — the counterpart of\nReact's `value`/`defaultValue`; reflected back when the user picks an\noption, alongside the native bubbling `change` event from the radio).",
           "attributes": [
             "label",
-            "disabled"
+            "disabled",
+            "value"
           ],
           "events": []
         },
@@ -2825,7 +2971,7 @@
               "name": "durationLabel",
               "type": "ReactNode",
               "optional": true,
-              "description": "Consumer-computed, e.g. \"Thought for 4s\" — shown once streaming ends."
+              "description": "Consumer-computed, e.g. \"Thought for 4s\" — shown once streaming ends.\nDefaults to `\"Reasoning\"`."
             },
             {
               "name": "defaultOpen",
@@ -2842,16 +2988,24 @@
               "name": "className",
               "type": "ClassNameValue<ReasoningState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ReasoningLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-reasoning": {
-          "description": "`<kernel-reasoning>` — a collapsible AI reasoning/thinking trace,\nits own `<details>`/`<summary>` (not a wrapped Accordion item — see\n`@kernelui-lib/react`'s own `<Reasoning>` for why). Attributes:\n`streaming` (auto-opens while present; auto-closes ~600ms after it's\nremoved, unless the user has manually interacted with the summary\nsince), `duration-label` (text shown once streaming ends, default\n\"Reasoning\"), `default-open` (read once at connect).",
+          "description": "`<kernel-reasoning>` — a collapsible AI reasoning/thinking trace,\nits own `<details>`/`<summary>` (not a wrapped Accordion item — see\n`@kernelui-lib/react`'s own `<Reasoning>` for why). Attributes:\n`streaming` (auto-opens while present; auto-closes ~600ms after it's\nremoved, unless the user has manually interacted with the summary\nsince), `duration-label` (text shown once streaming ends, default\n\"Reasoning\"), `default-open` (read once at connect). Built-in strings:\n`label-thinking` (\"Thinking\"), `label-reasoning` (\"Reasoning\", shown\nwhen there's no `duration-label`), or the `labels` property.",
           "attributes": [
             "streaming",
-            "duration-label"
+            "duration-label",
+            "label-thinking",
+            "label-reasoning"
           ],
           "events": []
         }
@@ -3126,14 +3280,14 @@
               "type": "number",
               "optional": true,
               "default": "DEFAULT_CLOSE_THRESHOLD",
-              "description": "Fraction of the sheet's own size that must be dragged to dismiss."
+              "description": "Fraction of the sheet's own size that must be dragged to dismiss. Defaults to `0.25`."
             },
             {
               "name": "velocityThreshold",
               "type": "number",
               "optional": true,
               "default": "DEFAULT_VELOCITY_THRESHOLD",
-              "description": "Dismiss velocity in px/ms, applied regardless of distance travelled."
+              "description": "Dismiss velocity in px/ms, applied regardless of distance travelled. Defaults to `0.5`."
             },
             {
               "name": "inset",
@@ -3192,7 +3346,8 @@
             {
               "name": "classNames",
               "type": "SheetClassNames",
-              "optional": true
+              "optional": true,
+              "description": "Per-part class names: `Dialog`'s slots plus `handle`."
             },
             {
               "name": "onDrag",
@@ -3419,7 +3574,8 @@
             {
               "name": "children",
               "type": "ReactNode",
-              "optional": false
+              "optional": false,
+              "description": "`Source` items."
             },
             {
               "name": "className",
@@ -3574,12 +3730,14 @@
               "name": "disabled",
               "type": "boolean",
               "optional": true,
-              "default": "false"
+              "default": "false",
+              "description": "Disables every `SuggestionItem` inside (each chip's real `disabled`)."
             },
             {
               "name": "children",
               "type": "ReactNode",
-              "optional": false
+              "optional": false,
+              "description": "`SuggestionItem`s."
             },
             {
               "name": "className",
@@ -3930,13 +4088,19 @@
               "name": "wrapperClassName",
               "type": "ClassNameValue<TagInputState>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<TagInputLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-tag-input": {
-          "description": "`<kernel-tag-input>` — freeform text that commits into discrete tags,\nsame `role=\"list\"` of `role=\"listitem\"` chips + trailing `listitem`\ninput as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full\ninteraction rationale: Backspace-removes-last-tag, chip remove buttons\nexcluded from the tab sequence, no autocomplete).\n\n`value` serializes as a comma-joined attribute string — a tag\ncontaining the delimiter character itself can't round-trip through\nthat encoding, so use the `tags` property (or the `change` event's\n`detail.tags`) instead when that matters.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (comma-joined),\n`delimiters` (comma-joined, default `\",\"`), `max`, `allow-duplicates`\n(boolean), `description`, `error-message`, `no-label-offset` (boolean —\nhard-aligns the label, description, and error text flush left instead\nof the default inset that lines them up with the input's own text\npadding), `invalid`, `disabled`, `name`.",
+          "description": "`<kernel-tag-input>` — freeform text that commits into discrete tags,\nsame `role=\"list\"` of `role=\"listitem\"` chips + trailing `listitem`\ninput as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full\ninteraction rationale: Backspace-removes-last-tag, chip remove buttons\nexcluded from the tab sequence, no autocomplete).\n\n`value` serializes as a comma-joined attribute string — a tag\ncontaining the delimiter character itself can't round-trip through\nthat encoding, so use the `tags` property (or the `change` event's\n`detail.tags`) instead when that matters.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (comma-joined),\n`delimiters` (comma-joined, default `\",\"`), `max`, `allow-duplicates`\n(boolean), `description`, `error-message`, `no-label-offset` (boolean —\nhard-aligns the label, description, and error text flush left instead\nof the default inset that lines them up with the input's own text\npadding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,\ndefault `\"Remove {tag}\"`; or the `labels` property's `removeTag`).",
           "attributes": [
             "label",
             "hide-label",
@@ -3949,7 +4113,8 @@
             "no-label-offset",
             "invalid",
             "disabled",
-            "name"
+            "name",
+            "label-remove-tag"
           ],
           "events": [
             "change",
@@ -4014,7 +4179,8 @@
             {
               "name": "className",
               "type": "ClassNameValue<TextFieldState>",
-              "optional": true
+              "optional": true,
+              "description": "Classes for the `<input>` itself. Use `wrapperClassName` for the whole field."
             },
             {
               "name": "wrapperClassName",
@@ -4108,7 +4274,8 @@
             {
               "name": "className",
               "type": "ClassNameValue<TextareaState>",
-              "optional": true
+              "optional": true,
+              "description": "Classes for the `<textarea>` itself. Use `wrapperClassName` for the whole field."
             },
             {
               "name": "wrapperClassName",
@@ -4196,14 +4363,22 @@
               "name": "className",
               "type": "ClassNameValue<Record<string, never>>",
               "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ToastLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
             }
           ]
         }
       },
       "elements": {
         "kernel-toast-viewport": {
-          "description": "`<kernel-toast-viewport>` — mount once, anywhere (the end of the page\nbody is typical). Toasts are pushed imperatively via the exported\n`toast()` function (also `toast.success`/`.warning`/`.danger`/\n`.dismiss`), identical API to `@kernelui-lib/react`'s own `toast()`. Same\nhover-to-expand stack, swipe-to-dismiss, and pause-on-hover behaviour.",
-          "attributes": [],
+          "description": "`<kernel-toast-viewport>` — mount once, anywhere (the end of the page\nbody is typical). Toasts are pushed imperatively via the exported\n`toast()` function (also `toast.success`/`.warning`/`.danger`/\n`.dismiss`), identical API to `@kernelui-lib/react`'s own `toast()`. Same\nhover-to-expand stack, swipe-to-dismiss, and pause-on-hover behaviour.\n\nBuilt-in strings: `label-dismiss` (default \"Dismiss\"), or the `labels`\nproperty — see `ToastLabels` in `@kernelui-lib/react`.",
+          "attributes": [
+            "label-dismiss"
+          ],
           "events": []
         }
       }
@@ -4249,11 +4424,12 @@
       },
       "elements": {
         "kernel-toggle": {
-          "description": "`<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA\npattern for a two-state toggle that looks and behaves like a button (a\ntoolbar \"bold\" button, say), distinct from `<kernel-switch>`, which is\nthe pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s\n`<Toggle>`.\n\nAttributes: `pressed`, `disabled` (both boolean), `size`\n(sm/md/lg, default md). Toggling dispatches a real, bubbling `change`\nevent.",
+          "description": "`<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA\npattern for a two-state toggle that looks and behaves like a button (a\ntoolbar \"bold\" button, say), distinct from `<kernel-switch>`, which is\nthe pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s\n`<Toggle>`.\n\nAttributes: `pressed`, `disabled` (both boolean), `size`\n(sm/md/lg, default md), `aria-label` (forwarded to the inner\n`<button>`, for an icon-only toggle — on the host it would name\nnothing). Toggling dispatches a real, bubbling `change` event.",
           "attributes": [
             "pressed",
             "disabled",
-            "size"
+            "size",
+            "aria-label"
           ],
           "events": []
         }
@@ -4295,7 +4471,8 @@
             {
               "name": "total",
               "type": "number",
-              "optional": true
+              "optional": true,
+              "description": "Total count. Derived from `TodoItem` children when omitted."
             },
             {
               "name": "defaultOpen",
@@ -4402,7 +4579,8 @@
             {
               "name": "defaultOpen",
               "type": "boolean",
-              "optional": true
+              "optional": true,
+              "description": "Defaults to open while `status` is `pending` or `running`, closed otherwise."
             },
             {
               "name": "open",

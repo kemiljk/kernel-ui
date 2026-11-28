@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import NavDemo from "../../components/demos/NavDemo";
 import NavPlayground from "../../components/demos/NavPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Nav" withSidebar>
@@ -35,15 +36,7 @@ import NavPlayground from "../../components/demos/NavPlayground";
     <NavPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Nav.</caption>
-      <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
-      <tbody>
-        <tr><td><code>Nav</code></td><td><code>aria-label</code></td><td>string (required)</td></tr>
-        <tr><td><code>NavLink</code></td><td><code>href</code></td><td>string</td></tr>
-        <tr><td><code>NavLink</code></td><td><code>aria-current</code></td><td>"page" | undefined</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="nav" />
 
     <h2>Accessibility</h2>
     <ul>

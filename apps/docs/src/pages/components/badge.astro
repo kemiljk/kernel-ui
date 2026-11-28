@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import BadgeDemo from "../../components/demos/BadgeDemo";
 import BadgePlayground from "../../components/demos/BadgePlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 ---
 
@@ -48,12 +49,6 @@ import BadgePlayground from "../../components/demos/BadgePlayground";
 
     
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Badge.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>variant</code></td><td>"neutral" | "accent" | "success" | "warning" | "danger"</td><td>"neutral"</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="badge" />
   </div>
 </BaseLayout>

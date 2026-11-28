@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import CalloutDemo from "../../components/demos/CalloutDemo";
 import CalloutPlayground from "../../components/demos/CalloutPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Callout" withSidebar>
@@ -26,13 +27,6 @@ import CalloutPlayground from "../../components/demos/CalloutPlayground";
     <CalloutPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Callout.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>variant</code></td><td>"info" | "success" | "warning" | "danger"</td><td>"info"</td></tr>
-        <tr><td><code>title</code></td><td>ReactNode</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="callout" />
   </div>
 </BaseLayout>

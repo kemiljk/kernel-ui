@@ -60,12 +60,12 @@ export class KernelTextField extends KernelElement {
     input.type = "text";
     input.className = kernelClass("TextField", "input");
     input.setAttribute("data-slot", "text-field-control");
-    input.addEventListener("focus", () => root.setAttribute("data-focused", ""));
+    input.addEventListener("focus", () => root.setAttribute("data-focused", "true"));
     input.addEventListener("blur", () => root.removeAttribute("data-focused"));
     input.addEventListener("input", () => this.syncFilled());
     input.addEventListener("animationstart", (event) => {
       if ((event as AnimationEvent).animationName.toLowerCase().includes("onautofillstart")) {
-        root.setAttribute("data-filled", "");
+        root.setAttribute("data-filled", "true");
       }
     });
 
@@ -80,7 +80,7 @@ export class KernelTextField extends KernelElement {
     const root = this.native;
     const input = this.input;
     if (!root || !input) return;
-    if (input.value.length > 0) root.setAttribute("data-filled", "");
+    if (input.value.length > 0) root.setAttribute("data-filled", "true");
     else root.removeAttribute("data-filled");
   }
 
@@ -164,7 +164,7 @@ export class KernelTextField extends KernelElement {
         break;
       case "disabled":
         input.disabled = value !== null;
-        if (value !== null) root.setAttribute("data-disabled", "");
+        if (value !== null) root.setAttribute("data-disabled", "true");
         else root.removeAttribute("data-disabled");
         break;
       case "size":
@@ -186,8 +186,10 @@ export class KernelTextField extends KernelElement {
         else input.name = value;
         break;
       case "invalid":
-        input.setAttribute("aria-invalid", value !== null ? "true" : "false");
-        if (value !== null) root.setAttribute("data-invalid", "");
+        // Omitted when valid, like React's `aria-invalid={invalid || undefined}`.
+        if (value !== null) input.setAttribute("aria-invalid", "true");
+        else input.removeAttribute("aria-invalid");
+        if (value !== null) root.setAttribute("data-invalid", "true");
         else root.removeAttribute("data-invalid");
         this.updateDescribedBy();
         break;

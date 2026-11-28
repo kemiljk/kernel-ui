@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import TextareaDemo from "../../components/demos/TextareaDemo";
 import TextareaPlayground from "../../components/demos/TextareaPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 ---
 
@@ -27,22 +28,7 @@ import TextareaPlayground from "../../components/demos/TextareaPlayground";
 
     
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Textarea.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
-        <tr><td><code>hideLabel</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>errorMessage</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>invalid</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>className</code></td><td>string | (state) =&gt; string — control</td><td>—</td></tr>
-        <tr><td><code>wrapperClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
-        <tr><td><code>labelClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
-        <tr><td><code>descriptionClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
-        <tr><td><code>errorClassName</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="textarea" />
 
     <h2>Floating labels</h2>
     <p>

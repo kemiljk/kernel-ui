@@ -8,7 +8,9 @@ import "./InputOTP.css";
  * typed, mirroring how native OTP autofill and every OTP UI users
  * already know behaves. Mirrors `@kernelui-lib/react`'s `<InputOTP>`.
  *
- * Attributes: `length` (default 6), `value`, `label`, `disabled`.
+ * Attributes: `length` (default 6), `value`, `label`, `disabled`, and
+ * the built-in string `label-digit` (template, default
+ * `"Digit {digit} of {length}"`) — or the `labels` property.
  * Dispatches a real, bubbling `change` event on every edit, and a
  * `complete` CustomEvent (`event.detail.value`) once when the code
  * first reaches `length` characters — not on every subsequent event
@@ -24,7 +26,14 @@ export class KernelInputOTP extends KernelElement {
   private isInternalValueUpdate = false;
 
   static get observedAttributes() {
-    return ["length", "value", "label", "disabled"];
+    return ["length", "value", "label", "disabled", "label-digit"];
+  }
+
+  protected applyLabels() {
+    const length = this.cells.length;
+    this.cells.forEach((input, index) => {
+      input.setAttribute("aria-label", this.builtInLabel("digit", "Digit {digit} of {length}", { digit: index + 1, length }));
+    });
   }
 
   private get length(): number {
@@ -64,10 +73,10 @@ export class KernelInputOTP extends KernelElement {
       input.maxLength = 1;
       input.autocomplete = "one-time-code";
       input.className = kernelClass("InputOTP", "cell");
-      input.setAttribute("aria-label", `Digit ${index + 1} of ${length}`);
+      input.setAttribute("aria-label", this.builtInLabel("digit", "Digit {digit} of {length}", { digit: index + 1, length }));
       const digit = currentValue[index] ?? "";
       input.value = digit;
-      if (digit) input.setAttribute("data-filled", "");
+      if (digit) input.setAttribute("data-filled", "true");
 
       input.addEventListener("input", () => this.handleInput(index));
       input.addEventListener("keydown", (event) => this.handleKeyDown(index, event));
@@ -82,7 +91,7 @@ export class KernelInputOTP extends KernelElement {
     this.cells.forEach((cell, index) => {
       const digit = code[index] ?? "";
       cell.value = digit;
-      if (digit) cell.setAttribute("data-filled", "");
+      if (digit) cell.setAttribute("data-filled", "true");
       else cell.removeAttribute("data-filled");
     });
   }
@@ -110,7 +119,7 @@ export class KernelInputOTP extends KernelElement {
     if (!cell) return;
     const digit = cell.value.replace(/[^0-9]/g, "").slice(-1);
     cell.value = digit;
-    if (digit) cell.setAttribute("data-filled", "");
+    if (digit) cell.setAttribute("data-filled", "true");
     else cell.removeAttribute("data-filled");
     this.afterChange();
     if (digit && index < this.length - 1) this.cells[index + 1]?.focus();
@@ -160,7 +169,7 @@ export class KernelInputOTP extends KernelElement {
       const cell = this.cells[index + i];
       if (!cell) break;
       cell.value = pasted[i] ?? "";
-      cell.setAttribute("data-filled", "");
+      cell.setAttribute("data-filled", "true");
       lastFilled = index + i;
     }
     this.afterChange();

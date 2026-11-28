@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import PaginationDemo from "../../components/demos/PaginationDemo";
 import PaginationPlayground from "../../components/demos/PaginationPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Pagination" withSidebar>
@@ -34,5 +35,8 @@ import PaginationPlayground from "../../components/demos/PaginationPlayground";
         <tr><td><code>PaginationEllipsis</code></td><td><code>&lt;li aria-hidden&gt;</code></td></tr>
       </tbody>
     </table></div>
+
+    <h2>Props</h2>
+    <ApiTable slug="pagination" />
   </div>
 </BaseLayout>

@@ -27,7 +27,8 @@ function escapeRegExp(value: string): string {
  * (boolean), `description`, `error-message`, `no-label-offset` (boolean —
  * hard-aligns the label, description, and error text flush left instead
  * of the default inset that lines them up with the input's own text
- * padding), `invalid`, `disabled`, `name`.
+ * padding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,
+ * default `"Remove {tag}"`; or the `labels` property's `removeTag`).
  */
 export class KernelTagInput extends KernelElement {
   private readonly generatedId = `kernel-tag-input-${++tagInputCounter}`;
@@ -47,6 +48,7 @@ export class KernelTagInput extends KernelElement {
       "invalid",
       "disabled",
       "name",
+      "label-remove-tag",
     ];
   }
 
@@ -199,7 +201,7 @@ export class KernelTagInput extends KernelElement {
       finish();
       return;
     }
-    chip.setAttribute("data-removing", "");
+    chip.setAttribute("data-removing", "true");
     void waitForExitTransition(chip).then(finish);
   }
 
@@ -220,6 +222,13 @@ export class KernelTagInput extends KernelElement {
     if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
     else input.removeAttribute("aria-describedby");
     this.renderHint();
+  }
+
+  protected applyLabels() {
+    this.native?.querySelectorAll<HTMLElement>("[data-tag]").forEach((chip) => {
+      const tag = chip.dataset.tag ?? "";
+      chip.querySelector("button")?.setAttribute("aria-label", this.builtInLabel("removeTag", "Remove {tag}", { tag }));
+    });
   }
 
   private renderHint() {
@@ -271,9 +280,9 @@ export class KernelTagInput extends KernelElement {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = kernelClass("TagInput", "tagRemove");
-      remove.dataset.icon = "";
+      remove.dataset.icon = "true";
       remove.tabIndex = -1;
-      remove.setAttribute("aria-label", `Remove ${tag}`);
+      remove.setAttribute("aria-label", this.builtInLabel("removeTag", "Remove {tag}", { tag }));
       remove.innerHTML =
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>';
       remove.addEventListener("click", (event) => {
@@ -315,7 +324,7 @@ export class KernelTagInput extends KernelElement {
         break;
       case "invalid":
         if (this.native) {
-          if (value !== null) this.native.setAttribute("data-invalid", "");
+          if (value !== null) this.native.setAttribute("data-invalid", "true");
           else this.native.removeAttribute("data-invalid");
         }
         this.updateDescribedBy();

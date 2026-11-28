@@ -18,11 +18,32 @@ function useCarouselContext(component: string) {
   return context;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface CarouselLabels {
+  /** Accessible name of the previous-slide button. Default `"Previous slide"`. */
+  previousSlide: string;
+  /** Accessible name of the next-slide button. Default `"Next slide"`. */
+  nextSlide: string;
+  /** Accessible name of a pagination dot (1-based). Default ``(slide) => `Go to slide ${slide}` ``. */
+  goToSlide: (slide: number) => string;
+}
+
+const defaultCarouselLabels: CarouselLabels = {
+  previousSlide: "Previous slide",
+  nextSlide: "Next slide",
+  goToSlide: (slide) => `Go to slide ${slide}`,
+};
+
 export interface CarouselProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "className" | "children"> {
+  /** The slides: each direct child is one slide (wrap each in `CarouselSlide`). */
   children: ReactNode;
+  /** Accessible name for the carousel region. Required: there's no visible heading to name it. */
   "aria-label": string;
   className?: ClassNameValue<Record<string, never>>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<CarouselLabels>;
 }
 
 /**
@@ -33,7 +54,8 @@ export interface CarouselProps
  * that watches each slide against the scroll container to know which one
  * is currently in view.
  */
-export function Carousel({ children, "aria-label": ariaLabel, className, ...rest }: CarouselProps) {
+export function Carousel({ children, "aria-label": ariaLabel, className, labels, ...rest }: CarouselProps) {
+  const l = { ...defaultCarouselLabels, ...labels };
   const trackRef = useRef<HTMLDivElement>(null);
   const slideNodes = useRef(new Map<string, HTMLElement>());
   const [order, setOrder] = useState<string[]>([]);
@@ -128,7 +150,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
 
           <button
             type="button"
-            aria-label="Previous slide"
+            aria-label={l.previousSlide}
             className={styles.prev}
             disabled={currentIndex <= 0}
             onClick={() => {
@@ -142,7 +164,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
           </button>
           <button
             type="button"
-            aria-label="Next slide"
+            aria-label={l.nextSlide}
             className={styles.next}
             disabled={currentIndex === -1 || currentIndex >= order.length - 1}
             onClick={() => {
@@ -162,7 +184,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
               <button
                 key={id}
                 type="button"
-                aria-label={`Go to slide ${index + 1}`}
+                aria-label={l.goToSlide(index + 1)}
                 aria-current={dataAttr(id === currentId)}
                 data-current={dataAttr(id === currentId)}
                 className={styles.dot}

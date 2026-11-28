@@ -160,7 +160,7 @@ export class KernelMessageScroller extends KernelElement {
       this.jump.removeAttribute("data-visible");
       this.jump.setAttribute("aria-hidden", "true");
     } else {
-      this.jump.setAttribute("data-visible", "");
+      this.jump.setAttribute("data-visible", "true");
       this.jump.removeAttribute("aria-hidden");
     }
   }

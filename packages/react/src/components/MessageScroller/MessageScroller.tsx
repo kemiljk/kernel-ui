@@ -18,7 +18,7 @@ export interface MessageScrollerProps
   /** Start at the live edge. Pinning is reader-owned after that — see the
    * component's own note on why there's no controlled `pinned` prop. */
   defaultPinned?: boolean;
-  /** Pixels from the bottom that still count as pinned. */
+  /** Pixels from the bottom that still count as pinned. Defaults to `24`. */
   threshold?: number;
   onPinnedChange?: (pinned: boolean) => void;
   /** Show the "jump to latest" control while unpinned. */

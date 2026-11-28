@@ -36,6 +36,11 @@ const MARKERS: Record<DiffRowKind, string> = {
  *
  * Attributes: `path`, `streaming`, `no-line-numbers`, `collapse-on-complete`,
  * `additions` / `deletions` (override the derived counts), `default-open="false"`.
+ * Built-in (screen-reader) strings: `label-old-line`, `label-new-line`,
+ * `label-change`, `label-content`, `label-unnamed-file` ("the file"),
+ * `label-caption` (template, default
+ * `"Changes to {path}: {additions} added, {deletions} removed"`), or the
+ * `labels` property.
  */
 export class KernelFileDiff extends KernelElement {
   private summaryEl: HTMLElement | null = null;
@@ -47,7 +52,19 @@ export class KernelFileDiff extends KernelElement {
   private ownRows: DiffRow[] = [];
 
   static get observedAttributes() {
-    return ["path", "streaming", "no-line-numbers", "additions", "deletions"];
+    return [
+      "path",
+      "streaming",
+      "no-line-numbers",
+      "additions",
+      "deletions",
+      "label-old-line",
+      "label-new-line",
+      "label-change",
+      "label-content",
+      "label-unnamed-file",
+      "label-caption",
+    ];
   }
 
   get rows(): DiffRow[] {
@@ -80,10 +97,9 @@ export class KernelFileDiff extends KernelElement {
     const head = document.createElement("thead");
     head.className = "kernel-sr-only";
     const headRow = document.createElement("tr");
-    for (const name of ["Old line", "New line", "Change", "Content"]) {
+    for (let i = 0; i < 4; i++) {
       const th = document.createElement("th");
       th.scope = "col";
-      th.textContent = name;
       headRow.append(th);
     }
     head.append(headRow);
@@ -118,7 +134,7 @@ export class KernelFileDiff extends KernelElement {
 
     if (name === "streaming") {
       const streaming = this.hasAttribute("streaming");
-      if (streaming) details.setAttribute("data-streaming", "");
+      if (streaming) details.setAttribute("data-streaming", "true");
       else details.removeAttribute("data-streaming");
       if (this.wasStreaming === streaming) return;
       this.wasStreaming = streaming;
@@ -155,6 +171,20 @@ export class KernelFileDiff extends KernelElement {
       additions: this.hasAttribute("additions") && Number.isFinite(explicitAdd) ? explicitAdd : added,
       deletions: this.hasAttribute("deletions") && Number.isFinite(explicitDel) ? explicitDel : removed,
     };
+  }
+
+  protected applyLabels() {
+    const heads = this.native?.querySelectorAll(`.${kernelClass("FileDiff", "table")} thead th`) ?? [];
+    const names = [
+      this.builtInLabel("oldLine", "Old line"),
+      this.builtInLabel("newLine", "New line"),
+      this.builtInLabel("change", "Change"),
+      this.builtInLabel("content", "Content"),
+    ];
+    heads.forEach((th, index) => {
+      th.textContent = names[index] ?? "";
+    });
+    this.renderSummary();
   }
 
   private renderSummary() {
@@ -197,7 +227,11 @@ export class KernelFileDiff extends KernelElement {
     summary.append(pathEl, counts, chevron);
 
     if (this.captionEl) {
-      this.captionEl.textContent = `Changes to ${path || "the file"}: ${additions} added, ${deletions} removed`;
+      this.captionEl.textContent = this.builtInLabel("caption", "Changes to {path}: {additions} added, {deletions} removed", {
+        path: path || this.builtInLabel("unnamedFile", "the file"),
+        additions,
+        deletions,
+      });
     }
   }
 

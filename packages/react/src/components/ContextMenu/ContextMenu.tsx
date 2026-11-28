@@ -10,6 +10,7 @@ const MARGIN = 8;
 export interface ContextMenuProps {
   /** The area that opens the menu on right-click (or long-press). */
   render: ReactNode;
+  /** The menu's content: `MenuItem`s and `MenuSeparator`s. */
   children: ReactNode;
 }
 

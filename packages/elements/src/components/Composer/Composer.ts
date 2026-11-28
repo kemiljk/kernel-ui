@@ -12,7 +12,9 @@ let composerCounter = 0;
  * Attributes: `value`, `placeholder`, `disabled`, `thinking` (shows the
  * animated border sweep and blocks submission — the same "actively
  * working" language most AI products use), `submit-on`
- * (`mod+enter` default | `enter`).
+ * (`mod+enter` default | `enter`), and the built-in string
+ * `label-message` (the textarea's accessible name when there's no
+ * `placeholder`, default "Message") — or the `labels` property.
  *
  * Light-DOM children tagged `slot="leading"` / `slot="trailing"` (no
  * real shadow DOM here, so this is a plain attribute convention, not
@@ -30,7 +32,7 @@ export class KernelComposer extends KernelElement {
   private readonly generatedId = `kernel-composer-${++composerCounter}`;
 
   static get observedAttributes() {
-    return ["value", "placeholder", "disabled", "thinking", "id"];
+    return ["value", "placeholder", "disabled", "thinking", "id", "label-message"];
   }
 
   private get textarea(): HTMLTextAreaElement | null {
@@ -108,6 +110,10 @@ export class KernelComposer extends KernelElement {
     this.setAttribute("value", "");
   }
 
+  protected applyLabels() {
+    this.syncAttr("placeholder", this.getAttribute("placeholder"));
+  }
+
   protected syncAttr(name: string, value: string | null) {
     const textarea = this.textarea;
     const root = this.native;
@@ -119,15 +125,15 @@ export class KernelComposer extends KernelElement {
         break;
       case "placeholder":
         textarea.placeholder = value ?? "";
-        textarea.setAttribute("aria-label", value || "Message");
+        textarea.setAttribute("aria-label", value || this.builtInLabel("message", "Message"));
         break;
       case "disabled":
         textarea.disabled = value !== null;
-        if (value !== null) root.setAttribute("data-disabled", "");
+        if (value !== null) root.setAttribute("data-disabled", "true");
         else root.removeAttribute("data-disabled");
         break;
       case "thinking":
-        if (value !== null) root.setAttribute("data-thinking", "");
+        if (value !== null) root.setAttribute("data-thinking", "true");
         else root.removeAttribute("data-thinking");
         break;
       case "id":

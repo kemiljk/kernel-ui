@@ -141,7 +141,7 @@ export class KernelCombobox extends KernelElement {
     if (this.open) return;
     this.open = true;
     this.inputEl.setAttribute("aria-expanded", "true");
-    this.listboxEl.setAttribute("data-open", "");
+    this.listboxEl.setAttribute("data-open", "true");
     this.listboxEl.showPopover?.();
     this.positioner.setOpen(true);
   }

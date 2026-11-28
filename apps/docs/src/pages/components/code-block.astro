@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import CodeBlockDemo from "../../components/demos/CodeBlockDemo";
 import CodeBlockPlayground from "../../components/demos/CodeBlockPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Code Block" withSidebar>
@@ -27,21 +28,7 @@ import CodeBlockPlayground from "../../components/demos/CodeBlockPlayground";
     <CodeBlockPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Code Block.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>lines</code></td><td>CodeLine[]</td><td>—</td></tr>
-        <tr><td><code>code</code></td><td>string</td><td>""</td></tr>
-        <tr><td><code>language</code></td><td>string</td><td>—</td></tr>
-        <tr><td><code>label</code></td><td>ReactNode</td><td>from language</td></tr>
-        <tr><td><code>showLineNumbers</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>highlightLines</code></td><td>number[] (1-based)</td><td>—</td></tr>
-        <tr><td><code>streaming</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>copyable</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="code-block" />
 
     <h2>Bring your own tokens</h2>
     <p>

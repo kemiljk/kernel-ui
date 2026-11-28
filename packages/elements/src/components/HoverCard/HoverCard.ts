@@ -81,7 +81,7 @@ export class KernelHoverCard extends KernelElement {
           this.open = true;
           content.removeAttribute("data-closing");
           this.positioner.setOpen(true);
-          content.setAttribute("data-open", "");
+          content.setAttribute("data-open", "true");
           content.showPopover?.();
         }, delay);
       };
@@ -94,7 +94,7 @@ export class KernelHoverCard extends KernelElement {
         if (!this.open && !this.closing) return;
         this.closing = true;
         content.removeAttribute("data-open");
-        content.setAttribute("data-closing", "");
+        content.setAttribute("data-closing", "true");
 
         if (!prefersReducedMotion()) {
           const controller = new AbortController();
@@ -125,7 +125,7 @@ export class KernelHoverCard extends KernelElement {
           this.closing = false;
           this.open = true;
           content.removeAttribute("data-closing");
-          content.setAttribute("data-open", "");
+          content.setAttribute("data-open", "true");
           content.showPopover?.();
         }
       };

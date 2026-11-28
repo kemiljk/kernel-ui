@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import MessageDemo from "../../components/demos/MessageDemo";
 import MessagePlayground from "../../components/demos/MessagePlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Message" withSidebar>
@@ -29,31 +30,7 @@ import MessagePlayground from "../../components/demos/MessagePlayground";
     <MessagePlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Message.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>author</code></td><td>"user" | "assistant" | "system"</td><td>"assistant"</td></tr>
-        <tr><td><code>avatar</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>name</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>metadata</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>grouped</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>live</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>animateOnMount</code></td><td>boolean</td><td>true</td></tr>
-      </tbody>
-    </table></div>
-
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Message Bubble.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>tone</code></td><td>"neutral" | "accent" | "muted" | "danger"</td><td>"neutral"</td></tr>
-        <tr><td><code>align</code></td><td>"start" | "center" | "end"</td><td>"start"</td></tr>
-        <tr><td><code>expandable</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>expandLabel</code></td><td>ReactNode</td><td>"Show more"</td></tr>
-        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>false</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="message" />
 
     <p>
       <code>align</code> is independent of <code>author</code> on purpose: a

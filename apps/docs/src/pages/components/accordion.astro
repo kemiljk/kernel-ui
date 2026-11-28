@@ -4,6 +4,7 @@ import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import AccordionDemo from "../../components/demos/AccordionDemo";
 import AccordionPlayground from "../../components/demos/AccordionPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 interface Props {}
 
@@ -53,17 +54,7 @@ const elementsUsageSnippet = `<script type="module">
     <AccordionPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Accordion.</caption>
-      <thead>
-        <tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>Accordion</code></td><td><code>type</code></td><td>"single" | "multiple"</td></tr>
-        <tr><td><code>AccordionItem</code></td><td><code>title</code></td><td>ReactNode</td></tr>
-        <tr><td><code>AccordionItem</code></td><td><code>defaultOpen</code></td><td>boolean</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="accordion" />
 
     <h2>Accessibility</h2>
     <ul>

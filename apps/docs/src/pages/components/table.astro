@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import TableDemo from "../../components/demos/TableDemo";
 import TablePlayground from "../../components/demos/TablePlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Table" withSidebar>
@@ -40,5 +41,8 @@ import TablePlayground from "../../components/demos/TablePlayground";
         <tr><td><code>TableCell</code></td><td><code>&lt;td&gt;</code></td></tr>
       </tbody>
     </table></div>
+
+    <h2>Props</h2>
+    <ApiTable slug="table" />
   </div>
 </BaseLayout>

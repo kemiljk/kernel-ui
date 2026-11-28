@@ -4,6 +4,7 @@ import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import DialogDemo from "../../components/demos/DialogDemo";
 import DialogPlayground from "../../components/demos/DialogPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 const usageSnippet = `import { useState } from "react";
 import { Button, Dialog } from "@kernelui-lib/react";
@@ -51,25 +52,7 @@ const [open, setOpen] = useState(false);
     <DialogPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Dialog.</caption>
-      <thead>
-        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>open</code></td><td>boolean (required)</td><td>—</td></tr>
-        <tr><td><code>onOpenChange</code></td><td>(open: boolean) =&gt; void (required)</td><td>—</td></tr>
-        <tr><td><code>title</code></td><td>ReactNode (required)</td><td>—</td></tr>
-        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>closeOnBackdropClick</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>showCloseButton</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>renderClose</code></td><td>RenderProp</td><td>—</td></tr>
-        <tr><td><code>backdrop</code></td><td>"default" | "blur" | "opaque" | "transparent"</td><td>"default"</td></tr>
-        <tr><td><code>side</code></td><td>"center" | "left" | "right" | "top" | "bottom"</td><td>"center"</td></tr>
-        <tr><td><code>classNames</code></td><td>&#123; root, header, title, description, content, close &#125;</td><td>—</td></tr>
-        <tr><td><code>className</code></td><td>string | (state) =&gt; string</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="dialog" />
 
     <h2>Composition</h2>
     <p>

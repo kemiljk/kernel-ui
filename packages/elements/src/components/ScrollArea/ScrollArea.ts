@@ -50,7 +50,7 @@ export class KernelScrollArea extends KernelElement {
     }
     if (name === "edge-shadow") {
       if (value === null) this.native.removeAttribute("data-edge-shadow");
-      else this.native.setAttribute("data-edge-shadow", "");
+      else this.native.setAttribute("data-edge-shadow", "true");
       this.syncEdgeShadowListener();
     }
   }

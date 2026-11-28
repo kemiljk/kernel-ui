@@ -9,6 +9,14 @@ export interface ColorPickerState {
   invalid: boolean;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface ColorPickerLabels {
+  /** Accessible name of the hex text field. Default `"Hex color value"`. */
+  hexValue: string;
+}
+
+const defaultColorPickerLabels: ColorPickerLabels = { hexValue: "Hex color value" };
+
 export interface ColorPickerProps
   extends Omit<
     InputHTMLAttributes<HTMLInputElement>,
@@ -43,6 +51,9 @@ export interface ColorPickerProps
   size?: "sm" | "md" | "lg";
   className?: ClassNameValue<ColorPickerState>;
   wrapperClassName?: ClassNameValue<ColorPickerState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<ColorPickerLabels>;
 }
 
 const HEX_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -96,10 +107,12 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
       id,
       className,
       wrapperClassName,
+      labels,
       ...rest
     },
     ref,
   ) {
+    const l = { ...defaultColorPickerLabels, ...labels };
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const descriptionId = `${inputId}-description`;
@@ -178,7 +191,7 @@ export const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
               maxLength={7}
               value={draft}
               disabled={disabled}
-              aria-label="Hex color value"
+              aria-label={l.hexValue}
               aria-invalid={draftInvalid || undefined}
               className={styles.hexInput}
               onFocus={() => setHexFocused(true)}
