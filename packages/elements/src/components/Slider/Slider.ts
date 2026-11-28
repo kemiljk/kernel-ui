@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Slider.css";
 
 let sliderCounter = 0;
@@ -28,6 +28,9 @@ let sliderCounter = 0;
  * `show-value` (boolean — shows the current number next to the label),
  * `variant` (`default` | `inset`), `start-label` / `end-label` (inset
  * only — captions pinned inside the track's ends), `disabled`, `name`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="range">`.
  */
 export class KernelSlider extends KernelElement {
   private readonly generatedId = `kernel-slider-${++sliderCounter}`;
@@ -36,6 +39,7 @@ export class KernelSlider extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -49,6 +53,10 @@ export class KernelSlider extends KernelElement {
       "disabled",
       "name",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.input;
   }
 
   connectedCallback() {

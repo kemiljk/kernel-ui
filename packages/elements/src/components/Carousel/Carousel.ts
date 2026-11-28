@@ -1,4 +1,4 @@
-import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, dataAttr, kernelClass } from "../../base";
 import { prefersReducedMotion } from "../../utils/exitTransition";
 import "./Carousel.css";
 
@@ -42,6 +42,9 @@ function arrowIcon(path: string): SVGSVGElement {
  * `label-previous-slide` ("Previous slide"), `label-next-slide`
  * ("Next slide"), `label-go-to-slide` (template, default
  * `"Go to slide {slide}"`), or the `labels` property.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the carousel's `role="region"`.
  */
 export class KernelCarousel extends KernelElement {
   private order: HTMLElement[] = [];
@@ -53,7 +56,11 @@ export class KernelCarousel extends KernelElement {
   private buildScheduled = false;
 
   static get observedAttributes() {
-    return ["aria-label", "label-previous-slide", "label-next-slide", "label-go-to-slide"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "label-previous-slide", "label-next-slide", "label-go-to-slide"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   connectedCallback() {
@@ -72,7 +79,6 @@ export class KernelCarousel extends KernelElement {
     root.setAttribute("role", "region");
     root.setAttribute("aria-roledescription", "carousel");
     root.className = kernelClass("Carousel");
-    if (this.getAttribute("aria-label")) root.setAttribute("aria-label", this.getAttribute("aria-label")!);
 
     const track = document.createElement("div");
     track.className = kernelClass("Carousel", "track");
@@ -128,7 +134,7 @@ export class KernelCarousel extends KernelElement {
 
     this.native = root;
     this.append(root);
-    this.applyLabels();
+    this.syncAllAttrs();
     this.updateControls();
 
     if (this.order.length > 0) {
@@ -166,12 +172,6 @@ export class KernelCarousel extends KernelElement {
     this.dotButtons.forEach((dot, index) => {
       dot.setAttribute("aria-label", this.builtInLabel("goToSlide", "Go to slide {slide}", { slide: index + 1 }));
     });
-  }
-
-  protected syncAttr(name: string, value: string | null) {
-    if (name !== "aria-label" || !this.native) return;
-    if (value === null) this.native.removeAttribute("aria-label");
-    else this.native.setAttribute("aria-label", value);
   }
 
   private scrollToSlide(slide: HTMLElement) {

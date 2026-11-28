@@ -1,4 +1,4 @@
-import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, dataAttr, kernelClass } from "../../base";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./Combobox.css";
@@ -38,6 +38,9 @@ interface ComboboxGroup {
  * `placement` (default bottom), `align` (start/center/end, default
  * center), `offset` (px, default 8).
  * Events: `valuechange` (`event.detail.value`).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input role="combobox">`.
  */
 export class KernelCombobox extends KernelElement {
   private readonly baseId = `kernel-combobox-${++comboboxCounter}`;
@@ -58,7 +61,11 @@ export class KernelCombobox extends KernelElement {
   };
 
   static get observedAttributes() {
-    return ["label", "hide-label", "no-label-offset", "placeholder", "value"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "label", "hide-label", "no-label-offset", "placeholder", "value"];
+  }
+
+  protected ariaTarget() {
+    return this.inputEl ?? null;
   }
 
   connectedCallback() {

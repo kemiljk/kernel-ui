@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./NumberField.css";
 
 let numberFieldCounter = 0;
@@ -43,12 +43,17 @@ function glyph(path: string): SVGSVGElement {
  * that lines them up with the input's own text padding), `invalid`,
  * `disabled`, `required`, `name`. Built-in strings: `label-increment`
  * ("Increment"), `label-decrement` ("Decrement"), or the `labels` property.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input>`; an authored `aria-describedby` is
+ * added after its own hint and error ids.
  */
 export class KernelNumberField extends KernelElement {
   private readonly generatedId = `kernel-number-field-${++numberFieldCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -66,6 +71,14 @@ export class KernelNumberField extends KernelElement {
       "label-increment",
       "label-decrement",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -146,8 +159,7 @@ export class KernelNumberField extends KernelElement {
       hasError ? `${id}-error` : null,
       this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 

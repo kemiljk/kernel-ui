@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import { observePillIcons } from "../../utils/pillIcons";
 import "./Toggle.css";
 
@@ -14,13 +14,18 @@ import "./Toggle.css";
  * concentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).
  *
  * Attributes: `pressed`, `disabled` (both boolean), `size`
- * (sm/md/lg, default md), `aria-label` (forwarded to the inner
- * `<button>`, for an icon-only toggle — on the host it would name
- * nothing). Toggling dispatches a real, bubbling `change` event.
+ * (sm/md/lg, default md). `aria-label` (for an icon-only toggle),
+ * `aria-labelledby` and `aria-describedby` are forwarded to the inner
+ * `<button>`; on the host they would name nothing. Toggling dispatches a
+ * real, bubbling `change` event.
  */
 export class KernelToggle extends KernelElement {
   static get observedAttributes() {
-    return ["pressed", "disabled", "size", "aria-label"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "pressed", "disabled", "size"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   protected createNative(): HTMLElement {
@@ -61,10 +66,6 @@ export class KernelToggle extends KernelElement {
         break;
       case "size":
         button.dataset.size = value ?? "md";
-        break;
-      case "aria-label":
-        if (value === null) button.removeAttribute("aria-label");
-        else button.setAttribute("aria-label", value);
         break;
     }
   }

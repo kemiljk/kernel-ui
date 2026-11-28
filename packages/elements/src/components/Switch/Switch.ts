@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Switch.css";
 
 /**
@@ -12,10 +12,18 @@ import "./Switch.css";
  * any, becomes a real `<label>` wrapping the button — omit it for a
  * bare switch. Toggling dispatches a real, bubbling `change` event,
  * same as any native form control.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<button role="switch">`. With no text content,
+ * give the switch a name this way (`aria-label="Bill yearly"`).
  */
 export class KernelSwitch extends KernelElement {
   static get observedAttributes() {
-    return ["checked", "disabled"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "checked", "disabled"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   connectedCallback() {

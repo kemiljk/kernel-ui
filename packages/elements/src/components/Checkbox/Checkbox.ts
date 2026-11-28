@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Checkbox.css";
 
 /**
@@ -12,10 +12,17 @@ import "./Checkbox.css";
  * true`) same as any native one. The real inner `<input>` fires real,
  * bubbling `change` events; listen on it directly or on this element,
  * no synthetic event needed.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="checkbox">`.
  */
 export class KernelCheckbox extends KernelElement {
   static get observedAttributes() {
-    return ["checked", "disabled", "required", "name", "value"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "checked", "disabled", "required", "name", "value"];
+  }
+
+  protected ariaTarget() {
+    return this.input;
   }
 
   protected createNative(): HTMLElement {

@@ -12,6 +12,9 @@
  *
  * Elements: for every tag, finds the class passed to `customElements.define`,
  * its `observedAttributes`, the `CustomEvent`s it dispatches, and its JSDoc.
+ * A `...FORWARDED_ARIA_ATTRIBUTES` spread expands to the list in base.ts and
+ * is also recorded as `forwardedAttributes`: the ARIA attributes the host
+ * hands to its native control.
  *
  * Purely syntactic (no type checker), so it stays fast and never needs the
  * React or DOM type graph resolved.
@@ -88,6 +91,23 @@ function defaultsFor(sourceFile, componentName) {
 export function extractApi(registryComponents, repoRoot) {
   const reactFiles = walk(path.join(repoRoot, "packages/react/src/components"), [".tsx", ".ts"]).map(parse);
   const elementFiles = walk(path.join(repoRoot, "packages/elements/src/components"), [".ts"]).map(parse);
+
+  // `...FORWARDED_ARIA_ATTRIBUTES` in an element's `observedAttributes`
+  // means the host hands those attributes to its native control
+  // (`KernelElement.ariaTarget()`). Read the list from base.ts itself.
+  const forwardedAria = [];
+  const baseFile = parse(path.join(repoRoot, "packages/elements/src/base.ts"));
+  const findForwarded = (n) => {
+    if (ts.isVariableDeclaration(n) && n.name.getText() === "FORWARDED_ARIA_ATTRIBUTES" && n.initializer) {
+      const visitList = (m) => {
+        if (ts.isStringLiteralLike(m)) forwardedAria.push(m.text);
+        ts.forEachChild(m, visitList);
+      };
+      visitList(n.initializer);
+    }
+    ts.forEachChild(n, findForwarded);
+  };
+  findForwarded(baseFile);
 
   // Named types, so `ButtonState["variant"]` or `Variant` can be shown as the
   // literal union an agent actually needs ("primary" | "secondary" | …).
@@ -221,11 +241,18 @@ export function extractApi(registryComponents, repoRoot) {
       if (!found) continue;
       const { cls, sourceFile } = found;
       const attributes = [];
+      let forwardedAttributes = [];
       for (const member of cls.members) {
         if (ts.isGetAccessorDeclaration(member) && member.name.getText() === "observedAttributes") {
           const visit = (n) => {
             if (ts.isArrayLiteralExpression(n)) {
-              for (const el of n.elements) if (ts.isStringLiteralLike(el)) attributes.push(el.text);
+              for (const el of n.elements) {
+                if (ts.isStringLiteralLike(el)) attributes.push(el.text);
+                else if (ts.isSpreadElement(el) && el.expression.getText() === "FORWARDED_ARIA_ATTRIBUTES") {
+                  attributes.push(...forwardedAria);
+                  forwardedAttributes = forwardedAria;
+                }
+              }
             }
             ts.forEachChild(n, visit);
           };
@@ -243,6 +270,7 @@ export function extractApi(registryComponents, repoRoot) {
       elements[tag] = {
         ...(docOf(cls) ? { description: docOf(cls) } : {}),
         attributes,
+        ...(forwardedAttributes.length ? { forwardedAttributes } : {}),
         events: [...events],
       };
       void sourceFile;

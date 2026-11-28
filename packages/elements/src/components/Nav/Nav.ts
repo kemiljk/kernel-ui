@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Nav.css";
 
 /**
@@ -8,10 +8,17 @@ import "./Nav.css";
  * Attributes: `aria-label` (required — a page can have more than one
  * `<nav>`, so each needs its own accessible name), `data-orientation`
  * (`horizontal` lays the list out as a row instead of a column).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the real `<nav>`.
  */
 export class KernelNav extends KernelElement {
   static get observedAttributes() {
-    return ["aria-label", "data-orientation"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "data-orientation"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   connectedCallback() {
@@ -29,10 +36,7 @@ export class KernelNav extends KernelElement {
 
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
-    if (name === "aria-label") {
-      if (value === null) this.native.removeAttribute("aria-label");
-      else this.native.setAttribute("aria-label", value);
-    } else if (name === "data-orientation") {
+    if (name === "data-orientation") {
       if (value === null) this.native.removeAttribute("data-orientation");
       else this.native.setAttribute("data-orientation", value);
     }

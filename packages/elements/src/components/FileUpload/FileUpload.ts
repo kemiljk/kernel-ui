@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./FileUpload.css";
 
 let fileUploadCounter = 0;
@@ -151,6 +151,10 @@ const PREVIEW_GRID_CAP = 4;
  * `dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and
  * `visibilitychange` listeners — force-clears the drag-active state if the
  * drag goes silent, so the dropzone can't get stuck lit with scroll locked.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="file">`; an authored
+ * `aria-describedby` is added after the error id.
  */
 export class KernelFileUpload extends KernelElement {
   private readonly generatedId = `kernel-file-upload-${++fileUploadCounter}`;
@@ -189,6 +193,7 @@ export class KernelFileUpload extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -206,6 +211,14 @@ export class KernelFileUpload extends KernelElement {
       "label-selected-files",
       "label-remove-file",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.input;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -451,8 +464,7 @@ export class KernelFileUpload extends KernelElement {
     const id = input.id;
     const invalid = this.hasAttribute("invalid");
     const hasError = invalid && this.hasAttribute("error-message");
-    if (hasError) input.setAttribute("aria-describedby", `${id}-error`);
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, [hasError && `${id}-error`]);
     this.renderError();
   }
 

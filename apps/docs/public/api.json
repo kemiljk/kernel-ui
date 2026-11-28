@@ -480,14 +480,21 @@
       },
       "elements": {
         "kernel-button": {
-          "description": "`<kernel-button>` — a real `<button>`. Renders as one by default\nbecause that's the only element that gets click, keyboard\n(Space/Enter), focus, and form association for free from the\nbrowser. Mirrors `@kernelui-lib/react`'s `<Button>`.\n\nAttributes: `variant` (primary/secondary/ghost/danger, default\nsecondary), `size` (sm/md/lg, default md), `disabled`, `loading`\n(boolean attributes), `type` (button/submit/reset, default button).\n\nIcons: put an `svg` or `img` (or any `data-icon` element) first or\nlast among the children and it moves into an icon slot, the same as\nReact's `iconStart`/`iconEnd`. A lone icon makes an icon-only button,\nsquare or (at Round) circular, with the icon concentric. Label an\nicon-only button with `aria-label` on `<kernel-button>`; it's\nforwarded to the real `<button>`.",
+          "description": "`<kernel-button>` — a real `<button>`. Renders as one by default\nbecause that's the only element that gets click, keyboard\n(Space/Enter), focus, and form association for free from the\nbrowser. Mirrors `@kernelui-lib/react`'s `<Button>`.\n\nAttributes: `variant` (primary/secondary/ghost/danger, default\nsecondary), `size` (sm/md/lg, default md), `disabled`, `loading`\n(boolean attributes), `type` (button/submit/reset, default button).\n\nIcons: put an `svg` or `img` (or any `data-icon` element) first or\nlast among the children and it moves into an icon slot, the same as\nReact's `iconStart`/`iconEnd`. A lone icon makes an icon-only button,\nsquare or (at Round) circular, with the icon concentric. Label an\nicon-only button with `aria-label` on `<kernel-button>`; it's\nforwarded to the real `<button>`, as are `aria-labelledby` and\n`aria-describedby`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "variant",
             "size",
             "disabled",
             "loading",
-            "type",
-            "aria-label"
+            "type"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -656,12 +663,19 @@
       },
       "elements": {
         "kernel-carousel": {
-          "description": "`<kernel-carousel>` — a real scroll container: `scroll-snap-type` +\nnative overflow scrolling do the actual carousel work (touch,\ntrackpad, momentum, arrow keys once focused), not a JS drag engine.\nThe only JS here is wiring Prev/Next/dots to `scrollIntoView` and an\n`IntersectionObserver` that watches which slide is actually visible.\n\nUnlike `@kernelui-lib/react`'s version (which supports slides mounting\nand unmounting dynamically via a register/unregister callback), this\nreads its `<kernel-carousel-slide>` children once at connect — the\ncommon case for a declarative-markup custom element. A future pass\ncould add a `MutationObserver` if dynamic slide lists turn out to be\nneeded.\n\nAttributes: `aria-label` (required). Built-in strings:\n`label-previous-slide` (\"Previous slide\"), `label-next-slide`\n(\"Next slide\"), `label-go-to-slide` (template, default\n`\"Go to slide {slide}\"`), or the `labels` property.",
+          "description": "`<kernel-carousel>` — a real scroll container: `scroll-snap-type` +\nnative overflow scrolling do the actual carousel work (touch,\ntrackpad, momentum, arrow keys once focused), not a JS drag engine.\nThe only JS here is wiring Prev/Next/dots to `scrollIntoView` and an\n`IntersectionObserver` that watches which slide is actually visible.\n\nUnlike `@kernelui-lib/react`'s version (which supports slides mounting\nand unmounting dynamically via a register/unregister callback), this\nreads its `<kernel-carousel-slide>` children once at connect — the\ncommon case for a declarative-markup custom element. A future pass\ncould add a `MutationObserver` if dynamic slide lists turn out to be\nneeded.\n\nAttributes: `aria-label` (required). Built-in strings:\n`label-previous-slide` (\"Previous slide\"), `label-next-slide`\n(\"Next slide\"), `label-go-to-slide` (template, default\n`\"Go to slide {slide}\"`), or the `labels` property.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the carousel's `role=\"region\"`.",
           "attributes": [
             "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label-previous-slide",
             "label-next-slide",
             "label-go-to-slide"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         },
@@ -719,13 +733,21 @@
       },
       "elements": {
         "kernel-checkbox": {
-          "description": "`<kernel-checkbox>` — a real `<input type=\"checkbox\">` inside a real\n`<label>`, so clicking the text toggles the box for free. Mirrors\n`@kernelui-lib/react`'s `<Checkbox>`.\n\nAttributes: `checked`, `disabled`, `required` (all boolean), `name`,\n`value`. `indeterminate` has no HTML attribute on the platform's own\ncheckbox either — set it as a live property (`el.indeterminate =\ntrue`) same as any native one. The real inner `<input>` fires real,\nbubbling `change` events; listen on it directly or on this element,\nno synthetic event needed.",
+          "description": "`<kernel-checkbox>` — a real `<input type=\"checkbox\">` inside a real\n`<label>`, so clicking the text toggles the box for free. Mirrors\n`@kernelui-lib/react`'s `<Checkbox>`.\n\nAttributes: `checked`, `disabled`, `required` (all boolean), `name`,\n`value`. `indeterminate` has no HTML attribute on the platform's own\ncheckbox either — set it as a live property (`el.indeterminate =\ntrue`) same as any native one. The real inner `<input>` fires real,\nbubbling `change` events; listen on it directly or on this element,\nno synthetic event needed.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input type=\"checkbox\">`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "checked",
             "disabled",
             "required",
             "name",
             "value"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -924,8 +946,11 @@
       },
       "elements": {
         "kernel-color-picker": {
-          "description": "`<kernel-color-picker>` — a real `<input type=\"color\">`, same\ninvisible-real-input-under-a-decorative-swatch approach as\n`@kernelui-lib/react`'s `<ColorPicker>` (see that file for the full\nrationale). A real `<label>` wraps both the swatch and the input, so\nclicking anywhere opens the OS picker natively.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (default\n`#000000`), `no-hex-input` (boolean — hides the editable hex field;\npresent by default the hex field shows, matching the React version's\n`showHexInput` defaulting to `true`), `size` (sm/md/lg, default md),\n`description`, `error-message`, `no-label-offset` (boolean — hard-\naligns the description and error text flush left instead of the\ndefault inset; doesn't affect `label`, which never carries the inset\nin the first place), `invalid`, `disabled`, `name`. Built-in string:\n`label-hex-value` (default \"Hex color value\"), or the `labels` property.",
+          "description": "`<kernel-color-picker>` — a real `<input type=\"color\">`, same\ninvisible-real-input-under-a-decorative-swatch approach as\n`@kernelui-lib/react`'s `<ColorPicker>` (see that file for the full\nrationale). A real `<label>` wraps both the swatch and the input, so\nclicking anywhere opens the OS picker natively.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (default\n`#000000`), `no-hex-input` (boolean — hides the editable hex field;\npresent by default the hex field shows, matching the React version's\n`showHexInput` defaulting to `true`), `size` (sm/md/lg, default md),\n`description`, `error-message`, `no-label-offset` (boolean — hard-\naligns the description and error text flush left instead of the\ndefault inset; doesn't affect `label`, which never carries the inset\nin the first place), `invalid`, `disabled`, `name`. Built-in string:\n`label-hex-value` (default \"Hex color value\"), or the `labels` property.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input type=\"color\">`; an authored\n`aria-describedby` is added after its own hint and error ids.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "value",
@@ -938,6 +963,11 @@
             "disabled",
             "name",
             "label-hex-value"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -1049,13 +1079,21 @@
       },
       "elements": {
         "kernel-combobox": {
-          "description": "`<kernel-combobox>` — the WAI-ARIA 1.2 combobox pattern: a real\n`<input role=\"combobox\">` that keeps DOM focus the whole time, an\n`aria-activedescendant` pointing at whichever option is highlighted\n(the highlight moves, focus doesn't), and a `role=\"listbox\"` popup.\n`popover=\"manual\"` is used deliberately — this needs its own\nopen/close rules (open on focus or typing, not just a click), so\nlight-dismiss is handled by hand: Escape in the keydown handler,\noutside-click via a `pointerdown` listener.\n\nOptions are declared as real `<option>` children (same convention\nas `<kernel-select>`), moved out of the light DOM at connect and\nrendered as the listbox's own `role=\"option\"` divs.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `no-label-offset`\n(boolean — hard-aligns the label flush left instead of the default\ninset that lines it up with the input's own text padding),\n`placeholder`, `value`, `empty-message` (default \"No results\"),\n`placement` (default bottom), `align` (start/center/end, default\ncenter), `offset` (px, default 8).\nEvents: `valuechange` (`event.detail.value`).",
+          "description": "`<kernel-combobox>` — the WAI-ARIA 1.2 combobox pattern: a real\n`<input role=\"combobox\">` that keeps DOM focus the whole time, an\n`aria-activedescendant` pointing at whichever option is highlighted\n(the highlight moves, focus doesn't), and a `role=\"listbox\"` popup.\n`popover=\"manual\"` is used deliberately — this needs its own\nopen/close rules (open on focus or typing, not just a click), so\nlight-dismiss is handled by hand: Escape in the keydown handler,\noutside-click via a `pointerdown` listener.\n\nOptions are declared as real `<option>` children (same convention\nas `<kernel-select>`), moved out of the light DOM at connect and\nrendered as the listbox's own `role=\"option\"` divs.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `no-label-offset`\n(boolean — hard-aligns the label flush left instead of the default\ninset that lines it up with the input's own text padding),\n`placeholder`, `value`, `empty-message` (default \"No results\"),\n`placement` (default bottom), `align` (start/center/end, default\ncenter), `offset` (px, default 8).\nEvents: `valuechange` (`event.detail.value`).\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input role=\"combobox\">`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "no-label-offset",
             "placeholder",
             "value"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": [
             "valuechange"
@@ -1230,14 +1268,22 @@
       },
       "elements": {
         "kernel-composer": {
-          "description": "`<kernel-composer>` — a chat message input: a real `<textarea>`\ngrowing with `field-sizing: content` (same mechanism as\n`<kernel-textarea>`), plus leading/trailing action rows for\nattachments, model pickers, a send button, etc.\n\nAttributes: `value`, `placeholder`, `disabled`, `thinking` (shows the\nanimated border sweep and blocks submission — the same \"actively\nworking\" language most AI products use), `submit-on`\n(`mod+enter` default | `enter`), and the built-in string\n`label-message` (the textarea's accessible name when there's no\n`placeholder`, default \"Message\") — or the `labels` property.\n\nLight-DOM children tagged `slot=\"leading\"` / `slot=\"trailing\"` (no\nreal shadow DOM here, so this is a plain attribute convention, not\nthe native `<slot>` mechanism) are moved into the matching action\nrow once, at connect.\n\nEvents: native `input` bubbles from the textarea as usual. A\n`submit` `CustomEvent` (`event.detail.value`) fires when Enter (per\n`submit-on`) is pressed with a non-empty, non-disabled, non-thinking\nvalue — the textarea is cleared automatically afterward. A trailing\nsend button can trigger the same path by calling the element's own\npublic `submit()` method from its click handler.",
+          "description": "`<kernel-composer>` — a chat message input: a real `<textarea>`\ngrowing with `field-sizing: content` (same mechanism as\n`<kernel-textarea>`), plus leading/trailing action rows for\nattachments, model pickers, a send button, etc.\n\nAttributes: `value`, `placeholder`, `disabled`, `thinking` (shows the\nanimated border sweep and blocks submission — the same \"actively\nworking\" language most AI products use), `submit-on`\n(`mod+enter` default | `enter`), and the built-in string\n`label-message` (the textarea's accessible name when there's no\n`placeholder`, default \"Message\") — or the `labels` property.\n\nLight-DOM children tagged `slot=\"leading\"` / `slot=\"trailing\"` (no\nreal shadow DOM here, so this is a plain attribute convention, not\nthe native `<slot>` mechanism) are moved into the matching action\nrow once, at connect.\n\nEvents: native `input` bubbles from the textarea as usual. A\n`submit` `CustomEvent` (`event.detail.value`) fires when Enter (per\n`submit-on`) is pressed with a non-empty, non-disabled, non-thinking\nvalue — the textarea is cleared automatically afterward. A trailing\nsend button can trigger the same path by calling the element's own\npublic `submit()` method from its click handler.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<textarea>`; a host `aria-label` wins over the\nplaceholder and the built-in \"Message\".",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "value",
             "placeholder",
             "disabled",
             "thinking",
             "id",
             "label-message"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": [
             "submit"
@@ -2023,8 +2069,11 @@
       },
       "elements": {
         "kernel-file-upload": {
-          "description": "`<kernel-file-upload>` — a real `<input type=\"file\">` wrapped entirely\ninside a real `<label>` that IS the drop zone, same approach as\n`@kernelui-lib/react`'s `<FileUpload>` (see that file for the full\nrationale). No `files` attribute: a `FileList` can't serialize into a\nstring, and the real input's own `.files` is already the correct\nsource of truth, so this element reads it directly after every\n`change`/drop and re-renders its own file-list DOM from it. Validation\nrejections dispatch a `kernel-file-upload-error` `CustomEvent` (there's\nno prop-callback equivalent for a vanilla element) — including\n`type: \"directory\"` for a dropped folder, which the platform hands over\nas an unreadable 0-byte `File` rather than refusing outright.\n\nAttributes: `label` (required, still contributes to the dropzone's\naccessible name even when `hide-label` is set), `hide-label`\n(boolean — hides the label heading only, the hint text underneath\nstill shows), `description` (replaces the default \"Drag and drop, or\nclick to browse\" hint), `accept`, `multiple` (boolean), `max-files`,\n`max-size` (bytes), `preview` (boolean — moulds the dropzone around\nthe current selection with image object-URL thumbnails / file chips;\noff by default), `aspect-ratio=\"square\"` (locks a 1:1 Card-radius\ntile; omit or `\"auto\"` for the default full-width field),\n`error-message`, `no-label-offset` (boolean —\nhard-aligns the error text flush left instead of the default inset;\ndoesn't affect `label` or the hint text, which sit above the dropzone\nas a heading rather than inset text-field content), `invalid`,\n`disabled`, `name`. Built-in strings: `label-selected-files` (default\n\"Selected files\"), `label-remove-file` (template, default\n`\"Remove {fileName}\"`), or the `labels` property.\n\nWhile a drag is over the dropzone, page scroll is locked (`documentElement`\n`overflow`/`touch-action`) so mobile browsers don't scroll/rubber-band the\npage out from under the gesture. Touch-originated drags don't reliably\nfire a matching `dragleave`/`drop` (backgrounded tab, OS-aborted gesture,\ndropped outside the window), so a watchdog timer re-armed on every\n`dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and\n`visibilitychange` listeners — force-clears the drag-active state if the\ndrag goes silent, so the dropzone can't get stuck lit with scroll locked.",
+          "description": "`<kernel-file-upload>` — a real `<input type=\"file\">` wrapped entirely\ninside a real `<label>` that IS the drop zone, same approach as\n`@kernelui-lib/react`'s `<FileUpload>` (see that file for the full\nrationale). No `files` attribute: a `FileList` can't serialize into a\nstring, and the real input's own `.files` is already the correct\nsource of truth, so this element reads it directly after every\n`change`/drop and re-renders its own file-list DOM from it. Validation\nrejections dispatch a `kernel-file-upload-error` `CustomEvent` (there's\nno prop-callback equivalent for a vanilla element) — including\n`type: \"directory\"` for a dropped folder, which the platform hands over\nas an unreadable 0-byte `File` rather than refusing outright.\n\nAttributes: `label` (required, still contributes to the dropzone's\naccessible name even when `hide-label` is set), `hide-label`\n(boolean — hides the label heading only, the hint text underneath\nstill shows), `description` (replaces the default \"Drag and drop, or\nclick to browse\" hint), `accept`, `multiple` (boolean), `max-files`,\n`max-size` (bytes), `preview` (boolean — moulds the dropzone around\nthe current selection with image object-URL thumbnails / file chips;\noff by default), `aspect-ratio=\"square\"` (locks a 1:1 Card-radius\ntile; omit or `\"auto\"` for the default full-width field),\n`error-message`, `no-label-offset` (boolean —\nhard-aligns the error text flush left instead of the default inset;\ndoesn't affect `label` or the hint text, which sit above the dropzone\nas a heading rather than inset text-field content), `invalid`,\n`disabled`, `name`. Built-in strings: `label-selected-files` (default\n\"Selected files\"), `label-remove-file` (template, default\n`\"Remove {fileName}\"`), or the `labels` property.\n\nWhile a drag is over the dropzone, page scroll is locked (`documentElement`\n`overflow`/`touch-action`) so mobile browsers don't scroll/rubber-band the\npage out from under the gesture. Touch-originated drags don't reliably\nfire a matching `dragleave`/`drop` (backgrounded tab, OS-aborted gesture,\ndropped outside the window), so a watchdog timer re-armed on every\n`dragenter`/`dragover` — plus `window` `dragend`/`drop`/`blur` and\n`visibilitychange` listeners — force-clears the drag-active state if the\ndrag goes silent, so the dropzone can't get stuck lit with scroll locked.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input type=\"file\">`; an authored\n`aria-describedby` is added after the error id.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "description",
@@ -2041,6 +2090,11 @@
             "name",
             "label-selected-files",
             "label-remove-file"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": [
             "kernel-file-upload-error"
@@ -2244,13 +2298,21 @@
       },
       "elements": {
         "kernel-input-otp": {
-          "description": "`<kernel-input-otp>` — a row of real `<input>` elements sharing one\nlogical value: the concatenated code string. Unlike RadioGroup's\narrow-key roving, focus here advances automatically as each digit is\ntyped, mirroring how native OTP autofill and every OTP UI users\nalready know behaves. Mirrors `@kernelui-lib/react`'s `<InputOTP>`.\n\nAttributes: `length` (default 6), `value`, `label`, `disabled`, and\nthe built-in string `label-digit` (template, default\n`\"Digit {digit} of {length}\"`) — or the `labels` property.\nDispatches a real, bubbling `change` event on every edit, and a\n`complete` CustomEvent (`event.detail.value`) once when the code\nfirst reaches `length` characters — not on every subsequent event\nwhere it's still complete, same as the React version's `onComplete`.",
+          "description": "`<kernel-input-otp>` — a row of real `<input>` elements sharing one\nlogical value: the concatenated code string. Unlike RadioGroup's\narrow-key roving, focus here advances automatically as each digit is\ntyped, mirroring how native OTP autofill and every OTP UI users\nalready know behaves. Mirrors `@kernelui-lib/react`'s `<InputOTP>`.\n\nAttributes: `length` (default 6), `value`, `label`, `disabled`, and\nthe built-in string `label-digit` (template, default\n`\"Digit {digit} of {length}\"`) — or the `labels` property.\nDispatches a real, bubbling `change` event on every edit, and a\n`complete` CustomEvent (`event.detail.value`) once when the code\nfirst reaches `length` characters — not on every subsequent event\nwhere it's still complete, same as the React version's `onComplete`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the `<fieldset>` that groups the digits.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "length",
             "value",
             "label",
             "disabled",
             "label-digit"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": [
             "complete"
@@ -2642,10 +2704,17 @@
       },
       "elements": {
         "kernel-nav": {
-          "description": "`<kernel-nav>` — a real `<nav>` landmark wrapping a real `<ul>`.\nCompose it with `<kernel-nav-link>` for each entry.\n\nAttributes: `aria-label` (required — a page can have more than one\n`<nav>`, so each needs its own accessible name), `data-orientation`\n(`horizontal` lays the list out as a row instead of a column).",
+          "description": "`<kernel-nav>` — a real `<nav>` landmark wrapping a real `<ul>`.\nCompose it with `<kernel-nav-link>` for each entry.\n\nAttributes: `aria-label` (required — a page can have more than one\n`<nav>`, so each needs its own accessible name), `data-orientation`\n(`horizontal` lays the list out as a row instead of a column).\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the real `<nav>`.",
           "attributes": [
             "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "data-orientation"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         },
@@ -2890,8 +2959,11 @@
       },
       "elements": {
         "kernel-number-field": {
-          "description": "`<kernel-number-field>` — `<kernel-text-field>`'s exact label/\ndescription/error scaffold around a real `<input type=\"number\">`.\nThe − / + buttons call the input's own native `stepUp()`/\n`stepDown()` rather than reimplementing increment logic; since those\nmethods change `.value` without dispatching an event, this reads it\nback and fires `change` by hand afterward. See\n`@kernelui-lib/react`'s `NumberField.tsx` for the full rationale\n(native spinner arrows hidden in CSS, buttons excluded from the tab\norder since focused ArrowUp/ArrowDown already does the same thing\nnatively).\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value`, `min`, `max`,\n`step` (default 1), `size` (sm/md/lg, default md), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the input's own text padding), `invalid`,\n`disabled`, `required`, `name`. Built-in strings: `label-increment`\n(\"Increment\"), `label-decrement` (\"Decrement\"), or the `labels` property.",
+          "description": "`<kernel-number-field>` — `<kernel-text-field>`'s exact label/\ndescription/error scaffold around a real `<input type=\"number\">`.\nThe − / + buttons call the input's own native `stepUp()`/\n`stepDown()` rather than reimplementing increment logic; since those\nmethods change `.value` without dispatching an event, this reads it\nback and fires `change` by hand afterward. See\n`@kernelui-lib/react`'s `NumberField.tsx` for the full rationale\n(native spinner arrows hidden in CSS, buttons excluded from the tab\norder since focused ArrowUp/ArrowDown already does the same thing\nnatively).\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value`, `min`, `max`,\n`step` (default 1), `size` (sm/md/lg, default md), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the input's own text padding), `invalid`,\n`disabled`, `required`, `name`. Built-in strings: `label-increment`\n(\"Increment\"), `label-decrement` (\"Decrement\"), or the `labels` property.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input>`; an authored `aria-describedby` is\nadded after its own hint and error ids.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "value",
@@ -2908,6 +2980,11 @@
             "name",
             "label-increment",
             "label-decrement"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3089,11 +3166,19 @@
       },
       "elements": {
         "kernel-progress": {
-          "description": "`<kernel-progress>` — a real `<progress>`. It's an \"indeterminate\"\nspinner for free when `value` is omitted, and it reports its own\nvalue to assistive tech without any `role=\"progressbar\"`/\n`aria-valuenow` bookkeeping.\n\nAttributes: `value`, `max` (default 100), `label` (sets\n`aria-label`).",
+          "description": "`<kernel-progress>` — a real `<progress>`. It's an \"indeterminate\"\nspinner for free when `value` is omitted, and it reports its own\nvalue to assistive tech without any `role=\"progressbar\"`/\n`aria-valuenow` bookkeeping.\n\nAttributes: `value`, `max` (default 100), `label` (sets\n`aria-label`). `aria-label`, `aria-labelledby` and `aria-describedby`\non the host are forwarded to the `<progress>`; a host `aria-label`\nwins over `label`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "value",
             "max",
             "label"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3170,19 +3255,35 @@
       },
       "elements": {
         "kernel-radio-group": {
-          "description": "`<kernel-radio-group>` — a real `<fieldset>` + `<legend>` grouping\nreal `<input type=\"radio\">` elements (via `<kernel-radio-group-item>`)\nthat share one `name`. Arrow-key roving between options, \"exactly one\nselected\", and disabling every option at once (a real `<fieldset\ndisabled>` cascades to every form control inside it, no JS needed)\nare all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s\n`<RadioGroup>` + `<RadioGroupItem>`.\n\nAttributes: `label` (required — a `<fieldset>` needs a `<legend>` the\nsame way a form field needs a label), `name` (generated if omitted,\nso items still share a real name without the author inventing one),\n`disabled`, `value` (the selected item's value — the counterpart of\nReact's `value`/`defaultValue`; reflected back when the user picks an\noption, alongside the native bubbling `change` event from the radio).",
+          "description": "`<kernel-radio-group>` — a real `<fieldset>` + `<legend>` grouping\nreal `<input type=\"radio\">` elements (via `<kernel-radio-group-item>`)\nthat share one `name`. Arrow-key roving between options, \"exactly one\nselected\", and disabling every option at once (a real `<fieldset\ndisabled>` cascades to every form control inside it, no JS needed)\nare all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s\n`<RadioGroup>` + `<RadioGroupItem>`.\n\nAttributes: `label` (required — a `<fieldset>` needs a `<legend>` the\nsame way a form field needs a label), `name` (generated if omitted,\nso items still share a real name without the author inventing one),\n`disabled`, `value` (the selected item's value — the counterpart of\nReact's `value`/`defaultValue`; reflected back when the user picks an\noption, alongside the native bubbling `change` event from the radio).\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the `<fieldset>`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "disabled",
             "value"
           ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
+          ],
           "events": []
         },
         "kernel-radio-group-item": {
-          "description": "`<kernel-radio-group-item>` — one option inside a `<kernel-radio-group>`.\nAttributes: `value` (required), `disabled`.",
+          "description": "`<kernel-radio-group-item>` — one option inside a `<kernel-radio-group>`.\nAttributes: `value` (required), `disabled`. Text content is the\nradio's label; `aria-label`, `aria-labelledby` and `aria-describedby`\non the host are forwarded to the real `<input type=\"radio\">`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "value",
             "disabled"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3340,9 +3441,18 @@
       },
       "elements": {
         "kernel-scroll-area": {
+          "description": "`<kernel-scroll-area>` — a native overflow container. Attributes:\n`max-block-size` (a CSS length string; omit it and control height via\nthe element's own `style`/class instead, same as `@kernelui-lib/react`'s\n`maxBlockSize` prop), and `edge-shadow` (a boolean attribute — soft\nedge fade + layered inset shadow at whichever edge still has content\nto scroll toward, hidden again once that edge is scrolled into view;\nthe fade masks into the host surface so it stays context-aware).\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the focusable scroll box, which is what a keyboard user\ntabs to.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "max-block-size",
             "edge-shadow"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3423,8 +3533,11 @@
       },
       "elements": {
         "kernel-select": {
-          "description": "`<kernel-select>` — a real `<select>`. Options, keyboard navigation,\ntypeahead, and form behaviour come from the browser. Supporting browsers\nget a token-styled native picker; others keep the platform picker. Mirrors\n`@kernelui-lib/react`'s `<Select>`.\n\nWrite real `<option>`/`<optgroup>` elements as children — not a\n`kernel-select-option` wrapper: a native `<select>` only renders its\nOWN native picker UI for direct `<option>`/`<optgroup>` children, not\nfor arbitrary custom elements, so wrapping them would silently break\nthe one thing this component exists to keep native.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the select's own text padding), `invalid`,\n`required`, `disabled`, `value`, `name`.",
+          "description": "`<kernel-select>` — a real `<select>`. Options, keyboard navigation,\ntypeahead, and form behaviour come from the browser. Supporting browsers\nget a token-styled native picker; others keep the platform picker. Mirrors\n`@kernelui-lib/react`'s `<Select>`.\n\nWrite real `<option>`/`<optgroup>` elements as children — not a\n`kernel-select-option` wrapper: a native `<select>` only renders its\nOWN native picker UI for direct `<option>`/`<optgroup>` children, not\nfor arbitrary custom elements, so wrapping them would silently break\nthe one thing this component exists to keep native.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the select's own text padding), `invalid`,\n`required`, `disabled`, `value`, `name`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<select>`; an authored `aria-describedby` is\nadded after its own hint and error ids.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "description",
@@ -3435,6 +3548,11 @@
             "disabled",
             "value",
             "name"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3647,9 +3765,16 @@
       },
       "elements": {
         "kernel-sidebar": {
-          "description": "`<kernel-sidebar>` — a real `<aside>` landmark for secondary or\ncomplementary content, e.g. docs navigation, a table of contents, or\nfilters next to a list.\n\nAttributes: `aria-label` (required — an `<aside>` is a\n\"complementary\" landmark, and a page can have several, so each needs\nits own accessible name; forwarded onto the real `<aside>`, since the\nouter custom element tag has no ARIA semantics of its own).",
+          "description": "`<kernel-sidebar>` — a real `<aside>` landmark for secondary or\ncomplementary content, e.g. docs navigation, a table of contents, or\nfilters next to a list.\n\nAttributes: `aria-label` (required — an `<aside>` is a\n\"complementary\" landmark, and a page can have several, so each needs\nits own accessible name; forwarded onto the real `<aside>`, since the\nouter custom element tag has no ARIA semantics of its own).\n`aria-labelledby` and `aria-describedby` are forwarded the same way.",
           "attributes": [
-            "aria-label"
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3771,8 +3896,11 @@
       },
       "elements": {
         "kernel-slider": {
-          "description": "`<kernel-slider>` — a real `<input type=\"range\">`. Dragging, arrow-key\nstepping, Page Up/Down, Home/End, and touch support are all native.\nThe filled portion of the track has no standardised styling API yet,\nso this computes the fill ratio on every `input` event and feeds it\nback in as CSS custom properties (`--ratio`, `--percent`) on the root,\nthe same hand-off `@kernelui-lib/react`'s `<Slider>` does.\n\n`variant=\"inset\"` turns the track into a full-height control (control\nheight and radius, like Button or Tabs) that fills with the accent\ncolour, dragged by a slim bar inside the fill. The fill is one\nelement clipped to the thumb's edge, carrying an on-accent copy of\nthe `start-label`/`end-label` captions so each changes colour exactly\nwhere the fill crosses it; both caption layers are `aria-hidden`.\nThe drag bar is a real element so it can be measured: when it would\nland on a caption the track gets `data-overlap`, and the bar steps\naside at rest while the caption steps aside during hover, drag or\nkeyboard focus — see `@kernelui-lib/react`'s `<Slider>`.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (default 0),\n`min` (default 0), `max` (default 100), `step` (default 1),\n`show-value` (boolean — shows the current number next to the label),\n`variant` (`default` | `inset`), `start-label` / `end-label` (inset\nonly — captions pinned inside the track's ends), `disabled`, `name`.",
+          "description": "`<kernel-slider>` — a real `<input type=\"range\">`. Dragging, arrow-key\nstepping, Page Up/Down, Home/End, and touch support are all native.\nThe filled portion of the track has no standardised styling API yet,\nso this computes the fill ratio on every `input` event and feeds it\nback in as CSS custom properties (`--ratio`, `--percent`) on the root,\nthe same hand-off `@kernelui-lib/react`'s `<Slider>` does.\n\n`variant=\"inset\"` turns the track into a full-height control (control\nheight and radius, like Button or Tabs) that fills with the accent\ncolour, dragged by a slim bar inside the fill. The fill is one\nelement clipped to the thumb's edge, carrying an on-accent copy of\nthe `start-label`/`end-label` captions so each changes colour exactly\nwhere the fill crosses it; both caption layers are `aria-hidden`.\nThe drag bar is a real element so it can be measured: when it would\nland on a caption the track gets `data-overlap`, and the bar steps\naside at rest while the caption steps aside during hover, drag or\nkeyboard focus — see `@kernelui-lib/react`'s `<Slider>`.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (default 0),\n`min` (default 0), `max` (default 100), `step` (default 1),\n`show-value` (boolean — shows the current number next to the label),\n`variant` (`default` | `inset`), `start-label` / `end-label` (inset\nonly — captions pinned inside the track's ends), `disabled`, `name`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input type=\"range\">`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "value",
@@ -3785,6 +3913,11 @@
             "end-label",
             "disabled",
             "name"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -3936,10 +4069,18 @@
       },
       "elements": {
         "kernel-switch": {
-          "description": "`<kernel-switch>` — there's no native \"switch\" element, so this follows\nthe WAI-ARIA switch pattern: a real `<button role=\"switch\">` (click,\nSpace/Enter, and focus all free) with `aria-checked` telling assistive\ntech it's a two-state toggle, not a regular button. Mirrors\n`@kernelui-lib/react`'s `<Switch>`.\n\nAttributes: `checked`, `disabled` (both boolean). Text content, if\nany, becomes a real `<label>` wrapping the button — omit it for a\nbare switch. Toggling dispatches a real, bubbling `change` event,\nsame as any native form control.",
+          "description": "`<kernel-switch>` — there's no native \"switch\" element, so this follows\nthe WAI-ARIA switch pattern: a real `<button role=\"switch\">` (click,\nSpace/Enter, and focus all free) with `aria-checked` telling assistive\ntech it's a two-state toggle, not a regular button. Mirrors\n`@kernelui-lib/react`'s `<Switch>`.\n\nAttributes: `checked`, `disabled` (both boolean). Text content, if\nany, becomes a real `<label>` wrapping the button — omit it for a\nbare switch. Toggling dispatches a real, bubbling `change` event,\nsame as any native form control.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<button role=\"switch\">`. With no text content,\ngive the switch a name this way (`aria-label=\"Bill yearly\"`).",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "checked",
             "disabled"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -4020,10 +4161,18 @@
           "events": []
         },
         "kernel-suggestion-item": {
-          "description": "`<kernel-suggestion-item>` — one suggestion chip. Owns a real\n`<li>` > `<button type=\"button\">`. The host uses `display: contents`\nso the `<li>` participates as a direct child of the parent `<ul>`\n(custom elements can't be `<li>` themselves).\n\nAttributes: `value` (detail of the `select` CustomEvent; defaults to\nthe button text), `disabled`.\n\nEvents: `select` CustomEvent with `detail.value`.",
+          "description": "`<kernel-suggestion-item>` — one suggestion chip. Owns a real\n`<li>` > `<button type=\"button\">`. The host uses `display: contents`\nso the `<li>` participates as a direct child of the parent `<ul>`\n(custom elements can't be `<li>` themselves).\n\nAttributes: `value` (detail of the `select` CustomEvent; defaults to\nthe button text), `disabled`.\n\nEvents: `select` CustomEvent with `detail.value`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the chip's `<button>`.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "value",
             "disabled"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": [
             "select"
@@ -4070,8 +4219,17 @@
       },
       "elements": {
         "kernel-table": {
-          "description": "`<kernel-table>` — a real `<table>`. Wrap it in a scrolling `<div>`\nyourself for narrow screens, that's a layout concern, not the\ntable's. Compose with `<kernel-table-caption>`,\n`<kernel-table-header>` (`<thead>`), `<kernel-table-body>`\n(`<tbody>`), `<kernel-table-row>`, `<kernel-table-head>` (`<th>`),\n`<kernel-table-cell>` (`<td>`).",
-          "attributes": [],
+          "description": "`<kernel-table>` — a real `<table>`. Wrap it in a scrolling `<div>`\nyourself for narrow screens, that's a layout concern, not the\ntable's. Compose with `<kernel-table-caption>`,\n`<kernel-table-header>` (`<thead>`), `<kernel-table-body>`\n(`<tbody>`), `<kernel-table-row>`, `<kernel-table-head>` (`<th>`),\n`<kernel-table-cell>` (`<td>`).\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the real `<table>`.",
+          "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
+          ],
           "events": []
         },
         "kernel-table-caption": {
@@ -4222,18 +4380,33 @@
           ]
         },
         "kernel-tabs-list": {
-          "description": "`<kernel-tabs-list>` — `role=\"tablist\"`. Attributes: `aria-label`\n(required), `shape` (`default` follows the theme's control radius,\n`pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`\nchildren and the animated sliding indicator.",
+          "description": "`<kernel-tabs-list>` — `role=\"tablist\"`. Attributes: `aria-label`\n(required), `shape` (`default` follows the theme's control radius,\n`pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`\nchildren and the animated sliding indicator.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the `role=\"tablist\"`.",
           "attributes": [
             "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "shape"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         },
         "kernel-tab": {
-          "description": "`<kernel-tab>` — a real `<button role=\"tab\">`. Attributes: `value`\n(required), `disabled`.",
+          "description": "`<kernel-tab>` — a real `<button role=\"tab\">`. Attributes: `value`\n(required), `disabled`; `aria-label`, `aria-labelledby` and\n`aria-describedby` are forwarded to the button.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "value",
             "disabled"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         },
@@ -4355,8 +4528,11 @@
       },
       "elements": {
         "kernel-tag-input": {
-          "description": "`<kernel-tag-input>` — freeform text that commits into discrete tags,\nsame `role=\"list\"` of `role=\"listitem\"` chips + trailing `listitem`\ninput as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full\ninteraction rationale: Backspace-removes-last-tag, chip remove buttons\nexcluded from the tab sequence, no autocomplete).\n\n`value` serializes as a comma-joined attribute string — a tag\ncontaining the delimiter character itself can't round-trip through\nthat encoding, so use the `tags` property (or the `change` event's\n`detail.tags`) instead when that matters.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (comma-joined),\n`delimiters` (comma-joined, default `\",\"`), `max`, `allow-duplicates`\n(boolean), `description`, `error-message`, `no-label-offset` (boolean —\nhard-aligns the label, description, and error text flush left instead\nof the default inset that lines them up with the input's own text\npadding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,\ndefault `\"Remove {tag}\"`; or the `labels` property's `removeTag`).",
+          "description": "`<kernel-tag-input>` — freeform text that commits into discrete tags,\nsame `role=\"list\"` of `role=\"listitem\"` chips + trailing `listitem`\ninput as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full\ninteraction rationale: Backspace-removes-last-tag, chip remove buttons\nexcluded from the tab sequence, no autocomplete).\n\n`value` serializes as a comma-joined attribute string — a tag\ncontaining the delimiter character itself can't round-trip through\nthat encoding, so use the `tags` property (or the `change` event's\n`detail.tags`) instead when that matters.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (comma-joined),\n`delimiters` (comma-joined, default `\",\"`), `max`, `allow-duplicates`\n(boolean), `description`, `error-message`, `no-label-offset` (boolean —\nhard-aligns the label, description, and error text flush left instead\nof the default inset that lines them up with the input's own text\npadding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,\ndefault `\"Remove {tag}\"`; or the `labels` property's `removeTag`).\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner text `<input>`; an authored `aria-describedby`\nis added after its own hint and error ids.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "value",
@@ -4370,6 +4546,11 @@
             "disabled",
             "name",
             "label-remove-tag"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": [
             "change",
@@ -4462,8 +4643,11 @@
       },
       "elements": {
         "kernel-text-field": {
-          "description": "`<kernel-text-field>` — a real `<label>` + `<input>` pair with correct\n`aria-describedby` wiring for hint and error text. `:user-invalid`\nhandles live, post-interaction validation styling natively; the\n`invalid` attribute is for validation you already know about before\nthe user has touched the field. Mirrors `@kernelui-lib/react`'s\n`<TextField>`.\n\nAttributes: `label` (required, still the input's accessible name even\nwhen `hide-label` is set), `hide-label` (boolean — visually hides the\nlabel without removing it from the accessibility tree), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the input's own text padding), `invalid`,\n`required`, `disabled`, `size` (sm/md/lg, default md), `type` (default\ntext), `placeholder`, `value`, `name`.",
+          "description": "`<kernel-text-field>` — a real `<label>` + `<input>` pair with correct\n`aria-describedby` wiring for hint and error text. `:user-invalid`\nhandles live, post-interaction validation styling natively; the\n`invalid` attribute is for validation you already know about before\nthe user has touched the field. Mirrors `@kernelui-lib/react`'s\n`<TextField>`.\n\nAttributes: `label` (required, still the input's accessible name even\nwhen `hide-label` is set), `hide-label` (boolean — visually hides the\nlabel without removing it from the accessibility tree), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the input's own text padding), `invalid`,\n`required`, `disabled`, `size` (sm/md/lg, default md), `type` (default\ntext), `placeholder`, `value`, `name`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<input>`; an authored `aria-describedby` is\nadded after the field's own hint and error ids.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "description",
@@ -4477,6 +4661,11 @@
             "placeholder",
             "value",
             "name"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -4557,8 +4746,11 @@
       },
       "elements": {
         "kernel-textarea": {
-          "description": "`<kernel-textarea>` — a real `<textarea>` that grows with its content\nvia `field-sizing: content` instead of a `scrollHeight`-measuring\nresize listener (falls back to a manual resize handle where that\nproperty isn't supported yet). Mirrors `@kernelui-lib/react`'s\n`<Textarea>`.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the textarea's own text padding), `invalid`,\n`required`, `disabled`, `placeholder`, `value`, `name`.",
+          "description": "`<kernel-textarea>` — a real `<textarea>` that grows with its content\nvia `field-sizing: content` instead of a `scrollHeight`-measuring\nresize listener (falls back to a manual resize handle where that\nproperty isn't supported yet). Mirrors `@kernelui-lib/react`'s\n`<Textarea>`.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the textarea's own text padding), `invalid`,\n`required`, `disabled`, `placeholder`, `value`, `name`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the inner `<textarea>`; an authored `aria-describedby` is\nadded after its own hint and error ids.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "hide-label",
             "description",
@@ -4570,6 +4762,11 @@
             "placeholder",
             "value",
             "name"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -4679,12 +4876,19 @@
       },
       "elements": {
         "kernel-toggle": {
-          "description": "`<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA\npattern for a two-state toggle that looks and behaves like a button (a\ntoolbar \"bold\" button, say), distinct from `<kernel-switch>`, which is\nthe pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s\n`<Toggle>`.\n\nShaped like `<kernel-button>`: an optical pill at a round theme, with\nan icon child at either end flagged by `observePillIcons()` so it sits\nconcentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).\n\nAttributes: `pressed`, `disabled` (both boolean), `size`\n(sm/md/lg, default md), `aria-label` (forwarded to the inner\n`<button>`, for an icon-only toggle — on the host it would name\nnothing). Toggling dispatches a real, bubbling `change` event.",
+          "description": "`<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA\npattern for a two-state toggle that looks and behaves like a button (a\ntoolbar \"bold\" button, say), distinct from `<kernel-switch>`, which is\nthe pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s\n`<Toggle>`.\n\nShaped like `<kernel-button>`: an optical pill at a round theme, with\nan icon child at either end flagged by `observePillIcons()` so it sits\nconcentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).\n\nAttributes: `pressed`, `disabled` (both boolean), `size`\n(sm/md/lg, default md). `aria-label` (for an icon-only toggle),\n`aria-labelledby` and `aria-describedby` are forwarded to the inner\n`<button>`; on the host they would name nothing. Toggling dispatches a\nreal, bubbling `change` event.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "pressed",
             "disabled",
-            "size",
-            "aria-label"
+            "size"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }
@@ -5155,8 +5359,11 @@
       },
       "elements": {
         "kernel-usage-meter": {
-          "description": "`<kernel-usage-meter>` — token, credit or quota usage on a real\n`<meter>` with a real `<label for>`. The formatted text\n(\"12,340 / 200,000 tokens\", via `Intl.NumberFormat`) is the meter's\n`aria-valuetext`, so it's read with its unit, and the visible copy is\n`aria-hidden` so it isn't read twice. Colour follows the browser's own\nmeter region algorithm (warning above `high`, danger past `low` and\n`high`, and always danger when full). Mirrors `@kernelui-lib/react`'s\n`<UsageMeter>`.\n\nAttributes: `label`, `value`, `min` (default 0), `max`, `low`, `high`,\n`optimum` (default `min`: less is better), `unit`, `locale`,\n`hide-label` (boolean), `description`.",
+          "description": "`<kernel-usage-meter>` — token, credit or quota usage on a real\n`<meter>` with a real `<label for>`. The formatted text\n(\"12,340 / 200,000 tokens\", via `Intl.NumberFormat`) is the meter's\n`aria-valuetext`, so it's read with its unit, and the visible copy is\n`aria-hidden` so it isn't read twice. Colour follows the browser's own\nmeter region algorithm (warning above `high`, danger past `low` and\n`high`, and always danger when full). Mirrors `@kernelui-lib/react`'s\n`<UsageMeter>`.\n\nAttributes: `label`, `value`, `min` (default 0), `max`, `low`, `high`,\n`optimum` (default `min`: less is better), `unit`, `locale`,\n`hide-label` (boolean), `description`.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the `<meter>`; an authored `aria-describedby` is added\nafter the description's id.",
           "attributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby",
             "label",
             "value",
             "min",
@@ -5168,6 +5375,11 @@
             "locale",
             "hide-label",
             "description"
+          ],
+          "forwardedAttributes": [
+            "aria-label",
+            "aria-labelledby",
+            "aria-describedby"
           ],
           "events": []
         }

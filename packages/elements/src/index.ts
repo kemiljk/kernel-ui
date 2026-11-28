@@ -171,4 +171,5 @@ export type { SpringConfig, SpringRunOptions } from "./utils/spring";
 export { DetailsPanelAnimator } from "./utils/detailsTransition";
 export type { DetailsPanelAnimatorOptions } from "./utils/detailsTransition";
 
-export { KernelElement, kernelClass, dataAttr } from "./base";
+export { KernelElement, kernelClass, dataAttr, FORWARDED_ARIA_ATTRIBUTES } from "./base";
+export type { ForwardedAriaAttribute } from "./base";

@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./ColorPicker.css";
 
 let colorPickerCounter = 0;
@@ -36,6 +36,10 @@ function normalizeHex(raw: string): string | null {
  * default inset; doesn't affect `label`, which never carries the inset
  * in the first place), `invalid`, `disabled`, `name`. Built-in string:
  * `label-hex-value` (default "Hex color value"), or the `labels` property.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<input type="color">`; an authored
+ * `aria-describedby` is added after its own hint and error ids.
  */
 export class KernelColorPicker extends KernelElement {
   private readonly generatedId = `kernel-color-picker-${++colorPickerCounter}`;
@@ -43,6 +47,7 @@ export class KernelColorPicker extends KernelElement {
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "value",
@@ -56,6 +61,14 @@ export class KernelColorPicker extends KernelElement {
       "name",
       "label-hex-value",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.colorInput;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -152,8 +165,7 @@ export class KernelColorPicker extends KernelElement {
       hasError ? `${id}-error` : null,
       this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
-    else input.removeAttribute("aria-describedby");
+    this.setDescribedBy(input, ids);
     this.renderHint();
   }
 

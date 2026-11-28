@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Table.css";
 
 /**
@@ -8,8 +8,20 @@ import "./Table.css";
  * `<kernel-table-header>` (`<thead>`), `<kernel-table-body>`
  * (`<tbody>`), `<kernel-table-row>`, `<kernel-table-head>` (`<th>`),
  * `<kernel-table-cell>` (`<td>`).
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the real `<table>`.
  */
 export class KernelTable extends KernelElement {
+  static get observedAttributes() {
+    return [...FORWARDED_ARIA_ATTRIBUTES];
+  }
+
+  /** The real `<table>`, not the scroll box around it. */
+  protected ariaTarget() {
+    return this.native?.querySelector("table") ?? null;
+  }
+
   /** Same horizontal scroll container as `@kernelui-lib/react`'s
    * `<Table>`: the native child is the scroll box, and the real `<table>`
    * inside it receives the author's sections. */

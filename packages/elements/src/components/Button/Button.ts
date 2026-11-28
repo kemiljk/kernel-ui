@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Button.css";
 
 const ICON_SELECTOR = "svg, img, picture, [data-icon]";
@@ -18,11 +18,16 @@ const ICON_SELECTOR = "svg, img, picture, [data-icon]";
  * React's `iconStart`/`iconEnd`. A lone icon makes an icon-only button,
  * square or (at Round) circular, with the icon concentric. Label an
  * icon-only button with `aria-label` on `<kernel-button>`; it's
- * forwarded to the real `<button>`.
+ * forwarded to the real `<button>`, as are `aria-labelledby` and
+ * `aria-describedby`.
  */
 export class KernelButton extends KernelElement {
   static get observedAttributes() {
-    return ["variant", "size", "disabled", "loading", "type", "aria-label"];
+    return [...FORWARDED_ARIA_ATTRIBUTES, "variant", "size", "disabled", "loading", "type"];
+  }
+
+  protected ariaTarget() {
+    return this.native;
   }
 
   connectedCallback() {
@@ -77,10 +82,6 @@ export class KernelButton extends KernelElement {
         break;
       case "size":
         button.dataset.size = value ?? "md";
-        break;
-      case "aria-label":
-        if (value === null) button.removeAttribute("aria-label");
-        else button.setAttribute("aria-label", value);
         break;
       case "type":
         button.type = (value as "button" | "submit" | "reset" | null) ?? "button";

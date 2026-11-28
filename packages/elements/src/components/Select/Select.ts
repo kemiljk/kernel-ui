@@ -1,4 +1,4 @@
-import { KernelElement, kernelClass } from "../../base";
+import { FORWARDED_ARIA_ATTRIBUTES, KernelElement, kernelClass } from "../../base";
 import "./Select.css";
 
 let selectCounter = 0;
@@ -21,12 +21,17 @@ let selectCounter = 0;
  * description, and error text flush left instead of the default inset
  * that lines them up with the select's own text padding), `invalid`,
  * `required`, `disabled`, `value`, `name`.
+ *
+ * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
+ * forwarded to the inner `<select>`; an authored `aria-describedby` is
+ * added after its own hint and error ids.
  */
 export class KernelSelect extends KernelElement {
   private readonly generatedId = `kernel-select-${++selectCounter}`;
 
   static get observedAttributes() {
     return [
+      ...FORWARDED_ARIA_ATTRIBUTES,
       "label",
       "hide-label",
       "description",
@@ -38,6 +43,14 @@ export class KernelSelect extends KernelElement {
       "value",
       "name",
     ];
+  }
+
+  protected ariaTarget() {
+    return this.select;
+  }
+
+  protected syncDescribedBy() {
+    this.updateDescribedBy();
   }
 
   connectedCallback() {
@@ -94,8 +107,7 @@ export class KernelSelect extends KernelElement {
       hasError ? `${id}-error` : null,
       this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
-    if (ids.length) select.setAttribute("aria-describedby", ids.join(" "));
-    else select.removeAttribute("aria-describedby");
+    this.setDescribedBy(select, ids);
     this.renderHint();
   }
 
