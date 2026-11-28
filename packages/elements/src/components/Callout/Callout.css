@@ -12,16 +12,28 @@
     border-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
+/* A stroke icon in the variant's text colour, not a filled disc behind
+   a font glyph: the disc made a 20px blob the loudest thing in the box,
+   and the glyph inside it sat wherever the font put it. The icon box is
+   one title line tall, so the icon centres on the title's first line
+   (or the body's, when there is no title) at any font size. */
 .kernel-Callout-icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  border-radius: var(--kernel-radius-full);
-  font-size: 0.75rem;
-  font-weight: 700;
+  inline-size: 1rem;
+  block-size: 1lh;
+  line-height: var(--kernel-line-height-tight);
+}
+
+.kernel-Callout-root:not(:has(.kernel-Callout-title)) .kernel-Callout-icon {
+  line-height: var(--kernel-line-height);
+}
+
+.kernel-Callout-icon > svg {
+  inline-size: 1rem;
+  block-size: 1rem;
 }
 
 .kernel-Callout-title {
@@ -40,33 +52,33 @@
   border-color: var(--kernel-accent-6);
 }
 .kernel-Callout-root[data-variant="info"] .kernel-Callout-icon {
-  background-color: var(--kernel-accent-9);
-  color: var(--kernel-color-on-accent);
+  color: var(--kernel-color-accent-text);
 }
 
+/* Borders are a tint of the variant colour, not the full-strength
+   swatch: the subtle fill already says which kind of message this is,
+   and a saturated outline on top made a routine note read as an alarm.
+   Info already did this with --kernel-accent-6. */
 .kernel-Callout-root[data-variant="success"] {
   background-color: var(--kernel-color-success-subtle);
-  border-color: var(--kernel-color-success);
+  border-color: color-mix(in oklab, var(--kernel-color-success) 40%, var(--kernel-color-success-subtle));
 }
 .kernel-Callout-root[data-variant="success"] .kernel-Callout-icon {
-  background-color: var(--kernel-color-success);
-  color: var(--kernel-color-on-success);
+  color: var(--kernel-color-success-text);
 }
 
 .kernel-Callout-root[data-variant="warning"] {
   background-color: var(--kernel-color-warning-subtle);
-  border-color: var(--kernel-color-warning);
+  border-color: color-mix(in oklab, var(--kernel-color-warning) 40%, var(--kernel-color-warning-subtle));
 }
 .kernel-Callout-root[data-variant="warning"] .kernel-Callout-icon {
-  background-color: var(--kernel-color-warning);
-  color: var(--kernel-color-on-warning);
+  color: var(--kernel-color-warning-text);
 }
 
 .kernel-Callout-root[data-variant="danger"] {
   background-color: var(--kernel-color-danger-subtle);
-  border-color: var(--kernel-color-danger);
+  border-color: color-mix(in oklab, var(--kernel-color-danger) 40%, var(--kernel-color-danger-subtle));
 }
 .kernel-Callout-root[data-variant="danger"] .kernel-Callout-icon {
-  background-color: var(--kernel-color-danger);
-  color: var(--kernel-color-on-danger);
+  color: var(--kernel-color-danger-text);
 }

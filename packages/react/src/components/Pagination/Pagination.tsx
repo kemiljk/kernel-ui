@@ -89,7 +89,9 @@ export function PaginationPrevious({ className, children, labels, ...rest }: Pag
         aria-label={l.previousPage}
         className={[styles.control, resolveClassName(className, {})].filter(Boolean).join(" ")}
       >
-        <span aria-hidden="true">‹</span>
+        <svg className={styles.chevron} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+          <path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         <span className={styles.label}>{children ?? l.previous}</span>
       </button>
     </li>
@@ -107,7 +109,9 @@ export function PaginationNext({ className, children, labels, ...rest }: Paginat
         className={[styles.control, resolveClassName(className, {})].filter(Boolean).join(" ")}
       >
         <span className={styles.label}>{children ?? l.next}</span>
-        <span aria-hidden="true">›</span>
+        <svg className={styles.chevron} viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
     </li>
   );

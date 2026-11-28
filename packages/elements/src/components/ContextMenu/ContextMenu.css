@@ -12,7 +12,8 @@ kernel-context-menu {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-block: var(--kernel-space-1);
-  padding-inline: var(--kernel-space-2);
+  --menu-padding-inline: var(--kernel-space-2);
+  padding-inline: var(--menu-padding-inline);
   border: var(--kernel-border-width) solid var(--kernel-color-border);
   border-radius: var(--kernel-radius-md);
   background-color: var(--kernel-color-surface-raised);

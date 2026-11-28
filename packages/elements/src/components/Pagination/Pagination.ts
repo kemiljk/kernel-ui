@@ -103,11 +103,22 @@ abstract class KernelPaginationControl extends KernelElement {
     button.type = "button";
     button.className = kernelClass("Pagination", "control");
     button.setAttribute("aria-label", this.controlAriaLabel());
-    // Chevron and word in separate spans, like React's controls: below a
+    // Chevron icon and word span kept apart, like React's controls: below a
     // narrow container the word is visually hidden (Pagination.css).
-    const chevron = document.createElement("span");
+    const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    chevron.setAttribute("class", kernelClass("Pagination", "chevron"));
+    chevron.setAttribute("viewBox", "0 0 16 16");
+    chevron.setAttribute("width", "16");
+    chevron.setAttribute("height", "16");
+    chevron.setAttribute("fill", "none");
     chevron.setAttribute("aria-hidden", "true");
-    chevron.textContent = this.chevronFirst() ? "‹" : "›";
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", this.chevronFirst() ? "M10 4L6 8L10 12" : "M6 4L10 8L6 12");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "1.5");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    chevron.append(path);
     const label = document.createElement("span");
     label.className = kernelClass("Pagination", "label");
     if (this.labelNodes.length) label.append(...this.labelNodes);

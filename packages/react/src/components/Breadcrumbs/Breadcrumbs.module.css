@@ -7,7 +7,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--kernel-space-1);
+  gap: var(--kernel-space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -31,7 +31,7 @@
 .item {
   display: flex;
   align-items: center;
-  gap: var(--kernel-space-1);
+  gap: var(--kernel-space-2);
   min-block-size: 24px;
 }
 
@@ -63,6 +63,13 @@
   font-weight: 500;
 }
 
+/* The separator is structure, not content: one step quieter than the
+   muted links, with room either side, so the trail reads as its
+   destinations rather than as a run of text and slashes at one weight.
+   It is aria-hidden, so it carries no text-contrast requirement, and
+   it never joins a copied selection. */
 .separator {
-  color: var(--kernel-color-text-muted);
+  color: var(--kernel-color-border-strong);
+  -webkit-user-select: none;
+  user-select: none;
 }

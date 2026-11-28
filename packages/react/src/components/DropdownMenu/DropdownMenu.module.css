@@ -72,11 +72,19 @@
      that's the dimension governing whether the first/last item's
      corner nests against the panel's rounded top/bottom edge). */
   border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
-  padding: var(--kernel-space-3);
+  /* Compact rows, the rhythm dense menus settle on: about a control's
+     height per row instead of a full touch-target block, so a six-item
+     menu doesn't tower over the trigger that opened it. Matches
+     Combobox's options, so every list of choices reads the same. */
+  padding-block: var(--kernel-space-2);
+  padding-inline: var(--kernel-space-3);
+  /* Room for a leading icon and a trailing shortcut (see below). */
+  gap: var(--kernel-space-2);
   background-color: transparent;
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height);
   cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
@@ -129,9 +137,50 @@ a.item {
   }
 }
 
+/* A destructive row keeps its danger tint when it's reached from the
+   keyboard too, not only under the pointer, so arrowing onto "Delete"
+   reads as the same warning as hovering it. */
+.item[data-destructive][data-highlighted],
+.item[data-destructive]:focus-visible {
+  background-color: var(--kernel-color-danger-subtle);
+}
+
+/* A leading icon is a quiet, fixed 1rem glyph in the muted tone, so the
+   labels stay the strongest thing in the row and line up whether or not
+   a row has an icon. A destructive row's icon takes the row's colour. */
+.item > svg {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+  color: var(--kernel-color-text-muted);
+}
+
+.item[data-destructive] > svg {
+  color: currentColor;
+}
+
+/* A shortcut (a <Kbd>, or any element marked data-slot="shortcut") is
+   pushed to the trailing edge, so shortcuts form one aligned column
+   down the menu instead of trailing each label at a different x. A step
+   smaller than the label, so a <Kbd> combo doesn't set the row height. */
+.item > kbd,
+.item > [data-slot="shortcut"] {
+  margin-inline-start: auto;
+  padding-inline-start: var(--kernel-space-4);
+  color: var(--kernel-color-text-muted);
+  font-size: calc(var(--kernel-font-size-sm) / var(--kernel-font-scale));
+}
+
+/* Runs edge to edge across the panel rather than stopping at the item
+   inset: a full-bleed rule reads as a break between groups, where an
+   inset one reads as underlining the row above it. The negative margin
+   cancels the panel's inline padding, which ContextMenu widens through
+   --menu-padding-inline. */
 .separator {
+  flex-shrink: 0;
   block-size: var(--kernel-border-width);
   margin-block: var(--kernel-space-1);
+  margin-inline: calc(-1 * var(--menu-padding-inline, var(--kernel-space-1)));
   background-color: var(--kernel-color-border);
 }
 
