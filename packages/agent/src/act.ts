@@ -8,6 +8,7 @@
  */
 import {
   accessibleName,
+  byId,
   checkedState,
   expandedState,
   isDetailsSummary,
@@ -99,13 +100,148 @@ export function setText(el: Element, text: string, append = false) {
   if (!setter || el.tagName === "SELECT") throw new StepError(`Can't type into a ${roleOf(el) ?? el.tagName.toLowerCase()}.`);
   const input = el as HTMLInputElement;
   const type = el.tagName === "INPUT" ? input.type : "textarea";
-  if (["checkbox", "radio", "button", "submit", "reset", "image", "file", "range", "color"].includes(type)) {
+  if (["range", "color"].includes(type)) throw new StepError(`Can't type into an input of type "${type}"; use "setValue".`);
+  if (["checkbox", "radio", "button", "submit", "reset", "image", "file"].includes(type)) {
     throw new StepError(`Can't type into an input of type "${type}".`);
   }
   const next = append ? `${input.value}${text}` : text;
   setter(next);
   fireInput(el, text || null, text ? "insertText" : "deleteContentBackward");
   fireChange(el);
+}
+
+/** Input types whose value is set whole rather than typed. */
+const VALUE_TYPES = new Set(["range", "number", "date", "datetime-local", "month", "time", "week", "color"]);
+
+function checkBounds(value: number, min: string | null, max: string | null) {
+  if (min !== null && min !== "" && Number.isFinite(Number(min)) && value < Number(min)) throw new StepError(`${value} is below the minimum (${min}).`);
+  if (max !== null && max !== "" && Number.isFinite(Number(max)) && value > Number(max)) throw new StepError(`${value} is above the maximum (${max}).`);
+}
+
+/** Sets a control's value in one step: a range, number, date/time or colour
+ * input through the native setter plus `input`/`change` (the browser
+ * sanitises it first, so a range snaps to its step); an ARIA slider or
+ * spinbutton with arrow keys, the way a keyboard user would; text fields
+ * and selects as `type` and `select` would. */
+export async function setValue(el: Element, args: AgentStep["args"]): Promise<ActOutcome> {
+  const raw = args?.value as unknown;
+  if (raw === undefined || raw === null || raw === "") throw new StepError("`setValue` needs `args.value`.");
+  const wanted = String(raw);
+  if (isReadOnly(el)) throw new StepError("The field is read-only.");
+
+  if (el.tagName === "INPUT" && VALUE_TYPES.has((el as HTMLInputElement).type)) {
+    const input = el as HTMLInputElement;
+    const type = input.type;
+    if (type === "range" || type === "number") {
+      const number = Number(wanted);
+      if (!Number.isFinite(number)) throw new StepError(`"${wanted}" isn't a number.`);
+      checkBounds(number, input.getAttribute("min"), input.getAttribute("max"));
+    }
+    // Ask a detached input of the same type what the browser makes of the
+    // value, so an invalid one fails without clearing the real field.
+    const probe = el.ownerDocument.createElement("input");
+    probe.type = type;
+    for (const attr of ["min", "max", "step"]) {
+      const value = input.getAttribute(attr);
+      if (value !== null) probe.setAttribute(attr, value);
+    }
+    probe.value = wanted;
+    if (probe.value === "") throw new StepError(`"${wanted}" isn't a valid ${type} value.`);
+    input.focus({ preventScroll: true });
+    nativeValueSetter(el)!(probe.value);
+    fireInput(el, null, "insertReplacementText");
+    fireChange(el);
+    return input.value !== wanted ? { note: `set to ${input.value}` } : {};
+  }
+  if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || isEditableHost(el)) {
+    setText(el, wanted);
+    return {};
+  }
+  if (el.tagName === "SELECT") return selectOption(el, { value: wanted });
+
+  const role = roleOf(el);
+  if (role === "slider" || role === "spinbutton") {
+    const target = Number(wanted);
+    if (!Number.isFinite(target)) throw new StepError(`"${wanted}" isn't a number.`);
+    checkBounds(target, el.getAttribute("aria-valuemin"), el.getAttribute("aria-valuemax"));
+    const now = () => Number(el.getAttribute("aria-valuenow"));
+    if (!Number.isFinite(now())) throw new StepError(`This ${role} has no aria-valuenow to step from.`);
+    (el as HTMLElement).focus?.({ preventScroll: true });
+    const [up, down] = role === "slider" ? ["ArrowRight", "ArrowLeft"] : ["ArrowUp", "ArrowDown"];
+    for (let i = 0; i < 1000; i++) {
+      const before = now();
+      if (before === target) return {};
+      const rising = target > before;
+      pressKey(el, rising ? up! : down!);
+      if (now() === before) await nextFrame(view(el));
+      const after = now();
+      if (after === before) throw new StepError(`The ${role} didn't respond to arrow keys (stuck at ${before}).`);
+      // Stepped past the target: the step size doesn't land on it exactly.
+      if (rising ? after > target : after < target) return { note: `set to ${after}, the nearest step` };
+    }
+    throw new StepError(`Gave up stepping the ${role} toward ${target}.`);
+  }
+  throw new StepError(`A ${role ?? el.tagName.toLowerCase()} has no value to set.`);
+}
+
+const KEY_CODES: Record<string, string> = {
+  " ": "Space",
+  Enter: "Enter",
+  Escape: "Escape",
+  Tab: "Tab",
+  Backspace: "Backspace",
+  Delete: "Delete",
+  ArrowUp: "ArrowUp",
+  ArrowDown: "ArrowDown",
+  ArrowLeft: "ArrowLeft",
+  ArrowRight: "ArrowRight",
+  Home: "Home",
+  End: "End",
+  PageUp: "PageUp",
+  PageDown: "PageDown",
+};
+
+const MODIFIERS: Record<string, "shiftKey" | "ctrlKey" | "altKey" | "metaKey"> = {
+  shift: "shiftKey",
+  control: "ctrlKey",
+  ctrl: "ctrlKey",
+  alt: "altKey",
+  meta: "metaKey",
+};
+
+/** Parses `"Enter"`, `"Shift+Tab"` or `"a"` into a key and modifiers. */
+export function parseKey(spec: string): { key: string; modifiers: Partial<Record<"shiftKey" | "ctrlKey" | "altKey" | "metaKey", boolean>> } {
+  if (typeof spec !== "string" || !spec || spec.length > 40) throw new StepError('`key` needs `args.key`, e.g. "Enter", "Escape" or "Shift+Tab".');
+  const parts = spec === "+" ? ["+"] : spec.split("+");
+  const key = parts.pop() || "+";
+  const modifiers: Partial<Record<"shiftKey" | "ctrlKey" | "altKey" | "metaKey", boolean>> = {};
+  for (const part of parts) {
+    const flag = MODIFIERS[part.toLowerCase()];
+    if (!flag) throw new StepError(`Unknown modifier "${part}" in "${spec}".`);
+    modifiers[flag] = true;
+  }
+  const normalized = key === "Space" ? " " : key === "Esc" ? "Escape" : key;
+  if (normalized.length !== 1 && !KEY_CODES[normalized] && !/^F([1-9]|1[0-2])$/.test(normalized)) {
+    throw new StepError(`Unknown key "${key}". Use a single character or one of: ${Object.keys(KEY_CODES).filter((k) => k !== " ").join(", ")}, Space.`);
+  }
+  return { key: normalized, modifiers };
+}
+
+/** Dispatches keydown/keyup for one key on the element, so the page's own
+ * key handlers run (committing a TagInput tag, moving a roving focus).
+ * Script-made key events don't trigger browser default actions such as
+ * implicit form submission or typing a character; use `type` and `submit`
+ * for those. */
+export function pressKey(el: Element, spec: string): ActOutcome {
+  const { key, modifiers } = parseKey(spec);
+  const win = view(el);
+  const code = KEY_CODES[key] ?? (key.length === 1 && /[a-z]/i.test(key) ? `Key${key.toUpperCase()}` : key.length === 1 && /\d/.test(key) ? `Digit${key}` : key);
+  const init: KeyboardEventInit = { key, code, bubbles: true, cancelable: true, composed: true, ...modifiers };
+  const html = el as HTMLElement;
+  if (el.ownerDocument.activeElement !== el) html.focus?.({ preventScroll: true });
+  const proceed = el.dispatchEvent(new win.KeyboardEvent("keydown", init));
+  el.dispatchEvent(new win.KeyboardEvent("keyup", init));
+  return proceed ? {} : { note: "the page handled the key" };
 }
 
 function sameText(a: string, b: string) {
@@ -115,7 +251,7 @@ function sameText(a: string, b: string) {
 function popupOf(el: Element): Element | null {
   const ids = (el.getAttribute("aria-controls") ?? el.getAttribute("aria-owns") ?? "").trim().split(/\s+/).filter(Boolean);
   for (const id of ids) {
-    const found = el.ownerDocument.getElementById(id);
+    const found = byId(el, id);
     if (found) return found;
   }
   return popoverTargetOf(el);
@@ -130,11 +266,62 @@ function findOption(container: Element, wanted: string): Element | null {
   );
 }
 
+function matches(el: Element, selector: string): boolean {
+  try {
+    return el.matches(selector);
+  } catch {
+    return false;
+  }
+}
+
+/** Closes a select's open picker (a customizable `appearance: base-select`
+ * one a person opened), as choosing an option in it would. Setting the
+ * value from script leaves it open, and no API closes it, but showing an
+ * auto popover light-dismisses it. The probe sits inside the select's own
+ * open popover, if any, so that popover stays open. */
+function closePicker(select: HTMLSelectElement) {
+  if (!matches(select, ":open")) return;
+  const doc = select.ownerDocument;
+  const probe = doc.createElement("div") as HTMLElement & { showPopover?: () => void; hidePopover?: () => void };
+  if (typeof probe.showPopover !== "function") return;
+  probe.setAttribute("popover", "auto");
+  probe.setAttribute("data-kernel-agent-ignore", "");
+  probe.style.cssText = "position:fixed;inset:auto;width:0;height:0;padding:0;border:0;overflow:hidden";
+  let host: Element | null = select.parentElement;
+  while (host && !(host.hasAttribute("popover") && matches(host, ":popover-open")) && host.tagName !== "DIALOG") host = host.parentElement;
+  (host ?? doc.body).append(probe);
+  try {
+    probe.showPopover!();
+    probe.hidePopover!();
+  } catch {
+    /* no popover support */
+  } finally {
+    probe.remove();
+  }
+}
+
+/** Opens or closes an ARIA combobox's popup. A click is the first try, but
+ * many comboboxes open on focus and ignore a click on an already-focused
+ * input, so the APG key follows if it didn't take: ArrowDown to open,
+ * Escape to close. */
+async function toggleCombobox(el: Element, want: boolean): Promise<ActOutcome> {
+  const win = view(el);
+  press(el);
+  await nextFrame(win);
+  if (expandedState(el) === want) return {};
+  pressKey(el, want ? "ArrowDown" : "Escape");
+  await nextFrame(win);
+  if (expandedState(el) !== want && expandedState(el) !== undefined) {
+    throw new StepError(`The combobox didn't ${want ? "open" : "close"} on click or ${want ? "ArrowDown" : "Escape"}.`);
+  }
+  return {};
+}
+
 /** Chooses an option: a native `<select>` through its value setter and
  * `input`/`change`; an ARIA listbox or combobox by opening it if needed and
  * pressing the matching option, as a person would. */
 export async function selectOption(el: Element, args: AgentStep["args"]): Promise<ActOutcome> {
-  const wanted = args?.values ?? (args?.value !== undefined ? [args.value] : []);
+  const wanted = (args?.values ?? (args?.value !== undefined ? [args.value] : [])).map(String);
   if (!wanted.length) throw new StepError('`select` needs `args.value` (or `args.values` for a multi-select).');
 
   if (el.tagName === "SELECT") {
@@ -155,6 +342,7 @@ export async function selectOption(el: Element, args: AgentStep["args"]): Promis
     }
     fireInput(select, null, "insertReplacementText");
     fireChange(select);
+    closePicker(select);
     return {};
   }
 
@@ -165,8 +353,7 @@ export async function selectOption(el: Element, args: AgentStep["args"]): Promis
   }
   let popup: Element | null = role === "listbox" ? el : popupOf(el);
   if (role === "combobox" && expandedState(el) !== true) {
-    press(el);
-    await nextFrame(view(el));
+    await toggleCombobox(el, true);
     popup = popupOf(el) ?? popup;
   }
   if (!popup) throw new StepError("Couldn't find this control's list of options (no aria-controls).");
@@ -209,9 +396,9 @@ function closeButtonIn(container: Element): Element | null {
 function invokerOf(target: Element): Element | null {
   const id = target.id;
   if (!id) return null;
-  const doc = target.ownerDocument;
+  const scope = (target.getRootNode?.() ?? target.ownerDocument) as ParentNode;
   const escaped = id.replace(/["\\]/g, "\\$&");
-  return doc.querySelector(`[popovertarget="${escaped}"], [commandfor="${escaped}"], [aria-controls~="${escaped}"]`);
+  return scope.querySelector(`[popovertarget="${escaped}"], [commandfor="${escaped}"], [aria-controls~="${escaped}"]`);
 }
 
 /** Opens or closes a disclosure, dialog, popover or expandable trigger
@@ -266,10 +453,13 @@ export async function setOpen(el: Element, want: boolean): Promise<ActOutcome> {
     return {};
   }
 
+  if (tag === "SELECT") throw new StepError('A select opens its own picker; choose an option with "select" and `args.value`.');
+
   // A trigger with aria-expanded / popovertarget: press it if needed.
   const expanded = expandedState(el);
   if (expanded !== undefined || el.getAttribute("aria-haspopup")) {
     if (expanded === want) return { note: want ? "already open" : "already closed" };
+    if (role === "combobox") return toggleCombobox(el, want);
     press(el);
     return {};
   }

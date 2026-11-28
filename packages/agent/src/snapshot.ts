@@ -5,6 +5,8 @@ import {
   accessibleName,
   checkedState,
   expandedState,
+  flatChildren,
+  flatParent,
   hidesSubtree,
   isContextWorthy,
   isDisabled,
@@ -75,6 +77,8 @@ export interface WalkOptions {
   maxNodes: number;
   /** Fills a Map from ref → element for the nodes in this snapshot. */
   elements?: Map<string, Element>;
+  /** Collects the open shadow roots the walk went into. */
+  shadowRoots?: Set<ShadowRoot>;
 }
 
 export function isExcluded(el: Element, exclude: ElementFilter | undefined): boolean {
@@ -83,7 +87,7 @@ export function isExcluded(el: Element, exclude: ElementFilter | undefined): boo
 
 function insideIncluded(el: Element, root: Element, include: ElementFilter | undefined): boolean {
   if (!include) return true;
-  for (let node: Element | null = el; node; node = node.parentElement) {
+  for (let node: Element | null = el; node; node = flatParent(node)) {
     if (matchesFilter(node, include)) return true;
     if (node === root) break;
   }
@@ -101,11 +105,30 @@ function optionsOf(select: HTMLSelectElement): { options: SnapshotOption[]; more
   return { options, more: Math.max(0, all.length - MAX_OPTIONS) };
 }
 
+const INTERACTIVE_INSIDE = 'button, a[href], input, select, textarea, [tabindex], [role="button"], [role="link"], [role="checkbox"], [role="option"]';
+
+/** A grid cell that wraps its own control (a DatePicker day's button) is
+ * operated through that control, so the cell itself is flattened away
+ * rather than given a second ref; so is an empty filler cell. */
+function isWrapperCell(el: Element): boolean {
+  if (el.hasAttribute("tabindex")) return false;
+  return Boolean(el.querySelector(INTERACTIVE_INSIDE)) || !accessibleName(el, "gridcell");
+}
+
+/** `aria-selected` from a wrapper cell, which the control inside it
+ * reports instead. */
+function cellState(el: Element): { selected?: boolean } {
+  const parent = flatParent(el);
+  if (!parent || roleOf(parent) !== "gridcell") return {};
+  return parent.getAttribute("aria-selected") === "true" ? { selected: true } : {};
+}
+
 /** Builds the snapshot node for one element, or null if it isn't worth
  * showing. Doesn't look at children. */
 export function describe(el: Element, opts: Pick<WalkOptions, "root" | "refs" | "include">): SnapshotNode | null {
   const role = roleOf(el);
   if (!role) return null;
+  if (role === "gridcell" && isWrapperCell(el)) return null;
   const actionable = ACTIONABLE_ROLES.has(role);
   if (!actionable && !CONTEXT_ROLES.has(role)) return null;
   const name = accessibleName(el, role);
@@ -178,7 +201,8 @@ export function describe(el: Element, opts: Pick<WalkOptions, "root" | "refs" | 
   const checked = checkedState(el, role);
   if (checked !== undefined) node.checked = checked;
   const selected = el.getAttribute("aria-selected");
-  if (selected === "true") node.selected = true;
+  const fromCell = role === "button" || role === "link" ? cellState(el) : {};
+  if (selected === "true" || fromCell.selected) node.selected = true;
   else if (selected === "false" && (role === "tab" || role === "option")) node.selected = false;
   const expanded = expandedState(el);
   if (expanded !== undefined) node.expanded = expanded;
@@ -207,12 +231,13 @@ export function walk(opts: WalkOptions): Snapshot {
   let truncated = false;
   let focused: string | undefined;
 
-  // Open shadow roots (custom elements that use them) are part of what a
-  // person sees, so their content comes first, then the light children.
+  // The flat tree, as a person sees it: an open shadow root's content in
+  // place of its host's light children, which appear where their <slot>s
+  // put them (and not at all if no slot takes them).
   const childrenOf = (el: Element): Element[] => {
     const shadow = (el as HTMLElement).shadowRoot;
-    const light = Array.from(el.children);
-    return shadow ? [...Array.from(shadow.children), ...light] : light;
+    if (shadow) opts.shadowRoots?.add(shadow);
+    return flatChildren(el);
   };
 
   const visit = (el: Element, out: SnapshotNode[]) => {

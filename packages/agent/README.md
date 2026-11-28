@@ -47,7 +47,7 @@ const agent = useAgentBridge({ root, registerTools: true, confirm });
 | --- | --- |
 | `createAgentBridge({ root, allow, confirm, include, exclude, maxNodes })` | Connects to the UI under `root` (default `document.body`) |
 | `snapshot()` | Tree of controls, landmarks, headings and live regions, with role, name, value, state, options, Kernel `component`, and a stable `ref` per control |
-| `act({ steps, continueOnError })` | Runs `press`, `type`, `clear`, `select`, `check`, `uncheck`, `toggle`, `open`, `close`, `focus`, `submit` or `scroll` through real DOM events, then returns per-step results and a diff |
+| `act({ steps, continueOnError })` | Runs `press`, `type`, `clear`, `select`, `check`, `uncheck`, `toggle`, `open`, `close`, `focus`, `submit`, `scroll`, `setValue` (sliders, number and date fields) or `key` (one keypress, e.g. Enter) through real DOM events, then returns per-step results and a diff |
 | `query({ role, name, component, text })` | Matching nodes as a flat list |
 | `observe(callback, { debounce })` / `settle({ quiet, timeout })` | Get told when the UI changes, or wait until it stops changing |
 | `registerTools({ prefix })` | Registers `kernel_snapshot`, `kernel_query` and `kernel_act` with WebMCP. Returns an unregister function, and does nothing where WebMCP isn't available |

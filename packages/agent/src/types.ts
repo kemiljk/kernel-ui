@@ -12,7 +12,9 @@ export type AgentAction =
   | "close"
   | "focus"
   | "submit"
-  | "scroll";
+  | "scroll"
+  | "setValue"
+  | "key";
 
 export const AGENT_ACTIONS: readonly AgentAction[] = [
   "press",
@@ -27,6 +29,8 @@ export const AGENT_ACTIONS: readonly AgentAction[] = [
   "focus",
   "submit",
   "scroll",
+  "setValue",
+  "key",
 ];
 
 /** Arguments a step may carry. Which ones apply depends on the action. */
@@ -35,8 +39,13 @@ export interface AgentStepArgs {
   text?: string;
   /** `type`: add to the current value instead of replacing it. */
   append?: boolean;
-  /** `select`: the option's value or visible label (matched case-insensitively). */
-  value?: string;
+  /** `select`: the option's value or visible label (matched
+   * case-insensitively). `setValue`: the new value of a slider, number,
+   * date/time or colour field, e.g. `75` or `"2026-03-14"`. */
+  value?: string | number;
+  /** `key`: the key to press, e.g. `"Enter"`, `"Escape"`, `"ArrowDown"`,
+   * `"Shift+Tab"` or a single character. */
+  key?: string;
   /** `select` on a multi-select: every option to select. */
   values?: string[];
   /** `scroll`: where to scroll a scrollable node. Without it, the node is

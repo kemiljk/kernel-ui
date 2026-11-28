@@ -15,6 +15,73 @@ export function normalize(text: string | null | undefined, max = MAX_NAME): stri
 
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT", "HEAD", "META", "LINK", "DATALIST"]);
 
+// ── The flat tree ────────────────────────────────────────────────────
+//
+// What a person sees is the flat tree: an open shadow root's content in
+// place of its host's light children, and slotted light children where
+// their <slot> sits. Every ancestor check here (hidden? excluded? inside a
+// confirm marker or a redacted region?) walks that tree, so content inside
+// a third-party custom element's shadow root is neither invisible to the
+// agent nor a way around its safeguards. Closed shadow roots stay closed.
+
+/** The element's parent in the flat tree: a slotted node's <slot>, else its
+ * parent element, else (at the top of a shadow tree) the shadow host. */
+export function flatParent(el: Element): Element | null {
+  const slot = (el as HTMLElement).assignedSlot;
+  if (slot) return slot;
+  if (el.parentElement) return el.parentElement;
+  const parent = el.parentNode as ShadowRoot | null;
+  return parent && parent.host ? parent.host : null;
+}
+
+/** Element children in the flat tree. */
+export function flatChildren(el: Element): Element[] {
+  if (el.tagName === "SLOT") {
+    const assigned = (el as HTMLSlotElement).assignedElements?.({ flatten: true }) ?? [];
+    if (assigned.length) return assigned;
+    return Array.from(el.children);
+  }
+  const shadow = (el as HTMLElement).shadowRoot;
+  return Array.from((shadow ?? el).children);
+}
+
+function flatChildNodes(el: Element): Node[] {
+  if (el.tagName === "SLOT") {
+    const assigned = (el as HTMLSlotElement).assignedNodes?.({ flatten: true }) ?? [];
+    if (assigned.length) return assigned;
+    return Array.from(el.childNodes);
+  }
+  const shadow = (el as HTMLElement).shadowRoot;
+  return Array.from((shadow ?? el).childNodes);
+}
+
+/** `closest()` that crosses shadow boundaries. */
+export function closestFlat(el: Element, selector: string): Element | null {
+  for (let node: Element | null = el; node; node = flatParent(node)) {
+    try {
+      if (node.matches(selector)) return node;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/** True when `el` is `root` or under it in the flat tree. */
+export function containsFlat(root: Element, el: Element): boolean {
+  if (root.contains(el)) return true;
+  for (let node: Element | null = el; node; node = flatParent(node)) if (node === root) return true;
+  return false;
+}
+
+/** getElementById in the tree the element lives in (its shadow root or
+ * the document), so IDREFs inside a shadow root resolve. */
+export function byId(el: Element, id: string): Element | null {
+  const rootNode = el.getRootNode?.() as Document | ShadowRoot | undefined;
+  if (rootNode && typeof (rootNode as DocumentFragment).getElementById === "function") return (rootNode as DocumentFragment).getElementById(id);
+  return el.ownerDocument.getElementById(id);
+}
+
 // ── Roles ────────────────────────────────────────────────────────────
 
 const SECTIONING = "article, aside, main, nav, section";
@@ -52,12 +119,18 @@ function inputRole(input: HTMLInputElement): string | null {
   }
 }
 
+const FORM_CONTROLS = new Set(["INPUT", "SELECT", "TEXTAREA", "BUTTON"]);
+
 /** The element's role: explicit `role` first, then the implicit one. */
 export function roleOf(el: Element): string | null {
-  const explicit = el.getAttribute("role")?.trim().split(/\s+/)[0];
+  const tag = el.tagName;
+  let explicit = el.getAttribute("role")?.trim().split(/\s+/)[0];
+  // A native form control keeps its own role when an author gives it a
+  // non-widget one (TagInput's input is a `listitem` of its tag list): it
+  // still takes focus and typing, so an agent has to be able to reach it.
+  if (explicit && FORM_CONTROLS.has(tag) && !ACTIONABLE_ROLES.has(explicit)) explicit = undefined;
   if (explicit && explicit !== "none" && explicit !== "presentation") return explicit;
   if (explicit) return null;
-  const tag = el.tagName;
   switch (tag) {
     case "A":
     case "AREA":
@@ -212,6 +285,8 @@ export function hidesSubtree(el: Element): boolean {
   if (el.tagName === "DIALOG" && !(el as HTMLDialogElement).open) return true;
   if (el.hasAttribute("popover") && !isPopoverOpen(el)) return true;
   const parent = el.parentElement;
+  // A light child of a shadow host that no <slot> takes isn't rendered.
+  if (parent?.shadowRoot && !(el as HTMLElement).assignedSlot) return true;
   if (parent?.tagName === "DETAILS" && !(parent as HTMLDetailsElement).open && !isDetailsSummary(el)) return true;
   const view = el.ownerDocument.defaultView;
   if (view) {
@@ -224,7 +299,7 @@ export function hidesSubtree(el: Element): boolean {
 
 /** True when the element, or anything above it up to `root`, is hidden. */
 export function isHidden(el: Element, root: Element): boolean {
-  for (let node: Element | null = el; node; node = node.parentElement) {
+  for (let node: Element | null = el; node; node = flatParent(node)) {
     if (hidesSubtree(node)) return true;
     if (node === root) break;
   }
@@ -257,10 +332,9 @@ const NAME_FROM_CONTENT = new Set([
 function byIds(el: Element, attr: string): Element[] {
   const ids = el.getAttribute(attr)?.trim();
   if (!ids) return [];
-  const doc = el.ownerDocument;
   return ids
     .split(/\s+/)
-    .map((id) => doc.getElementById(id))
+    .map((id) => byId(el, id))
     .filter((node): node is HTMLElement => node !== null);
 }
 
@@ -294,7 +368,7 @@ function textFrom(node: Node, visited: Set<Node>, skipHidden: boolean, exclude?:
   if (el.tagName === "IMG" || (el.tagName === "INPUT" && (el as HTMLInputElement).type === "image")) return el.getAttribute("alt") ?? "";
   if (el.tagName === "svg" || el.tagName === "SVG") return el.querySelector("title")?.textContent ?? "";
   const display = el.ownerDocument.defaultView?.getComputedStyle(el).display ?? "inline";
-  const inner = Array.from(el.childNodes)
+  const inner = flatChildNodes(el)
     .map((child) => textFrom(child, visited, skipHidden, exclude))
     .join("");
   const text = inner.trim() ? inner : el.getAttribute("title") ?? "";
@@ -308,7 +382,8 @@ function labelsOf(el: Element): Element[] {
   const id = el.id;
   const found: Element[] = [];
   if (id) {
-    for (const label of Array.from(el.ownerDocument.querySelectorAll(`label[for="${cssEscape(id)}"]`))) found.push(label);
+    const scope = (el.getRootNode?.() ?? el.ownerDocument) as ParentNode;
+    for (const label of Array.from(scope.querySelectorAll(`label[for="${cssEscape(id)}"]`))) found.push(label);
   }
   const wrapping = el.closest("label");
   if (wrapping && !found.includes(wrapping)) found.push(wrapping);
@@ -377,7 +452,7 @@ export function accessibleName(el: Element, role: string | null = roleOf(el)): s
 }
 
 function textOfSelf(el: Element): string {
-  return Array.from(el.childNodes)
+  return flatChildNodes(el)
     .map((child) => textFrom(child, new Set([el]), true))
     .join("");
 }
@@ -439,7 +514,7 @@ export function expandedState(el: Element): boolean | undefined {
 export function popoverTargetOf(el: Element): Element | null {
   const id = el.getAttribute("popovertarget") ?? el.getAttribute("commandfor");
   if (!id) return null;
-  return el.ownerDocument.getElementById(id);
+  return byId(el, id);
 }
 
 export function isDisabled(el: Element): boolean {
@@ -448,7 +523,7 @@ export function isDisabled(el: Element): boolean {
   } catch {
     /* non-form element in an old engine */
   }
-  return Boolean(el.closest('[aria-disabled="true"]'));
+  return Boolean(closestFlat(el, '[aria-disabled="true"]'));
 }
 
 export function isInvalid(el: Element): boolean {
@@ -483,8 +558,8 @@ function componentFromClasses(el: Element): string | undefined {
 export function kernelComponentOf(el: Element): string | undefined {
   const own = componentFromClasses(el);
   if (own) return own;
-  let node = el.parentElement;
-  for (let depth = 0; node && depth < 2; depth++, node = node.parentElement) {
+  let node = flatParent(el);
+  for (let depth = 0; node && depth < 2; depth++, node = flatParent(node)) {
     // Stop at a wrapper that is itself something else interactive.
     if (node.matches("button, a[href], input, select, textarea, dialog, form, details")) break;
     const found = componentFromClasses(node);
@@ -492,7 +567,7 @@ export function kernelComponentOf(el: Element): string | undefined {
   }
   const tag = el.tagName.toLowerCase();
   if (KERNEL_TAGS[tag]) return KERNEL_TAGS[tag];
-  for (let host = el.parentElement; host; host = host.parentElement) {
+  for (let host = flatParent(el); host; host = flatParent(host)) {
     const name = KERNEL_TAGS[host.tagName.toLowerCase()];
     if (name) return name;
   }
@@ -506,7 +581,7 @@ const SECRET_AUTOCOMPLETE = /\b(one-time-code|current-password|new-password|cc-n
 /** True when a field's value must never reach a model: passwords, one-time
  * codes, card details, or anything marked `data-kernel-agent-redact`. */
 export function isSecretField(el: Element): boolean {
-  if (el.closest("[data-kernel-agent-redact]")) return true;
+  if (closestFlat(el, "[data-kernel-agent-redact]")) return true;
   if (el.tagName === "INPUT" && (el as HTMLInputElement).type === "password") return true;
   const autocomplete = el.getAttribute("autocomplete") ?? "";
   return SECRET_AUTOCOMPLETE.test(autocomplete.toLowerCase());

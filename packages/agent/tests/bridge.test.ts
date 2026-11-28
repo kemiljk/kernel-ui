@@ -425,3 +425,244 @@ describe("observe, settle and WebMCP", () => {
     }
   });
 });
+
+describe("setValue and key", () => {
+  it("sets range and number inputs, snapping to step and refusing out-of-range values", async () => {
+    const root = mount(`
+      <label>Volume <input type="range" id="vol" min="0" max="100" step="5" value="40" /></label>
+      <label>Quantity <input type="number" id="qty" min="1" max="10" value="1" /></label>
+      <label>Due <input type="date" id="due" /></label>`);
+    const vol = document.getElementById("vol") as HTMLInputElement;
+    const qty = document.getElementById("qty") as HTMLInputElement;
+    const events: string[] = [];
+    vol.addEventListener("input", () => events.push(`input:${vol.value}`));
+    vol.addEventListener("change", () => events.push(`change:${vol.value}`));
+    const bridge = createAgentBridge({ root });
+    const volRef = find(bridge, "slider", "Volume").ref!;
+    const qtyRef = find(bridge, "spinbutton", "Quantity").ref!;
+    const dueRef = find(bridge, "textbox", "Due").ref!;
+
+    let result = await bridge.act({ steps: [{ ref: volRef, action: "setValue", args: { value: 75 } }, { ref: qtyRef, action: "setValue", args: { value: "4" } }, { ref: dueRef, action: "setValue", args: { value: "2026-03-14" } }] });
+    expect(result.ok).toBe(true);
+    expect(vol.value).toBe("75");
+    expect(qty.value).toBe("4");
+    expect((document.getElementById("due") as HTMLInputElement).value).toBe("2026-03-14");
+    expect(events).toEqual(["input:75", "change:75"]);
+    expect(result.diff.changed.find((c) => c.ref === volRef)?.changes.value).toEqual(["40", "75"]);
+
+    // (Snapping a range to its step is the browser's sanitising, which jsdom
+    // doesn't do; scripts/check-agent-bridge.mjs covers it in Chromium.)
+    result = await bridge.act({ steps: [{ ref: qtyRef, action: "setValue", args: { value: 50 } }] });
+    expect(result.results[0]!.error).toBe("50 is above the maximum (10).");
+    expect(qty.value).toBe("4");
+    result = await bridge.act({ steps: [{ ref: dueRef, action: "setValue", args: { value: "next tuesday" } }] });
+    expect(result.results[0]!.error).toContain("isn't a valid date value");
+    result = await bridge.act({ steps: [{ ref: volRef, action: "type", args: { text: "10" } }] });
+    expect(result.results[0]!.error).toContain('use "setValue"');
+  });
+
+  it("steps an ARIA slider with arrow keys", async () => {
+    const root = mount(`<div role="slider" tabindex="0" aria-label="Zoom" aria-valuemin="0" aria-valuemax="10" aria-valuenow="2" id="zoom"></div>`);
+    const zoom = document.getElementById("zoom")!;
+    const keys: string[] = [];
+    zoom.addEventListener("keydown", (event) => {
+      keys.push(event.key);
+      const now = Number(zoom.getAttribute("aria-valuenow"));
+      if (event.key === "ArrowRight") zoom.setAttribute("aria-valuenow", String(Math.min(10, now + 2)));
+      if (event.key === "ArrowLeft") zoom.setAttribute("aria-valuenow", String(Math.max(0, now - 2)));
+    });
+    const bridge = createAgentBridge({ root });
+    const ref = find(bridge, "slider", "Zoom").ref!;
+    let result = await bridge.act({ steps: [{ ref, action: "setValue", args: { value: 6 } }] });
+    expect(result.ok).toBe(true);
+    expect(zoom.getAttribute("aria-valuenow")).toBe("6");
+    expect(keys).toEqual(["ArrowRight", "ArrowRight"]);
+    result = await bridge.act({ steps: [{ ref, action: "setValue", args: { value: 3 } }] });
+    expect(result.results[0]!.note).toBe("set to 2, the nearest step");
+    result = await bridge.act({ steps: [{ ref, action: "setValue", args: { value: 11 } }] });
+    expect(result.results[0]!.error).toBe("11 is above the maximum (10).");
+  });
+
+  it("presses a key so the page's own handler runs, e.g. Enter to commit a tag", async () => {
+    const root = mount(`<label>Tags <input id="tags" role="listitem" /></label><ul id="list"></ul>`);
+    const input = document.getElementById("tags") as HTMLInputElement;
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" || !input.value) return;
+      event.preventDefault();
+      const li = document.createElement("li");
+      li.textContent = input.value;
+      document.getElementById("list")!.append(li);
+      input.value = "";
+    });
+    const bridge = createAgentBridge({ root });
+    // An explicit non-widget role on a native field doesn't hide it.
+    const ref = find(bridge, "textbox", "Tags").ref!;
+    const result = await bridge.act({ steps: [{ ref, action: "type", args: { text: "Rust" } }, { ref, action: "key", args: { key: "Enter" } }] });
+    expect(result.ok).toBe(true);
+    expect(result.results[1]!.note).toBe("the page handled the key");
+    expect(document.getElementById("list")!.textContent).toBe("Rust");
+    const bad = await bridge.act({ steps: [{ ref, action: "key", args: { key: "Hyper+Q" } }] });
+    expect(bad.results[0]!.error).toContain('Unknown modifier "Hyper"');
+  });
+
+  it("asks before Enter in a form field or on a submit button", async () => {
+    const root = mount(`<form aria-label="Search"><label>Query <input id="q" /></label><button>Go</button></form><label>Loose <input id="loose" /></label>`);
+    const confirm = vi.fn(() => false);
+    const bridge = createAgentBridge({ root, confirm });
+    const result = await bridge.act({
+      steps: [
+        { ref: find(bridge, "textbox", "Query").ref!, action: "key", args: { key: "Enter" } },
+        { ref: find(bridge, "button", "Go").ref!, action: "key", args: { key: "Space" } },
+        { ref: find(bridge, "textbox", "Loose").ref!, action: "key", args: { key: "Enter" } },
+        { ref: find(bridge, "textbox", "Query").ref!, action: "key", args: { key: "ArrowDown" } },
+      ],
+      continueOnError: true,
+    });
+    expect(confirm).toHaveBeenCalledTimes(2);
+    expect(confirm.mock.calls.map((call: any[]) => call[0].reason)).toEqual(["submit", "submit"]);
+    expect(result.results.map((r) => r.ok)).toEqual([false, false, true, true]);
+  });
+});
+
+describe("comboboxes that open on focus", () => {
+  it("falls back to ArrowDown when a click on the focused input doesn't open it", async () => {
+    const root = mount(`
+      <label for="fw">Framework</label>
+      <input id="fw" role="combobox" aria-expanded="false" aria-controls="lb" />
+      <div role="listbox" id="lb" hidden><div role="option">Astro</div><div role="option">Nuxt</div></div>`);
+    const input = document.getElementById("fw") as HTMLInputElement;
+    const list = document.getElementById("lb")!;
+    const setOpen = (open: boolean) => {
+      input.setAttribute("aria-expanded", String(open));
+      list.hidden = !open;
+    };
+    input.addEventListener("focus", () => setOpen(true));
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") setOpen(true);
+      if (event.key === "Escape") setOpen(false);
+    });
+    for (const option of Array.from(list.children)) option.addEventListener("click", () => ((input.value = option.textContent!), setOpen(false)));
+    input.focus();
+    setOpen(false);
+    const bridge = createAgentBridge({ root });
+    const ref = find(bridge, "combobox", "Framework").ref!;
+    let result = await bridge.act({ steps: [{ ref, action: "open" }] });
+    expect(result.ok).toBe(true);
+    expect(input.getAttribute("aria-expanded")).toBe("true");
+    result = await bridge.act({ steps: [{ ref, action: "close" }] });
+    expect(result.ok).toBe(true);
+    expect(list.hidden).toBe(true);
+    result = await bridge.act({ steps: [{ ref, action: "select", args: { value: "Nuxt" } }] });
+    expect(result.ok).toBe(true);
+    expect(input.value).toBe("Nuxt");
+  });
+});
+
+describe("grids", () => {
+  it("operates a calendar day through its button, not a second ref on the cell", () => {
+    const root = mount(`
+      <table role="grid" aria-label="March 2026"><tbody><tr>
+        <td role="gridcell" aria-selected="false"><button type="button" tabindex="-1">1</button></td>
+        <td role="gridcell" aria-selected="true"><button type="button" tabindex="0">2</button></td>
+        <td role="gridcell"><span aria-hidden="true">3</span></td>
+      </tr></tbody></table>
+      <div role="grid" aria-label="Data"><div role="row"><div role="gridcell" tabindex="-1">Ada</div></div></div>`);
+    const bridge = createAgentBridge({ root });
+    const text = formatSnapshot(bridge.snapshot());
+    expect(text).toContain('- grid "March 2026"\n  - button "1" [ref=');
+    expect(text).toMatch(/- button "2" \[ref=e\d+\] selected=true/);
+    expect(text).not.toMatch(/gridcell "[12]"/);
+    expect(text).not.toContain('gridcell [ref');
+    // A focusable cell with its own content keeps its ref.
+    expect(text).toMatch(/gridcell "Ada" \[ref=e\d+\]/);
+  });
+});
+
+class ShadowCard extends HTMLElement {
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: "open" });
+    shadow.innerHTML = `
+      <section aria-labelledby="t"><h3 id="t">Shadow card</h3>
+        <label for="f">Nickname</label><input id="f" />
+        <button type="button" id="go"><slot name="action">Fallback action</slot></button>
+        <slot></slot>
+      </section>`;
+    shadow.getElementById("go")!.addEventListener("click", () => this.setAttribute("data-pressed", "true"));
+  }
+}
+class ClosedCard extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "closed" }).innerHTML = `<button>Secret inner</button><slot></slot>`;
+  }
+}
+if (!customElements.get("shadow-card")) customElements.define("shadow-card", ShadowCard);
+if (!customElements.get("closed-card")) customElements.define("closed-card", ClosedCard);
+
+describe("open shadow roots", () => {
+  it("snapshots the flat tree: shadow content, slotted children, IDREFs inside the shadow root", () => {
+    const root = mount(`
+      <shadow-card id="card"><span slot="action">Launch</span><button type="button">Light child</button></shadow-card>
+      <closed-card><button type="button">Slotted into closed</button></closed-card>`);
+    const bridge = createAgentBridge({ root });
+    const text = formatSnapshot(bridge.snapshot());
+    expect(text).toContain('- region "Shadow card"');
+    expect(text).toMatch(/- textbox "Nickname" \[ref=e\d+\] value=""/);
+    // The slotted span names the shadow button; the default slot holds the light button.
+    expect(text).toMatch(/- button "Launch" \[ref=e\d+\]/);
+    expect(text).toMatch(/- button "Light child" \[ref=e\d+\]/);
+    expect(text).not.toContain("Fallback action");
+    // A closed shadow root stays closed; its light children still show.
+    expect(text).not.toContain("Secret inner");
+    expect(text).toContain('button "Slotted into closed"');
+  });
+
+  it("acts on shadow content and treats host markers as covering it", async () => {
+    const root = mount(`<shadow-card id="card"><span slot="action">Launch</span></shadow-card>`);
+    const card = document.getElementById("card")!;
+    const confirm = vi.fn(() => false);
+    const bridge = createAgentBridge({ root, confirm });
+    const nick = find(bridge, "textbox", "Nickname").ref!;
+    const launch = find(bridge, "button", "Launch").ref!;
+    let result = await bridge.act({ steps: [{ ref: nick, action: "type", args: { text: "Ada" } }, { ref: launch, action: "press" }] });
+    expect(result.ok).toBe(true);
+    expect((card.shadowRoot!.getElementById("f") as HTMLInputElement).value).toBe("Ada");
+    expect(card.getAttribute("data-pressed")).toBe("true");
+    expect(result.diff.changed.find((c) => c.ref === nick)?.changes.value).toEqual(["", "Ada"]);
+
+    // A confirm marker on the host gates the button inside its shadow root.
+    card.setAttribute("data-kernel-agent-confirm", "Launch the rocket");
+    result = await bridge.act({ steps: [{ ref: launch, action: "press" }] });
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ reason: "marked", message: "Launch the rocket" }));
+    expect(result.ok).toBe(false);
+    card.removeAttribute("data-kernel-agent-confirm");
+
+    // Redaction and hiding on the host reach inside too.
+    card.setAttribute("data-kernel-agent-redact", "");
+    expect(find(bridge, "textbox", "Nickname")).toMatchObject({ value: "[redacted]", redacted: true });
+    card.removeAttribute("data-kernel-agent-redact");
+    card.style.display = "none";
+    result = await bridge.act({ steps: [{ ref: launch, action: "press" }] });
+    expect(result.results[0]!.error).toContain("is hidden");
+    card.style.display = "";
+
+    // An excluded host takes its shadow content out of scope.
+    const scoped = createAgentBridge({ root, exclude: "shadow-card" });
+    expect(scoped.query({ name: "Nickname" })).toEqual([]);
+  });
+
+  it("observes changes inside a shadow root", async () => {
+    const root = mount(`<shadow-card id="card"></shadow-card>`);
+    const card = document.getElementById("card")!;
+    const bridge = createAgentBridge({ root });
+    const seen: string[] = [];
+    const stop = bridge.observe((diff) => seen.push(...diff.added.map((n) => n.name ?? "")), { debounce: 10 });
+    const extra = document.createElement("button");
+    extra.textContent = "Added in shadow";
+    card.shadowRoot!.querySelector("section")!.append(extra);
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    stop();
+    expect(seen).toContain("Added in shadow");
+  });
+});

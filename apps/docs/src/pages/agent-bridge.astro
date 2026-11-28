@@ -219,6 +219,23 @@ const stop = agent.observe((diff, snapshot) => {
         <code>inert</code>, <code>aria-hidden</code>, closed
         <code>&lt;details&gt;</code>, closed dialogs and popovers,
         <code>display: none</code> and <code>visibility: hidden</code>.
+        A tooltip is read as its trigger's description, never as something
+        to act on.
+      </li>
+      <li>
+        <strong>Open shadow roots are read like the page.</strong> The tree
+        follows what a person sees: a custom element's open shadow root in
+        place of its light children, and slotted children where their
+        <code>&lt;slot&gt;</code> puts them. Hiding, scope,
+        <code>data-kernel-agent-redact</code> and
+        <code>data-kernel-agent-confirm</code> on a host cover its shadow
+        content too. Kernel's own elements use light DOM; this is for
+        third-party ones. Closed shadow roots stay closed.
+      </li>
+      <li>
+        <strong>One ref per control.</strong> A grid cell that wraps a button,
+        like a DatePicker day, is operated through the button, which reports
+        the cell's <code>selected</code> state.
       </li>
       <li>
         <strong><code>component</code></strong> names the Kernel component
@@ -253,9 +270,11 @@ const stop = agent.observe((diff, snapshot) => {
       <tbody>
         <tr><td><code>press</code></td><td>Pointer and mouse down/up, focus, then <code>click()</code></td></tr>
         <tr><td><code>type</code> / <code>clear</code></td><td>Replaces the value (or appends it with <code>args.append</code>), then fires <code>input</code> and <code>change</code></td></tr>
-        <tr><td><code>select</code></td><td><code>args.value</code> is an option's value or label. A <code>&lt;select&gt;</code> is set directly; for a listbox or combobox, the bridge opens it and presses the option</td></tr>
+        <tr><td><code>select</code></td><td><code>args.value</code> is an option's value or label. A <code>&lt;select&gt;</code> is set directly, and a customizable picker a person left open is closed; for a listbox or combobox, the bridge opens it and presses the option</td></tr>
+        <tr><td><code>setValue</code></td><td>Sets a slider, number, date, time or colour field to <code>args.value</code> through the native setter, then fires <code>input</code> and <code>change</code>. The browser snaps a range to its step, and values outside <code>min</code>/<code>max</code> are refused. An ARIA slider or spinbutton is stepped with arrow keys</td></tr>
+        <tr><td><code>key</code></td><td>Fires <code>keydown</code> and <code>keyup</code> for <code>args.key</code> (<code>"Enter"</code>, <code>"Escape"</code>, <code>"ArrowDown"</code>, <code>"Shift+Tab"</code>, one character), so the page's own key handlers run: Enter commits a TagInput tag. Script-made key events don't trigger browser default actions, so use <code>type</code> to enter text and <code>submit</code> to submit</td></tr>
         <tr><td><code>check</code> / <code>uncheck</code> / <code>toggle</code></td><td>Presses a checkbox, radio, switch or toggle button, and does nothing if it's already in that state</td></tr>
-        <tr><td><code>open</code> / <code>close</code></td><td><code>&lt;details&gt;</code>, popover and <code>aria-expanded</code> triggers are pressed. A dialog closes with its close button, or with the <code>cancel</code> event that Escape fires</td></tr>
+        <tr><td><code>open</code> / <code>close</code></td><td><code>&lt;details&gt;</code>, popover and <code>aria-expanded</code> triggers are pressed. A combobox that ignores the click gets ArrowDown or Escape. A dialog closes with its close button, or with the <code>cancel</code> event that Escape fires</td></tr>
         <tr><td><code>focus</code>, <code>submit</code>, <code>scroll</code></td><td>Focuses the element, calls <code>requestSubmit()</code> on its form, or scrolls instantly (<code>args.to</code>: top, bottom, into-view)</td></tr>
       </tbody>
     </table></div>
@@ -278,7 +297,8 @@ const stop = agent.observe((diff, snapshot) => {
       <li>
         <strong>Ask before anything that matters.</strong> By default the
         bridge asks a person before it submits a form (including by pressing
-        a submit button), presses a danger-variant button, or acts on
+        a submit button, or pressing Enter in one of its fields), presses a
+        danger-variant button, or acts on
         anything inside <code>data-kernel-agent-confirm</code>. Your
         <code>allow</code> policy can refuse a step, run it, or ask first.
         It can skip the built-in checks, but it can't skip an explicit
@@ -333,6 +353,12 @@ const stop = agent.observe((diff, snapshot) => {
       it returns aborts the registration signal, which unregisters the
       tools. In a browser without WebMCP, it does nothing.
       <code>isWebMcpAvailable()</code> tells you which case you're in.
+    </p>
+    <p>
+      To try it, start Chrome with <code>--enable-features=WebMCP</code>
+      (Chrome 157 has it behind that flag). Kernel's browser check runs the
+      tools on this page through <code>document.modelContext.executeTool()</code>
+      in that build, and against a mock of the draft in browsers without it.
     </p>
     <CodeBlock code={webMcpSnippet} lang="tsx" />
 

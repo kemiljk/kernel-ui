@@ -1,5 +1,5 @@
-import { StepError, nextFrame, press, scroll, selectOption, setChecked, setOpen, setText, submit, type ActOutcome } from "./act.js";
-import { checkedState, expandedState, isDisabled, isHidden, roleOf } from "./dom.js";
+import { StepError, nextFrame, parseKey, press, pressKey, scroll, selectOption, setChecked, setOpen, setText, setValue, submit, type ActOutcome } from "./act.js";
+import { checkedState, closestFlat, containsFlat, expandedState, flatParent, isDisabled, isHidden, roleOf } from "./dom.js";
 import { RefRegistry, describe, diffSnapshots, flatten, formatSnapshot, isExcluded, matchesFilter, walk } from "./snapshot.js";
 import {
   AGENT_ACTIONS,
@@ -34,6 +34,8 @@ const VERBS: Record<AgentStep["action"], string> = {
   focus: "Focus",
   submit: "Submit",
   scroll: "Scroll",
+  setValue: "Set the value of",
+  key: "Press a key in",
 };
 
 function isSubmitButton(el: Element): boolean {
@@ -50,7 +52,7 @@ function isSubmitButton(el: Element): boolean {
  * submission. `data-kernel-agent-confirm="false"` on the target or an
  * ancestor opts out of the heuristics (not out of an inner marker). */
 export function confirmReasonFor(step: AgentStep, target: Element): { reason?: ConfirmReason; marked: boolean; message?: string } {
-  const marker = target.closest("[data-kernel-agent-confirm]");
+  const marker = closestFlat(target, "[data-kernel-agent-confirm]");
   const markerValue = marker?.getAttribute("data-kernel-agent-confirm")?.trim() ?? "";
   if (marker && markerValue.toLowerCase() !== "false") {
     const message = markerValue && markerValue.toLowerCase() !== "true" ? markerValue : undefined;
@@ -58,17 +60,35 @@ export function confirmReasonFor(step: AgentStep, target: Element): { reason?: C
   }
   if (marker) return { marked: false };
   if (step.action === "submit") return { reason: "submit", marked: false };
-  const activates = step.action === "press" || step.action === "toggle";
-  if (activates && target.closest('[data-variant="danger"], [data-variant="destructive"]')) return { reason: "destructive", marked: false };
+  // Enter and Space activate a focused button just as a click does.
+  let key: string | undefined;
+  if (step.action === "key") {
+    try {
+      key = parseKey(step.args?.key ?? "").key;
+    } catch {
+      key = undefined;
+    }
+  }
+  const activates = step.action === "press" || step.action === "toggle" || key === "Enter" || key === " ";
+  if (activates && closestFlat(target, '[data-variant="danger"], [data-variant="destructive"]')) return { reason: "destructive", marked: false };
   if (activates && isSubmitButton(target)) return { reason: "submit", marked: false };
+  // Enter in a form's field is how people submit it, and the page's own key
+  // handler may do exactly that, so it's treated as a submission.
+  if (key === "Enter" && isFormField(target)) return { reason: "submit", marked: false };
   return { marked: false };
+}
+
+function isFormField(el: Element): boolean {
+  if (el.tagName !== "INPUT" && el.tagName !== "TEXTAREA" && el.tagName !== "SELECT") return false;
+  return Boolean((el as HTMLInputElement).form);
 }
 
 function describeStep(step: AgentStep, node: SnapshotNode): string {
   const what = node.name ? `"${node.name}" (${node.role})` : `the ${node.role}`;
   let message = `${VERBS[step.action]} ${what}`;
   if (step.action === "type" && step.args?.text !== undefined) message += `: "${step.args.text}"`;
-  if (step.action === "select") message += `: ${JSON.stringify(step.args?.values ?? step.args?.value)}`;
+  if (step.action === "select" || step.action === "setValue") message += `: ${JSON.stringify(step.args?.values ?? step.args?.value)}`;
+  if (step.action === "key") message += `: ${JSON.stringify(step.args?.key)}`;
   return message;
 }
 
@@ -99,22 +119,30 @@ export function createAgentBridge(options: AgentBridgeOptions = {}): AgentBridge
   const cleanups = new Set<() => void>();
   const win = (root.ownerDocument.defaultView ?? window) as Window & typeof globalThis;
 
-  const snapshot = (): Snapshot => walk({ root, refs, include: options.include, exclude: options.exclude, maxNodes });
+  // Open shadow roots seen by the last walk. A MutationObserver on root
+  // doesn't see inside them, so observe() and settle() watch each as well.
+  let shadowRoots = new Set<ShadowRoot>();
+  const snapshot = (): Snapshot => {
+    const found = new Set<ShadowRoot>();
+    const snap = walk({ root, refs, include: options.include, exclude: options.exclude, maxNodes, shadowRoots: found });
+    shadowRoots = found;
+    return snap;
+  };
+  const watch = (observer: MutationObserver, targets: Iterable<Node>) => {
+    for (const target of targets) observer.observe(target, { subtree: true, childList: true, attributes: true, characterData: true });
+  };
 
+  // Walks the flat tree, so content in an open shadow root under root is
+  // in scope and an excluded host excludes its shadow content too.
   const inScope = (el: Element): boolean => {
-    if (!root.contains(el)) {
-      // Inside an open shadow root that is itself under root?
-      let node: Node = el;
-      while (node.getRootNode() instanceof win.ShadowRoot) node = (node.getRootNode() as ShadowRoot).host;
-      if (node === el || !root.contains(node)) return false;
-    }
-    for (let node: Element | null = el; node; node = node.parentElement) {
+    if (!containsFlat(root, el)) return false;
+    for (let node: Element | null = el; node; node = flatParent(node)) {
       if (isExcluded(node, options.exclude)) return false;
       if (node === root) break;
     }
     if (options.include) {
       let included = false;
-      for (let node: Element | null = el; node; node = node.parentElement) {
+      for (let node: Element | null = el; node; node = flatParent(node)) {
         if (matchesFilter(node, options.include)) {
           included = true;
           break;
@@ -171,6 +199,10 @@ export function createAgentBridge(options: AgentBridgeOptions = {}): AgentBridge
         return submit(el);
       case "scroll":
         return scroll(el, step.args?.to);
+      case "setValue":
+        return setValue(el, step.args);
+      case "key":
+        return pressKey(el, step.args?.key ?? "");
     }
   };
 
@@ -233,7 +265,7 @@ export function createAgentBridge(options: AgentBridgeOptions = {}): AgentBridge
     return doc.getAnimations().filter((animation) => {
       const effect = animation.effect as KeyframeEffect | null;
       const target = effect?.target;
-      if (!target || !root.contains(target)) return false;
+      if (!target || !containsFlat(root, target)) return false;
       return animation.playState === "running" && effect.getComputedTiming().endTime !== Infinity;
     });
   };
@@ -269,7 +301,7 @@ export function createAgentBridge(options: AgentBridgeOptions = {}): AgentBridge
         clearTimeout(quietTimer);
         quietTimer = setTimeout(finish, quiet);
       });
-      observer.observe(root, { subtree: true, childList: true, attributes: true, characterData: true });
+      watch(observer, [root, ...shadowRoots]);
       quietTimer = setTimeout(finish, quiet);
       const limit = setTimeout(finish, timeout);
     });
@@ -310,17 +342,29 @@ export function createAgentBridge(options: AgentBridgeOptions = {}): AgentBridge
   const observe: AgentBridge["observe"] = (callback, { debounce = 150 } = {}) => {
     let last = snapshot();
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const watched = new Set<Node>();
+    const watchNew = () => {
+      if (!observer) return;
+      const fresh = [...shadowRoots].filter((shadow) => !watched.has(shadow));
+      for (const shadow of fresh) watched.add(shadow);
+      watch(observer, fresh);
+    };
     const schedule = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
         const next = snapshot();
+        watchNew();
         const diff = diffSnapshots(last, next);
         last = next;
         if (!isEmptyDiff(diff)) callback(diff, next);
       }, debounce);
     };
     const observer = typeof win.MutationObserver === "function" ? new win.MutationObserver(schedule) : null;
-    observer?.observe(root, { subtree: true, childList: true, attributes: true, characterData: true });
+    if (observer) {
+      watched.add(root);
+      watch(observer, [root]);
+      watchNew();
+    }
     // Typing changes a value without touching the DOM tree.
     root.addEventListener("input", schedule, true);
     root.addEventListener("change", schedule, true);
@@ -369,7 +413,8 @@ const STEP_SCHEMA = {
       properties: {
         text: { type: "string", description: "type: text to enter (replaces the value unless append is true)." },
         append: { type: "boolean" },
-        value: { type: "string", description: "select: option value or visible label." },
+        value: { type: ["string", "number"], description: "select: option value or visible label. setValue: the new value of a slider, number, date/time or colour field." },
+        key: { type: "string", description: "key: the key to press, e.g. Enter, Escape, ArrowDown, Shift+Tab, or one character." },
         values: { type: "array", items: { type: "string" }, description: "select on a multi-select." },
         to: { type: "string", enum: ["top", "bottom", "into-view"], description: "scroll: where to scroll." },
       },
@@ -428,7 +473,7 @@ export function createTools(bridge: AgentBridge, prefix = "kernel"): WebMcpTool[
       name: `${prefix}_act`,
       title: "Use the page",
       description:
-        "Performs steps on the page the way a person would: press, type, clear, select, check, uncheck, toggle, open, close, focus, submit, scroll. Each step targets a ref from the snapshot. Some steps ask the person to approve first; a declined step fails. Returns per-step results and what changed.",
+        "Performs steps on the page the way a person would: press, type, clear, select, check, uncheck, toggle, open, close, focus, submit, scroll, setValue (sliders, number and date fields), key (one keypress, e.g. Enter to commit a tag). Each step targets a ref from the snapshot. Some steps ask the person to approve first; a declined step fails. Returns per-step results and what changed.",
       inputSchema: {
         type: "object",
         properties: {
