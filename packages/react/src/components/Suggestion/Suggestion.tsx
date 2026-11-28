@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
-import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { pillIconAttrs } from "../../utils/pillIcons";
+import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { pillIconAttrs, usePillIconRef } from "../../utils/pillIcons";
 import styles from "./Suggestion.module.css";
 
 export interface SuggestionState {
@@ -68,12 +68,13 @@ export const SuggestionItem = forwardRef<HTMLButtonElement, SuggestionItemProps>
     ref,
   ) {
     const state: SuggestionItemState = { disabled };
+    const pillRef = usePillIconRef<HTMLButtonElement>();
     return (
       <li className={styles.item}>
         <button
           {...pillIconAttrs(children)}
           {...rest}
-          ref={ref}
+          ref={mergeRefs(ref, pillRef)}
           type="button"
           disabled={disabled}
           className={[styles.button, resolveClassName(className, state)].filter(Boolean).join(" ")}

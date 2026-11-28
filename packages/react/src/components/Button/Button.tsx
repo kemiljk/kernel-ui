@@ -29,7 +29,9 @@ export interface ButtonProps
   /** Icon placed before the label: any `svg`, `img` or icon component.
    * It's drawn at `--kernel-icon-size` in a slot concentric with the
    * button's corner. With no label (or a lone icon as `children`) the
-   * button is icon-only: square, or a circle at Round. */
+   * button is icon-only: square, or a circle at Round. Pass icon components
+   * here rather than as children: a lone `svg`/`img` child is also treated
+   * as icon-only, but a component child is always treated as the label. */
   iconStart?: ReactNode;
   /** Icon placed after the label. Same sizing as `iconStart`. */
   iconEnd?: ReactNode;
@@ -85,9 +87,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const isDisabled = disabled || loading;
 
-    // A lone icon passed as children (`<Button aria-label="Close"><X /></Button>`)
-    // is an icon-only button, the same as `iconStart` with no label —
-    // it's what people (and agents) naturally write, so honour it.
+    // A lone svg/img (or data-icon element) passed as children is an
+    // icon-only button, the same as `iconStart` with no label. Only what is
+    // *certainly* an icon at render: a component child might render text
+    // (<Trans>, an Astro slot), and promoting it would aria-hide the label.
+    // Pass component icons through iconStart/iconEnd.
     const loneIcon =
       !iconStart && !iconEnd && children != null
         ? pillIconAttrs(children)

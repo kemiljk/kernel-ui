@@ -26,16 +26,28 @@ describe("Button icon slots", () => {
     expect(button).toHaveAttribute("data-icon-end", "true");
   });
 
-  it("moves a lone icon child into the icon slot", () => {
+  it("moves a lone svg child into the icon slot", () => {
     render(
       <Button aria-label="Close">
-        <Icon />
+        <svg width="16" height="16" />
       </Button>,
     );
     const button = screen.getByRole("button", { name: "Close" });
     expect(button).toHaveAttribute("data-icon-start", "true");
     expect(button).toHaveAttribute("data-icon-end", "true");
     expect(button.querySelector("[class*='label']")).toBeNull();
+  });
+
+  it("never hides a component child that renders text", () => {
+    const Trans = ({ children }: { children: string }) => <>{children}</>;
+    render(
+      <Button>
+        <Trans>Save</Trans>
+      </Button>,
+    );
+    const button = screen.getByRole("button", { name: "Save" });
+    expect(button).not.toHaveAttribute("data-icon-start");
+    expect(button.querySelector("[aria-hidden='true']")).toBeNull();
   });
 
   it("leaves text-only buttons alone", () => {
