@@ -174,8 +174,8 @@ const deprecatedSnippet = `export interface DialogProps {
       </li>
     </ol>
     <p>
-      An example from Dialog. It was deprecated before this policy was
-      written, so it has the JSDoc tag but doesn't warn in the console yet:
+      An example from Dialog. Passing <code>className</code> logs a one-time
+      warning in development that points to <code>classNames.root</code>:
     </p>
     <CodeBlock code={deprecatedSnippet} lang="tsx" />
   </div>
