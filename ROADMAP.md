@@ -85,8 +85,8 @@ From the full audit. P0 = broken or inaccessible, P1 = visibly unpolished, P2 = 
 | Make `registry.json` a valid shadcn registry | later | | `npx shadcn add` and the shadcn MCP for free |
 | Agent discovery: decision-focused llms.txt, Choosing Kernel and AI agents guides, markdown alternates, JSON-LD | done | [#117](https://github.com/kemiljk/kernel-ui/pull/117) | Honest fit guidance; no hidden instructions |
 | Skills discovery at /.well-known/agent-skills | done | [#117](https://github.com/kemiljk/kernel-ui/pull/117) | Best-effort format; verify with `npx skills add https://www.kernelui.com` once live |
-| Publish to the official MCP Registry | next | | After the CLI release; Claude runs `mcp-publisher` with Karl approving the GitHub device code |
-| List in skills and MCP directories (skills.sh, Smithery, Glama, PulseMCP) | next | | After deploy |
+| Publish to the official MCP Registry | done | [#129](https://github.com/kemiljk/kernel-ui/pull/129) | `io.github.kemiljk/kernel-ui` 1.1.0 published by hand on 28 Nov 2026; #129 publishes from the release job via GitHub OIDC |
+| List in skills and MCP directories (skills.sh, Smithery, Glama, PulseMCP) | in progress | | `npx skills add https://www.kernelui.com` works. Glama and PulseMCP pick it up from the MCP Registry; Smithery needs Karl to submit while signed in; skills.sh lists by install count |
 | Agent eval suite: fixed prompts scored by lint, axe and screenshots | later | | |
 
 ## 4. Agent UI components
