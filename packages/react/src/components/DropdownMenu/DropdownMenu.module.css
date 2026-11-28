@@ -119,14 +119,25 @@ a.item {
   color: var(--kernel-color-danger-text);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .item:hover:not(:disabled) {
-    background-color: var(--kernel-color-accent-subtle);
-  }
+/* No :hover fill. The highlight follows the pointer by moving focus
+   (utils/menuFocus.ts), so `[data-highlighted]` is the only highlight and
+   a row the pointer rests on can't stay lit while the keyboard moves on. */
+.item[data-destructive][data-highlighted] {
+  background-color: var(--kernel-color-danger-subtle);
+}
 
-  .item[data-destructive]:hover:not(:disabled) {
-    background-color: var(--kernel-color-danger-subtle);
-  }
+/* `data-input` records whether the pointer or the keyboard moved focus
+   last. A row the pointer highlighted gets the fill but not the ring:
+   browsers can match :focus-visible on script focus after a key press. */
+[role="menu"][data-input="pointer"] .item:focus-visible {
+  outline: none;
+}
+
+/* A pointer open focuses the menu itself (tabindex="-1") so nothing is
+   highlighted yet; the panel needs no ring of its own for that. */
+.content:focus-visible,
+.morphContent:focus-visible {
+  outline: none;
 }
 
 .separator {

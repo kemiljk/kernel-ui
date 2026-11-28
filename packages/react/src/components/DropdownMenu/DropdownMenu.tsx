@@ -11,7 +11,9 @@ import type {
   FocusEvent as ReactFocusEvent,
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
   ReactNode,
+  RefObject,
 } from "react";
 import {
   dataAttr,
@@ -27,6 +29,14 @@ import {
   type FloatingPlacement,
 } from "../../utils/useFloatingPosition";
 import { useMenuMorph } from "../../utils/useMenuMorph";
+import {
+  clearMenuPointerHighlight,
+  focusMenuOnOpen,
+  highlightMenuItemUnderPointer,
+  menuTriggerKeyIntent,
+  roveMenuItems,
+  type MenuOpenFocus,
+} from "../../utils/menuFocus";
 import styles from "./DropdownMenu.module.css";
 
 interface MenuContextValue {
@@ -37,37 +47,53 @@ interface MenuContextValue {
  * MenuItem/MenuSeparator without duplicating them. */
 export const MenuContext = createContext<MenuContextValue | null>(null);
 
-/** Arrow-key/Home/End roving between a menu's items — shared between
- * `DropdownMenu` and `DropdownMenuMorph` since both use the same
- * `role="menu"` of `role="menuitem"` shape and differ only in how the
- * panel itself opens and closes. */
-function roveMenuItems(menu: HTMLElement | null, event: KeyboardEvent<HTMLElement>) {
-  const items = Array.from(
-    menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])') ?? [],
-  );
-  if (items.length === 0) return;
-  const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-  let nextIndex: number | null = null;
+/**
+ * How the menu was opened decides where focus lands (see
+ * `utils/menuFocus.ts`): a pointer open focuses the menu container with
+ * nothing highlighted, a keyboard open focuses the first item, or the last
+ * for ArrowUp. Shared by all three presentations, which differ only in
+ * what `open` does.
+ */
+function useMenuOpenFocus(
+  menuRef: RefObject<HTMLElement | null>,
+  { isOpen, open }: { isOpen: () => boolean; open: () => void },
+) {
+  const intent = useRef<MenuOpenFocus>("first");
 
-  switch (event.key) {
-    case "ArrowDown":
-      nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
-      break;
-    case "ArrowUp":
-      nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
-      break;
-    case "Home":
-      nextIndex = 0;
-      break;
-    case "End":
-      nextIndex = items.length - 1;
-      break;
-    default:
-      return;
+  function focusOnOpen() {
+    const next = intent.current;
+    intent.current = "first";
+    if (menuRef.current) focusMenuOnOpen(menuRef.current, next);
   }
 
-  event.preventDefault();
-  items[nextIndex]?.focus();
+  return {
+    focusOnOpen,
+    resetIntent: () => {
+      intent.current = "first";
+    },
+    triggerProps: {
+      onPointerDown: () => {
+        intent.current = "pointer";
+      },
+      onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+        const next = menuTriggerKeyIntent(event.key);
+        if (!next) return;
+        intent.current = next;
+        // Enter and Space open through the trigger's own activation.
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+        event.preventDefault();
+        if (isOpen()) focusOnOpen();
+        else open();
+      },
+    },
+    menuProps: {
+      tabIndex: -1,
+      onKeyDown: (event: KeyboardEvent<HTMLElement>) => roveMenuItems(menuRef.current, event),
+      onPointerMove: (event: ReactPointerEvent<HTMLElement>) =>
+        highlightMenuItemUnderPointer(menuRef.current, event),
+      onPointerLeave: () => clearMenuPointerHighlight(menuRef.current),
+    },
+  };
 }
 
 export interface DropdownMenuState {
@@ -101,6 +127,13 @@ export interface DropdownMenuProps {
  * dismissal, and top-layer stacking, are native to the popover, arrow-key
  * roving between items is the one part of the WAI-ARIA menu pattern that
  * has to be wired up by hand, there's no native menu element.
+ *
+ * Focus follows the WAI-ARIA menu button pattern. Opening from the keyboard
+ * (Enter, Space, ArrowDown) focuses the first item, and ArrowUp opens on the
+ * last. Opening with a pointer focuses the menu itself, so no item is
+ * highlighted until the pointer reaches one or a key is pressed. After that
+ * the highlight follows the pointer by moving focus, so only one row is ever
+ * highlighted, and focus rings show only for the keyboard.
  */
 export function DropdownMenu(props: DropdownMenuProps) {
   return props.presentation === "disclosure"
@@ -120,6 +153,12 @@ function DisclosureDropdownMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>();
   const state = { open: Boolean(open), placement, align };
+  const openFocus = useMenuOpenFocus(menuRef, {
+    isOpen: () => Boolean(detailsRef.current?.open),
+    open: () => {
+      if (detailsRef.current) detailsRef.current.open = true;
+    },
+  });
 
   function close() {
     const details = detailsRef.current;
@@ -169,24 +208,25 @@ function DisclosureDropdownMenu({
           setOpen(nowOpen);
           // Wait for WebKit to lay out the previously skipped subtree.
           if (nowOpen) requestAnimationFrame(() => requestAnimationFrame(() => {
-            if (detailsRef.current?.open) menuRef.current
-              ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
+            if (detailsRef.current?.open) openFocus.focusOnOpen();
           }));
+          else openFocus.resetIntent();
         }}
       >
         {renderElement(render, "summary", {
+          ...openFocus.triggerProps,
           className: styles.disclosureTrigger,
           "aria-haspopup": "menu",
           "aria-controls": id,
           "aria-expanded": open,
         }, { open: Boolean(open) })}
         {renderElement(renderContent, "div", {
+          ...openFocus.menuProps,
           ref: menuRef, id, role: "menu", inert: open === false,
           "data-slot": "dropdown-menu-content",
           "data-placement": placement, "data-align": align,
           "data-open": dataAttr(open),
           className: [styles.content, styles.disclosureContent, resolveClassName(className, state)].filter(Boolean).join(" "),
-          onKeyDown: (event: KeyboardEvent<HTMLElement>) => roveMenuItems(menuRef.current, event),
           children,
         }, state)}
       </details>
@@ -214,6 +254,10 @@ function PopoverDropdownMenu({
   });
 
   const state: DropdownMenuState = { open, placement, align };
+  const openFocus = useMenuOpenFocus(menuRef, {
+    isOpen: () => Boolean(menuRef.current?.matches(":popover-open")),
+    open: () => menuRef.current?.showPopover?.(),
+  });
 
   useEffect(() => {
     const node = menuRef.current;
@@ -222,13 +266,8 @@ function PopoverDropdownMenu({
     function handleToggle(event: Event) {
       const nowOpen = (event as ToggleEvent).newState === "open";
       setOpen(nowOpen);
-      if (nowOpen) {
-        requestAnimationFrame(() => {
-          menuRef.current
-            ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
-            ?.focus();
-        });
-      }
+      if (nowOpen) requestAnimationFrame(() => openFocus.focusOnOpen());
+      else openFocus.resetIntent();
     }
 
     node.addEventListener("toggle", handleToggle);
@@ -239,14 +278,11 @@ function PopoverDropdownMenu({
     menuRef.current?.hidePopover?.();
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    roveMenuItems(menuRef.current, event);
-  }
-
   const trigger = renderElement(
     render,
     "button",
     {
+      ...openFocus.triggerProps,
       ref: anchorRef,
       popoverTarget: id,
       "aria-haspopup": "menu",
@@ -256,11 +292,11 @@ function PopoverDropdownMenu({
   );
 
   const popupProps: Record<string, unknown> = {
+    ...openFocus.menuProps,
     ref: mergeRefs(menuRef, floatingRef),
     id,
     role: "menu",
     popover: "auto",
-    onKeyDown: handleKeyDown,
     "data-slot": "dropdown-menu-content",
     "data-placement": placement,
     "data-align": align,
@@ -470,6 +506,10 @@ export function DropdownMenuMorph({
     offset,
   });
   const { playMorphOpen, playMorphClose, cancelMorph } = useMenuMorph(anchorRef, menuRef);
+  const openFocus = useMenuOpenFocus(menuRef, {
+    isOpen: () => open,
+    open: () => openMenu(),
+  });
 
   const state: DropdownMenuState = { open, placement, align };
 
@@ -501,11 +541,7 @@ export function DropdownMenuMorph({
         /* already showing */
       }
     });
-    requestAnimationFrame(() => {
-      menuRef.current
-        ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
-        ?.focus();
-    });
+    requestAnimationFrame(() => openFocus.focusOnOpen());
   }
 
   /** `open` flips immediately so the dismissal listeners below tear down
@@ -519,6 +555,7 @@ export function DropdownMenuMorph({
    * present, the shrink would play on the bouncier open timing instead. */
   function close() {
     if (!open) return;
+    openFocus.resetIntent();
     setOpen(false);
     setClosing(true);
     const menu = menuRef.current;
@@ -547,14 +584,11 @@ export function DropdownMenuMorph({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  function handleMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    roveMenuItems(menuRef.current, event);
-  }
-
   const trigger = renderElement(
     render,
     "button",
     {
+      ...openFocus.triggerProps,
       ref: anchorRef,
       "aria-haspopup": "menu",
       "aria-expanded": open,
@@ -567,8 +601,8 @@ export function DropdownMenuMorph({
     ref: mergeRefs(menuRef, floatingRef),
     id,
     role: "menu",
+    ...openFocus.menuProps,
     popover: "manual",
-    onKeyDown: handleMenuKeyDown,
     "data-slot": "dropdown-menu-morph-content",
     "data-placement": placement,
     "data-align": align,

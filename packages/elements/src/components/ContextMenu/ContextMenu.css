@@ -55,6 +55,12 @@ kernel-context-menu {
   }
 }
 
+/* A right-click focuses the menu itself (tabindex="-1") so no item is
+   highlighted yet; the panel needs no ring of its own for that. */
+.kernel-ContextMenu-content:focus-visible {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kernel-ContextMenu-content,
   .kernel-ContextMenu-content:popover-open,

@@ -1249,7 +1249,7 @@
       "name": "Context Menu",
       "react": {
         "ContextMenu": {
-          "description": "Same `role=\"menu\"` primitives as DropdownMenu, MenuItem and\nMenuSeparator are imported straight from there, only the trigger and\npositioning differ: this opens on the native `contextmenu` event\ninstead of a `popoverTarget` button, and is placed at the cursor\ninstead of anchored to an element, so `popover=\"manual\"` plus a\nmanually-managed `showPopover()`/`hidePopover()` replaces the\ndeclarative `popoverTarget` wiring, and outside-click/scroll dismissal\nhas to be wired up by hand the same way Combobox does for its own\n`popover=\"manual\"` listbox.",
+          "description": "Same `role=\"menu\"` primitives as DropdownMenu, MenuItem and\nMenuSeparator are imported straight from there, only the trigger and\npositioning differ: this opens on the native `contextmenu` event\ninstead of a `popoverTarget` button, and is placed at the cursor\ninstead of anchored to an element, so `popover=\"manual\"` plus a\nmanually-managed `showPopover()`/`hidePopover()` replaces the\ndeclarative `popoverTarget` wiring, and outside-click/scroll dismissal\nhas to be wired up by hand the same way Combobox does for its own\n`popover=\"manual\"` listbox.\n\nA right-click focuses the menu itself, not its first item, so nothing is\nhighlighted until the pointer reaches an item or an arrow key is pressed\n(ArrowDown lands on the first item, ArrowUp on the last). The keyboard's\nown context-menu key opens straight onto the first item. Focus and\nhighlight are shared with DropdownMenu through `utils/menuFocus.ts`.",
           "extends": [],
           "props": [
             {
@@ -1269,7 +1269,7 @@
       },
       "elements": {
         "kernel-context-menu": {
-          "description": "`<kernel-context-menu>` — the same `role=\"menu\"` primitives as\n`<kernel-dropdown-menu>` (`<kernel-menu-item>`/\n`<kernel-menu-separator>` are the same tags, reused directly), only\nthe trigger and positioning differ: this opens on the native\n`contextmenu` event and is placed at the cursor instead of anchored\nto an element, so `popover=\"manual\"` plus manually-managed\n`showPopover()`/`hidePopover()` replaces `popovertarget`, and\noutside-click/scroll/Escape dismissal are wired up by hand (the\nthings `popover=\"auto\"` would otherwise give for free).\n\nChildren: one element tagged `slot=\"trigger\"` — the area that opens\nthe menu on right-click — everything else becomes the menu content.",
+          "description": "`<kernel-context-menu>` — the same `role=\"menu\"` primitives as\n`<kernel-dropdown-menu>` (`<kernel-menu-item>`/\n`<kernel-menu-separator>` are the same tags, reused directly), only\nthe trigger and positioning differ: this opens on the native\n`contextmenu` event and is placed at the cursor instead of anchored\nto an element, so `popover=\"manual\"` plus manually-managed\n`showPopover()`/`hidePopover()` replaces `popovertarget`, and\noutside-click/scroll/Escape dismissal are wired up by hand (the\nthings `popover=\"auto\"` would otherwise give for free).\n\nChildren: one element tagged `slot=\"trigger\"` — the area that opens\nthe menu on right-click — everything else becomes the menu content.\n\nA right-click focuses the menu itself, not its first item, so nothing is\nhighlighted until the pointer reaches an item or an arrow key is pressed\n(ArrowDown lands on the first item, ArrowUp on the last). The keyboard's\nown context-menu key opens straight onto the first item. Focus and\nhighlight are shared with `<kernel-dropdown-menu>` through\n`utils/menuFocus.ts`.",
           "attributes": [],
           "events": []
         }
@@ -1573,7 +1573,7 @@
       "name": "Dropdown Menu",
       "react": {
         "DropdownMenu": {
-          "description": "`role=\"menu\"` on a `popover=\"auto\"` element: outside-click and Escape\ndismissal, and top-layer stacking, are native to the popover, arrow-key\nroving between items is the one part of the WAI-ARIA menu pattern that\nhas to be wired up by hand, there's no native menu element.",
+          "description": "`role=\"menu\"` on a `popover=\"auto\"` element: outside-click and Escape\ndismissal, and top-layer stacking, are native to the popover, arrow-key\nroving between items is the one part of the WAI-ARIA menu pattern that\nhas to be wired up by hand, there's no native menu element.\n\nFocus follows the WAI-ARIA menu button pattern. Opening from the keyboard\n(Enter, Space, ArrowDown) focuses the first item, and ArrowUp opens on the\nlast. Opening with a pointer focuses the menu itself, so no item is\nhighlighted until the pointer reaches one or a key is pressed. After that\nthe highlight follows the pointer by moving focus, so only one row is ever\nhighlighted, and focus rings show only for the keyboard.",
           "extends": [],
           "props": [
             {
@@ -1705,7 +1705,7 @@
       },
       "elements": {
         "kernel-dropdown-menu": {
-          "description": "`<kernel-dropdown-menu>` — `role=\"menu\"` on a `popover=\"auto\"`\nelement: outside-click/Escape dismissal and top-layer stacking are\nnative to the popover; arrow-key roving between items is the one\npart of the WAI-ARIA menu pattern with no native element, wired up\nby hand.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\n(`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.\n\nAttributes: `placement` (default bottom), `align` (start/center/end,\ndefault center), `offset` (px, default 8). `presentation=\"disclosure\"`\nuses a native details/summary in the page's stacking context; provide\n<summary slot=\"trigger\">. CSS owns entry/exit without a top-layer backdrop.",
+          "description": "`<kernel-dropdown-menu>` — `role=\"menu\"` on a `popover=\"auto\"`\nelement: outside-click/Escape dismissal and top-layer stacking are\nnative to the popover; arrow-key roving between items is the one\npart of the WAI-ARIA menu pattern with no native element, wired up\nby hand.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\n(`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.\n\nAttributes: `placement` (default bottom), `align` (start/center/end,\ndefault center), `offset` (px, default 8). `presentation=\"disclosure\"`\nuses a native details/summary in the page's stacking context; provide\n<summary slot=\"trigger\">. CSS owns entry/exit without a top-layer backdrop.\n\nFocus follows the WAI-ARIA menu button pattern. Opening from the keyboard\n(Enter, Space, ArrowDown) focuses the first item, and ArrowUp opens on the\nlast. Opening with a pointer focuses the menu itself, so no item is\nhighlighted until the pointer reaches one or a key is pressed. After that\nthe highlight follows the pointer by moving focus, so only one row is ever\nhighlighted, and focus rings show only for the keyboard.",
           "attributes": [],
           "events": []
         },

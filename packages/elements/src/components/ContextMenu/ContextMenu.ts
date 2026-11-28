@@ -1,6 +1,12 @@
 import { KernelElement, kernelClass } from "../../base";
 import "../DropdownMenu/DropdownMenu";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import {
+  clearMenuPointerHighlight,
+  focusMenuOnOpen,
+  highlightMenuItemUnderPointer,
+  roveMenuItems,
+} from "../../utils/menuFocus";
 import "./ContextMenu.css";
 
 const MARGIN = 8;
@@ -18,6 +24,13 @@ const MARGIN = 8;
  *
  * Children: one element tagged `slot="trigger"` — the area that opens
  * the menu on right-click — everything else becomes the menu content.
+ *
+ * A right-click focuses the menu itself, not its first item, so nothing is
+ * highlighted until the pointer reaches an item or an arrow key is pressed
+ * (ArrowDown lands on the first item, ArrowUp on the last). The keyboard's
+ * own context-menu key opens straight onto the first item. Focus and
+ * highlight are shared with `<kernel-dropdown-menu>` through
+ * `utils/menuFocus.ts`.
  */
 export class KernelContextMenu extends KernelElement {
   connectedCallback() {
@@ -39,6 +52,7 @@ export class KernelContextMenu extends KernelElement {
     content.setAttribute("role", "menu");
     content.setAttribute("popover", "manual");
     content.className = kernelClass("ContextMenu", "content");
+    content.tabIndex = -1;
     content.append(...rest);
 
     // Play the exit before hiding, the same as React's usePopoverExit: once
@@ -59,8 +73,13 @@ export class KernelContextMenu extends KernelElement {
       content.style.top = `${event.clientY}px`;
       content.style.left = `${event.clientX}px`;
       content.showPopover?.();
+      // Chromium fires contextmenu as a PointerEvent, with an empty pointerType
+      // when the context-menu key or Shift+F10 opened it. Browsers that fire a
+      // plain MouseEvent get the pointer behaviour; arrow keys still work.
+      const fromKeyboard = (event as Partial<PointerEvent>).pointerType === "";
 
       requestAnimationFrame(() => {
+        focusMenuOnOpen(content, fromKeyboard ? "first" : "pointer");
         const rect = content.getBoundingClientRect();
         const maxLeft = window.innerWidth - rect.width - MARGIN;
         const maxTop = window.innerHeight - rect.height - MARGIN;
@@ -103,26 +122,9 @@ export class KernelContextMenu extends KernelElement {
       );
     });
 
-    content.addEventListener("keydown", (event) => {
-      const items = Array.from(
-        content.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'),
-      );
-      if (items.length === 0) return;
-      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-      let nextIndex: number | null = null;
-      switch (event.key) {
-        case "ArrowDown":
-          nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
-          break;
-        case "ArrowUp":
-          nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
-          break;
-        default:
-          return;
-      }
-      event.preventDefault();
-      items[nextIndex]?.focus();
-    });
+    content.addEventListener("keydown", (event) => roveMenuItems(content, event));
+    content.addEventListener("pointermove", (event) => highlightMenuItemUnderPointer(content, event));
+    content.addEventListener("pointerleave", () => clearMenuPointerHighlight(content));
 
     this.native = triggerArea;
     this.append(triggerArea, content);

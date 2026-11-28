@@ -3,6 +3,12 @@ import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { MenuContext } from "../DropdownMenu/DropdownMenu";
 import { dataAttr } from "../../utils/polymorphic";
 import { usePopoverExit } from "../../utils/usePopoverExit";
+import {
+  clearMenuPointerHighlight,
+  focusMenuOnOpen,
+  highlightMenuItemUnderPointer,
+  roveMenuItems,
+} from "../../utils/menuFocus";
 import styles from "./ContextMenu.module.css";
 
 const MARGIN = 8;
@@ -24,6 +30,12 @@ export interface ContextMenuProps {
  * declarative `popoverTarget` wiring, and outside-click/scroll dismissal
  * has to be wired up by hand the same way Combobox does for its own
  * `popover="manual"` listbox.
+ *
+ * A right-click focuses the menu itself, not its first item, so nothing is
+ * highlighted until the pointer reaches an item or an arrow key is pressed
+ * (ArrowDown lands on the first item, ArrowUp on the last). The keyboard's
+ * own context-menu key opens straight onto the first item. Focus and
+ * highlight are shared with DropdownMenu through `utils/menuFocus.ts`.
  */
 export function ContextMenu({ render, children }: ContextMenuProps) {
   const [open, setOpen] = useState(false);
@@ -50,6 +62,14 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
     setPosition({ top: event.clientY, left: event.clientX });
     setOpen(true);
     menuRef.current?.showPopover();
+    // Chromium fires contextmenu as a PointerEvent, with an empty pointerType
+    // when the context-menu key or Shift+F10 opened it. Browsers that fire a
+    // plain MouseEvent get the pointer behaviour; arrow keys still work.
+    const native = event.nativeEvent as Partial<PointerEvent>;
+    const fromKeyboard = native.pointerType === "";
+    requestAnimationFrame(() => {
+      if (menuRef.current) focusMenuOnOpen(menuRef.current, fromKeyboard ? "first" : "pointer");
+    });
   }
 
   // The panel is sized by its content, which isn't known until after it
@@ -111,6 +131,10 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
         ref={menuRef}
         role="menu"
         popover="manual"
+        tabIndex={-1}
+        onKeyDown={(event) => roveMenuItems(menuRef.current, event)}
+        onPointerMove={(event) => highlightMenuItemUnderPointer(menuRef.current, event)}
+        onPointerLeave={() => clearMenuPointerHighlight(menuRef.current)}
         data-open={dataAttr(open)}
         data-closing={dataAttr(closing)}
         className={styles.content}
