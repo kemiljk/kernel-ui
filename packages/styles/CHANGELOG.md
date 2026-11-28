@@ -1,5 +1,32 @@
 # @kernelui-lib/styles
 
+## 1.6.0
+
+### Minor Changes
+
+- e0a6cdc: Density presets: `data-kernel-density="compact" | "comfortable"` on any element.
+  
+  - **compact** is a 3px space unit (was 4px): every gap, padding and control height drops by a quarter, and font sizes don't change. Small controls stay at 24px, the WCAG 2.2 minimum target size, which is why 3px is the floor.
+  - **comfortable** is the default and today's spacing, so nothing changes unless you set the attribute. Use it to put the default back inside a compact scope.
+  - **Works on a subtree, not just `:root`.** Tokens built from `--kernel-space-unit` with `calc()` resolve where they're declared, so the attribute re-declares the whole derived set (`--kernel-space-*`, control heights, `--kernel-control-inset`, `--kernel-radius-control-inner`, container and sheet padding, their `-curve` pairs and the container and sheet radii). Any value of the attribute does this, so `<section data-kernel-density="custom" style="--kernel-space-unit: 0.3rem">` works too.
+  - If you pin a derived token yourself on `:root` (for example `--kernel-radius-container: 0`), pin it on `:root, [data-kernel-density]` so it holds inside density scopes.
+- e0a6cdc: Forced colours (Windows High Contrast) and reduced transparency support.
+  
+  - **Forced colours:** components that showed state only with a background, gradient or box-shadow now redraw it in system colours under `@media (forced-colors: active)`. Selected and on states use `Highlight`/`HighlightText`; edges use `CanvasText`. Covered: Switch (thumb and checked track), Checkbox, RadioGroup, Tabs (the selected tab fills itself, as the indicator needs script to size), Toggle, Slider (native and inset: track, fill, thumb), Progress (including indeterminate), Attachment's upload bar, Badge (outline), DropdownMenu and ContextMenu items and separators, CommandPalette and Combobox options, the customisable Select picker, Nav, NavigationMenu, Pagination, DatePicker and DateRangePicker days, Carousel dots, Separator, Skeleton, Resizable's divider, ColorPicker's swatch (keeps its real colour), Composer's border, CodeBlock's emphasised lines, and borders for Tooltip, Dialog, CommandPalette and Sheet. `forced-color-adjust: none` is used only where text sits on a `Highlight` fill (the browser otherwise paints a backplate over it), on the gradient-drawn Slider track and indeterminate Progress, and on ColorPicker's swatch.
+  - **Reduced transparency:** new `--kernel-opacity-glass` (85%) and `--kernel-opacity-frost` (70%) tokens. Header's sticky glass and the blurred Dialog and CommandPalette scrims read them, and under `prefers-reduced-transparency: reduce` they go to 100%, `--kernel-blur-backdrop` to 0 and `--kernel-color-scrim` to 80% black.
+- 8b2806b: Switch's off track is now a solid fill with no dark outline. New `--kernel-color-track` and `--kernel-color-track-hover` tokens set its colour; hover darkens the fill instead of the border. The border stays transparent, so the size is unchanged and Windows High Contrast still draws an outline.
+
+### Patch Changes
+
+- ee3591e: Add the `--kernel-ease-fade` token (linear) for in-place opacity and blur crossfades, and use it wherever component transitions hard-coded `linear`, so the curve can be retuned in one place. Fix right-to-left layouts: Dialog and inset Sheet side panels now slide in and out from their own edge, and Table's overflow fade and edge shadow sit on the correct side.
+- 01aa07b: Text on solid fills now meets APCA Lc 60 and WCAG 4.5:1 in every accent preset, light and dark. That covers the primary button label on its fill, hover and pressed states, the danger, success and warning fills, and the tinted text in Badge.
+  
+  - Dark mode accent, danger and success fills are darker (step 9 at L49–53%, hover at L53–57%) and carry a white label. The old L58–66% fills sat in the range where neither a white nor a black label is readable.
+  - The teal and green presets use a white label in dark mode, and a slightly darker fill in light mode.
+  - The amber fill is lighter in both schemes (L79%, with a lighter L83% hover and an L77% pressed state), so its near-black label stays readable.
+  - The warning fill is lighter (L79%) in both schemes for its near-black label.
+  - The dark mode text step (step 11) moves from L74–78% to L80–81%, so Badge text clears Lc 60 on its subtle fill.
+
 ## 1.5.0
 
 ### Minor Changes

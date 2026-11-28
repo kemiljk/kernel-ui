@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/agent",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Let an in-page AI agent read and operate your UI through its real semantics: an accessibility-tree snapshot, act() steps that fire real DOM events, confirmation gates and WebMCP tools.",
   "license": "MIT",
   "author": "Karl Koch",
