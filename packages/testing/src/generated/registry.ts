@@ -34,6 +34,16 @@ export const REGISTRY: RegistryComponent[] = [
     ]
   },
   {
+    "name": "Artifact Panel",
+    "export": "ArtifactPanel",
+    "slug": "artifact-panel",
+    "folder": "ArtifactPanel",
+    "tag": "kernel-artifact-panel",
+    "subTags": [
+      "kernel-artifact-view"
+    ]
+  },
+  {
     "name": "Attachment",
     "export": "Attachment",
     "slug": "attachment",
@@ -301,6 +311,14 @@ export const REGISTRY: RegistryComponent[] = [
     "subTags": []
   },
   {
+    "name": "Model Picker",
+    "export": "ModelPicker",
+    "slug": "model-picker",
+    "folder": "ModelPicker",
+    "tag": "kernel-model-picker",
+    "subTags": []
+  },
+  {
     "name": "Nav",
     "export": "Nav",
     "slug": "nav",
@@ -387,6 +405,14 @@ export const REGISTRY: RegistryComponent[] = [
     "subTags": []
   },
   {
+    "name": "Schema Renderer",
+    "export": "SchemaRenderer",
+    "slug": "schema-renderer",
+    "folder": "SchemaRenderer",
+    "tag": "kernel-schema-renderer",
+    "subTags": []
+  },
+  {
     "name": "Scroll Area",
     "export": "ScrollArea",
     "slug": "scroll-area",
@@ -452,6 +478,14 @@ export const REGISTRY: RegistryComponent[] = [
       "kernel-source",
       "kernel-citation"
     ]
+  },
+  {
+    "name": "Streaming Markdown",
+    "export": "StreamingMarkdown",
+    "slug": "streaming-markdown",
+    "folder": "StreamingMarkdown",
+    "tag": "kernel-streaming-markdown",
+    "subTags": []
   },
   {
     "name": "Switch",
