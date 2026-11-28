@@ -1,0 +1,146 @@
+{
+  "id": "command-palette",
+  "title": "Command palette",
+  "package": "react",
+  "prompt": "Build a simple app shell with a \"Search commands\" button in the header. The button, and the keyboard shortcut Cmd+K (Ctrl+K on Windows and Linux), open a command palette with two groups. Navigation: \"Go to Dashboard\", \"Go to Settings\", \"Go to Billing\". Actions: \"New project\", \"Invite teammate\", \"Toggle theme\". Typing filters the commands. Choosing one closes the palette and shows \"Ran: <command name>\" on the page.",
+  "screenshots": [
+    {
+      "name": "Palette open",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/search commands/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-palette",
+      "description": "Imports CommandPalette",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "CommandPalette"
+      ]
+    },
+    {
+      "id": "no-raw-dialog",
+      "description": "No hand-rolled <dialog> or role=\"combobox\"",
+      "type": "source",
+      "pattern": "<dialog\\b|role=[\"']combobox",
+      "absent": true
+    },
+    {
+      "id": "trigger",
+      "description": "A \"Search commands\" button",
+      "type": "role",
+      "role": "button",
+      "name": "/search commands/i"
+    },
+    {
+      "id": "opens-on-click",
+      "description": "The button opens a combobox",
+      "type": "role",
+      "role": "combobox",
+      "min": 1,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/search commands/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "opens-on-shortcut",
+      "description": "Cmd/Ctrl+K opens it",
+      "type": "role",
+      "role": "combobox",
+      "min": 1,
+      "steps": [
+        {
+          "action": "press",
+          "key": "ControlOrMeta+k"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "lists-commands",
+      "description": "Shows all six commands as options",
+      "type": "role",
+      "role": "option",
+      "min": 6,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/search commands/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "filters",
+      "description": "Typing \"bill\" leaves one option",
+      "type": "role",
+      "role": "option",
+      "min": 1,
+      "max": 1,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/search commands/i"
+        },
+        {
+          "action": "fill",
+          "role": "combobox",
+          "value": "bill"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "runs",
+      "description": "Enter runs the command and closes the palette",
+      "type": "eval",
+      "expression": "/ran:\\s*go to billing/i.test(document.body.innerText) && !document.querySelector('dialog[open]')",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/search commands/i"
+        },
+        {
+          "action": "fill",
+          "role": "combobox",
+          "value": "billing"
+        },
+        {
+          "action": "press",
+          "key": "Enter"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    }
+  ]
+}

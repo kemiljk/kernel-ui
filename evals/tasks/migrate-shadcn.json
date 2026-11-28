@@ -1,0 +1,157 @@
+{
+  "id": "migrate-shadcn",
+  "title": "Migrate a shadcn/ui screen",
+  "package": "react",
+  "files": {
+    "src/App.tsx": "migrate-shadcn.starter.tsx"
+  },
+  "prompt": "src/App.tsx was copied from a project that used shadcn/ui and Tailwind. Neither exists in this project, so it doesn't compile. Migrate it to Kernel UI (@kernelui-lib/react) with the same content and behaviour: the email field, the \"Product updates\" switch, the Unsubscribe confirmation dialog and the Save preferences button.",
+  "screenshots": [
+    {
+      "name": "Dialog open",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^unsubscribe$/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "no-shadcn",
+      "description": "No @/components/ui or Radix imports remain",
+      "type": "source",
+      "pattern": "@/components/ui|@radix-ui",
+      "absent": true
+    },
+    {
+      "id": "no-foreign-props",
+      "description": "No asChild or shadcn variants (destructive, outline)",
+      "type": "source",
+      "pattern": "\\basChild\\b|variant=[\"'](destructive|outline|default|link)[\"']",
+      "absent": true
+    },
+    {
+      "id": "no-tailwind",
+      "description": "No leftover Tailwind utility classes",
+      "type": "source",
+      "pattern": "className=[\"'][^\"']*\\b(space-y-\\d|flex|items-center|justify-between|text-sm|max-w-lg|mx-auto|p-6)\\b",
+      "absent": true
+    },
+    {
+      "id": "uses-kernel",
+      "description": "Imports Card, TextField, Switch, Dialog and Button from Kernel",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "Card",
+        "TextField",
+        "Switch",
+        "Dialog",
+        "Button"
+      ]
+    },
+    {
+      "id": "email",
+      "description": "A labelled email field keeps its value",
+      "type": "eval",
+      "expression": "(() => { const i = document.querySelector('input[type=email]'); return Boolean(i && i.labels && i.labels.length && i.value === 'ada@example.com'); })()"
+    },
+    {
+      "id": "switch",
+      "description": "A \"Product updates\" switch, on by default",
+      "type": "eval",
+      "expression": "[...document.querySelectorAll('[role=switch]')].some((s) => s.getAttribute('aria-checked') === 'true')"
+    },
+    {
+      "id": "switch-named",
+      "description": "The switch is named \"Product updates\"",
+      "type": "role",
+      "role": "switch",
+      "name": "/product updates/i"
+    },
+    {
+      "id": "saves",
+      "description": "Save preferences shows \"Preferences saved\"",
+      "type": "eval",
+      "expression": "/preferences saved/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/save preferences/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "dialog-opens",
+      "description": "Unsubscribe opens a modal dialog",
+      "type": "dom",
+      "selector": "dialog[open]",
+      "min": 1,
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^unsubscribe$/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "id": "dialog-confirms",
+      "description": "Confirming closes it and shows the unsubscribed message",
+      "type": "eval",
+      "expression": "!document.querySelector('dialog[open]') && /you have been unsubscribed/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^unsubscribe$/i"
+        },
+        {
+          "action": "click",
+          "within": "dialog[open]",
+          "role": "button",
+          "name": "/^unsubscribe$/i"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "dialog-cancels",
+      "description": "Cancel closes it without unsubscribing",
+      "type": "eval",
+      "expression": "!document.querySelector('dialog[open]') && !/you have been unsubscribed/i.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/^unsubscribe$/i"
+        },
+        {
+          "action": "click",
+          "within": "dialog[open]",
+          "role": "button",
+          "name": "/^cancel$/i"
+        },
+        {
+          "action": "wait",
+          "ms": 400
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "id": "pricing-page",
+  "title": "Pricing page with a billing toggle (elements)",
+  "package": "elements",
+  "prompt": "Build a pricing page in plain HTML and TypeScript with @kernelui-lib/elements (no React). Show three plans, Starter ($9/month), Pro ($29/month) and Team ($79/month), each in a card with its name as a heading, its price, a list of at least three features and a call-to-action button. Pro is highlighted with a \"Most popular\" badge. A Monthly/Yearly billing switch above the plans updates every price; yearly billing is 20% off and shows the price per month.",
+  "screenshots": [
+    {
+      "name": "Yearly billing",
+      "steps": [
+        {
+          "action": "click",
+          "role": "switch"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-elements",
+      "description": "Renders 3 <kernel-card>, 3+ <kernel-button>, a <kernel-badge> and a <kernel-switch>",
+      "type": "eval",
+      "expression": "document.querySelectorAll(\"kernel-card\").length >= 3 && document.querySelectorAll(\"kernel-button\").length >= 3 && document.querySelector(\"kernel-badge\") !== null && document.querySelector(\"kernel-switch\") !== null"
+    },
+    {
+      "id": "no-react",
+      "description": "No React imports",
+      "type": "source",
+      "pattern": "from [\"']react[\"']|@kernelui-lib/react",
+      "absent": true
+    },
+    {
+      "id": "registered",
+      "description": "Kernel elements are registered (upgraded)",
+      "type": "eval",
+      "expression": "Boolean(customElements.get('kernel-button')) && document.querySelectorAll('kernel-button button').length >= 3"
+    },
+    {
+      "id": "headings",
+      "description": "One h1 and a heading per plan",
+      "type": "eval",
+      "expression": "document.querySelectorAll('h1').length === 1 && ['starter','pro','team'].every((n) => [...document.querySelectorAll('h2,h3,h4')].some((h) => h.textContent?.trim().toLowerCase().startsWith(n)))"
+    },
+    {
+      "id": "features",
+      "description": "Feature lists are real lists (9+ items)",
+      "type": "dom",
+      "selector": "ul li, ol li",
+      "min": 9
+    },
+    {
+      "id": "badge",
+      "description": "\"Most popular\" badge is on the page",
+      "type": "eval",
+      "expression": "/most popular/i.test(document.body.innerText)"
+    },
+    {
+      "id": "switch",
+      "description": "A billing switch with an accessible name",
+      "type": "role",
+      "role": "switch",
+      "name": "/year|annual|billing|month/i"
+    },
+    {
+      "id": "prices-change",
+      "description": "Toggling the switch updates the prices",
+      "type": "changes",
+      "selector": "main, body",
+      "attribute": "innerText",
+      "trigger": {
+        "action": "click",
+        "role": "switch"
+      }
+    },
+    {
+      "id": "yearly-discount",
+      "description": "Yearly Pro price is 20% off ($23.20, or $23 rounded)",
+      "type": "eval",
+      "expression": "/\\$\\s?23(\\.20?)?\\b/.test(document.body.innerText)",
+      "steps": [
+        {
+          "action": "click",
+          "role": "switch"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    }
+  ]
+}

@@ -23,3 +23,6 @@ examples/**/node_modules
 examples/**/dist
 .vercel
 .vercel
+
+# Agent eval output (screenshots, transcripts, built files)
+evals/results/

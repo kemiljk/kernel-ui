@@ -1,0 +1,138 @@
+{
+  "id": "settings-tabs",
+  "title": "Settings page with tabs and switches",
+  "package": "react",
+  "prompt": "Build an account settings page with three tabs: Profile, Notifications and Privacy. Profile has a Display name field, a Bio field and a Save button. Notifications has on/off switches for \"Email notifications\", \"Push notifications\" and \"Weekly digest\". Privacy has switches for \"Public profile\" and \"Show online status\", and a \"Delete account\" button styled as a dangerous action.",
+  "screenshots": [
+    {
+      "name": "Notifications tab",
+      "steps": [
+        {
+          "action": "click",
+          "role": "tab",
+          "name": "/notifications/i"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "uses-tabs",
+      "description": "Imports Tabs, TabsList, Tab, TabPanel and Switch",
+      "type": "imports",
+      "from": "@kernelui-lib/react",
+      "names": [
+        "Tabs",
+        "TabsList",
+        "Tab",
+        "TabPanel",
+        "Switch"
+      ]
+    },
+    {
+      "id": "no-raw-controls",
+      "description": "No hand-rolled <button>, <input> or role=\"tab\"",
+      "type": "source",
+      "pattern": "<button\\b|<input\\b|role=[\"']tab",
+      "absent": true
+    },
+    {
+      "id": "tablist",
+      "description": "A named tablist with three tabs",
+      "type": "eval",
+      "expression": "(() => { const l = document.querySelector('[role=tablist]'); return Boolean(l && (l.getAttribute('aria-label') || l.getAttribute('aria-labelledby')) && l.querySelectorAll('[role=tab]').length === 3); })()"
+    },
+    {
+      "id": "panel",
+      "description": "Exactly one visible tab panel",
+      "type": "role",
+      "role": "tabpanel",
+      "min": 1,
+      "max": 1
+    },
+    {
+      "id": "profile-labelled",
+      "description": "Profile fields are labelled",
+      "type": "check",
+      "check": "inputs-labelled"
+    },
+    {
+      "id": "notification-switches",
+      "description": "Notifications tab shows three switches",
+      "type": "role",
+      "role": "switch",
+      "min": 3,
+      "max": 3,
+      "steps": [
+        {
+          "action": "click",
+          "role": "tab",
+          "name": "/notifications/i"
+        }
+      ]
+    },
+    {
+      "id": "switch-named",
+      "description": "Each switch has an accessible name",
+      "type": "role",
+      "role": "switch",
+      "name": "/email notifications/i",
+      "steps": [
+        {
+          "action": "click",
+          "role": "tab",
+          "name": "/notifications/i"
+        }
+      ]
+    },
+    {
+      "id": "switch-toggles",
+      "description": "Clicking a switch flips aria-checked",
+      "type": "changes",
+      "attribute": "aria-checked",
+      "steps": [
+        {
+          "action": "click",
+          "role": "tab",
+          "name": "/notifications/i"
+        }
+      ],
+      "trigger": {
+        "action": "click",
+        "role": "switch",
+        "name": "/email notifications/i"
+      }
+    },
+    {
+      "id": "arrow-keys",
+      "description": "Arrow keys move between tabs",
+      "type": "eval",
+      "expression": "/notifications/i.test(document.activeElement?.textContent ?? '') && document.activeElement?.getAttribute('role') === 'tab'",
+      "steps": [
+        {
+          "action": "focus",
+          "role": "tab",
+          "name": "/profile/i"
+        },
+        {
+          "action": "press",
+          "key": "ArrowRight"
+        }
+      ]
+    },
+    {
+      "id": "danger",
+      "description": "Privacy tab has a Delete account button",
+      "type": "role",
+      "role": "button",
+      "name": "/delete account/i",
+      "steps": [
+        {
+          "action": "click",
+          "role": "tab",
+          "name": "/privacy/i"
+        }
+      ]
+    }
+  ]
+}
