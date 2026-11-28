@@ -154,3 +154,14 @@
 .root[data-icon-end] > :last-child {
   margin-inline-end: var(--pill-icon-edge);
 }
+
+/* Icon-only (both ends flagged and a single element child, which can
+   only be the icon): pad to --pill-py directly, because the two edge
+   pulls together can outrun a content box that can't go below zero. */
+.root[data-icon-start][data-icon-end]:has(> :only-child) {
+  padding-inline: var(--pill-py);
+}
+
+.root[data-icon-start][data-icon-end] > :only-child {
+  margin-inline: 0;
+}
