@@ -71,7 +71,10 @@
           "attributes": [
             "title"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "beforetoggle": "{ open: boolean; reason: \"keyboard\" | \"trigger-press\"; event?: Event }"
+          }
         }
       }
     },
@@ -922,7 +925,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ checked: boolean; reason: \"keyboard\" | \"press\"; event?: Event }"
+          }
         }
       }
     },
@@ -1151,7 +1157,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": "{ value: string; reason: \"hex-input\" | \"picker\"; event?: Event }"
+          }
         }
       }
     },
@@ -1284,7 +1293,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ value: string; reason: \"clear\" | \"item-press\" | \"keyboard\"; event?: Event }"
+          }
         }
       }
     },
@@ -1374,7 +1386,10 @@
             "blur",
             "label-dialog"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "cancel": "{ reason: \"escape-key\" | \"item-keyboard\" | \"item-press\" | \"outside-press\" | \"programmatic\"; event?: Event }"
+          }
         }
       }
     },
@@ -1660,7 +1675,10 @@
             "label-next-month",
             "label-weekdays"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ value: string; reason: \"day-press\" | \"keyboard\"; event?: Event }"
+          }
         }
       }
     },
@@ -1719,7 +1737,10 @@
             "label-next-month",
             "label-weekdays"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ from: string; to: string; reason: \"day-press\" | \"keyboard\"; event?: Event }"
+          }
         }
       }
     },
@@ -1826,7 +1847,8 @@
             "close"
           ],
           "eventDetails": {
-            "close": "{ reason: string }"
+            "close": "{ reason: string }",
+            "cancel": "{ reason: string; event?: Event }"
           }
         }
       }
@@ -1981,12 +2003,18 @@
         "kernel-dropdown-menu": {
           "description": "`<kernel-dropdown-menu>` — `role=\"menu\"` on a `popover=\"auto\"`\nelement: outside-click/Escape dismissal and top-layer stacking are\nnative to the popover; arrow-key roving between items is the one\npart of the WAI-ARIA menu pattern with no native element, wired up\nby hand.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\n(`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.\n\nAttributes: `placement` (default bottom), `align` (start/center/end,\ndefault center), `offset` (px, default 8). `presentation=\"disclosure\"`\nuses a native details/summary in the page's stacking context; provide\n<summary slot=\"trigger\">. CSS owns entry/exit without a top-layer backdrop.\n\nFocus follows the WAI-ARIA menu button pattern. Opening from the keyboard\n(Enter, Space, ArrowDown) focuses the first item, and ArrowUp opens on the\nlast. Opening with a pointer focuses the menu itself, so no item is\nhighlighted until the pointer reaches one or a key is pressed. After that\nthe highlight follows the pointer by moving focus, so only one row is ever\nhighlighted, and focus rings show only for the keyboard.\n\nEvents: a bubbling, cancelable `beforetoggle` `CustomEvent` before the\nmenu opens or closes, `detail: { open, reason }` — `\"trigger-press\"`,\n`\"escape-key\"`, `\"outside-press\"`, `\"focus-out\"` (disclosure only),\n`\"item-press\"`, `\"item-keyboard\"` or `\"programmatic\"`. `preventDefault()`\nkeeps the menu as it is (e.g. veto `\"item-keyboard\"` to keep it open\nwhile someone works through it with the keyboard).",
           "attributes": [],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "beforetoggle": "{ open: boolean; reason: string; event?: Event }"
+          }
         },
         "kernel-dropdown-menu-morph": {
           "description": "`<kernel-dropdown-menu-morph>` — `<kernel-dropdown-menu>`'s trigger-\nmorphs-into-menu variant, transitions.dev's \"plus menu morph\" recipe:\nthe panel's own box animates width/height/border-radius out from the\ntrigger's exact footprint (see `utils/menuMorph.ts`'s FLIP technique)\ninstead of scaling/fading in place.\n\nThat forces `popover=\"manual\"` instead of `\"auto\"`: a popover's hide\nis deliberately not cancelable, so there's no way to defer it long\nenough for the shrink-back-to-the-trigger animation to play first —\nthe same tradeoff `<kernel-context-menu>` already makes for its own\nmanual popover, with outside-click/Escape dismissal wired up by hand\nto replace what `popover=\"auto\"` gives for free.\n\nReuses `<kernel-menu-item>`/`<kernel-menu-separator>` directly, same\nas `<kernel-context-menu>` does — only the trigger/panel open-close\nmechanism differs.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\nbecomes the menu. Attributes: `placement` (default bottom), `align`\n(start/center/end, default center), `offset` (px, default 8).\nEvents: the same cancelable `beforetoggle` as `<kernel-dropdown-menu>`.",
           "attributes": [],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "beforetoggle": "{ open: boolean; reason: string; event?: Event }"
+          }
         },
         "kernel-menu-item": {
           "description": "`<kernel-menu-item>` — a real `<button role=\"menuitem\">` by default.\nSet `href` to render as an `<a>` instead (native link semantics for\nnavigation, new-tab, etc.). Attributes: `disabled`, `destructive`,\n`href`, `target`, `rel`. Events: `select` fires on activation, after\nwhich the nearest `[popover]` ancestor (the menu) is closed — without\npreventingDefault on the click, so links still navigate.",
@@ -3336,7 +3364,8 @@
           ],
           "events": [],
           "eventDetails": {
-            "change": null
+            "change": null,
+            "valuechange": "{ value: number; reason: \"input\" | \"keyboard\" | \"step-button\" | \"wheel\"; event?: Event }"
           }
         }
       }
@@ -3492,7 +3521,8 @@
             "toggle"
           ],
           "eventDetails": {
-            "toggle": "{ open: boolean; reason: string }"
+            "toggle": "{ open: boolean; reason: string }",
+            "beforetoggle": "{ open: boolean; reason: \"escape-key\" | \"outside-press\" | \"programmatic\" | \"trigger-press\"; event?: Event }"
           }
         }
       }
@@ -3625,7 +3655,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ value: string; reason: \"keyboard\" | \"press\"; event?: Event }"
+          }
         },
         "kernel-radio-group-item": {
           "description": "`<kernel-radio-group-item>` — one option inside a `<kernel-radio-group>`.\nAttributes: `value` (required), `disabled`. Text content is the\nradio's label; `aria-label`, `aria-labelledby` and `aria-describedby`\non the host are forwarded to the real `<input type=\"radio\">`.",
@@ -3822,7 +3855,7 @@
             "valueschange"
           ],
           "eventDetails": {
-            "issue": "{ code: import(\"/Users/karlkoch/Developer/kernel-ui/.claude/worktrees/agent-a37b4725907a3ec70/packages/elements/src/components/SchemaRenderer/schema\").SchemaIssueCode; path: string; message: string; type: string; prop: string }",
+            "issue": "{ code: SchemaIssueCode; path: string; message: string; type: string; prop: string }",
             "action": "{ action: string; payload: SchemaJsonValue; values: SchemaValues }",
             "valueschange": "{ values: SchemaValues }"
           }
@@ -3984,7 +4017,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ value: string; reason: \"item-press\" | \"keyboard\" | \"typeahead\"; event?: Event }"
+          }
         }
       }
     },
@@ -4361,7 +4397,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": "{ value: number; reason: \"drag\" | \"keyboard\"; event?: Event }"
+          }
         }
       }
     },
@@ -4586,7 +4625,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": "{ checked: boolean; reason: \"keyboard\" | \"press\"; event?: Event }"
+          }
         }
       }
     },
@@ -4883,7 +4925,10 @@
           "attributes": [
             "value"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "valuechange": "{ value: string; reason: \"keyboard\" | \"programmatic\" | \"trigger-press\"; event?: Event }"
+          }
         },
         "kernel-tabs-list": {
           "description": "`<kernel-tabs-list>` — `role=\"tablist\"`. Attributes: `aria-label`\n(required), `shape` (`default` follows the theme's control radius,\n`pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`\nchildren and the animated sliding indicator.\n\n`aria-label`, `aria-labelledby` and `aria-describedby` on the host are\nforwarded to the `role=\"tablist\"`.",
@@ -5063,7 +5108,8 @@
             "kernel-tag-input-error"
           ],
           "eventDetails": {
-            "kernel-tag-input-error": "{ type: \"duplicate\" | \"max\" | \"empty\"; value: string }"
+            "kernel-tag-input-error": "{ type: \"duplicate\" | \"max\" | \"empty\"; value: string }",
+            "change": "{ tags: string[]; reason: \"backspace\" | \"enter\" | \"paste\" | \"remove-button\" | \"separator\"; event?: Event }"
           }
         }
       }
@@ -5400,7 +5446,10 @@
             "aria-labelledby",
             "aria-describedby"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": "{ pressed: boolean; reason: \"keyboard\" | \"press\"; event?: Event }"
+          }
         }
       }
     },

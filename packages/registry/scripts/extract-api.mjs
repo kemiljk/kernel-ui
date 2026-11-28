@@ -100,6 +100,11 @@ function defaultsFor(sourceFile, componentName) {
  * `result.error` has no readable shape without it. Only the elements
  * sources go into the program, so it stays quick.
  */
+/** `import("/abs/path/to/module").Name` → `Name`: a type from another module
+ * prints with the absolute path of the machine that ran the build, which
+ * must not end up in the published API data. */
+const IMPORT_PREFIX = /import\("[^"]*"\)\./g;
+
 function eventDetailsByClass(elementFiles) {
   const program = ts.createProgram(
     elementFiles.map((sf) => sf.fileName),
@@ -117,12 +122,12 @@ function eventDetailsByClass(elementFiles) {
   const flags = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType;
   const print = (type, at) => {
     if (type.isUnion() || !(type.flags & ts.TypeFlags.Object) || checker.isArrayType(type)) {
-      return checker.typeToString(type, at, flags).replace(/'/g, '"');
+      return checker.typeToString(type, at, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, "");
     }
     const props = checker.getPropertiesOfType(type);
     if (props.length === 0) return checker.typeToString(type, at, flags);
     return `{ ${props
-      .map((p) => `${p.name}: ${checker.typeToString(checker.getTypeOfSymbolAtLocation(p, at), at, flags).replace(/'/g, '"')}`)
+      .map((p) => `${p.name}: ${checker.typeToString(checker.getTypeOfSymbolAtLocation(p, at), at, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, "")}`)
       .join("; ")} }`;
   };
 
@@ -133,6 +138,8 @@ function eventDetailsByClass(elementFiles) {
     if (!sf) continue;
     const visitClass = (cls) => {
       const details = {};
+      /** emitChange calls: event name → { props, reasons }, merged below. */
+      const changes = {};
       const visit = (n) => {
         if (
           ts.isNewExpression(n) &&
@@ -154,10 +161,49 @@ function eventDetailsByClass(elementFiles) {
           // The first dispatch with a detail wins; others of the same name
           // carry the same type (a shared interface) in practice.
           if (!(name in details) || (details[name] === null && detail !== null)) details[name] = detail;
+        } else if (
+          // `this.emitChange("change", { tags }, reason, event)` (KernelElement's
+          // cancelable change event) builds the CustomEvent inside the base
+          // class, so read the shape from the call: the detail object's
+          // properties plus the `reason` and optional triggering `event`.
+          ts.isCallExpression(n) &&
+          ts.isPropertyAccessExpression(n.expression) &&
+          n.expression.name.text === "emitChange" &&
+          n.arguments[0] &&
+          ts.isStringLiteralLike(n.arguments[0]) &&
+          n.arguments[1]
+        ) {
+          const name = n.arguments[0].text;
+          const detailArg = n.arguments[1];
+          const reasonArg = n.arguments[2];
+          const props = checker.getPropertiesOfType(checker.getTypeAtLocation(detailArg));
+          const parts = props.map(
+            (p) =>
+              `${p.name}: ${checker.typeToString(checker.getTypeOfSymbolAtLocation(p, detailArg), detailArg, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, "")}`,
+          );
+          // Spelled out literal by literal: a reason union aliased in another
+          // module would otherwise print as an `import("/abs/path")` type.
+          const reasonType = reasonArg ? checker.getTypeAtLocation(reasonArg) : undefined;
+          const reasonParts = reasonType
+            ? (reasonType.isUnion() ? reasonType.types : [reasonType]).map((t) =>
+                t.isStringLiteral() ? JSON.stringify(t.value) : checker.typeToString(t, reasonArg, flags).replace(/'/g, '"').replace(IMPORT_PREFIX, ""),
+              )
+            : ["string"];
+          const reason = reasonParts.join(" | ");
+          // One event is usually emitted from several places, each with its
+          // own reason: report the union of them.
+          const entry = (changes[name] ??= { parts, reasons: new Set() });
+          for (const r of reason.split(" | ")) entry.reasons.add(r);
         }
         ts.forEachChild(n, visit);
       };
       visit(cls);
+      for (const [name, { parts, reasons }] of Object.entries(changes)) {
+        const reason = reasons.has("string") ? "string" : [...reasons].sort().join(" | ");
+        if (!(name in details) || details[name] === null) {
+          details[name] = `{ ${[...parts, `reason: ${reason}`, "event?: Event"].join("; ")} }`;
+        }
+      }
       byClass.set(`${source.fileName}:${cls.getStart(sf)}`, details);
     };
     const find = (n) => {
