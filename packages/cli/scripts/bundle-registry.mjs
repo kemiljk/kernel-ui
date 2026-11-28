@@ -85,4 +85,55 @@ writeFileSync(
   `export { components, getComponentBySlug } from "../dist/registry-bundle.cjs";`,
 );
 
-console.log(`[bundle-registry] Bundled ${components.length} components → dist/registry-bundle.*`);
+// ── 5. Agent data for `kernel mcp`: exact APIs, tokens, conventions ─────
+// Bundled for the same reason as the catalog: the server must answer
+// offline and match the installed version, never a hosted page that drifts.
+const api = JSON.parse(readFileSync(join(registryDist, "api.json"), "utf8")).components;
+
+// Every --kernel-* token in tokens.css with its value and the comment block
+// directly above it, so `get_tokens` can say what a token is *for*.
+const tokensCss = readFileSync(join(root, "styles", "src", "tokens.css"), "utf8");
+const tokens = [];
+// Each token takes the nearest comment above it (a comment introduces the
+// group of declarations under it), minus decorative "-----" divider rules.
+const pieces = [...tokensCss.matchAll(/\/\*([\s\S]*?)\*\/|(--kernel-[\w-]+)\s*:\s*([^;]+);/g)];
+let note;
+for (const piece of pieces) {
+  if (piece[1] !== undefined) {
+    const text = piece[1]
+      .split("\n")
+      .map((l) => l.replace(/^\s*\*?\s?/, "").trimEnd())
+      .filter((l) => !/^-{3,}$/.test(l.trim()))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+    // A divider-only comment followed by a one-line heading keeps the heading.
+    if (text) note = text;
+    continue;
+  }
+  if (tokens.some((t) => t.name === piece[2])) continue;
+  tokens.push({ name: piece[2], value: piece[3].replace(/\s+/g, " ").trim(), ...(note ? { note } : {}) });
+}
+
+// The hand-written halves of both llms.txt files (everything outside the
+// generated component list): install steps and cross-component conventions.
+function conventions(file) {
+  const text = readFileSync(join(root, file), "utf8");
+  const start = text.indexOf("<!-- GENERATED:COMPONENTS:START -->");
+  const end = text.indexOf("<!-- GENERATED:COMPONENTS:END -->");
+  return start === -1 ? text : (text.slice(0, start) + text.slice(end + "<!-- GENERATED:COMPONENTS:END -->".length)).trim();
+}
+const agentData = {
+  api,
+  tokens,
+  conventions: { react: conventions("react/llms.txt"), elements: conventions("elements/llms.txt") },
+};
+writeFileSync(
+  join(outDir, "agent-bundle.cjs"),
+  `"use strict";\n// Bundled at build time from @kernelui-lib/registry and @kernelui-lib/styles\nmodule.exports = ${JSON.stringify(agentData)};\n`,
+);
+
+console.log(
+  `[bundle-registry] Bundled ${components.length} components → dist/registry-bundle.*, ` +
+    `${Object.keys(api).length} APIs and ${tokens.length} tokens → dist/agent-bundle.cjs`,
+);

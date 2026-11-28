@@ -43,6 +43,24 @@ kernel docs dialog --markdown
 kernel docs input
 ```
 
+### `kernel mcp`
+
+Runs a Model Context Protocol server over stdio so coding agents can look Kernel up: `list_components`, `search_components`, `get_component` (exact props, attributes, events), `get_tokens`, `get_conventions` and `check_code`. Answers come from data bundled into the CLI, so they work offline and match the installed version.
+
+```bash
+kernel mcp init                  # Claude Code (.mcp.json)
+kernel mcp init --client cursor  # .cursor/mcp.json
+kernel mcp init --client vscode  # .vscode/mcp.json
+```
+
+### `kernel check`
+
+Reviews files for common Kernel mistakes (foreign props such as `asChild`, invalid values, missing labels, unlabelled icon-only buttons, clickable divs, raw colours, hand-picked radii, replaceable shadcn/Radix imports). Exits non-zero on errors.
+
+```bash
+kernel check src/App.tsx
+```
+
 ## LLM usage
 
 - Package maps ship with `@kernelui-lib/react` and `@kernelui-lib/elements` as `llms.txt`.
