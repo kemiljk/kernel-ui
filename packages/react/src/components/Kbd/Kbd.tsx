@@ -119,7 +119,7 @@ export const Kbd = forwardRef<HTMLElement, KbdProps>(function Kbd(
       {combo
         ? keys.map((key, index) => (
             <Fragment key={`${key}-${index}`}>
-              {index > 0 ? <span className={styles.separator}>{separator}</span> : null}
+              {index > 0 ? <span className={styles.separator} data-slot="kbd-separator">{separator}</span> : null}
               <kbd className={styles.key} data-slot="kbd-key">
                 <KeyLabel label={resolveKbdKey(key, resolvedPlatform)} />
               </kbd>

@@ -5,7 +5,8 @@
 
 Polish pass across ten components, matched in both packages:
 
-- **DropdownMenu / ContextMenu**: compact rows (same rhythm as Combobox options), full-bleed separators, a muted 1rem slot for a leading icon, a trailing column for a `Kbd` or `[data-slot="shortcut"]` hint, and destructive rows keep their danger tint when reached from the keyboard.
+- **DropdownMenu / ContextMenu**: compact rows (same rhythm as Combobox options), full-bleed separators, a muted 1rem slot for a leading icon, a trailing column for a `Kbd` or `[data-slot="shortcut"]` hint, and destructive rows keep their danger tint when reached from the keyboard. A `Kbd` in a menu row drops its key-cap chrome and prints quietly on the label's baseline, as native menus do: `⌘E` on Apple platforms (the separator stays for screen readers) and `Ctrl+E` elsewhere.
+- **Kbd**: a combination's separator carries `data-slot="kbd-separator"`.
 - **Select**: compact picker rows; the checked option is marked by an accent checkmark and medium weight instead of the same fill as hover, so hover and selection no longer look alike.
 - **Dialog**: the title's first line is optically centred on the close button, and the description sits closer to the title.
 - **EmptyState**: title and description grouped tightly, balanced description lines, a hairline ring on the icon tile, and more room before the actions.
