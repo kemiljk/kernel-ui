@@ -9,7 +9,7 @@
     var(--kernel-gray-4) 75%
   );
   background-size: 200% 100%;
-  animation: kernel-elements-skeleton-sweep 1.6s ease-in-out infinite;
+  animation: kernel-elements-skeleton-sweep var(--kernel-duration-shimmer) var(--kernel-ease-loop) infinite;
 }
 
 @keyframes kernel-elements-skeleton-sweep {

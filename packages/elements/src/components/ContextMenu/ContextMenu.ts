@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import "../DropdownMenu/DropdownMenu";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./ContextMenu.css";
 
 const MARGIN = 8;
@@ -40,7 +41,18 @@ export class KernelContextMenu extends KernelElement {
     content.className = kernelClass("ContextMenu", "content");
     content.append(...rest);
 
-    const close = () => content.hidePopover?.();
+    // Play the exit before hiding, the same as React's usePopoverExit: once
+    // hidePopover() runs, the panel is gone and can't animate.
+    let closing = false;
+    const close = async () => {
+      if (closing || !content.matches(":popover-open")) return;
+      closing = true;
+      content.setAttribute("data-closing", "");
+      if (!prefersReducedMotion()) await waitForExitTransition(content);
+      content.removeAttribute("data-closing");
+      content.hidePopover?.();
+      closing = false;
+    };
 
     triggerArea.addEventListener("contextmenu", (event) => {
       event.preventDefault();

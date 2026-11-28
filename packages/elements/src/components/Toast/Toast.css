@@ -57,20 +57,21 @@
 
 .kernel-Toast-toast[data-depth="1"] {
   --y: -10px;
-  scale: 0.96;
+  /* Halfway to --kernel-scale-recede: one step back. */
+  scale: calc((1 + var(--kernel-scale-recede)) / 2);
   opacity: 0.9;
 }
 
 .kernel-Toast-toast[data-depth="2"] {
   --y: -20px;
-  scale: 0.92;
+  scale: var(--kernel-scale-recede);
   opacity: 0.55;
   filter: blur(var(--kernel-blur-xs));
 }
 
 .kernel-Toast-toast[data-depth="3"] {
   --y: -30px;
-  scale: 0.92;
+  scale: var(--kernel-scale-recede);
   opacity: 0;
   filter: blur(var(--kernel-blur-xs));
   pointer-events: none;
@@ -88,13 +89,22 @@
   .kernel-Toast-toast {
     opacity: 0;
     translate: 0 var(--kernel-space-12) !important;
-    scale: 0.8;
+    /* The standard entrance dip; the travel up from below carries the arrival. */
+    scale: var(--kernel-scale-enter);
   }
 }
 
+/* Leaves the way it arrived (down, toward the edge it came from) and
+   faster than it entered: exits are shorter than entrances. */
 .kernel-Toast-toast[data-closing] {
   opacity: 0;
-  scale: 0.96;
+  scale: var(--kernel-scale-enter);
+  translate: 0 calc(var(--y) + var(--kernel-translate-enter));
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-out),
+    translate var(--kernel-duration-exit) var(--kernel-ease-out),
+    scale var(--kernel-duration-exit) var(--kernel-ease-out),
+    filter var(--kernel-duration-exit) var(--kernel-ease-out);
 }
 
 .kernel-Toast-toast[data-variant="success"] {
@@ -206,7 +216,8 @@
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    color var(--kernel-duration-fast) var(--kernel-ease-out);
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .kernel-Toast-toast[data-variant="success"] .kernel-Toast-close {
@@ -258,5 +269,16 @@
 
   .kernel-Toast-icon {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.kernel-Toast-close:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Toast-close:active:not(:disabled) {
+    scale: 1;
   }
 }

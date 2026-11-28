@@ -80,6 +80,16 @@
     scale var(--kernel-duration-fast) var(--kernel-ease-overlay);
 }
 
+/* Matches React's Combobox: the exit plays while [data-closing] is set,
+   before hidePopover() (see closeList in Combobox.ts). */
+.kernel-Combobox-listbox[data-closing] {
+  opacity: 1;
+  scale: var(--kernel-scale-exit);
+  pointer-events: none;
+  transition:
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
+}
+
 @starting-style {
   .kernel-Combobox-listbox:popover-open {
     opacity: 0;

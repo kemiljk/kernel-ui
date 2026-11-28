@@ -11,12 +11,6 @@
   --label-offset: 0px;
 }
 
-@property --kernel-drop-reveal-scale {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0.001;
-}
-
 /* The real <input type="file"> is visually hidden — never display: none
    (that would drop it from the tab order and break drag-and-drop's
    requirement that it stay a real target for .files assignment). This
@@ -28,7 +22,6 @@
      share a corner centre (outer = md + padding-sheet). */
   --kernel-dropzone-radius: var(--kernel-radius-control);
   --kernel-dropzone-padding: var(--kernel-space-6) var(--kernel-space-8);
-  --kernel-drop-reveal-scale: 0.001;
   --kernel-drop-origin-x: 50%;
   --kernel-drop-origin-y: 50%;
   position: relative;
@@ -48,10 +41,8 @@
   user-select: none;
   transition:
     border-color var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    border-style var(--kernel-duration-enter) var(--kernel-ease-overlay),
     background-color var(--kernel-duration-enter) var(--kernel-ease-overlay),
     box-shadow var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    padding var(--kernel-duration-enter) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-enter) var(--kernel-ease-overlay),
     scale var(--kernel-duration-enter) var(--kernel-ease-overlay);
 }
@@ -66,10 +57,11 @@
   box-sizing: border-box;
 }
 
-/* A drag-active wash blooms from the live pointer position. The animated
-   custom property drives both scale and inverse radius: transforms scale
-   corner radii too, so counter-scaling keeps the apparent roundness close
-   to the resting dropzone radius throughout the reveal. */
+/* A drag-active wash blooms from the live pointer position: a clip-path
+   circle growing from the pointer to past the farthest corner (150% of the
+   reference radius covers a corner origin). Clipping, unlike scaling, never
+   distorts the rounded corners, and it animates on the compositor without
+   an inherited custom property recalculating every descendant per frame. */
 .dropzone::before {
   content: "";
   position: absolute;
@@ -78,17 +70,10 @@
   pointer-events: none;
   background-color: var(--kernel-color-accent-subtle);
   border-radius: var(--kernel-dropzone-radius);
-  border-radius: calc(
-    var(--kernel-dropzone-radius) /
-    max(var(--kernel-drop-reveal-scale), 0.001)
-  );
-  transform-origin:
-    var(--kernel-drop-origin-x)
-    var(--kernel-drop-origin-y);
-  scale: var(--kernel-drop-reveal-scale);
+  clip-path: circle(0% at var(--kernel-drop-origin-x) var(--kernel-drop-origin-y));
   filter: blur(var(--kernel-blur-md));
   transition:
-    --kernel-drop-reveal-scale var(--kernel-duration-slow) var(--kernel-ease-spring),
+    clip-path var(--kernel-duration-slow) var(--kernel-ease-out),
     filter var(--kernel-duration-base) var(--kernel-ease-out);
 }
 
@@ -104,7 +89,6 @@
 }
 
 .dropzone[data-drag-active] {
-  --kernel-drop-reveal-scale: 1;
   border-color: var(--kernel-color-accent);
   /* Belt-and-suspenders alongside the JS-driven documentElement scroll
      lock: stops the dropzone itself from panning/zooming under a touch
@@ -113,6 +97,7 @@
 }
 
 .dropzone[data-drag-active]::before {
+  clip-path: circle(150% at var(--kernel-drop-origin-x) var(--kernel-drop-origin-y));
   filter: blur(0);
 }
 
@@ -448,11 +433,12 @@
     filter: none;
     transition: opacity var(--kernel-duration-fast) linear;
     opacity: 0;
-    scale: 1;
+    clip-path: none;
   }
 
   .dropzone[data-drag-active]::before {
     opacity: 1;
+    clip-path: none;
   }
 
   .dropzone,

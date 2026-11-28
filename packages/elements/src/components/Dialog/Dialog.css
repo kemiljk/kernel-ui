@@ -14,11 +14,12 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 
-  /* Exit fades with motion so dismiss reads as one phase instead of a
-     two-step "shrink then disappear". Enter still starts at 0 via
-     `@starting-style` below. */
+  /* A modal is a large surface: it enters from --kernel-scale-enter-lg
+     (0.98), since a bigger dip changes too much of the screen, and exits
+     to --kernel-scale-exit, a smaller change than its entrance. Exit fades
+     with the scale so dismissal reads as one phase. */
   opacity: 0;
-  scale: var(--kernel-scale-enter);
+  scale: var(--kernel-scale-enter-lg);
   transition:
     opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay);
@@ -34,7 +35,7 @@
 
 .kernel-Dialog-content[data-state="closing"] {
   opacity: 0;
-  scale: var(--kernel-scale-enter);
+  scale: var(--kernel-scale-exit);
   transition:
     opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     scale var(--kernel-duration-exit) var(--kernel-ease-overlay);
@@ -43,7 +44,7 @@
 @starting-style {
   .kernel-Dialog-content[data-state="open"] {
     opacity: 0;
-    scale: var(--kernel-scale-enter);
+    scale: var(--kernel-scale-enter-lg);
   }
 }
 
@@ -112,7 +113,7 @@
   scale: 1;
   translate: var(--kernel-dialog-translate);
   transition:
-    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
     translate var(--kernel-duration-exit) var(--kernel-ease-overlay);
 }
 
@@ -122,9 +123,11 @@
 .kernel-Dialog-content[data-state="open"][data-side="bottom"] {
   scale: 1;
   translate: 0 0;
+  /* Panels travel a large share of the viewport, so they enter on the
+     drawer curve: fast away from the edge, long settle. */
   transition:
     opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    translate var(--kernel-duration-enter) var(--kernel-ease-overlay);
+    translate var(--kernel-duration-sheet) var(--kernel-ease-drawer);
 }
 
 .kernel-Dialog-content[data-state="closing"][data-side="left"],

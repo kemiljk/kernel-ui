@@ -1,4 +1,5 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { prefersReducedMotion } from "../../utils/exitTransition";
 import "./Carousel.css";
 
 const PREV_PATH = "M10 3L5 8L10 13";
@@ -163,7 +164,8 @@ export class KernelCarousel extends KernelElement {
   }
 
   private scrollToSlide(slide: HTMLElement) {
-    slide.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    // An explicit "smooth" overrides the CSS reduced-motion preference.
+    slide.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", inline: "start", block: "nearest" });
   }
 
   private updateControls() {

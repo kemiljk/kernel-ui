@@ -138,7 +138,7 @@
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: kernel-composer-sweep 2s linear infinite;
+  animation: kernel-composer-sweep calc(var(--kernel-duration-shimmer) * 1.25) var(--kernel-ease-loop) infinite;
   pointer-events: none;
 }
 

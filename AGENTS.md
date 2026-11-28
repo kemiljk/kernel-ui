@@ -193,6 +193,31 @@ new component done, grep both `packages/react/src/index.ts` and
   `--kernel-duration-stagger` + `--kernel-translate-enter` are for a
   staggered list/line entrance — multiply the duration by an index at
   the call site rather than hand-picking a delay per component.
+- **Motion, continued.**
+  - **Frequency decides whether something animates.** Anything opened
+    from the keyboard or many times a day (CommandPalette, option
+    highlight, typing, tab panel content) changes instantly.
+    ContextMenu is the one deliberate exception: a short fade-and-pop open.
+  - **Size decides the scale.** Large surfaces (Dialog, panels) enter from
+    `--kernel-scale-enter-lg` (0.98); menus and popovers from
+    `--kernel-scale-enter`.
+  - **Sheets and side panels** travel on `--kernel-ease-drawer` over
+    `--kernel-duration-sheet`.
+  - **Loops** use `--kernel-ease-loop` and `--kernel-duration-spin` /
+    `-pulse` / `-shimmer`, never literal seconds. A loop that carries
+    meaning (a busy spinner, indeterminate progress) is marked
+    `data-kernel-motion="essential"`, so reduced motion slows it in the
+    component's own block instead of the reset freezing it.
+  - **Reduced motion is per component.** The reset no longer forces
+    `transition-duration` (it outranked every component's gentler variant),
+    so anything that moves needs its own `prefers-reduced-motion` block
+    that swaps travel and scale for an opacity fade. Check the block's
+    specificity covers the open state too: `.content` alone loses to
+    `.content:popover-open`.
+  - **Exits leave the way they came** (Toast drops back toward its edge),
+    shorter than the entrance.
+  - **Explicit `behavior: "smooth"`** in JS ignores the CSS preference, so
+    check `prefersReducedMotion()` first.
 - **Only `display` may live in a `:popover-open` rule.** `:popover-open`
   stops matching the moment a popover starts closing, but the panel is
   still on screen for the whole exit — `display` survives that because

@@ -150,3 +150,16 @@
 .button[data-icon-start][data-icon-end] > :only-child {
   margin-inline: 0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition:
+      background-color var(--kernel-duration-fast) linear,
+      border-color var(--kernel-duration-fast) linear,
+      color var(--kernel-duration-fast) linear;
+  }
+
+  .button:active:not(:disabled) {
+    scale: 1;
+  }
+}

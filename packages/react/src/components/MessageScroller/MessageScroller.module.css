@@ -93,7 +93,8 @@
     transform var(--kernel-duration-exit-fast) var(--kernel-ease-out),
     visibility 0s linear var(--kernel-duration-exit-fast),
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .jump[data-visible] {
@@ -127,5 +128,17 @@
   .jump,
   .jump[data-visible] {
     transition: none;
+  }
+}
+
+/* Press feedback. The individual scale property composes with the
+   transform that positions the button, so the two don't fight. */
+.jump[data-visible]:active {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jump[data-visible]:active {
+    scale: 1;
   }
 }

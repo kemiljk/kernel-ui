@@ -1,5 +1,6 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
+import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./Combobox.css";
 
 let comboboxCounter = 0;
@@ -142,6 +143,7 @@ export class KernelCombobox extends KernelElement {
     this.open = true;
     this.inputEl.setAttribute("aria-expanded", "true");
     this.listboxEl.setAttribute("data-open", "");
+    this.listboxEl.removeAttribute("data-closing");
     this.listboxEl.showPopover?.();
     this.positioner.setOpen(true);
   }
@@ -152,8 +154,21 @@ export class KernelCombobox extends KernelElement {
     this.inputEl.setAttribute("aria-expanded", "false");
     this.inputEl.removeAttribute("aria-activedescendant");
     this.listboxEl.removeAttribute("data-open");
-    this.listboxEl.hidePopover?.();
-    this.positioner.setOpen(false);
+    // Play the exit before hiding, the same as React's usePopoverExit.
+    const listbox = this.listboxEl;
+    if (prefersReducedMotion() || !listbox.matches(":popover-open")) {
+      listbox.hidePopover?.();
+      this.positioner.setOpen(false);
+      return;
+    }
+    listbox.setAttribute("data-closing", "");
+    void waitForExitTransition(listbox).then(() => {
+      listbox.removeAttribute("data-closing");
+      // Reopened while closing: leave it open.
+      if (this.open) return;
+      listbox.hidePopover?.();
+      this.positioner.setOpen(false);
+    });
   }
 
   private selectOption(option: ComboboxOption) {

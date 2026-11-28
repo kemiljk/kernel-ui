@@ -218,7 +218,7 @@
   border-radius: var(--kernel-radius-full);
   border: 2px solid currentColor;
   border-inline-end-color: transparent;
-  animation: kernel-spin var(--kernel-duration-slow) linear infinite;
+  animation: kernel-spin var(--kernel-duration-spin) var(--kernel-ease-loop) infinite;
 }
 
 @keyframes kernel-spin {
@@ -237,6 +237,6 @@
   }
 
   .spinner {
-    animation-duration: 1.2s;
+    animation-duration: calc(var(--kernel-duration-spin) * 2);
   }
 }
