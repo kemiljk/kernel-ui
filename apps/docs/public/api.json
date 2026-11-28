@@ -2745,6 +2745,111 @@
         }
       }
     },
+    "model-picker": {
+      "name": "Model Picker",
+      "react": {
+        "ModelPicker": {
+          "description": "Picks the model a chat is sent to, from a composer's toolbar: a compact\npill `<button>` that opens a `role=\"listbox\"` in a `popover=\"auto\"`.\n\nWhy not `Select`? A native `<select>` is the right answer for plain\noptions, and Kernel's `Select` is one. A model list isn't plain: each\noption has a description, badges and a logo, and `<option>` can only hold\ntext everywhere except Chromium's `appearance: base-select`. So this keeps\nwhat the platform does give — the popover's top layer, light dismiss,\nEscape, and focus return to the invoker — and adds the WAI-ARIA listbox\npattern by hand: focus moves to the list, `aria-activedescendant` tracks\nthe active option, arrows/Home/End move it, Enter or Space selects,\nprintable keys typeahead, and Tab closes. Groups are `role=\"group\"`\nlabelled by their heading, so a screen reader announces the provider as\nyou cross into it.\n\nThe trigger is an optical pill sized to `--kernel-control-height-sm` so\nit sits beside a small send button in `Composer`'s action row (see\n`Badge.module.css` for the recipe). It opens upward by default, because\nthe composer is at the bottom of the screen.",
+          "extends": [],
+          "props": [
+            {
+              "name": "options",
+              "type": "ModelPickerOption[]",
+              "optional": false
+            },
+            {
+              "name": "value",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "name": "defaultValue",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "name": "onValueChange",
+              "type": "(value: string) => void",
+              "optional": true
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "optional": true,
+              "description": "Submits the value with a surrounding form, through a hidden input."
+            },
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "optional": true,
+              "default": "false"
+            },
+            {
+              "name": "placement",
+              "type": "FloatingPlacement",
+              "optional": true,
+              "default": "\"top\"",
+              "description": "Which side of the trigger the list opens on. Defaults to `\"top\"`,\nsince a composer sits at the bottom of the screen; it flips when\nthere's no room."
+            },
+            {
+              "name": "align",
+              "type": "FloatingAlign",
+              "optional": true,
+              "default": "\"start\"",
+              "description": "Cross-axis alignment. Defaults to `\"start\"`."
+            },
+            {
+              "name": "offset",
+              "type": "number",
+              "optional": true,
+              "default": "8",
+              "description": "Gap between trigger and list, in pixels. Defaults to `8`."
+            },
+            {
+              "name": "id",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<ModelPickerState>",
+              "optional": true,
+              "description": "Classes for the trigger button."
+            },
+            {
+              "name": "listClassName",
+              "type": "ClassNameValue<ModelPickerState>",
+              "optional": true,
+              "description": "Classes for the popup list."
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ModelPickerLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-model-picker": {
+          "description": "`<kernel-model-picker>` — picks the model a chat is sent to, from a\ncomposer's toolbar: a compact pill `<button>` that opens a\n`role=\"listbox\"` in a `popover=\"auto\"`. See `@kernelui-lib/react`'s\n`<ModelPicker>` for why this isn't a native `<select>` (options carry\ndescriptions, badges and logos), and which parts the platform still owns\n(top layer, light dismiss, Escape, focus return) versus the listbox\nkeyboard pattern added by hand (arrows, Home/End, Enter/Space, typeahead,\nTab to leave).\n\nOptions come from the `options` property (structured data, icons as DOM\nnodes or image URLs), or declaratively from light-DOM `<option>`s read once\nat connect — optionally inside `<optgroup label=\"Provider\">` — with\n`data-description` and `data-badges` (\"New:accent, Fast\"; a bare label is\nneutral).\n\nAttributes: `value`, `name` (submits through a hidden input), `disabled`,\n`placement` (default top), `align` (default start), `offset` (default 8),\nand built-in strings `label-model` (\"Model\") and `label-placeholder`\n(\"Choose a model\") — or the `labels` property. Fires `valuechange`\n(`detail: { value }`) when the reader picks a model.",
+          "attributes": [
+            "value",
+            "name",
+            "disabled",
+            "label-model",
+            "label-placeholder"
+          ],
+          "events": [
+            "valuechange"
+          ],
+          "eventDetails": {
+            "valuechange": "{ value: string }"
+          }
+        }
+      }
+    },
     "nav": {
       "name": "Nav",
       "react": {
@@ -4130,6 +4235,67 @@
           "attributes": [
             "index",
             "href"
+          ],
+          "events": []
+        }
+      }
+    },
+    "streaming-markdown": {
+      "name": "Streaming Markdown",
+      "react": {
+        "StreamingMarkdown": {
+          "description": "Renders Markdown as it streams in from a model: real elements (`<p>`,\n`<ol>`, `<table>`, `<blockquote>`, Kernel's `CodeBlock` for fences), built\nfrom a parsed tree rather than an HTML string.\n\nNever HTML. The parser (`utils/markdown.ts`) produces data and this turns\nit into React elements, so model text can only ever become text: raw\n`<script>` or `<img onerror>` in the content renders as those characters.\nLinks keep only `http:`, `https:`, `mailto:` and relative destinations; an\nunsafe one renders as its text with no `href`. Images render as a link to\nthe image and are never loaded, because an image URL a model wrote is a\nknown way to leak conversation data to a third-party server.\n\nStreaming stability is the reason for the component. The top level is\nsplit into blocks, each keyed by index and memoised on its own source\nslice, so a new chunk re-renders only the last block — earlier paragraphs,\ntables and code blocks keep their DOM nodes, their layout and the reader's\ntext selection. Unfinished syntax renders as its finished form would (see\nthe parser's comment), so nothing flips from raw asterisks to bold, or\nfrom a paragraph of pipes to a table, mid-stream.\n\nIt is deliberately not a live region. A container that announces every\nappended token reads a stream back word by word, or re-reads the whole\nanswer. Announcing belongs to the transcript: inside `MessageScroller`\n(`role=\"log\"`, polite), the message is announced as it's added, and\n`aria-busy` here while `streaming` asks assistive tech to hold this\ncontent's updates until it settles, then read the finished text once.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLDivElement>, \"className\" | \"children\" | \"content\">"
+          ],
+          "props": [
+            {
+              "name": "content",
+              "type": "string",
+              "optional": false,
+              "description": "The Markdown so far. Append to it as chunks arrive."
+            },
+            {
+              "name": "streaming",
+              "type": "boolean",
+              "optional": true,
+              "default": "false",
+              "description": "Text is still arriving: unfinished constructs (an open fence, an\nunclosed `**`, half a link or table row) render as their finished form\nwould, instead of as raw syntax."
+            },
+            {
+              "name": "animate",
+              "type": "boolean",
+              "optional": true,
+              "default": "true",
+              "description": "Fade newly arrived words in while streaming. Off under reduced motion\nwhatever this says. Default `true`."
+            },
+            {
+              "name": "components",
+              "type": "StreamingMarkdownComponents",
+              "optional": true
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<StreamingMarkdownState>",
+              "optional": true
+            },
+            {
+              "name": "labels",
+              "type": "Partial<StreamingMarkdownLabels>",
+              "optional": true,
+              "description": "Override built-in strings (e.g. for translation); unset keys keep\ntheir English default."
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-streaming-markdown": {
+          "description": "`<kernel-streaming-markdown>` — renders Markdown as it streams in from a\nmodel, as real elements built with `createElement` and `textContent`,\nnever `innerHTML`. See `@kernelui-lib/react`'s `<StreamingMarkdown>` for\nthe full reasoning: why model text can only ever become text, why links\nare filtered to safe schemes and images are never loaded, why unfinished\nsyntax renders as its finished form, and why this is not a live region\n(it sets `aria-busy` while streaming and leaves announcing to the\ntranscript, `<kernel-message-scroller>`).\n\nStable streaming: the top level is split into blocks, each remembered with\nthe source slice it came from. A new chunk leaves every block whose slice\nis unchanged untouched — same nodes, same layout, same text selection —\nand patches the last one in place, element by element and text node by\ntext node, so words already on screen keep their nodes and only new words\nmount (and fade in). Fenced code renders through `<kernel-code-block>`,\nwhich reconciles its own lines the same way.\n\nContent: the `content` property or attribute (append to it as chunks\narrive), or Markdown written as the tag's text, read once at connect.\nAttributes: `streaming`, `no-animate` (no word fade-in; reduced motion\nturns it off regardless), and built-in string `label-opens-in-new-tab`\n(\"(opens in new tab)\") — or the `labels` property.",
+          "attributes": [
+            "content",
+            "streaming",
+            "no-animate",
+            "label-opens-in-new-tab"
           ],
           "events": []
         }

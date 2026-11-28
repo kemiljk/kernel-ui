@@ -25,6 +25,20 @@ import { Textarea } from "./components/Textarea/Textarea";
 import { TextField } from "./components/TextField/TextField";
 import { Toggle } from "./components/Toggle/Toggle";
 import { Tooltip } from "./components/Tooltip/Tooltip";
+import { StreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
+import { ModelPicker } from "./components/ModelPicker/ModelPicker";
+
+const MARKDOWN = "# Plan\n\nRead **this** and [the docs](https://example.com), then `run`.\n\n1. One\n   - nested\n2. Two\n\n> Quoted\n\n| a | b |\n|:--|--:|\n| 1 | 2 |\n\n---";
+// CodeBlock (inside StreamingMarkdown's fences) follows its last line with a
+// ResizeObserver, which jsdom doesn't have.
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+}
+const escapeAttr = (value: string) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 /*
  * DOM parity between @kernelui-lib/react and @kernelui-lib/elements.
@@ -273,6 +287,36 @@ const cases: Case[] = [
     name: "Skeleton",
     react: () => <Skeleton />,
     element: `<kernel-skeleton></kernel-skeleton>`,
+  },
+  {
+    name: "StreamingMarkdown",
+    react: () => <StreamingMarkdown content={MARKDOWN} />,
+    element: `<kernel-streaming-markdown content="${escapeAttr(MARKDOWN)}"></kernel-streaming-markdown>`,
+  },
+  {
+    name: "StreamingMarkdown (streaming)",
+    react: () => <StreamingMarkdown content={"Done.\n\nStill **going"} streaming />,
+    element: `<kernel-streaming-markdown streaming content="Done.\n\nStill **going"></kernel-streaming-markdown>`.replace(/\\n/g, "\n"),
+  },
+  {
+    name: "StreamingMarkdown (code fence)",
+    react: () => <StreamingMarkdown content={"```ts\nconst a = 1\n```"} />,
+    element: `<kernel-streaming-markdown content="\`\`\`ts&#10;const a = 1&#10;\`\`\`"></kernel-streaming-markdown>`,
+  },
+  {
+    name: "ModelPicker",
+    react: () => (
+      <ModelPicker
+        defaultValue="sonnet"
+        name="model"
+        options={[
+          { value: "opus", label: "Opus", description: "Most capable", group: "Anthropic", badges: [{ label: "New", variant: "accent" }] },
+          { value: "sonnet", label: "Sonnet", group: "Anthropic", badges: ["Fast"] },
+          { value: "mini", label: "Mini", disabled: true },
+        ]}
+      />
+    ),
+    element: `<kernel-model-picker value="sonnet" name="model"><optgroup label="Anthropic"><option value="opus" data-description="Most capable" data-badges="New:accent">Opus</option><option value="sonnet" data-badges="Fast">Sonnet</option></optgroup><option value="mini" disabled>Mini</option></kernel-model-picker>`,
   },
 ];
 

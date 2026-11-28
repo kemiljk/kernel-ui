@@ -428,6 +428,34 @@ export type { FuzzyMatch, FuzzyResult } from "./utils/fuzzy";
 export { spatialMove, gridDirectionForKey } from "./utils/spatialMove";
 export type { SpatialCell, SpatialDirection } from "./utils/spatialMove";
 
+export { StreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
+export type {
+  StreamingMarkdownProps,
+  StreamingMarkdownState,
+  StreamingMarkdownLabels,
+  StreamingMarkdownTag,
+  StreamingMarkdownComponents,
+  StreamingMarkdownCodeBlockProps,
+} from "./components/StreamingMarkdown/StreamingMarkdown";
+export { parseMarkdown, safeHref } from "./utils/markdown";
+export type {
+  MarkdownBlock,
+  MarkdownInline,
+  MarkdownListItem,
+  MarkdownAlign,
+  MarkdownTopBlock,
+  ParseMarkdownOptions,
+} from "./utils/markdown";
+
+export { ModelPicker } from "./components/ModelPicker/ModelPicker";
+export type {
+  ModelPickerProps,
+  ModelPickerState,
+  ModelPickerLabels,
+  ModelPickerOption,
+  ModelPickerBadge,
+} from "./components/ModelPicker/ModelPicker";
+
 export {
   renderElement,
   resolveClassName,

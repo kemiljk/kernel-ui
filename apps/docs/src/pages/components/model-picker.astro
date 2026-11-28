@@ -1,0 +1,88 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ModelPickerDemo from "../../components/demos/ModelPickerDemo";
+import ModelPickerPlayground from "../../components/demos/ModelPickerPlayground";
+import ApiTable from "../../components/ApiTable.astro";
+---
+
+<BaseLayout title="Model Picker" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Model Picker</h1>
+    <p>
+      Choose the model a chat is sent to, from a
+      <a href="/components/composer/">Composer</a>'s toolbar. A compact pill
+      <code>&lt;button&gt;</code> opens a <code>role="listbox"</code> in a
+      native popover, with provider groups, descriptions, badges, logos,
+      disabled options and typeahead.
+    </p>
+
+    <div class="docs-example">
+      <ModelPickerDemo client:visible />
+    </div>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ModelPickerPlayground client:visible />
+
+    <h2>Props</h2>
+    <ApiTable slug="model-picker" />
+    <p>
+      Each option is <code>{"{ value, label, description?, group?, badges?, icon?, disabled? }"}</code>.
+      Consecutive options with the same <code>group</code> are listed under one
+      heading. A badge is a string (a neutral <a href="/components/badge/">Badge</a>)
+      or <code>{"{ label, variant }"}</code>.
+    </p>
+
+    <h2>Why not Select?</h2>
+    <p>
+      A native <code>&lt;select&gt;</code> is the right answer for plain
+      options, and <a href="/components/select/">Select</a> is one. A model
+      list isn't plain: each option carries a description, badges and a logo,
+      and <code>&lt;option&gt;</code> can only hold text outside Chromium's
+      <code>appearance: base-select</code>. So the picker keeps what the
+      platform does give — the popover's top layer, light dismiss, Escape and
+      focus return to the trigger — and adds the WAI-ARIA listbox pattern by
+      hand.
+    </p>
+
+    <h2>In a composer</h2>
+    <p>
+      The trigger is sized to <code>--kernel-control-height-sm</code>, level
+      with a small send button, and drawn with Kernel's optical pill recipe:
+      the radius stops at a true half-height pill, the text clears the end
+      caps, and the logo and chevron sit concentric with them at every
+      radius setting. It opens upward by default, since a composer sits at the
+      bottom of the screen, and flips when there's no room.
+    </p>
+    <pre class="docs-pre"><code>{`<Composer
+  actionsLeading={<ModelPicker options={models} value={model} onValueChange={setModel} />}
+  actionsTrailing={({ submit }) => <Button size="sm" variant="primary" onClick={submit}>Send</Button>}
+/>`}</code></pre>
+    <p>
+      In the elements package, options come from the <code>options</code>
+      property, or from light-DOM <code>&lt;option&gt;</code>s (optionally in
+      <code>&lt;optgroup label&gt;</code>) with <code>data-description</code>
+      and <code>data-badges="New:accent, Fast"</code>. It fires
+      <code>valuechange</code> with <code>detail.value</code>.
+    </p>
+
+    <h2>Keyboard</h2>
+    <ul>
+      <li><kbd>Enter</kbd>, <kbd>Space</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd> on the trigger opens the list on the current model.</li>
+      <li><kbd>↓</kbd>/<kbd>↑</kbd> move through enabled options; <kbd>Home</kbd>/<kbd>End</kbd> jump to the ends.</li>
+      <li><kbd>Enter</kbd> or <kbd>Space</kbd> selects and returns focus to the trigger; <kbd>Escape</kbd> closes without changing it; <kbd>Tab</kbd> closes and moves on.</li>
+      <li>Typing jumps to a model by name — on the open list or the closed trigger. Repeating one letter cycles through the models that start with it.</li>
+    </ul>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The trigger reads "Model, Atlas Swift" — the model name, with a visually hidden prefix (<code>labels.model</code>) saying what it is.</li>
+      <li>Focus moves to the list and <code>aria-activedescendant</code> tracks the active option, so a screen reader announces each option as you arrow.</li>
+      <li>Groups are <code>role="group"</code> labelled by their heading, so crossing into a provider announces it.</li>
+      <li>Disabled options stay listed and announced as unavailable (<code>aria-disabled</code>), and are skipped by the arrows and typeahead.</li>
+      <li>Logos are decorative; the name already says which model it is.</li>
+    </ul>
+  </div>
+</BaseLayout>
