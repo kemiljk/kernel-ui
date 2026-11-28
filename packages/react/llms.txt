@@ -59,9 +59,9 @@ real underlying element, fully functional, just unstyled — never broken.
   component (Lucide, Phosphor, Heroicons, Radix…) as a child, before the
   text, after it, or on its own: `<Badge variant="success"><Check /> Shipped</Badge>`.
   Whichever end holds an icon becomes a `1lh` slot, concentric with the
-  rounded end. A host element counts as an icon only if it's an `svg`,
-  `img` or `picture`, or carries `data-icon`; wrap a component that renders
-  text in a `<span>`. Tune the whole set once with `--kernel-icon-size`
+  rounded end. Detection reads the rendered DOM: an icon component that
+  renders an `<svg>` counts, and a component that renders text (a `<Trans>`,
+  say) never does. Mark any other element `data-icon` to make it an icon. Tune the whole set once with `--kernel-icon-size`
   (drawn size inside the slot, default `1.25em`) and
   `--kernel-icon-stroke-width` (stroke override in viewBox units,
   default `auto`). Give an icon-only pill an accessible name on the icon
@@ -70,6 +70,16 @@ real underlying element, fully functional, just unstyled — never broken.
   `aria-label` on the Button (it's a real `<button>`); a lone `<svg>`/`<img>`
   passed as `children` is treated the same as `iconStart` with no label
   (pass icon components through `iconStart`/`iconEnd`).
+- **Contrast**: Kernel's colour tokens are checked with APCA (the
+  perceptual method proposed for WCAG 3), with WCAG 2's ratio as a floor:
+  - `--kernel-color-text`: Lc 75 and 4.5:1;
+  - `--kernel-color-text-muted`: Lc 60 and 4.5:1;
+  - `--kernel-color-focus-ring` and `--kernel-color-border-control`: Lc 45
+    and 3:1.
+
+  Keep to those tokens for text and outlines. If you set your own colours,
+  check them against the same APCA levels, not just WCAG 2. Dark mode is
+  where the two methods disagree most.
 - **React and Web Components share one design**: `@kernelui-lib/elements`
   ships every component below as a framework-free Custom Element
   (`<kernel-button>`, `<kernel-text-field>`, ...) with the same visual
