@@ -77,13 +77,35 @@ function announce() {
   window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
 }
 
+/**
+ * Runs a theme change with every transition switched off, so the switch is
+ * instant. Without this, each component's colour/radius transition fires at
+ * once and the whole page smears through the change. Disable, flush styles,
+ * apply, then restore on the next frame so later interactions animate again.
+ */
+function withoutTransitions(change: () => void) {
+  const style = document.createElement("style");
+  style.textContent = "*,*::before,*::after{transition:none!important}";
+  document.head.append(style);
+  change();
+  // Reading a computed style forces the new values to apply while
+  // transitions are still off.
+  void window.getComputedStyle(document.body).opacity;
+  requestAnimationFrame(() => requestAnimationFrame(() => style.remove()));
+}
+
 export function applyAccent(name: AccentName) {
-  document.documentElement.setAttribute("data-kernel-accent", name);
+  withoutTransitions(() => document.documentElement.setAttribute("data-kernel-accent", name));
   localStorage.setItem(STORAGE_KEYS.accent, name);
   announce();
 }
 
 export function applyRadius(radius: RadiusOption) {
+  withoutTransitions(() => applyRadiusProperties(radius));
+  announce();
+}
+
+function applyRadiusProperties(radius: RadiusOption) {
   document.documentElement.style.setProperty("--kernel-radius-base", radius.value);
   localStorage.setItem(STORAGE_KEYS.radius, radius.value);
   if (radius.control) {
@@ -107,11 +129,10 @@ export function applyRadius(radius: RadiusOption) {
     document.documentElement.style.removeProperty("--kernel-radius-sheet");
     localStorage.removeItem(STORAGE_KEYS.radiusSheet);
   }
-  announce();
 }
 
 export function applyColorScheme(scheme: ColorScheme) {
-  document.documentElement.setAttribute("data-theme", scheme);
+  withoutTransitions(() => document.documentElement.setAttribute("data-theme", scheme));
   localStorage.setItem(STORAGE_KEYS.scheme, scheme);
   announce();
 }
