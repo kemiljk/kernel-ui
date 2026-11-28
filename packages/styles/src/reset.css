@@ -115,13 +115,29 @@
     }
   }
 
+  /* Reduced motion means fewer and gentler animations, not none.
+
+     Transitions are left to each component: every Kernel component that
+     moves something ships its own prefers-reduced-motion block, which swaps
+     travel and scale for a short opacity cross-fade. A blanket
+     transition-duration override here used to defeat all of those: it sits
+     in a cascade layer with !important, which outranks every unlayered rule,
+     so no gentle variant ever ran.
+
+     Keyframe animations still stop, as a safety net for decorative loops,
+     except the ones that carry meaning (a busy spinner, indeterminate
+     progress), marked data-kernel-motion="essential". Those slow down in
+     their component's own reduced-motion block instead of freezing, so a
+     loading state still reads as loading. */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    :not([data-kernel-motion="essential"]),
+    :not([data-kernel-motion="essential"])::before,
+    :not([data-kernel-motion="essential"])::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+    }
+
+    * {
       scroll-behavior: auto !important;
     }
   }

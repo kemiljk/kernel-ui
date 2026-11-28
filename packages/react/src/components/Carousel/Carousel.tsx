@@ -1,6 +1,7 @@
 import { Children, createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { HTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { prefersReducedMotion } from "../../utils/exitTransition";
 import styles from "./Carousel.module.css";
 
 interface CarouselContextValue {
@@ -89,7 +90,13 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
   }, [order.join(",")]);
 
   function scrollToSlide(id: string) {
-    slideNodes.current.get(id)?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    // An explicit "smooth" overrides the CSS reduced-motion preference, so
+    // check it here: reduced motion jumps straight to the slide.
+    slideNodes.current.get(id)?.scrollIntoView({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+      inline: "start",
+      block: "nearest",
+    });
   }
 
   const context = useMemo<CarouselContextValue>(
