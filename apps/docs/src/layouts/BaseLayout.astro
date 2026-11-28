@@ -2,6 +2,9 @@
 import { ClientRouter } from "astro:transitions";
 import { fontPrecache } from "../data/font-precache";
 import "../styles/global.css";
+// Site-only Liquid Glass for the docs chrome. After global.css on purpose:
+// it wins on source order (see the comment at the top of the file).
+import "../styles/glass.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import MobileNav from "../components/MobileNav";

@@ -121,14 +121,18 @@ export default function CommandPalette() {
       </Button>
       {mounted
         ? createPortal(
-            <KernelCommandPalette
-              open={open}
-              onOpenChange={setOpen}
-              items={items}
-              placeholder="Search components…"
-              emptyMessage="No components match."
-              blur
-            />,
+            // The wrapper is only a hook for the docs' glass styles
+            // (glass.css); the dialog itself still opens in the top layer.
+            <div className="site-command-palette">
+              <KernelCommandPalette
+                open={open}
+                onOpenChange={setOpen}
+                items={items}
+                placeholder="Search components…"
+                emptyMessage="No components match."
+                blur
+              />
+            </div>,
             document.body,
           )
         : null}
