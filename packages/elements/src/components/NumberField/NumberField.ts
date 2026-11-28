@@ -74,7 +74,7 @@ export class KernelNumberField extends KernelElement {
     root.className = kernelClass("NumberField");
     root.dataset.size = "md";
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("NumberField", "label");

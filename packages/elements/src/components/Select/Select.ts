@@ -45,7 +45,7 @@ export class KernelSelect extends KernelElement {
     const root = document.createElement("div");
     root.className = kernelClass("Select");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("Select", "label");

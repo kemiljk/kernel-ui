@@ -48,7 +48,7 @@ export class KernelTextField extends KernelElement {
     root.dataset.size = "md";
     root.setAttribute("data-slot", "text-field");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const label = document.createElement("label");
     label.className = kernelClass("TextField", "label");

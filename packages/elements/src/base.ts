@@ -119,6 +119,19 @@ export class KernelElement extends HTMLElement {
     return "";
   }
 
+  /** The id for the native control an element labels itself (the
+   * `<input>` behind its own `<label for>`). An author's `id` stays on
+   * the host, so `getElementById()` and `#id` selectors keep finding the
+   * element and the events it dispatches; the control gets `<id>-control`.
+   * Copying the host's id onto the control instead left two elements
+   * sharing it, and `<label for>` resolved to the host, which isn't
+   * labelable, so the control went unnamed. Without a host id, the
+   * element's generated `fallback`. */
+  protected controlId(fallback: string): string {
+    const id = this.getAttribute("id");
+    return id ? `${id}-control` : fallback;
+  }
+
   /** Moves this custom element's own light-DOM children (whatever the
    * author wrote between its open/close tags) into `target`, once. */
   protected moveChildrenInto(target: Node) {
