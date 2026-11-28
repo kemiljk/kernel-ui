@@ -34,6 +34,7 @@ import {
   focusMenuOnOpen,
   highlightMenuItemUnderPointer,
   menuTriggerKeyIntent,
+  returnFocusFromMenu,
   roveMenuItems,
   type MenuOpenFocus,
 } from "../../utils/menuFocus";
@@ -552,9 +553,14 @@ export function DropdownMenuMorph({
    * synchronously, right below, and needs `[data-closing]`'s calmer
    * transition already active at that moment — if `[data-open]` (set
    * by a still-uncommitted React render) were still the only attribute
-   * present, the shrink would play on the bouncier open timing instead. */
-  function close() {
+   * present, the shrink would play on the bouncier open timing instead.
+   *
+   * Focus goes back to the trigger first, as `popover="auto"` does for
+   * `DropdownMenu` (a manual popover gets no such restore), except after an
+   * outside press, which leaves focus wherever that press put it. */
+  function close(returnFocus = true) {
     if (!open) return;
+    if (returnFocus) returnFocusFromMenu(menuRef.current, anchorRef.current);
     openFocus.resetIntent();
     setOpen(false);
     setClosing(true);
@@ -569,7 +575,7 @@ export function DropdownMenuMorph({
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target as Node;
-      if (!menuRef.current?.contains(target) && !anchorRef.current?.contains(target)) close();
+      if (!menuRef.current?.contains(target) && !anchorRef.current?.contains(target)) close(false);
     }
     function handleEscape(event: globalThis.KeyboardEvent) {
       if (event.key === "Escape") close();
@@ -617,7 +623,7 @@ export function DropdownMenuMorph({
   const popup = renderElement(renderContent, "div", popupProps, state);
 
   return (
-    <MenuContext.Provider value={{ close }}>
+    <MenuContext.Provider value={{ close: () => close() }}>
       {trigger}
       {popup}
     </MenuContext.Provider>

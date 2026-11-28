@@ -1,7 +1,7 @@
 import { createRef } from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { DropdownMenu, MenuItem } from "./DropdownMenu";
+import { DropdownMenu, DropdownMenuMorph, MenuItem } from "./DropdownMenu";
 
 describe("DropdownMenu", () => {
   it("applies popup className and open-state attributes", () => {
@@ -170,6 +170,48 @@ describe("DropdownMenu open modality", () => {
     await waitFor(() => expect(document.activeElement).toBe(items[0]));
     fireEvent.pointerLeave(menu);
     expect(highlighted()).toEqual([items[0]]);
+  });
+});
+
+// DropdownMenuMorph is a manual popover, so it gets no native focus restore.
+describe("DropdownMenuMorph focus return", () => {
+  async function openMorph() {
+    render(
+      <>
+        <DropdownMenuMorph render={<button type="button">Create</button>}>
+          <MenuItem>One</MenuItem>
+          <MenuItem>Two</MenuItem>
+        </DropdownMenuMorph>
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    const trigger = screen.getByRole("button", { name: "Create" });
+    const items = screen.getAllByRole("menuitem", { hidden: true });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    fireEvent.click(trigger);
+    await waitFor(() => expect(document.activeElement).toBe(items[0]));
+    return { trigger, items, elsewhere: screen.getByRole("button", { name: "Elsewhere" }) };
+  }
+
+  it("returns focus to the trigger on Escape", async () => {
+    const { trigger } = await openMorph();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("returns focus to the trigger after a selection", async () => {
+    const { trigger, items } = await openMorph();
+    fireEvent.click(items[1]!);
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("leaves focus alone after an outside press", async () => {
+    const { trigger, elsewhere } = await openMorph();
+    fireEvent.pointerDown(elsewhere);
+    expect(document.activeElement).not.toBe(trigger);
+    elsewhere.focus();
+    expect(document.activeElement).toBe(elsewhere);
   });
 });
 

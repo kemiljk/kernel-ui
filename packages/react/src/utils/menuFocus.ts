@@ -124,3 +124,48 @@ function clearItemFocus(menu: HTMLElement) {
   const active = document.activeElement;
   if (active !== menu && menu.contains(active)) menu.focus({ preventScroll: true });
 }
+
+/** Elements that take focus without help. Approximate on purpose: it only
+ * decides whether a context menu's fallback target needs `tabindex="-1"`. */
+const FOCUSABLE =
+  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex], [contenteditable]:not([contenteditable="false"])';
+
+/**
+ * Where a context menu sends focus back when it closes, read as it opens:
+ * whatever had focus (`focusedBefore`), else the right-clicked element (or
+ * its nearest focusable ancestor inside the trigger region), else the
+ * region itself.
+ *
+ * Pass the element that had focus at `pointerdown` for a pointer open: the
+ * press itself moves focus (to the body, over plain content) before the
+ * `contextmenu` event fires, so `document.activeElement` is already wrong
+ * by then. A keyboard open has no press, so it reads the live focus.
+ */
+export function contextMenuReturnTarget(
+  region: HTMLElement,
+  target: EventTarget | null,
+  focusedBefore: Element | null,
+): HTMLElement {
+  if (focusedBefore instanceof HTMLElement && focusedBefore !== document.body && focusedBefore.isConnected) {
+    return focusedBefore;
+  }
+  const clicked = (target as Element | null)?.closest?.<HTMLElement>(FOCUSABLE);
+  if (clicked && region.contains(clicked)) return clicked;
+  return region;
+}
+
+/**
+ * Returns focus to `target` as a menu closes, the way a native menu does
+ * after Escape or a selection. Only while focus is still in the menu, or
+ * has fallen to the body: focus the user has already put somewhere else
+ * stays there. Call it before the panel hides, so focus never sits in a
+ * closing menu. A target that can't take focus (a context menu's plain
+ * trigger region) gets `tabindex="-1"` first.
+ */
+export function returnFocusFromMenu(menu: HTMLElement | null, target: HTMLElement | null) {
+  if (!menu || !target?.isConnected) return;
+  const active = document.activeElement;
+  if (active && active !== document.body && !menu.contains(active)) return;
+  if (!target.matches(FOCUSABLE)) target.tabIndex = -1;
+  target.focus({ preventScroll: true });
+}

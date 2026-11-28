@@ -7,6 +7,7 @@ import {
   focusMenuOnOpen,
   highlightMenuItemUnderPointer,
   menuTriggerKeyIntent,
+  returnFocusFromMenu,
   roveMenuItems,
   type MenuOpenFocus,
 } from "../../utils/menuFocus";
@@ -355,7 +356,7 @@ export class KernelDropdownMenuMorph extends KernelElement {
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (!content.contains(target) && !trigger.contains(target)) this.close();
+      if (!content.contains(target) && !trigger.contains(target)) this.close(false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") this.close();
@@ -374,11 +375,15 @@ export class KernelDropdownMenuMorph extends KernelElement {
     );
   }
 
-  private close() {
+  /** Focus goes back to the trigger first, as `popover="auto"` does for
+   * `<kernel-dropdown-menu>` (a manual popover gets no such restore),
+   * except after an outside press, which leaves focus where it put it. */
+  private close(returnFocus = true) {
     if (!this.open) return;
     const content = this.native;
     const trigger = this.triggerEl;
     if (!content || !trigger) return;
+    if (returnFocus) returnFocusFromMenu(content, trigger);
 
     this.open = false;
     this.openFocus?.resetIntent();
@@ -440,9 +445,10 @@ export class KernelMenuItem extends KernelElement {
       // bare hidePopover() with whatever that popover's own close needs
       // to do first — `KernelDropdownMenuMorph` sets this so selecting
       // an item still plays the shrink-back-to-the-trigger animation
-      // instead of the panel vanishing outright. `KernelDropdownMenu`
-      // and `KernelContextMenu` never set it, so they fall through to
-      // the plain hidePopover() exactly as before.
+      // instead of the panel vanishing outright, and `KernelContextMenu`
+      // sets it so a selection plays its exit and returns focus.
+      // `KernelDropdownMenu`'s popover presentation never sets it: `popover="auto"` falls
+      // through to the plain hidePopover(), which restores focus natively.
       if (popover?.__kernelMenuClose) popover.__kernelMenuClose();
       else popover?.hidePopover?.();
     });

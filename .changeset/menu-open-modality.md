@@ -4,3 +4,5 @@
 ---
 
 Menus now open the way the WAI-ARIA menu button pattern describes. Opening DropdownMenu (popover, disclosure and morph) with a pointer focuses the menu with no item highlighted. Opening it with Enter, Space or ArrowDown focuses the first item, and ArrowUp on the trigger opens it on the last. The highlight follows the pointer, so only one row is highlighted at a time, and focus rings show only for keyboard use. ContextMenu opens on right-click with nothing highlighted, and arrow keys, Home and End now move between its items.
+
+- DropdownMenuMorph and ContextMenu now return focus when they close with Escape, a selection or (ContextMenu) a scroll, as the native-popover DropdownMenu already did. DropdownMenuMorph returns it to its trigger. ContextMenu returns it to whatever had focus before the right-click, else the right-clicked control, else the trigger region. An outside press leaves focus where the press put it.

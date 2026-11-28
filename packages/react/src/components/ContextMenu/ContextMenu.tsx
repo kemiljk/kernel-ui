@@ -5,8 +5,10 @@ import { dataAttr } from "../../utils/polymorphic";
 import { usePopoverExit } from "../../utils/usePopoverExit";
 import {
   clearMenuPointerHighlight,
+  contextMenuReturnTarget,
   focusMenuOnOpen,
   highlightMenuItemUnderPointer,
+  returnFocusFromMenu,
   roveMenuItems,
 } from "../../utils/menuFocus";
 import styles from "./ContextMenu.module.css";
@@ -36,11 +38,18 @@ export interface ContextMenuProps {
  * (ArrowDown lands on the first item, ArrowUp on the last). The keyboard's
  * own context-menu key opens straight onto the first item. Focus and
  * highlight are shared with DropdownMenu through `utils/menuFocus.ts`.
+ * Escape, a selection or a scroll returns focus to whatever had it before
+ * the menu opened (else the right-clicked element, else the trigger region);
+ * an outside press leaves focus where that press put it.
  */
 export function ContextMenu({ render, children }: ContextMenuProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const returnTargetRef = useRef<HTMLElement | null>(null);
+  // Focus as it was when the opening press began; see contextMenuReturnTarget.
+  const focusAtPressRef = useRef<Element | null>(null);
 
   const { closing, playExit, cancelExit } = usePopoverExit(menuRef);
 
@@ -50,8 +59,9 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
    * relying on the closed state's CSS) is what keeps the panel from
    * being yanked out of the top layer mid-animation — see
    * `usePopoverExit`. */
-  function close() {
+  function close(returnFocus = true) {
     if (!open) return;
+    if (returnFocus) returnFocusFromMenu(menuRef.current, returnTargetRef.current);
     setOpen(false);
     void playExit();
   }
@@ -59,14 +69,23 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
   function handleContextMenu(event: ReactMouseEvent<HTMLDivElement>) {
     event.preventDefault();
     cancelExit();
-    setPosition({ top: event.clientY, left: event.clientX });
-    setOpen(true);
-    menuRef.current?.showPopover();
     // Chromium fires contextmenu as a PointerEvent, with an empty pointerType
     // when the context-menu key or Shift+F10 opened it. Browsers that fire a
     // plain MouseEvent get the pointer behaviour; arrow keys still work.
     const native = event.nativeEvent as Partial<PointerEvent>;
     const fromKeyboard = native.pointerType === "";
+    const focusedBefore = fromKeyboard
+      ? document.activeElement
+      : (focusAtPressRef.current ?? document.activeElement);
+    focusAtPressRef.current = null;
+    // A right-click while the menu is still up (or closing) finds focus in
+    // the menu itself; keep the target recorded when it first opened.
+    if (!menuRef.current?.contains(focusedBefore) && regionRef.current) {
+      returnTargetRef.current = contextMenuReturnTarget(regionRef.current, event.target, focusedBefore);
+    }
+    setPosition({ top: event.clientY, left: event.clientX });
+    setOpen(true);
+    menuRef.current?.showPopover();
     requestAnimationFrame(() => {
       if (menuRef.current) focusMenuOnOpen(menuRef.current, fromKeyboard ? "first" : "pointer");
     });
@@ -104,7 +123,7 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
     if (!open) return;
 
     function handlePointerDown(event: PointerEvent) {
-      if (!menuRef.current?.contains(event.target as Node)) close();
+      if (!menuRef.current?.contains(event.target as Node)) close(false);
     }
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") close();
@@ -125,8 +144,16 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
   }, [open]);
 
   return (
-    <MenuContext.Provider value={{ close }}>
-      <div onContextMenu={handleContextMenu}>{render}</div>
+    <MenuContext.Provider value={{ close: () => close() }}>
+      <div
+        ref={regionRef}
+        onPointerDownCapture={() => {
+          focusAtPressRef.current = document.activeElement;
+        }}
+        onContextMenu={handleContextMenu}
+      >
+        {render}
+      </div>
       <div
         ref={menuRef}
         role="menu"

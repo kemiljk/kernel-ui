@@ -3,8 +3,10 @@ import "../DropdownMenu/DropdownMenu";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import {
   clearMenuPointerHighlight,
+  contextMenuReturnTarget,
   focusMenuOnOpen,
   highlightMenuItemUnderPointer,
+  returnFocusFromMenu,
   roveMenuItems,
 } from "../../utils/menuFocus";
 import "./ContextMenu.css";
@@ -30,7 +32,9 @@ const MARGIN = 8;
  * (ArrowDown lands on the first item, ArrowUp on the last). The keyboard's
  * own context-menu key opens straight onto the first item. Focus and
  * highlight are shared with `<kernel-dropdown-menu>` through
- * `utils/menuFocus.ts`.
+ * `utils/menuFocus.ts`. Escape, a selection or a scroll returns focus to
+ * whatever had it before the menu opened (else the right-clicked element,
+ * else the trigger region); an outside press leaves focus where it put it.
  */
 export class KernelContextMenu extends KernelElement {
   connectedCallback() {
@@ -58,8 +62,15 @@ export class KernelContextMenu extends KernelElement {
     // Play the exit before hiding, the same as React's usePopoverExit: once
     // hidePopover() runs, the panel is gone and can't animate.
     let closing = false;
-    const close = async () => {
+    let returnTarget: HTMLElement | null = null;
+    // Focus as it was when the opening press began; see contextMenuReturnTarget.
+    let focusAtPress: Element | null = null;
+    triggerArea.addEventListener("pointerdown", () => {
+      focusAtPress = document.activeElement;
+    }, { capture: true });
+    const close = async (returnFocus = true) => {
       if (closing || !content.matches(":popover-open")) return;
+      if (returnFocus) returnFocusFromMenu(content, returnTarget);
       closing = true;
       content.setAttribute("data-closing", "true");
       if (!prefersReducedMotion()) await waitForExitTransition(content);
@@ -68,15 +79,26 @@ export class KernelContextMenu extends KernelElement {
       closing = false;
     };
 
+    // A selection closes through here too, so it gets the exit and the
+    // focus return instead of a bare hidePopover() from the item.
+    (content as HTMLElement & { __kernelMenuClose?: () => void }).__kernelMenuClose = () => void close();
+
     triggerArea.addEventListener("contextmenu", (event) => {
       event.preventDefault();
-      content.style.top = `${event.clientY}px`;
-      content.style.left = `${event.clientX}px`;
-      content.showPopover?.();
       // Chromium fires contextmenu as a PointerEvent, with an empty pointerType
       // when the context-menu key or Shift+F10 opened it. Browsers that fire a
       // plain MouseEvent get the pointer behaviour; arrow keys still work.
       const fromKeyboard = (event as Partial<PointerEvent>).pointerType === "";
+      const focusedBefore = fromKeyboard ? document.activeElement : (focusAtPress ?? document.activeElement);
+      focusAtPress = null;
+      // A right-click while the menu is still up (or closing) finds focus in
+      // the menu itself; keep the target recorded when it first opened.
+      if (!content.contains(focusedBefore)) {
+        returnTarget = contextMenuReturnTarget(triggerArea, event.target, focusedBefore);
+      }
+      content.style.top = `${event.clientY}px`;
+      content.style.left = `${event.clientX}px`;
+      content.showPopover?.();
 
       requestAnimationFrame(() => {
         focusMenuOnOpen(content, fromKeyboard ? "first" : "pointer");
@@ -99,7 +121,7 @@ export class KernelContextMenu extends KernelElement {
       });
 
       const handlePointerDown = (pointerEvent: PointerEvent) => {
-        if (!content.contains(pointerEvent.target as Node)) close();
+        if (!content.contains(pointerEvent.target as Node)) void close(false);
       };
       const handleKeyDown = (keyEvent: KeyboardEvent) => {
         if (keyEvent.key === "Escape") close();
