@@ -1,0 +1,21 @@
+{
+  "name": "kernel-ui",
+  "displayName": "Kernel UI",
+  "version": "1.7.0",
+  "description": "Skills for building, theming and migrating to Kernel UI (React and Custom Elements), and the kernel MCP server for component props, tokens and docs.",
+  "author": {
+    "name": "Kernel UI",
+    "url": "https://www.kernelui.com"
+  },
+  "homepage": "https://www.kernelui.com/agents/",
+  "repository": "https://github.com/kemiljk/kernel-ui",
+  "license": "MIT",
+  "keywords": [
+    "kernel-ui",
+    "react",
+    "custom-elements",
+    "design-system",
+    "semantic-html",
+    "mcp"
+  ]
+}

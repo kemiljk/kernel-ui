@@ -16,6 +16,17 @@ npx @kernelui-lib/cli agents
 
 It installs Kernel's skills (they ship in the npm packages), registers an MCP server that gives exact component props and tokens, and adds a Kernel section to `AGENTS.md`. Agents can check their own output with `npx @kernelui-lib/cli check <files>`. See [kernelui.com/agents](https://www.kernelui.com/agents/), [llms.txt](https://www.kernelui.com/llms.txt) and [when Kernel fits a project](https://www.kernelui.com/choosing/).
 
+### Claude Code plugin
+
+This repository is also a Claude Code plugin marketplace. The `kernel-ui` plugin gives every project Kernel's skills and MCP server. Inside Claude Code:
+
+```text
+/plugin marketplace add kemiljk/kernel-ui
+/plugin install kernel-ui@kernel-ui
+```
+
+The plugin lives in [`plugins/kernel-ui`](plugins/kernel-ui). Its skills are copied from `packages/*/skills` by `bun run plugin:sync`, so edit them there; CI fails if the copy is stale.
+
 ## Packages
 
 | Package | Description |
@@ -29,6 +40,12 @@ It installs Kernel's skills (they ship in the npm packages), registers an MCP se
 
 ```bash
 npx @kernelui-lib/cli init
+```
+
+Already using shadcn/ui? Add components from Kernel's [shadcn registry](https://www.kernelui.com/installation/#shadcn), which installs the package and writes a re-export to `components/kernel/`:
+
+```bash
+npx shadcn@latest add https://www.kernelui.com/r/dialog.json
 ```
 
 Or install manually:

@@ -1,0 +1,182 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const deprecatedSnippet = `export interface DialogProps {
+  /** @deprecated Prefer \`classNames.root\`. Still applied to the root. */
+  className?: ClassNameValue<DialogState>;
+  /** Typed class hooks for every structural slot. */
+  classNames?: DialogClassNames;
+}`;
+---
+
+<BaseLayout title="Browser support and versioning" description="Which browsers Kernel supports, which features are progressive enhancements, what counts as a breaking change, and how deprecations work." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Browser support and versioning</h1>
+    <p>
+      Kernel builds on native elements and current CSS, so the browsers it
+      supports are set by the platform features it can't work without. Newer
+      features are used as progressive enhancements: where a browser lacks
+      one, the component still works and loses only a refinement, such as an
+      animation.
+    </p>
+
+    <h2 id="browsers">Supported browsers</h2>
+    <p>
+      Every component works fully in these browsers and every later version:
+    </p>
+    <div class="docs-table-scroll" tabindex="0" role="region" aria-label="Minimum browser versions"><table class="docs-table">
+      <caption>Minimum browser versions.</caption>
+      <thead><tr><th scope="col">Browser</th><th scope="col">Minimum version</th></tr></thead>
+      <tbody>
+        <tr><td>Chrome and Edge (and other Chromium browsers)</td><td>123</td></tr>
+        <tr><td>Firefox</td><td>125</td></tr>
+        <tr><td>Safari on macOS, iOS and iPadOS</td><td>17.5</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      Internet Explorer, legacy Edge (EdgeHTML) and any browser without the
+      Popover API aren't supported. The minimums come from the features in
+      the next table. The packages' compiled JavaScript and CSS target Vite's
+      default build target (Chrome and Edge 111, Firefox 114, Safari 16.4),
+      so the code parses in older browsers, but menus, popovers and colours
+      need the versions above.
+    </p>
+
+    <h3 id="required">Features Kernel requires</h3>
+    <div class="docs-table-scroll" tabindex="0" role="region" aria-label="Features Kernel requires"><table class="docs-table">
+      <caption>Platform features with no fallback, and the browser versions that set the minimums.</caption>
+      <thead><tr><th scope="col">Feature</th><th scope="col">Used by</th><th scope="col">Chrome / Firefox / Safari</th></tr></thead>
+      <tbody>
+        <tr><td>Popover API (<code>popover</code>, <code>showPopover()</code>)</td><td>DropdownMenu, Popover, Tooltip, HoverCard, Combobox, ContextMenu, NavigationMenu</td><td>114 / 125 / 17</td></tr>
+        <tr><td><code>light-dark()</code></td><td>Every colour token in <code>@kernelui-lib/styles</code>, which ships as source CSS</td><td>123 / 120 / 17.5</td></tr>
+        <tr><td><code>:has()</code></td><td>State styling in Button, Badge, Toggle, RadioGroup, Slider, TagInput, Composer and others</td><td>105 / 121 / 15.4</td></tr>
+        <tr><td><code>oklch()</code> and <code>color-mix()</code></td><td>The colour scales and tints</td><td>111 / 113 / 16.2</td></tr>
+        <tr><td><code>&lt;dialog&gt;</code> and <code>showModal()</code></td><td>Dialog, Sheet, CommandPalette</td><td>All supported versions</td></tr>
+        <tr><td>Custom Elements v1</td><td><code>@kernelui-lib/elements</code></td><td>All supported versions</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      The component stylesheets are compiled with Lightning CSS, which turns
+      <code>light-dark()</code> into a fallback that older browsers understand.
+      The tokens in <code>@kernelui-lib/styles</code> ship uncompiled. If
+      your bundler lowers CSS for older targets, as Vite 8 does in production
+      builds, the tokens get the same fallback.
+    </p>
+
+    <h3 id="progressive-enhancement">Progressive enhancements</h3>
+    <p>
+      These features are used only where the browser supports them. Each row
+      says what happens in a browser that doesn't.
+    </p>
+    <div class="docs-table-scroll" tabindex="0" role="region" aria-label="Progressive enhancements"><table class="docs-table">
+      <caption>Features Kernel uses when available, and the fallback in other browsers.</caption>
+      <thead><tr><th scope="col">Feature</th><th scope="col">Used for</th><th scope="col">Without it</th></tr></thead>
+      <tbody>
+        <tr><td>CSS anchor positioning</td><td>Placing menus, popovers, tooltips and the combobox list next to their trigger</td><td>Positioned by measuring the trigger in JavaScript and kept inside the viewport, but not flipped to the opposite side when space runs out</td></tr>
+        <tr><td><code>overlay</code> with <code>transition-behavior: allow-discrete</code></td><td>Exit animations for <code>popover="auto"</code> panels (Chromium only)</td><td>The panel closes without an exit animation. A guard in the reset turns the exit off rather than let the panel jump while it fades</td></tr>
+        <tr><td><code>@starting-style</code></td><td>Entry animations for dialogs, sheets, menus and popovers</td><td>Surfaces appear without animating</td></tr>
+        <tr><td><code>::details-content</code> and <code>interpolate-size</code></td><td>Animating Accordion and other disclosures open and closed</td><td>They open and close instantly</td></tr>
+        <tr><td>Exclusive <code>&lt;details name&gt;</code></td><td>Accordion items that close each other (Firefox 130)</td><td>In Firefox 125 to 129, several items can be open at once</td></tr>
+        <tr><td>Container style queries</td><td>Icon stroke width set with <code>--kernel-icon-stroke-width</code> (Safari 18; not yet in Firefox)</td><td>Icons keep their default stroke</td></tr>
+        <tr><td><code>field-sizing: content</code></td><td>Composer and Textarea growing with their text</td><td>A fallback in each component sizes the field</td></tr>
+        <tr><td><code>appearance: base-select</code> and <code>::picker(select)</code></td><td>A Kernel-styled Select dropdown</td><td>The browser's own picker opens; the closed Select is still styled</td></tr>
+        <tr><td><code>closedby="any"</code></td><td>Light dismiss for Dialog</td><td>A click-outside handler closes the dialog, and Escape works everywhere</td></tr>
+        <tr><td><code>contrast-color()</code></td><td>Choosing black or white text on any accent hue</td><td>Each accent preset's own text colour is used</td></tr>
+        <tr><td>Scroll-driven animations</td><td>Scroll-edge shadows on ScrollArea and Table</td><td>ScrollArea updates its shadows from JavaScript; Table shows no edge fade</td></tr>
+        <tr><td><code>cap</code> and <code>lh</code> units, typed <code>calc()</code></td><td>Optical centring of text and icons in pills (Badge, Button, Toggle and others)</td><td>Each rule's <code>@supports</code> fallback uses plain padding, so text can sit slightly low</td></tr>
+        <tr><td><code>text-wrap: balance</code> and <code>pretty</code></td><td>Headings and paragraphs</td><td>Text wraps normally</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      Motion follows <code>prefers-reduced-motion</code> in every browser:
+      each component that moves swaps travel and scale for a short fade.
+      Right-to-left layouts use logical properties, and the few rules that
+      need <code>:dir(rtl)</code> also match <code>[dir="rtl"]</code>,
+      because the build rewrites <code>:dir()</code> into a list of
+      languages.
+    </p>
+
+    <h2 id="runtimes">Node.js and React</h2>
+    <ul>
+      <li>
+        <strong><code>@kernelui-lib/react</code></strong> needs React and
+        ReactDOM 18 or newer (peer dependencies <code>&gt;=18.0.0</code>).
+        React 19 is supported, and the docs site runs on it.
+      </li>
+      <li>
+        <strong><code>@kernelui-lib/elements</code></strong> and
+        <strong><code>@kernelui-lib/styles</code></strong> have no runtime
+        dependencies beyond the browser.
+      </li>
+      <li>
+        <strong><code>@kernelui-lib/cli</code></strong>, including the MCP
+        server, needs Node.js 20 or newer.
+      </li>
+    </ul>
+
+    <h2 id="versioning">Versioning</h2>
+    <p>
+      Every package follows <a href="https://semver.org/">semantic versioning</a>
+      and is versioned on its own with Changesets. Each release's changelog
+      is on GitHub and in the package. Version 1.x gets fixes and security
+      updates; 0.x doesn't.
+    </p>
+
+    <h3 id="public-api">What the version covers</h3>
+    <p>These are Kernel's public API. Breaking any of them needs a major release:</p>
+    <ul>
+      <li><strong>React:</strong> exported components, hooks, utilities and types; prop names, types, accepted values and defaults; callback signatures; and <code>labels</code> keys.</li>
+      <li><strong>Custom Elements:</strong> tag names, attributes (including <code>label-*</code>), properties, events and their <code>detail</code> shape, and slots.</li>
+      <li><strong>Rendered HTML:</strong> the native element each component renders (Button is a <code>&lt;button&gt;</code>, Dialog a <code>&lt;dialog&gt;</code>), and documented <code>data-slot</code> and <code>data-state</code> attributes.</li>
+      <li><strong>CSS:</strong> component class names (<code>kernel-Button-root</code> and the like, kept stable so you can target them), <code>--kernel-*</code> custom property names, the stylesheet entry points (<code>styles.css</code>, <code>styles.layer.css</code> and the <code>@kernelui-lib/styles</code> subpaths) and the cascade layer names.</li>
+      <li><strong>CLI:</strong> commands, flags, exit codes, and the MCP server's tool names and inputs.</li>
+    </ul>
+
+    <h3 id="breaking">Major, minor and patch</h3>
+    <div class="docs-table-scroll" tabindex="0" role="region" aria-label="Release types"><table class="docs-table">
+      <caption>Which release each kind of change goes in.</caption>
+      <thead><tr><th scope="col">Release</th><th scope="col">Changes</th></tr></thead>
+      <tbody>
+        <tr><td>Major</td><td>Removing or renaming anything in the public API; accepting fewer values; changing a default in a way that changes behaviour; rendering a different native element; changing an event's <code>detail</code>; raising the minimum React, Node.js or browser version</td></tr>
+        <tr><td>Minor</td><td>New components, props, attributes, variants and tokens; deprecations; design refinements that keep the API, including new token values</td></tr>
+        <tr><td>Patch</td><td>Bug fixes and accessibility fixes, including ones that add ARIA attributes or adjust markup inside a component</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      Token values (the exact colours, spacing and radii) and internal markup
+      that isn't listed above aren't part of the API, so they can change in a
+      minor or patch release. If you snapshot Kernel's rendered output in
+      tests, expect those snapshots to change between minor releases.
+    </p>
+
+    <h3 id="deprecation">Deprecations</h3>
+    <p>Nothing is removed without notice. A deprecated API goes through these steps:</p>
+    <ol>
+      <li>
+        A minor release marks it with a JSDoc <code>@deprecated</code> tag that
+        names the replacement, so your editor strikes it through, and lists it
+        in the changelog. Custom Element attributes are marked in the docs and
+        <code>llms.txt</code>.
+      </li>
+      <li>
+        From that release, using it logs one console warning per page load in
+        development, naming the replacement. Production builds stay silent.
+      </li>
+      <li>
+        It keeps working for at least one more minor release.
+      </li>
+      <li>
+        The next major release removes it, and its changelog says how to
+        migrate.
+      </li>
+    </ol>
+    <p>
+      An example from Dialog. It was deprecated before this policy was
+      written, so it has the JSDoc tag but doesn't warn in the console yet:
+    </p>
+    <CodeBlock code={deprecatedSnippet} lang="tsx" />
+  </div>
+</BaseLayout>

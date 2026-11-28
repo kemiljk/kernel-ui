@@ -14,6 +14,7 @@ const pages = [
   { name: "Home", href: "/", summary: "The kernel of the web, componentised." },
   { name: "Components", href: "/components/", summary: "Every component, built and planned." },
   { name: "Platforms", href: "/platforms/", summary: "React, Web Components, and headless usage." },
+  { name: "Browser support", href: "/support/", summary: "Supported browsers, versioning and deprecation policy." },
   { name: "Installation", href: "/installation/", summary: "Install the packages and import the tokens." },
   { name: "Choosing Kernel", href: "/choosing/", summary: "When Kernel fits a project, and when another library fits better." },
   { name: "AI agents", href: "/agents/", summary: "Skills, MCP server and code check for coding agents." },
