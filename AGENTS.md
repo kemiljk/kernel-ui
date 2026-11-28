@@ -313,6 +313,13 @@ new component done, grep both `packages/react/src/index.ts` and
   (`bun run docs:build`). A scrolling region needs `tabIndex={0}` (and a
   name if it's a `role="region"`); ARIA states go on the role that allows
   them (a calendar's `aria-selected` is on the gridcell, not its button).
+- `bun run test:screenshots` (`scripts/screenshot-suite.mjs`) — screenshots
+  every live docs example under light/Sharp, light/Round, dark/Round, RTL
+  and a low-sitting font (`--list-variants`, `--variants=…`, slug filter
+  like `test:a11y`). Run with `--update` before a visual change to save a
+  baseline, then without it afterwards: it fails when a shot differs by
+  more than 0.1% of pixels and writes `screenshots/report/index.html`.
+  Baselines are per-machine and never committed. Needs a docs build.
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every

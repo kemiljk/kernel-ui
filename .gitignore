@@ -23,3 +23,6 @@ examples/**/node_modules
 examples/**/dist
 .vercel
 .vercel
+
+# Screenshot suite output (scripts/screenshot-suite.mjs); baselines are per-machine
+screenshots/
