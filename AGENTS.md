@@ -260,6 +260,12 @@ new component done, grep both `packages/react/src/index.ts` and
   registry entry's React export or custom element tag is missing from
   either package, or the two packages' component folders differ. CI runs
   it alongside `test:shape` and `test:svg`.
+- `bun run test:a11y` (`scripts/check-a11y.mjs`) — axe-core in a real
+  browser against every component's live docs examples, light and dark;
+  fails on serious or critical violations. Needs a docs build first
+  (`bun run docs:build`). A scrolling region needs `tabIndex={0}` (and a
+  name if it's a `role="region"`); ARIA states go on the role that allows
+  them (a calendar's `aria-selected` is on the gridcell, not its button).
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every

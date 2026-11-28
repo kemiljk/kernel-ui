@@ -29,6 +29,8 @@ export class KernelScrollArea extends KernelElement {
   protected createNative(): HTMLElement {
     const element = document.createElement("div");
     element.className = kernelClass("ScrollArea");
+    // Focusable so keyboard users can scroll it, matching React's ScrollArea.
+    element.tabIndex = 0;
     return element;
   }
 
