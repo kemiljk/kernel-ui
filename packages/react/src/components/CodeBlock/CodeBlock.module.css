@@ -65,7 +65,8 @@
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    color var(--kernel-duration-fast) var(--kernel-ease-out);
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 @supports (width: calc(1px * 1px / 1px)) {
@@ -74,9 +75,11 @@
   }
 }
 
-.copy:hover {
-  border-color: var(--kernel-color-border);
-  color: var(--kernel-color-text);
+@media (hover: hover) and (pointer: fine) {
+  .copy:hover {
+    border-color: var(--kernel-color-border);
+    color: var(--kernel-color-text);
+  }
 }
 
 .copy:focus-visible {
@@ -223,5 +226,23 @@
   .copyIconLayer,
   .copyLabelLayer {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+/* Keyboard users can focus the scroll region to scroll it; show where focus
+   is, inset so the ring isn't clipped by the rounded container. */
+.viewport:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: -2px;
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.copy:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy:active:not(:disabled) {
+    scale: 1;
   }
 }

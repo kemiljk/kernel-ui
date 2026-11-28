@@ -104,7 +104,7 @@
      above) reads as "the box fills, then the check draws" rather than
      both firing at once. */
   transition:
-    stroke-dashoffset var(--kernel-duration-slow) var(--kernel-ease-out) var(--kernel-duration-fast),
+    stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-out) var(--kernel-duration-stagger),
     opacity var(--kernel-duration-fast) linear;
 }
 

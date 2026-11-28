@@ -63,7 +63,8 @@ export class KernelMessageList extends KernelElement {
  *
  * Attributes: `author` ("user" | "assistant" | "system", default
  * "assistant"), `name`, `metadata`, `grouped`, `live`, `no-animate` to
- * suppress the one-shot enter animation.
+ * suppress the one-shot enter animation, and the built-in string
+ * `label-writing` ("Writing", the live mark) — or the `labels` property.
  *
  * An avatar is a child marked `data-slot="avatar"`; everything else becomes
  * the message body.
@@ -75,7 +76,7 @@ export class KernelMessage extends KernelElement {
   private footerBox: HTMLElement | null = null;
 
   static get observedAttributes() {
-    return ["author", "name", "metadata", "grouped", "live", "no-animate"];
+    return ["author", "name", "metadata", "grouped", "live", "no-animate", "label-writing"];
   }
 
   connectedCallback() {
@@ -150,15 +151,15 @@ export class KernelMessage extends KernelElement {
         item.removeAttribute("data-grouped");
         this.avatarBox?.removeAttribute("data-hidden");
       } else {
-        item.setAttribute("data-grouped", "");
-        this.avatarBox?.setAttribute("data-hidden", "");
+        item.setAttribute("data-grouped", "true");
+        this.avatarBox?.setAttribute("data-hidden", "true");
       }
       this.renderHeader();
       return;
     }
     if (name === "live") {
       if (value === null) item.removeAttribute("data-live");
-      else item.setAttribute("data-live", "");
+      else item.setAttribute("data-live", "true");
       this.renderHeader();
       return;
     }
@@ -166,6 +167,10 @@ export class KernelMessage extends KernelElement {
       if (value === null) item.dataset.animate = "true";
       else item.removeAttribute("data-animate");
     }
+  }
+
+  protected applyLabels() {
+    this.renderHeader();
   }
 
   /** A grouped row drops the repeated author line entirely, same as the
@@ -191,7 +196,7 @@ export class KernelMessage extends KernelElement {
     if (live) {
       const liveEl = document.createElement("span");
       liveEl.className = kernelClass("Message", "liveMark");
-      liveEl.textContent = "Writing";
+      liveEl.textContent = this.builtInLabel("writing", "Writing");
       header.append(liveEl);
     }
   }

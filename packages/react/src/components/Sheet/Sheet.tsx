@@ -40,9 +40,9 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
   handleOnly?: boolean;
   /** When false the sheet can't be dragged or backdrop-dismissed. */
   dismissible?: boolean;
-  /** Fraction of the sheet's own size that must be dragged to dismiss. */
+  /** Fraction of the sheet's own size that must be dragged to dismiss. Defaults to `0.25`. */
   closeThreshold?: number;
-  /** Dismiss velocity in px/ms, applied regardless of distance travelled. */
+  /** Dismiss velocity in px/ms, applied regardless of distance travelled. Defaults to `0.5`. */
   velocityThreshold?: number;
   /** Detach the sheet from the screen edges: a gap on three sides and all four
    * corners rounded. Purely visual — the gesture is unchanged. Size the gap
@@ -82,6 +82,7 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
    * Ignored under `prefers-reduced-motion`, where the settle is instant. */
   spring?: boolean | Partial<SpringConfig>;
   className?: string;
+  /** Per-part class names: `Dialog`'s slots plus `handle`. */
   classNames?: SheetClassNames;
   /** Fires on every drag frame with how far the sheet has travelled, 0–1. */
   onDrag?: (percent: number) => void;

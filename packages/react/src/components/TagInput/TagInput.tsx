@@ -16,6 +16,14 @@ export interface TagInputError {
   value: string;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface TagInputLabels {
+  /** Accessible name of a chip's remove button. Default ``(tag) => `Remove ${tag}` ``. */
+  removeTag: (tag: string) => string;
+}
+
+const defaultTagInputLabels: TagInputLabels = { removeTag: (tag) => `Remove ${tag}` };
+
 export interface TagInputProps
   extends Omit<
     InputHTMLAttributes<HTMLInputElement>,
@@ -47,6 +55,9 @@ export interface TagInputProps
   disabled?: boolean;
   className?: ClassNameValue<TagInputState>;
   wrapperClassName?: ClassNameValue<TagInputState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<TagInputLabels>;
 }
 
 function escapeRegExp(value: string): string {
@@ -87,10 +98,12 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     id,
     className,
     wrapperClassName,
+    labels,
     ...rest
   },
   ref,
 ) {
+  const l = { ...defaultTagInputLabels, ...labels };
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const labelId = `${inputId}-label`;
@@ -263,6 +276,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
             role="listitem"
             variant="neutral"
             className={styles.tag}
+            data-tag={tag}
             data-removing={dataAttr(removingTags.has(tag))}
           >
             <span>{tag}</span>
@@ -271,7 +285,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
               className={styles.tagRemove}
               data-icon
               tabIndex={-1}
-              aria-label={`Remove ${tag}`}
+              aria-label={l.removeTag(tag)}
               onClick={(event) => {
                 event.stopPropagation();
                 removeTag(tag);

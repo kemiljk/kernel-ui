@@ -163,8 +163,10 @@ export class KernelSelect extends KernelElement {
         else select.name = value;
         break;
       case "invalid":
-        select.setAttribute("aria-invalid", value !== null ? "true" : "false");
-        if (value !== null) root.setAttribute("data-invalid", "");
+        // Omitted when valid, like React's `aria-invalid={invalid || undefined}`.
+        if (value !== null) select.setAttribute("aria-invalid", "true");
+        else select.removeAttribute("aria-invalid");
+        if (value !== null) root.setAttribute("data-invalid", "true");
         else root.removeAttribute("data-invalid");
         this.updateDescribedBy();
         break;

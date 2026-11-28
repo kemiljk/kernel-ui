@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import SeparatorDemo from "../../components/demos/SeparatorDemo";
 import SeparatorPlayground from "../../components/demos/SeparatorPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 ---
 
@@ -27,12 +28,6 @@ import SeparatorPlayground from "../../components/demos/SeparatorPlayground";
 
     
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Separator.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>orientation</code></td><td>"horizontal" | "vertical"</td><td>"horizontal"</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="separator" />
   </div>
 </BaseLayout>

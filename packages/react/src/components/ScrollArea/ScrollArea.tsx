@@ -82,6 +82,9 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
 
     return (
       <div
+        // Focusable so keyboard users can scroll it (WCAG 2.1.1); a caller
+        // can still pass tabIndex={-1} when the content has its own stops.
+        tabIndex={0}
         {...rest}
         ref={mergeRefs(forwardedRef, rootRef)}
         data-edge-shadow={dataAttr(edgeShadow)}

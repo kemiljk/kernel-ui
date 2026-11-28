@@ -36,6 +36,22 @@ if (typeof globalThis.PointerEvent === "undefined") {
   globalThis.PointerEvent = PointerEventShim as unknown as typeof PointerEvent;
 }
 
+// jsdom has no `matchMedia`; components read it for `prefers-reduced-motion`
+// (Tabs' indicator, overlay exits). Report "no match" for every query.
+if (typeof window.matchMedia !== "function") {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
+
 Object.defineProperty(HTMLDialogElement.prototype, "open", {
   get(this: HTMLDialogElement) {
     return this.hasAttribute("open");

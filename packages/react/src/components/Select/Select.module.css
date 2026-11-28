@@ -179,6 +179,45 @@
     overscroll-behavior: contain;
   }
 
+  /* The picker opens like Kernel's other dropdowns: it fades and scales in
+     from the trigger side, and leaves faster than it arrived. display and
+     overlay transition discretely so the exit isn't cut off when the
+     picker leaves the top layer. */
+  .select::picker(select) {
+    opacity: 0;
+    scale: var(--kernel-scale-exit);
+    transform-origin: top center;
+    transition:
+      opacity var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+      scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+      overlay var(--kernel-duration-exit-fast) allow-discrete,
+      display var(--kernel-duration-exit-fast) allow-discrete;
+  }
+
+  .select:open::picker(select) {
+    opacity: 1;
+    scale: 1;
+    transition:
+      opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
+      scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
+      overlay var(--kernel-duration-fast) allow-discrete,
+      display var(--kernel-duration-fast) allow-discrete;
+  }
+
+  @starting-style {
+    .select:open::picker(select) {
+      opacity: 0;
+      scale: var(--kernel-scale-enter);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .select::picker(select),
+    .select:open::picker(select) {
+      scale: 1;
+    }
+  }
+
   /* Keep the existing SVG chevron in both paths. */
   .select::picker-icon {
     display: none;

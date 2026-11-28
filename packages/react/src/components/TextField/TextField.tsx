@@ -36,6 +36,7 @@ export interface TextFieldProps
   labelOffset?: boolean;
   invalid?: boolean;
   size?: "sm" | "md" | "lg";
+  /** Classes for the `<input>` itself. Use `wrapperClassName` for the whole field. */
   className?: ClassNameValue<TextFieldState>;
   wrapperClassName?: ClassNameValue<TextFieldState>;
   labelClassName?: ClassNameValue<TextFieldState>;

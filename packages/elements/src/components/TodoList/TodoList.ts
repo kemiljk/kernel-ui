@@ -148,7 +148,7 @@ export class KernelTodoList extends KernelElement {
     if (!summary || !details) return;
 
     const { completed, total } = this.counts();
-    if (total > 0 && completed === total) details.setAttribute("data-complete", "");
+    if (total > 0 && completed === total) details.setAttribute("data-complete", "true");
     else details.removeAttribute("data-complete");
 
     summary.replaceChildren();

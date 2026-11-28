@@ -3,22 +3,31 @@ import type { AnchorHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import styles from "./Breadcrumbs.module.css";
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface BreadcrumbsLabels {
+  /** The `<nav>`'s accessible name. Default `"Breadcrumb"`. */
+  navigation: string;
+}
+
 export interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, "className"> {
   children: ReactNode;
   className?: ClassNameValue<Record<string, never>>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<BreadcrumbsLabels>;
 }
 
 /** A real `<nav aria-label="Breadcrumb">` wrapping a real `<ol>`, it's an
  * ordered trail, list semantics are correct here. */
 export const Breadcrumbs = forwardRef<HTMLElement, BreadcrumbsProps>(function Breadcrumbs(
-  { children, className, ...rest },
+  { children, className, labels, ...rest },
   ref,
 ) {
   return (
     <nav
       {...rest}
       ref={ref}
-      aria-label="Breadcrumb"
+      aria-label={labels?.navigation ?? "Breadcrumb"}
       className={[styles.root, resolveClassName(className, {})].filter(Boolean).join(" ")}
     >
       <ol className={styles.list}>{children}</ol>

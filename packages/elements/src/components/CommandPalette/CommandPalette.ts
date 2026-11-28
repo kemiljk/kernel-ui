@@ -34,7 +34,8 @@ export interface KernelCommandPaletteGroup {
  *
  * Attributes: `open` (toggle to show/hide), `placeholder` (default
  * "Filter commands"), `empty-message` (default "No results"), `blur`
- * (boolean — light frost on the `::backdrop`).
+ * (boolean — light frost on the `::backdrop`), and the built-in string
+ * `label-dialog` (default "Command palette") — or the `labels` property.
  */
 export class KernelCommandPalette extends KernelElement {
   private readonly baseId = `kernel-command-palette-${++paletteCounter}`;
@@ -46,7 +47,7 @@ export class KernelCommandPalette extends KernelElement {
   private listboxEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["open", "placeholder", "empty-message", "blur"];
+    return ["open", "placeholder", "empty-message", "blur", "label-dialog"];
   }
 
   get items(): KernelCommandPaletteItem[] {
@@ -96,7 +97,6 @@ export class KernelCommandPalette extends KernelElement {
 
     const dialog = document.createElement("dialog");
     dialog.className = kernelClass("CommandPalette", "content");
-    dialog.setAttribute("aria-label", "Command palette");
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) this.requestClose();
     });
@@ -279,6 +279,10 @@ export class KernelCommandPalette extends KernelElement {
     }
   }
 
+  protected applyLabels() {
+    this.native?.setAttribute("aria-label", this.builtInLabel("dialog", "Command palette"));
+  }
+
   protected syncAttr(name: string, value: string | null) {
     const dialog = this.native as HTMLDialogElement | null;
     if (!dialog) return;
@@ -291,7 +295,7 @@ export class KernelCommandPalette extends KernelElement {
           this.inputEl.value = "";
           this.renderOptions();
           dialog.showModal();
-          dialog.setAttribute("data-open", "");
+          dialog.setAttribute("data-open", "true");
           dialog.setAttribute("data-state", "open");
           requestAnimationFrame(() => this.inputEl.focus());
         }

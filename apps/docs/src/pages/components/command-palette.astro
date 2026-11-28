@@ -6,6 +6,7 @@ import CommandPaletteDemo from "../../components/demos/CommandPaletteDemo";
 import CommandPaletteGroupsDemo from "../../components/demos/CommandPaletteGroupsDemo";
 import CommandPalettePlayground from "../../components/demos/CommandPalettePlayground";
 import CommandPaletteCompositionDemo from "../../components/demos/CommandPaletteCompositionDemo";
+import ApiTable from "../../components/ApiTable.astro";
 
 const usageSnippet = `import { useState } from "react";
 import { Button, CommandPalette } from "@kernelui-lib/react";
@@ -145,22 +146,7 @@ const compositionSnippet = `import { CommandPalette, Combobox } from "@kernelui-
     <UsageAccordion code={compositionSnippet} lang="tsx" />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Command Palette.</caption>
-      <thead>
-        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>open</code></td><td>boolean</td><td>—</td></tr>
-        <tr><td><code>onOpenChange</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
-        <tr><td><code>items</code></td><td>CommandPaletteItem[]</td><td>—</td></tr>
-        <tr><td><code>groups</code></td><td>&#123; id, label?, items: CommandPaletteItem[] &#125;[]</td><td>—</td></tr>
-        <tr><td><code>renderItem</code></td><td>(item, &#123; active, group?, index &#125;) =&gt; ReactNode</td><td>—</td></tr>
-        <tr><td><code>placeholder</code></td><td>string</td><td>"Filter commands"</td></tr>
-        <tr><td><code>emptyMessage</code></td><td>ReactNode</td><td>"No results"</td></tr>
-        <tr><td><code>blur</code></td><td>boolean</td><td>false</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="command-palette" />
     <p>
       <code>CommandPaletteItem</code>: <code>&#123; id, label, description?, onSelect &#125;</code>.
       Provide either <code>items</code> or <code>groups</code> — when both

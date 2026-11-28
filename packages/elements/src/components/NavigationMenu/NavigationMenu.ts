@@ -139,7 +139,8 @@ export class KernelNavMenuTrigger extends KernelElement {
     contentNative.addEventListener("toggle", (event) => {
       const open = (event as ToggleEvent).newState === "open";
       button.setAttribute("aria-expanded", String(open));
-      contentNative.toggleAttribute("data-open", open);
+      if (open) contentNative.setAttribute("data-open", "true");
+      else contentNative.removeAttribute("data-open");
       this.positioner.setOpen(open);
     });
   }

@@ -34,7 +34,8 @@ function normalizeHex(raw: string): string | null {
  * `description`, `error-message`, `no-label-offset` (boolean — hard-
  * aligns the description and error text flush left instead of the
  * default inset; doesn't affect `label`, which never carries the inset
- * in the first place), `invalid`, `disabled`, `name`.
+ * in the first place), `invalid`, `disabled`, `name`. Built-in string:
+ * `label-hex-value` (default "Hex color value"), or the `labels` property.
  */
 export class KernelColorPicker extends KernelElement {
   private readonly generatedId = `kernel-color-picker-${++colorPickerCounter}`;
@@ -53,6 +54,7 @@ export class KernelColorPicker extends KernelElement {
       "invalid",
       "disabled",
       "name",
+      "label-hex-value",
     ];
   }
 
@@ -96,7 +98,6 @@ export class KernelColorPicker extends KernelElement {
     hexInput.inputMode = "text";
     hexInput.spellcheck = false;
     hexInput.maxLength = 7;
-    hexInput.setAttribute("aria-label", "Hex color value");
     hexInput.className = kernelClass("ColorPicker", "hexInput");
     hexInput.addEventListener("focus", () => {
       this.hexFocused = true;
@@ -183,6 +184,12 @@ export class KernelColorPicker extends KernelElement {
     }
   }
 
+  protected applyLabels() {
+    this.native
+      ?.querySelector(`.${kernelClass("ColorPicker", "hexInput")}`)
+      ?.setAttribute("aria-label", this.builtInLabel("hexValue", "Hex color value"));
+  }
+
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
 
@@ -216,7 +223,7 @@ export class KernelColorPicker extends KernelElement {
         if (this.hexInput) this.hexInput.disabled = value !== null;
         break;
       case "invalid":
-        if (value !== null) this.native.setAttribute("data-invalid", "");
+        if (value !== null) this.native.setAttribute("data-invalid", "true");
         else this.native.removeAttribute("data-invalid");
         this.updateDescribedBy();
         break;

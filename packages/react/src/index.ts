@@ -22,6 +22,7 @@ export type {
   DialogState,
   DialogClassNames,
   DialogBackdrop,
+  DialogLabels,
 } from "./components/Dialog/Dialog";
 
 export { Header } from "./components/Header/Header";
@@ -109,6 +110,7 @@ export type {
   BreadcrumbsProps,
   BreadcrumbItemProps,
   BreadcrumbsTrailProps,
+  BreadcrumbsLabels,
 } from "./components/Breadcrumbs/Breadcrumbs";
 
 export {
@@ -122,6 +124,7 @@ export type {
   PaginationProps,
   PaginationItemProps,
   PaginationControlProps,
+  PaginationLabels,
 } from "./components/Pagination/Pagination";
 
 export { Slider } from "./components/Slider/Slider";
@@ -167,6 +170,7 @@ export type {
   ToastViewportProps,
   ToastOptions,
   ToastVariant,
+  ToastLabels,
 } from "./components/Toast/Toast";
 
 export { CommandPalette } from "./components/CommandPalette/CommandPalette";
@@ -177,6 +181,7 @@ export type {
   CommandPaletteInputProps,
   CommandPaletteItemProps,
   CommandPaletteGroupProps,
+  CommandPaletteLabels,
 } from "./components/CommandPalette/CommandPalette";
 
 export {
@@ -204,21 +209,23 @@ export { DataTable } from "./components/DataTable/DataTable";
 export type {
   DataTableProps,
   DataTableColumn,
+  DataTableLabels,
 } from "./components/DataTable/DataTable";
 
 export { DatePicker } from "./components/DatePicker/DatePicker";
-export type { DatePickerProps } from "./components/DatePicker/DatePicker";
+export type { DatePickerProps, DatePickerLabels } from "./components/DatePicker/DatePicker";
 
 export { DateRangePicker } from "./components/DateRangePicker/DateRangePicker";
-export type { DateRangePickerProps, DateRange } from "./components/DateRangePicker/DateRangePicker";
+export type { DateRangePickerProps, DateRange, DateRangePickerLabels } from "./components/DateRangePicker/DateRangePicker";
 
 export { InputOTP } from "./components/InputOTP/InputOTP";
-export type { InputOTPProps } from "./components/InputOTP/InputOTP";
+export type { InputOTPProps, InputOTPLabels } from "./components/InputOTP/InputOTP";
 
 export { Carousel, CarouselSlide } from "./components/Carousel/Carousel";
 export type {
   CarouselProps,
   CarouselSlideProps,
+  CarouselLabels,
 } from "./components/Carousel/Carousel";
 
 export { Resizable } from "./components/Resizable/Resizable";
@@ -231,10 +238,10 @@ export { ScrollArea } from "./components/ScrollArea/ScrollArea";
 export type { ScrollAreaProps } from "./components/ScrollArea/ScrollArea";
 
 export { Composer } from "./components/Composer/Composer";
-export type { ComposerProps, ComposerState } from "./components/Composer/Composer";
+export type { ComposerProps, ComposerState, ComposerLabels } from "./components/Composer/Composer";
 
 export { Reasoning } from "./components/Reasoning/Reasoning";
-export type { ReasoningProps, ReasoningState } from "./components/Reasoning/Reasoning";
+export type { ReasoningProps, ReasoningState, ReasoningLabels } from "./components/Reasoning/Reasoning";
 
 export { ThinkingIndicator } from "./components/ThinkingIndicator/ThinkingIndicator";
 export type { ThinkingIndicatorProps } from "./components/ThinkingIndicator/ThinkingIndicator";
@@ -262,20 +269,21 @@ export type {
 } from "./components/ToolCall/ToolCall";
 
 export { ColorPicker } from "./components/ColorPicker/ColorPicker";
-export type { ColorPickerProps, ColorPickerState } from "./components/ColorPicker/ColorPicker";
+export type { ColorPickerProps, ColorPickerState, ColorPickerLabels } from "./components/ColorPicker/ColorPicker";
 
 export { FileUpload } from "./components/FileUpload/FileUpload";
 export type {
   FileUploadProps,
   FileUploadState,
   FileUploadError,
+  FileUploadLabels,
 } from "./components/FileUpload/FileUpload";
 
 export { TagInput } from "./components/TagInput/TagInput";
-export type { TagInputProps, TagInputState } from "./components/TagInput/TagInput";
+export type { TagInputProps, TagInputState, TagInputLabels } from "./components/TagInput/TagInput";
 
 export { NumberField } from "./components/NumberField/NumberField";
-export type { NumberFieldProps, NumberFieldState } from "./components/NumberField/NumberField";
+export type { NumberFieldProps, NumberFieldState, NumberFieldLabels } from "./components/NumberField/NumberField";
 
 export { Sheet } from "./components/Sheet/Sheet";
 export type { SheetProps, SheetClassNames, SheetSide } from "./components/Sheet/Sheet";
@@ -315,6 +323,7 @@ export type {
   MessageBubbleProps,
   MessageBubbleState,
   MessageTone,
+  MessageLabels,
 } from "./components/Message/Message";
 
 export { TodoList, TodoItem } from "./components/TodoList/TodoList";
@@ -336,12 +345,13 @@ export type {
 } from "./components/AgentActivity/AgentActivity";
 
 export { CodeBlock } from "./components/CodeBlock/CodeBlock";
-export type { CodeBlockProps, CodeBlockState } from "./components/CodeBlock/CodeBlock";
+export type { CodeBlockProps, CodeBlockState, CodeBlockLabels } from "./components/CodeBlock/CodeBlock";
 
 export { FileDiff } from "./components/FileDiff/FileDiff";
 export type {
   FileDiffProps,
   FileDiffState,
+  FileDiffLabels,
   DiffRow,
   DiffRowKind,
 } from "./components/FileDiff/FileDiff";

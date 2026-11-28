@@ -524,6 +524,30 @@
 
     --kernel-scale-enter: 0.96;
     --kernel-scale-exit: 0.99;
+    /* Large surfaces (Dialog, a side panel) enter from closer to full
+       size: at 0.96 a full-screen-ish panel visibly changes too much of
+       the screen. Popovers and menus keep --kernel-scale-enter. */
+    --kernel-scale-enter-lg: 0.98;
+    /* A layer pushed behind the one in front (Toast's collapsed stack):
+       how far each step back shrinks. */
+    --kernel-scale-recede: 0.92;
+
+    /* Sheets and drawers: the iOS sheet curve (via Ionic and Vaul), which
+       leaves fast and settles long, at a duration that suits travelling a
+       large share of the viewport. Exits still use --kernel-duration-exit. */
+    --kernel-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --kernel-duration-sheet: 400ms;
+
+    /* Loops: spinners, shimmer, pulsing dots. Continuous motion is linear,
+       and one set of durations keeps every loading state moving at the same
+       rhythm instead of each component picking its own. Loops that carry
+       meaning (a busy spinner, indeterminate progress) are marked
+       data-kernel-motion="essential" so reduced motion slows them rather
+       than freezing them. */
+    --kernel-ease-loop: linear;
+    --kernel-duration-spin: 700ms;
+    --kernel-duration-pulse: 1.2s;
+    --kernel-duration-shimmer: 1.6s;
     /* Press feedback on anything clickable. Was drifting to eight
        different hand-picked values across components (0.90–0.99) with
        no shared token — converge on one. 0.96 is deliberate, not
@@ -588,7 +612,7 @@
        from nothing. Using --kernel-ease-out (or the spring alias) on a
        resizing element like Accordion's height overshoots visually,
        which a clipped `height` can't actually do. */
-    --kernel-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --kernel-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     /* For a scrim's opacity, and opacity alone. The overlay curve is
        deliberately front-loaded — over 200ms it reaches 40% by 20ms and
        96% by 100ms — which is what makes a *moving* surface feel like it

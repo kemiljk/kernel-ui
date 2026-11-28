@@ -89,3 +89,10 @@
     scale: 1;
   }
 }
+
+/* Warm group (see utils/tooltipGroup): once one tooltip has been shown,
+   its neighbours appear at once, with no enter transition, so scanning a
+   toolbar doesn't replay the animation on every button. */
+.content[data-instant] {
+  transition-duration: 0ms;
+}

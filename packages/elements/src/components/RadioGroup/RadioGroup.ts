@@ -15,13 +15,15 @@ let radioGroupCounter = 0;
  * Attributes: `label` (required — a `<fieldset>` needs a `<legend>` the
  * same way a form field needs a label), `name` (generated if omitted,
  * so items still share a real name without the author inventing one),
- * `disabled`.
+ * `disabled`, `value` (the selected item's value — the counterpart of
+ * React's `value`/`defaultValue`; reflected back when the user picks an
+ * option, alongside the native bubbling `change` event from the radio).
  */
 export class KernelRadioGroup extends KernelElement {
   private readonly generatedName = `kernel-radio-group-${++radioGroupCounter}`;
 
   static get observedAttributes() {
-    return ["label", "disabled"];
+    return ["label", "disabled", "value"];
   }
 
   get resolvedName(): string {
@@ -41,6 +43,10 @@ export class KernelRadioGroup extends KernelElement {
     this.moveChildrenInto(options);
 
     fieldset.append(legend, options);
+    fieldset.addEventListener("change", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.type === "radio" && target.checked) this.setAttribute("value", target.value);
+    });
     this.native = fieldset;
     this.append(fieldset);
     this.syncAllAttrs();
@@ -57,6 +63,11 @@ export class KernelRadioGroup extends KernelElement {
       }
       case "disabled":
         fieldset.disabled = value !== null;
+        break;
+      case "value":
+        for (const input of fieldset.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+          input.checked = value !== null && input.value === value;
+        }
         break;
     }
   }
@@ -97,6 +108,10 @@ export class KernelRadioGroupItem extends KernelElement {
     this.native = label;
     this.append(label);
     this.syncAllAttrs();
+    // An item that connects after its group already has a `value`.
+    if (group?.hasAttribute("value") && group.getAttribute("value") === this.getAttribute("value")) {
+      input.checked = true;
+    }
   }
 
   private get input(): HTMLInputElement | null {

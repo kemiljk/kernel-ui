@@ -14,12 +14,13 @@ import "./Toggle.css";
  * concentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).
  *
  * Attributes: `pressed`, `disabled` (both boolean), `size`
- * (sm/md/lg, default md). Toggling dispatches a real, bubbling `change`
- * event.
+ * (sm/md/lg, default md), `aria-label` (forwarded to the inner
+ * `<button>`, for an icon-only toggle — on the host it would name
+ * nothing). Toggling dispatches a real, bubbling `change` event.
  */
 export class KernelToggle extends KernelElement {
   static get observedAttributes() {
-    return ["pressed", "disabled", "size"];
+    return ["pressed", "disabled", "size", "aria-label"];
   }
 
   protected createNative(): HTMLElement {
@@ -55,9 +56,15 @@ export class KernelToggle extends KernelElement {
       }
       case "disabled":
         button.disabled = value !== null;
+        if (value !== null) button.dataset.disabled = "true";
+        else delete button.dataset.disabled;
         break;
       case "size":
         button.dataset.size = value ?? "md";
+        break;
+      case "aria-label":
+        if (value === null) button.removeAttribute("aria-label");
+        else button.setAttribute("aria-label", value);
         break;
     }
   }

@@ -36,7 +36,7 @@
 @keyframes kernel-message-enter {
   from {
     opacity: 0;
-    transform: translateY(var(--kernel-space-2)) scale(var(--kernel-scale-enter));
+    transform: translateY(var(--kernel-translate-enter)) scale(var(--kernel-scale-enter));
   }
   to {
     opacity: 1;

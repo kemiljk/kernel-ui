@@ -41,7 +41,8 @@ function glyph(path: string): SVGSVGElement {
  * `error-message`, `no-label-offset` (boolean — hard-aligns the label,
  * description, and error text flush left instead of the default inset
  * that lines them up with the input's own text padding), `invalid`,
- * `disabled`, `required`, `name`.
+ * `disabled`, `required`, `name`. Built-in strings: `label-increment`
+ * ("Increment"), `label-decrement` ("Decrement"), or the `labels` property.
  */
 export class KernelNumberField extends KernelElement {
   private readonly generatedId = `kernel-number-field-${++numberFieldCounter}`;
@@ -62,6 +63,8 @@ export class KernelNumberField extends KernelElement {
       "disabled",
       "required",
       "name",
+      "label-increment",
+      "label-decrement",
     ];
   }
 
@@ -96,16 +99,16 @@ export class KernelNumberField extends KernelElement {
     const down = document.createElement("button");
     down.type = "button";
     down.tabIndex = -1;
-    down.setAttribute("aria-label", "Decrement");
     down.className = kernelClass("NumberField", "stepperButton");
+    down.dataset.step = "down";
     down.append(glyph(MINUS));
     down.addEventListener("click", () => this.stepBy(-1));
 
     const up = document.createElement("button");
     up.type = "button";
     up.tabIndex = -1;
-    up.setAttribute("aria-label", "Increment");
     up.className = kernelClass("NumberField", "stepperButton");
+    up.dataset.step = "up";
     up.append(glyph(PLUS));
     up.addEventListener("click", () => this.stepBy(1));
 
@@ -188,6 +191,14 @@ export class KernelNumberField extends KernelElement {
     if (down) down.disabled = disabled || (min != null && value != null && value <= Number(min));
   }
 
+  protected applyLabels() {
+    // By role, not position: the buttons render − then +.
+    const up = this.native?.querySelector<HTMLButtonElement>('[data-step="up"]');
+    const down = this.native?.querySelector<HTMLButtonElement>('[data-step="down"]');
+    up?.setAttribute("aria-label", this.builtInLabel("increment", "Increment"));
+    down?.setAttribute("aria-label", this.builtInLabel("decrement", "Decrement"));
+  }
+
   protected syncAttr(name: string, value: string | null) {
     if (!this.native) return;
     const input = this.input;
@@ -228,7 +239,7 @@ export class KernelNumberField extends KernelElement {
         this.native.dataset.size = value ?? "md";
         break;
       case "invalid":
-        if (value !== null) this.native.setAttribute("data-invalid", "");
+        if (value !== null) this.native.setAttribute("data-invalid", "true");
         else this.native.removeAttribute("data-invalid");
         this.updateDescribedBy();
         break;
