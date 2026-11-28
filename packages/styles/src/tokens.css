@@ -83,7 +83,10 @@
     --kernel-gray-8: light-dark(oklch(73% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)), oklch(50% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)));
     --kernel-gray-9: light-dark(oklch(59% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)), oklch(58% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)));
     --kernel-gray-10: light-dark(oklch(54% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)), oklch(64% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)));
-    --kernel-gray-11: light-dark(oklch(46% calc(var(--kernel-chroma-neutral) * 2) var(--kernel-hue-neutral)), oklch(72% calc(var(--kernel-chroma-neutral) * 1.8) var(--kernel-hue-neutral)));
+    /* Gray-11 is the muted-text step. Dark mode sits at 78% rather than a
+       smoother 72% so muted text clears APCA Lc 60 on the canvas for every
+       accent hue (72% measured Lc 52-53). See scripts/check-contrast.mjs. */
+    --kernel-gray-11: light-dark(oklch(46% calc(var(--kernel-chroma-neutral) * 2) var(--kernel-hue-neutral)), oklch(78% calc(var(--kernel-chroma-neutral) * 1.8) var(--kernel-hue-neutral)));
     --kernel-gray-12: light-dark(oklch(22% calc(var(--kernel-chroma-neutral) * 2.4) var(--kernel-hue-neutral)), oklch(94% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)));
 
     /* Accent scale. Chroma peaks at step 9, "the purest step", per the
@@ -151,6 +154,15 @@
     --kernel-color-border: var(--kernel-gray-6);
     --kernel-color-border-interactive: var(--kernel-gray-7);
     --kernel-color-border-hover: var(--kernel-gray-8);
+    /* The boundary of a control whose border is the only thing that shows
+       it's there: an unchecked Checkbox or Radio, a Switch track's edge.
+       Kernel measures contrast with APCA (the method proposed for WCAG 3) and
+       keeps WCAG 2's ratio as a floor. A 1px line is fine detail, so the
+       target is Lc 45 and 3:1. Gray-7 measured Lc 28 / 1.66:1 in light and
+       Lc 12 in dark; gray-9 (light) and gray-11 (dark) clear both targets
+       for every preset. Fields keep the softer border-interactive, because
+       their fill, label and placeholder identify them as well. */
+    --kernel-color-border-control: light-dark(var(--kernel-gray-9), var(--kernel-gray-11));
     /* Kept as an alias so nothing else has to change: "strong" always
        meant "the more prominent of the two borders in use". */
     --kernel-color-border-strong: var(--kernel-color-border-hover);
@@ -239,7 +251,13 @@
       --kernel-color-on-warning: contrast-color(var(--kernel-color-warning));
     }
 
-    --kernel-color-focus-ring: var(--kernel-color-accent);
+    /* A 2px focus outline is fine detail, so it targets APCA Lc 45, with
+       WCAG 2.4.13's 3:1 as a floor. Accent-9 missed in two ways: the amber
+       preset is too light on the light canvas (Lc 35, 1.95:1), and every
+       preset falls to about Lc 30 in dark mode, which WCAG 2's ratio
+       (about 4.2:1) overrates. Accent-11 clears Lc 57 in dark and Lc 77 in
+       light for every preset. */
+    --kernel-color-focus-ring: var(--kernel-accent-11);
 
     /* Shared by Switch's and Slider's thumbs: a fixed light colour
        regardless of theme or the track's own colour underneath, the same
