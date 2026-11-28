@@ -117,6 +117,8 @@
    field stays invalid — only when it becomes invalid again after
    returning to valid. --kernel-ease-in-out because this moves the
    input between visible positions, not entering/exiting one. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-textfield-shake {
   0%,
   100% {

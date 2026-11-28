@@ -1,0 +1,176 @@
+{
+  "$comment": "Compressed-size budgets for what each publishable package ships, in bytes. Each entry lists the files it covers (globs allowed: * and **); a multi-file entry is the sum of each file compressed on its own. Budgets sit about 10% above the size measured when they were set. To raise them deliberately, run `node scripts/check-size.mjs --update` after a build and justify the jump in the PR. Checked by `bun run test:size`.",
+  "packages": [
+    {
+      "name": "@kernelui-lib/react",
+      "dir": "packages/react",
+      "entries": [
+        {
+          "label": "index.js (ESM)",
+          "files": [
+            "dist/index.js"
+          ],
+          "budget": {
+            "gzip": 55300,
+            "brotli": 45700
+          }
+        },
+        {
+          "label": "index.cjs (CJS)",
+          "files": [
+            "dist/index.cjs"
+          ],
+          "budget": {
+            "gzip": 48100,
+            "brotli": 41300
+          }
+        },
+        {
+          "label": "styles.css",
+          "files": [
+            "dist/kernel.css"
+          ],
+          "budget": {
+            "gzip": 26200,
+            "brotli": 20400
+          }
+        },
+        {
+          "label": "styles.layer.css",
+          "files": [
+            "dist/kernel.layer.css"
+          ],
+          "budget": {
+            "gzip": 26200,
+            "brotli": 20500
+          }
+        }
+      ]
+    },
+    {
+      "name": "@kernelui-lib/elements",
+      "dir": "packages/elements",
+      "entries": [
+        {
+          "label": "index.js (ESM)",
+          "files": [
+            "dist/index.js"
+          ],
+          "budget": {
+            "gzip": 61000,
+            "brotli": 49800
+          }
+        },
+        {
+          "label": "styles.css",
+          "files": [
+            "dist/kernel.css"
+          ],
+          "budget": {
+            "gzip": 25800,
+            "brotli": 20700
+          }
+        },
+        {
+          "label": "styles.layer.css",
+          "files": [
+            "dist/kernel.layer.css"
+          ],
+          "budget": {
+            "gzip": 25900,
+            "brotli": 20800
+          }
+        }
+      ]
+    },
+    {
+      "name": "@kernelui-lib/styles",
+      "dir": "packages/styles",
+      "entries": [
+        {
+          "label": "tokens.css",
+          "files": [
+            "src/tokens.css"
+          ],
+          "budget": {
+            "gzip": 15800,
+            "brotli": 13500
+          }
+        },
+        {
+          "label": "reset.css",
+          "files": [
+            "src/reset.css"
+          ],
+          "budget": {
+            "gzip": 4300,
+            "brotli": 3500
+          }
+        },
+        {
+          "label": "tailwind.css",
+          "files": [
+            "src/tailwind.css"
+          ],
+          "budget": {
+            "gzip": 800,
+            "brotli": 700
+          }
+        },
+        {
+          "label": "fonts.css",
+          "files": [
+            "src/fonts.css"
+          ],
+          "budget": {
+            "gzip": 200,
+            "brotli": 100
+          }
+        },
+        {
+          "label": "themes/*.css (total)",
+          "files": [
+            "src/themes/*.css"
+          ],
+          "budget": {
+            "gzip": 7500,
+            "brotli": 5900
+          }
+        }
+      ]
+    },
+    {
+      "name": "@kernelui-lib/cli",
+      "dir": "packages/cli",
+      "entries": [
+        {
+          "label": "dist JS (total)",
+          "files": [
+            "dist/**/*.js",
+            "dist/**/*.cjs"
+          ],
+          "budget": {
+            "gzip": 107100,
+            "brotli": 87500
+          }
+        }
+      ]
+    },
+    {
+      "name": "@kernelui-lib/eslint-plugin",
+      "dir": "packages/eslint-plugin",
+      "entries": [
+        {
+          "label": "dist JS (total)",
+          "files": [
+            "dist/*.js"
+          ],
+          "budget": {
+            "gzip": 10800,
+            "brotli": 9400
+          }
+        }
+      ]
+    }
+  ]
+}

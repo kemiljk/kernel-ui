@@ -150,9 +150,9 @@
   scale: 1;
   filter: blur(0);
   transition:
-    opacity var(--kernel-duration-fast) linear var(--kernel-duration-exit-fast),
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade) var(--kernel-duration-exit-fast),
     scale var(--kernel-duration-base) var(--kernel-ease-overshoot) var(--kernel-duration-exit-fast),
-    filter var(--kernel-duration-fast) linear var(--kernel-duration-exit-fast);
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade) var(--kernel-duration-exit-fast);
 }
 
 @starting-style {

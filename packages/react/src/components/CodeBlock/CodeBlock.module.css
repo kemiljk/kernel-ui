@@ -113,17 +113,17 @@
   scale: var(--kernel-scale-enter);
   filter: blur(var(--kernel-blur-sm));
   transition:
-    opacity var(--kernel-duration-fast) linear,
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
     scale var(--kernel-duration-base) var(--kernel-ease-out),
-    filter var(--kernel-duration-fast) linear;
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .copyLabelLayer {
   opacity: 0;
   filter: blur(var(--kernel-blur-sm));
   transition:
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 /* dataAttr() omits the attribute entirely rather than writing

@@ -144,6 +144,8 @@
    (below) is the external `invalid` attribute — so a bad hex shakes
    just the text field, while a parent form's validation failure
    shakes the swatch, the part that represents the whole field. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-colorpicker-shake {
   0%,
   100% {

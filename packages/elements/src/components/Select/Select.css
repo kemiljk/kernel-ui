@@ -93,6 +93,8 @@
    explicit iteration-count/fill-mode. No `:user-invalid` variant here:
    a native `<select>` is always a valid choice among its own options,
    so `invalid` can only ever be set explicitly via the prop. */
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-select-shake {
   0%,
   100% {

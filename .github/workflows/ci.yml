@@ -46,6 +46,12 @@ jobs:
       - name: Check published package contents
         run: bun run test:package
 
+      # Gzip and brotli size of every package's shipped entry files against
+      # scripts/size-budgets.json (~10% headroom). Raise a budget with
+      # `node scripts/check-size.mjs --update` and say why in the PR.
+      - name: Bundle-size budget
+        run: bun run test:size
+
       - name: Build registry
         run: bun run --cwd packages/registry build
 
@@ -69,6 +75,11 @@ jobs:
       # padding (or a pointer cursor without user-select: none) could merge.
       - name: Shape pairing and select-none check
         run: bun run test:shape
+
+      # Physical direction without an RTL pair, black-alpha hovers, and
+      # literal durations/easings instead of motion tokens.
+      - name: CSS conventions (RTL, hover colour, motion tokens)
+        run: bun run test:css
 
       - name: Component parity (React and elements)
         run: bun run test:parity

@@ -93,7 +93,7 @@
   opacity: 0;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  transition: opacity var(--kernel-duration-fast) linear;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-Checkbox-input:checked + .kernel-Checkbox-control .kernel-Checkbox-checkmark {
@@ -105,12 +105,12 @@
      both firing at once. */
   transition:
     stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-out) var(--kernel-duration-stagger),
-    opacity var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-Checkbox-dash {
   opacity: 0;
-  transition: opacity var(--kernel-duration-fast) linear;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-Checkbox-input:indeterminate + .kernel-Checkbox-control .kernel-Checkbox-dash {

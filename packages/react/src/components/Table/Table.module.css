@@ -45,42 +45,54 @@
 
 @supports (animation-timeline: scroll()) {
   .scroll {
+    /* kernel-allow: literal-motion — scroll-driven: `linear` maps scroll
+       progress 1:1 to the edge cue; there is no time for a token to set. */
     animation:
       kernel-table-shadow-start linear both,
       kernel-table-shadow-end linear both;
     animation-timeline: scroll(self inline), scroll(self inline);
     animation-range: 0 48px, calc(100% - 48px) 100%;
     -webkit-mask-image: linear-gradient(
-      to right,
+      var(--kernel-table-fade-direction, to right),
       rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-start))) 0,
       #000 2.75rem,
       #000 calc(100% - 2.75rem),
       rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-end))) 100%
     );
     mask-image: linear-gradient(
-      to right,
+      var(--kernel-table-fade-direction, to right),
       rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-start))) 0,
       #000 2.75rem,
       #000 calc(100% - 2.75rem),
       rgb(0 0 0 / calc(1 - 0.92 * var(--kernel-table-shadow-end))) 100%
     );
     box-shadow:
-      inset 2px 0 4px -2px light-dark(
+      inset calc(2px * var(--kernel-table-edge, 1)) 0 4px -2px light-dark(
         oklch(0% 0 0 / calc(0.16 * var(--kernel-table-shadow-start))),
         oklch(0% 0 0 / calc(0.42 * var(--kernel-table-shadow-start)))
       ),
-      inset 8px 0 16px -6px light-dark(
+      inset calc(8px * var(--kernel-table-edge, 1)) 0 16px -6px light-dark(
         oklch(0% 0 0 / calc(0.12 * var(--kernel-table-shadow-start))),
         oklch(0% 0 0 / calc(0.32 * var(--kernel-table-shadow-start)))
       ),
-      inset -2px 0 4px -2px light-dark(
+      inset calc(-2px * var(--kernel-table-edge, 1)) 0 4px -2px light-dark(
         oklch(0% 0 0 / calc(0.16 * var(--kernel-table-shadow-end))),
         oklch(0% 0 0 / calc(0.42 * var(--kernel-table-shadow-end)))
       ),
-      inset -8px 0 16px -6px light-dark(
+      inset calc(-8px * var(--kernel-table-edge, 1)) 0 16px -6px light-dark(
         oklch(0% 0 0 / calc(0.12 * var(--kernel-table-shadow-end))),
         oklch(0% 0 0 / calc(0.32 * var(--kernel-table-shadow-end)))
       );
+  }
+
+  /* The cue follows the scroll timeline, which is logical (inline start is
+     the right-hand edge under RTL), but a gradient direction and a shadow's
+     x offset are physical, so both flip by hand. Both selector forms: the
+     build rewrites `:dir()` into a `:lang()` list (see AGENTS.md). */
+  .scroll:dir(rtl),
+  :where([dir="rtl"]) .scroll {
+    --kernel-table-fade-direction: to left;
+    --kernel-table-edge: -1;
   }
 }
 

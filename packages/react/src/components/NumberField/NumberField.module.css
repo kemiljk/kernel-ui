@@ -136,6 +136,8 @@
   animation: kernel-numberfield-shake var(--kernel-duration-slow) var(--kernel-ease-in-out);
 }
 
+/* kernel-allow: physical-direction — an invalid-input shake wobbles both
+   ways about its resting point, so it reads the same in either direction. */
 @keyframes kernel-numberfield-shake {
   0%,
   100% {

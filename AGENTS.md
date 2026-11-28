@@ -302,6 +302,19 @@ new component done, grep both `packages/react/src/index.ts` and
   double-clicks a disclosure.
 - `bun run test:contrast` (`scripts/check-contrast.mjs`) — APCA and WCAG 2
   targets for the semantic colour tokens, every preset, light and dark.
+- `bun run test:css` (`scripts/check-css-conventions.mjs`) — fails on a
+  physical direction (`left`, `margin-right`, a horizontal `translate`,
+  `linear-gradient(to right …)`) with no `:dir(rtl)` + `[dir="rtl"]`
+  counterpart, a black-alpha colour in a `:hover`/`:active` rule (use
+  `--kernel-color-overlay-hover`), and a literal duration or easing in a
+  `transition`/`animation` (use the `--kernel-duration-*`/`--kernel-ease-*`
+  tokens; `--kernel-ease-fade` is the linear crossfade). Allowlist a real
+  exception in or directly above the rule with
+  `/* kernel-allow: <check> — reason */`.
+- `bun run test:size` (`scripts/check-size.mjs`, after a build) — gzip and
+  brotli size of each package's shipped entry files against
+  `scripts/size-budgets.json`. If growth is intended, run
+  `node scripts/check-size.mjs --update` and say why in the PR.
 
 - `bun run test:parity` (`scripts/check-parity.mjs`) — fails when a
   registry entry's React export or custom element tag is missing from
