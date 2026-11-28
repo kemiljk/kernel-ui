@@ -4511,8 +4511,8 @@
               "name": "openDelay",
               "type": "number",
               "optional": true,
-              "default": "0",
-              "description": "Delay before showing on hover, in milliseconds. Focus shows\nnear-instantly regardless."
+              "default": "400",
+              "description": "Delay before showing on hover, in milliseconds. Defaults to 400.\nFocus shows immediately regardless, and once any tooltip has been\nshown, neighbours open with no delay (see utils/tooltipGroup)."
             },
             {
               "name": "closeDelay",
@@ -4557,7 +4557,7 @@
       },
       "elements": {
         "kernel-tooltip": {
-          "description": "`<kernel-tooltip>` — `popover=\"manual\"` (driven from hover/focus, not\na click toggle) for top-layer stacking + `showPopover()`/\n`hidePopover()`, positioned with the same `FloatingPositioner` as\n`<kernel-popover>`. `interestfor` is set on the trigger as a\nforward-looking, currently-inert stand-in for the emerging native\nhover-intent attribute — today the hover/focus listeners below are\nwhat actually show and hide it.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\nbecomes the tooltip's content.\n\nAttributes: `placement` (top/bottom/left/right, default top),\n`align` (start/center/end, default center), `offset` (px, default 8),\n`open-delay` / `close-delay` (ms, default 0), `arrow` (boolean).",
+          "description": "`<kernel-tooltip>` — `popover=\"manual\"` (driven from hover/focus, not\na click toggle) for top-layer stacking + `showPopover()`/\n`hidePopover()`, positioned with the same `FloatingPositioner` as\n`<kernel-popover>`. `interestfor` is set on the trigger as a\nforward-looking, currently-inert stand-in for the emerging native\nhover-intent attribute — today the hover/focus listeners below are\nwhat actually show and hide it.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\nbecomes the tooltip's content.\n\nAttributes: `placement` (top/bottom/left/right, default top),\n`align` (start/center/end, default center), `offset` (px, default 8),\n`open-delay` (ms, default 400; neighbours open at once once any tooltip\nhas shown) / `close-delay` (ms, default 0), `arrow` (boolean).",
           "attributes": [],
           "events": []
         }
