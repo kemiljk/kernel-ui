@@ -12,6 +12,7 @@ import type { ChangeDetails, ChangeEventSource } from "../../utils/changeDetails
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { warnDeprecated } from "../../utils/warnDeprecated";
 import { emitChange } from "../../utils/useControllableState";
+import { showModalReturningFocus, trackPressedControl } from "../../utils/focusReturn";
 import { Button } from "../Button/Button";
 import styles from "./Dialog.module.css";
 
@@ -140,7 +141,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
         setClosing(false);
         if (!node.open) {
           setOpening(true);
-          node.showModal();
+          showModalReturningFocus(node);
           requestAnimationFrame(() => setOpening(false));
         }
         return;
@@ -189,6 +190,8 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
     }, [onOpenChange]);
 
     useEffect(() => {
+      // WebKit never focuses a clicked button; remember it for the restore.
+      trackPressedControl();
       return () => exitAbortRef.current?.abort();
     }, []);
 

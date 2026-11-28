@@ -1,6 +1,7 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
 import { inputModality } from "../../utils/changeDetails";
 import { fuzzyFilter, fuzzySegments } from "../../utils/fuzzy";
+import { showModalReturningFocus, trackPressedControl } from "../../utils/focusReturn";
 import "./CommandPalette.css";
 
 let paletteCounter = 0;
@@ -127,6 +128,8 @@ export class KernelCommandPalette extends KernelElement {
   }
 
   connectedCallback() {
+    // WebKit never focuses a clicked button; remember it for the restore.
+    trackPressedControl();
     if (this.native) return;
 
     const dialog = document.createElement("dialog");
@@ -360,7 +363,7 @@ export class KernelCommandPalette extends KernelElement {
           this.activeIndex = 0;
           this.inputEl.value = "";
           this.renderOptions();
-          dialog.showModal();
+          showModalReturningFocus(dialog);
           dialog.setAttribute("data-open", "true");
           dialog.setAttribute("data-state", "open");
           requestAnimationFrame(() => this.inputEl.focus());

@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import { showModalReturningFocus, trackPressedControl } from "../../utils/focusReturn";
 import "./Dialog.css";
 
 let dialogCounter = 0;
@@ -55,6 +56,8 @@ export class KernelDialog extends KernelElement {
   }
 
   connectedCallback() {
+    // WebKit never focuses a clicked button; remember it for the restore.
+    trackPressedControl();
     if (this.native) return;
 
     const titleSlot = this.querySelector('[slot="title"]');
@@ -235,7 +238,7 @@ export class KernelDialog extends KernelElement {
           // same sequence (and "true" values) as React's Dialog.
           dialog.setAttribute("data-opening", "true");
           dialog.removeAttribute("data-open");
-          dialog.showModal();
+          showModalReturningFocus(dialog);
           dialog.setAttribute("data-state", "open");
           requestAnimationFrame(() => {
             if (!dialog.hasAttribute("data-opening")) return;

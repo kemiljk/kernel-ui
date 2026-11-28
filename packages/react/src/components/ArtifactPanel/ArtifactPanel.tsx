@@ -3,6 +3,7 @@ import type { HTMLAttributes, MouseEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { useControllableState } from "../../utils/useControllableState";
+import { showModalReturningFocus, trackPressedControl } from "../../utils/focusReturn";
 import { Button } from "../Button/Button";
 import { Tab, TabPanel, Tabs, TabsList } from "../Tabs/Tabs";
 import styles from "./ArtifactPanel.module.css";
@@ -210,6 +211,9 @@ export const ArtifactPanel = forwardRef<HTMLElement, ArtifactPanelProps>(functio
     onChange: onViewChange,
   });
 
+  // WebKit never focuses a clicked button; remember it for the restore.
+  useEffect(trackPressedControl, []);
+
   const requestClose = useCallback(() => {
     if (!open || closing) return;
     onOpenChange?.(false);
@@ -226,7 +230,7 @@ export const ArtifactPanel = forwardRef<HTMLElement, ArtifactPanelProps>(functio
       setClosing(false);
       if (!node.open) {
         setOpening(true);
-        node.showModal();
+        showModalReturningFocus(node);
         requestAnimationFrame(() => setOpening(false));
       }
       return;

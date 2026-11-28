@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { attachSheetDrag, VelocityTracker, type SheetDragOptions } from "./sheetDrag";
+import { attachSheetDrag, sheetAxisFor, VelocityTracker, type SheetDragOptions } from "./sheetDrag";
 
 /** Samples are fed as travel along the dismiss axis, already signed, so a
  * positive reading always means "toward dismissal". */
@@ -188,5 +188,25 @@ describe("attachSheetDrag: dismissal", () => {
     // Not left translated off-screen.
     expect(node.style.translate).toBe("");
     expect(onRelease).toHaveBeenLastCalledWith(true);
+  });
+});
+
+describe("sheetAxisFor", () => {
+  it("drags a left or right sheet toward its physical edge, which flips under RTL", () => {
+    const ltr = document.createElement("dialog");
+    const rtl = document.createElement("dialog");
+    rtl.style.direction = "rtl";
+    document.body.append(ltr, rtl);
+    // LTR: left leaves leftward (decreasing x), right leaves rightward.
+    expect(sheetAxisFor(ltr, "left")).toMatchObject({ axis: "x", sign: -1 });
+    expect(sheetAxisFor(ltr, "right")).toMatchObject({ axis: "x", sign: 1 });
+    // RTL: `left` is inset-inline-start, the right-hand edge, so it leaves rightward.
+    expect(sheetAxisFor(rtl, "left")).toMatchObject({ axis: "x", sign: 1, scrollEdge: "start" });
+    expect(sheetAxisFor(rtl, "right")).toMatchObject({ axis: "x", sign: -1, scrollEdge: "end" });
+    // The block axis doesn't care about direction.
+    expect(sheetAxisFor(rtl, "bottom")).toMatchObject({ axis: "y", sign: 1 });
+    expect(sheetAxisFor(rtl, "top")).toMatchObject({ axis: "y", sign: -1 });
+    ltr.remove();
+    rtl.remove();
   });
 });

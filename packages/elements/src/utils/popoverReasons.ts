@@ -22,7 +22,14 @@
  *
  * Browsers that fire `toggle` without `beforetoggle` still get notified,
  * from `toggle`, just too late to veto.
+ *
+ * Focus: a close for any reason but an outside press sends focus back to
+ * the trigger if it was lost (see `focusReturn.ts`). Chromium and Firefox
+ * already restore it there natively; WebKit restores it to `<body>`,
+ * because a clicked button never took focus in the first place.
  */
+import { focusableWithin, restoreFocusIfLost, trackPressedControl } from "./focusReturn";
+
 export type PopoverOpenChangeReason = "trigger-press" | "escape-key" | "outside-press" | "programmatic";
 
 const RECENT_MS = 1000;
@@ -47,6 +54,17 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
    * them is news, so they're swallowed up to and including the `open`. */
   let swallowUntilOpen = false;
   let reverting = false;
+  /** Why the popover is closing, read before the hide so the `toggle` that
+   * follows it knows whether to put focus back on the trigger. */
+  let closeReason: string | null = null;
+  trackPressedControl();
+
+  function returnFocusAfterClose() {
+    const reason = closeReason;
+    closeReason = null;
+    if (reason === "outside-press") return;
+    restoreFocusIfLost(focusableWithin(getTrigger()), popover);
+  }
 
   function reshow() {
     if (!reshowPending) return;
@@ -96,7 +114,9 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
 
   function notify(open: boolean): boolean {
     const cause = derive(open);
-    return onChange(open, cause.reason, cause.event);
+    const allowed = onChange(open, cause.reason, cause.event);
+    if (!open && allowed) closeReason = cause.reason;
+    return allowed;
   }
 
   const handleBeforeToggle = (event: Event) => {
@@ -128,6 +148,7 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
     }
     if (notifiedState !== toggle.newState) notify(toggle.newState === "open");
     notifiedState = null;
+    if (toggle.newState === "closed") returnFocusAfterClose();
   };
 
   document.addEventListener("pointerdown", remember, true);
@@ -141,6 +162,7 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
       // Already asked: neither the beforetoggle nor the toggle this hide
       // fires should ask again.
       notifiedState = "closed";
+      closeReason = reason;
       reverting = true;
       try {
         popover.hidePopover();
@@ -148,6 +170,7 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
         /* not showing */
       }
       reverting = false;
+      returnFocusAfterClose();
     },
     dispose() {
       reshowPending = false;
