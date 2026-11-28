@@ -11,7 +11,7 @@ describe("CommandPalette", () => {
 
     expect(dialog).toHaveAttribute("open");
     fireEvent(dialog, new Event("cancel", { cancelable: true }));
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledWith(false, expect.objectContaining({ reason: "escape-key" }));
 
     rerender(<CommandPalette open={false} onOpenChange={onOpenChange} />);
     expect(dialog).not.toHaveAttribute("open");
@@ -38,7 +38,7 @@ describe("CommandPalette", () => {
     expect(screen.getByRole("option")).toHaveAttribute("id", "save");
     fireEvent.keyDown(input, { key: "Enter" });
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledWith(false, expect.objectContaining({ reason: "item-keyboard" }));
   });
 
   it("supports controlled query state and compound rich options", async () => {

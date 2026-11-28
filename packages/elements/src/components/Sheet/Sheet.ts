@@ -55,7 +55,8 @@ const SIDES: readonly SheetSide[] = ["bottom", "top", "left", "right"];
  * `data-slot="sheet-footer"` that owns the bottom safe area and is a drag
  * surface in its own right.
  *
- * Events: `close` (inherited), plus `sheetdrag` (`detail.percent`, 0–1, on
+ * Events: `close` and the cancelable `cancel` (inherited; `cancel`'s
+ * `detail.reason` adds `"drag-dismiss"` and `"max-display-width"`), plus `sheetdrag` (`detail.percent`, 0–1, on
  * every drag frame), `sheetrelease` (`detail.open`, whether the sheet stayed
  * open), and `snapchange` (`detail.from` / `detail.to`, once per settle that
  * actually moves). All bubble.
@@ -146,7 +147,7 @@ export class KernelSheet extends KernelDialog {
   private enforceDisplayWidth() {
     if (!this.hasAttribute("open")) return;
     const limit = this.number("max-display-width", Number.POSITIVE_INFINITY);
-    if (window.innerWidth > limit) this.removeAttribute("open");
+    if (window.innerWidth > limit) this.requestClose("max-display-width");
   }
 
   private get dismissible() {
@@ -207,7 +208,7 @@ export class KernelSheet extends KernelDialog {
       // Removing the attribute is the same path every other close takes:
       // KernelDialog's own `syncAttr` picks it up, runs the exit transition, and
       // only then calls the native `close()`.
-      onDismiss: () => this.removeAttribute("open"),
+      onDismiss: () => this.requestClose("drag-dismiss"),
       onDrag: (percent) =>
         this.dispatchEvent(new CustomEvent("sheetdrag", { detail: { percent }, bubbles: true })),
       onRelease: (open) =>

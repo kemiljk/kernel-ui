@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { InputHTMLAttributes, KeyboardEvent, ReactNode } from "react";
+import { inputModality, trackInputModality, type ChangeDetails, type ChangeEventSource } from "../../utils/changeDetails";
+import { fuzzyFilter, fuzzyScore, fuzzySegments } from "../../utils/fuzzy";
 import { dataAttr } from "../../utils/polymorphic";
+import { emitChange } from "../../utils/useControllableState";
 import { ScrollArea } from "../ScrollArea/ScrollArea";
 import styles from "./CommandPalette.module.css";
 
@@ -27,9 +30,28 @@ export interface CommandPaletteLabels {
 
 const defaultCommandPaletteLabels: CommandPaletteLabels = { dialog: "Command palette" };
 
+/** Why the palette asked to close: Escape, a click on the backdrop, an item
+ * chosen by pointer or by Enter, or the native `<dialog>` closing some other
+ * way (a `method="dialog"` form, `dialog.close()`). */
+export type CommandPaletteOpenChangeReason =
+  | "escape-key"
+  | "outside-press"
+  | "item-press"
+  | "item-keyboard"
+  | "programmatic";
+
+/** A custom filter: return a score above 0 to keep an item (higher ranks
+ * first) or 0 to hide it. Same shape as cmdk's `filter`. */
+export type CommandPaletteFilter = (text: string, query: string, keywords?: string[]) => number;
+
 export interface CommandPaletteProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  /** Called with the reason the palette wants to close — `"escape-key"`,
+   * `"outside-press"`, `"item-press"`, `"item-keyboard"` or
+   * `"programmatic"`. The palette is
+   * controlled, so not updating `open` keeps it open; `details.cancel()`
+   * says so explicitly (an item's `onSelect` still runs either way). */
+  onOpenChange: (open: boolean, details: ChangeDetails<CommandPaletteOpenChangeReason>) => void;
   items?: CommandPaletteItem[];
   groups?: CommandPaletteGroup[];
   /** Filter field placeholder, also its accessible name. Defaults to `"Filter commands"`. */
@@ -40,6 +62,9 @@ export interface CommandPaletteProps {
   blur?: boolean;
   /** Set to false when results are filtered by the consumer. */
   shouldFilter?: boolean;
+  /** Replace the built-in ranked fuzzy match (see `fuzzyScore`). Return a
+   * score above 0 to keep an item, higher first; 0 hides it. */
+  filter?: CommandPaletteFilter;
   renderItem?: (
     item: CommandPaletteItem,
     state: { active: boolean; group?: CommandPaletteGroup; index: number },
@@ -88,7 +113,10 @@ interface PaletteContextValue {
   setQuery: (value: string) => void;
   setActiveId: (id: string, fromKeyboard?: boolean) => void;
   selectableItems: RegisteredItem[];
-  selectItem: (item: RegisteredItem) => void;
+  selectItem: (item: RegisteredItem, event?: ChangeEventSource) => void;
+  /** Visible, enabled items in the order they're rendered — ranked results
+   * reorder the DOM, so registration order isn't navigation order. */
+  orderedItems: () => RegisteredItem[];
   isVisible: (item: RegisteredItem) => boolean;
   setInputElement: (element: HTMLInputElement | null) => void;
 }
@@ -103,10 +131,38 @@ function usePaletteContext() {
   return context;
 }
 
-function matchesQuery(item: RegisteredItem, query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) return true;
-  return [item.value, ...item.keywords].some((value) => value.toLowerCase().includes(normalizedQuery));
+function matchesQuery(item: RegisteredItem, query: string, filter?: CommandPaletteFilter) {
+  if (!query.trim()) return true;
+  if (filter) return filter(item.value, query, item.keywords) > 0;
+  return [item.value, ...item.keywords].some((value) => fuzzyScore(query, value) !== null);
+}
+
+function inDomOrder(items: RegisteredItem[]): RegisteredItem[] {
+  if (typeof document === "undefined") return items;
+  return [...items].sort((a, b) => {
+    const first = document.getElementById(a.id);
+    const second = document.getElementById(b.id);
+    if (!first || !second) return 0;
+    return first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+  });
+}
+
+/** Matched label text wrapped in `<mark>`, the rest plain. */
+function Highlighted({ text, ranges }: { text: string; ranges: Array<[number, number]> }) {
+  if (ranges.length === 0) return <>{text}</>;
+  return (
+    <>
+      {fuzzySegments(text, ranges).map((segment, index) =>
+        segment.match ? (
+          <mark key={index} className={styles.match}>
+            {segment.text}
+          </mark>
+        ) : (
+          segment.text
+        ),
+      )}
+    </>
+  );
 }
 
 function generatedId(id: string) {
@@ -124,19 +180,20 @@ function CommandPaletteInput({ value, onValueChange, ...props }: CommandPaletteI
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     props.onKeyDown?.(event);
     if (event.defaultPrevented) return;
-    const activeIndex = context.selectableItems.findIndex((item) => item.id === context.activeId);
+    const items = context.orderedItems();
+    const activeIndex = items.findIndex((item) => item.id === context.activeId);
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      context.setActiveId(context.selectableItems[Math.min(activeIndex + 1, context.selectableItems.length - 1)]?.id ?? "");
+      context.setActiveId(items[Math.min(activeIndex + 1, items.length - 1)]?.id ?? "");
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      context.setActiveId(context.selectableItems[Math.max(activeIndex - 1, 0)]?.id ?? "");
+      context.setActiveId(items[Math.max(activeIndex - 1, 0)]?.id ?? "");
     } else if (event.key === "Enter") {
-      const active = context.selectableItems[activeIndex];
+      const active = items[activeIndex];
       if (active) {
         event.preventDefault();
-        context.selectItem(active);
+        context.selectItem(active, event);
       }
     }
   }
@@ -188,7 +245,7 @@ function CommandPaletteItem({ id, value, keywords, disabled = false, onSelect, c
       className={styles.option}
       onPointerDown={(event) => event.preventDefault()}
       onPointerMove={() => { if (!disabled) context.setActiveId(itemId, false); }}
-      onClick={() => { if (!disabled) context.selectItem(entry); }}
+      onClick={(event) => { if (!disabled) context.selectItem(entry, event); }}
     >
       {typeof children === "function" ? children({ active }) : children}
     </div>
@@ -228,17 +285,33 @@ function CommandPaletteLoading({ children }: { children: ReactNode }) {
   return <div role="status" className={styles.empty}>{children}</div>;
 }
 
-function CommandPaletteShorthand({ items, groups, renderItem }: Pick<CommandPaletteProps, "items" | "groups" | "renderItem">) {
+function CommandPaletteShorthand({
+  items,
+  groups,
+  renderItem,
+  shouldFilter = true,
+  filter,
+}: Pick<CommandPaletteProps, "items" | "groups" | "renderItem" | "shouldFilter" | "filter">) {
+  const { query } = usePaletteContext();
   const isGrouped = Boolean(groups && groups.length > 0);
   const sourceGroups = isGrouped ? groups ?? [] : [{ id: "__items__", items: items ?? [] }];
+  const ranked = shouldFilter && !filter && query.trim() !== "";
   return <>
-    {sourceGroups.map((group) => <CommandPaletteGroup key={group.id} id={group.id} heading={group.label}>
-      {group.items.map((item, index) => <CommandPaletteItem key={item.id} id={item.id} value={`${item.label} ${item.description ?? ""}`} onSelect={item.onSelect}>
-        {({ active }) => renderItem
-          ? renderItem(item, { active, group: isGrouped ? group : undefined, index })
-          : <><div className={styles.optionLabel}>{item.label}</div>{item.description ? <div className={styles.optionDescription}>{item.description}</div> : null}</>}
-      </CommandPaletteItem>)}
-    </CommandPaletteGroup>)}
+    {sourceGroups.map((group) => {
+      // The data-driven API ranks: best match first within each group, in
+      // the DOM itself (so arrow keys and screen readers follow the same
+      // order the eye does), with the matched label characters marked.
+      const ordered = ranked
+        ? fuzzyFilter(group.items, query, (item) => [item.label, item.description ?? ""])
+        : group.items.map((item, index) => ({ item, index, field: 0, ranges: [] as Array<[number, number]> }));
+      return <CommandPaletteGroup key={group.id} id={group.id} heading={group.label}>
+        {ordered.map(({ item, index, field, ranges }) => <CommandPaletteItem key={item.id} id={item.id} value={`${item.label} ${item.description ?? ""}`} onSelect={item.onSelect}>
+          {({ active }) => renderItem
+            ? renderItem(item, { active, group: isGrouped ? group : undefined, index })
+            : <><div className={styles.optionLabel}><Highlighted text={item.label} ranges={field === 0 ? ranges : []} /></div>{item.description ? <div className={styles.optionDescription}><Highlighted text={item.description} ranges={field === 1 ? ranges : []} /></div> : null}</>}
+        </CommandPaletteItem>)}
+      </CommandPaletteGroup>;
+    })}
   </>;
 }
 
@@ -251,6 +324,7 @@ function CommandPaletteRoot({
   emptyMessage = "No results",
   blur = false,
   shouldFilter = true,
+  filter,
   renderItem,
   children,
   labels,
@@ -271,7 +345,10 @@ function CommandPaletteRoot({
     setRegisteredItems((current) => [...current.filter((entry) => entry.id !== item.id), item]);
     return () => setRegisteredItems((current) => current.filter((entry) => entry.id !== item.id));
   }, []);
-  const isVisible = useCallback((item: RegisteredItem) => !shouldFilter || matchesQuery(item, query), [query, shouldFilter]);
+  const isVisible = useCallback(
+    (item: RegisteredItem) => !shouldFilter || matchesQuery(item, query, filter),
+    [filter, query, shouldFilter],
+  );
   const selectableItems = useMemo(
     () => registeredItems.filter((item) => !item.disabled && isVisible(item)),
     [isVisible, registeredItems],
@@ -284,9 +361,17 @@ function CommandPaletteRoot({
     inputElementRef.current = element;
   }, []);
 
+  useEffect(trackInputModality, []);
+
+  // After commit, so the DOM already shows the newly ranked order.
   useEffect(() => {
-    setActiveIdState((current) => selectableItems.some((item) => item.id === current) ? current : selectableItems[0]?.id ?? null);
-  }, [selectableItems]);
+    const ordered = inDomOrder(selectableItems);
+    setActiveIdState((current) =>
+      query.trim() === "" && selectableItems.some((item) => item.id === current)
+        ? current
+        : ordered[0]?.id ?? null,
+    );
+  }, [query, selectableItems]);
 
   useEffect(() => {
     if (!keyboardNavRef.current || !activeId) return;
@@ -302,10 +387,11 @@ function CommandPaletteRoot({
     setQuery,
     setActiveId,
     selectableItems,
-    selectItem: (item) => {
+    selectItem: (item, event) => {
       item.onSelect?.();
-      onOpenChange(false);
+      emitChange(onOpenChange, false, inputModality(event) === "keyboard" ? "item-keyboard" : "item-press", event);
     },
+    orderedItems: () => inDomOrder(selectableItems),
     isVisible,
     setInputElement,
   }), [activeId, isVisible, listboxId, onOpenChange, query, registerItem, selectableItems, setActiveId, setInputElement]);
@@ -325,8 +411,8 @@ function CommandPaletteRoot({
   useEffect(() => {
     const node = dialogRef.current;
     if (!node) return;
-    const handleClose = () => {
-      if (openRef.current) onOpenChange(false);
+    const handleClose = (event: Event) => {
+      if (openRef.current) emitChange(onOpenChange, false, "programmatic", event);
     };
     node.addEventListener("close", handleClose);
     return () => node.removeEventListener("close", handleClose);
@@ -341,13 +427,13 @@ function CommandPaletteRoot({
 
   const shorthand = <><CommandPaletteInput placeholder={placeholder} aria-label={placeholder} />
     <CommandPaletteList>{selectableItems.length === 0 ? <CommandPaletteEmpty>{emptyMessage}</CommandPaletteEmpty> : null}
-      <CommandPaletteShorthand items={items} groups={groups} renderItem={renderItem} />
+      <CommandPaletteShorthand items={items} groups={groups} renderItem={renderItem} shouldFilter={shouldFilter} filter={filter} />
     </CommandPaletteList></>;
 
   return <PaletteContext.Provider value={context}><dialog ref={dialogRef} className={styles.content} aria-label={l.dialog}
     data-state={open ? "open" : undefined} data-open={dataAttr(open)} data-blur={dataAttr(blur)}
-    onClick={(event) => { if (event.target === dialogRef.current) onOpenChange(false); }}
-    onCancel={(event) => { event.preventDefault(); event.stopPropagation(); onOpenChange(false); }}>
+    onClick={(event) => { if (event.target === dialogRef.current) emitChange(onOpenChange, false, "outside-press", event); }}
+    onCancel={(event) => { event.preventDefault(); event.stopPropagation(); emitChange(onOpenChange, false, "escape-key", event); }}>
     {children ?? shorthand}
   </dialog></PaletteContext.Provider>;
 }

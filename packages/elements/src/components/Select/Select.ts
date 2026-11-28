@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./Select.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let selectCounter = 0;
 
@@ -21,6 +22,14 @@ let selectCounter = 0;
  * description, and error text flush left instead of the default inset
  * that lines them up with the select's own text padding), `invalid`,
  * `required`, `disabled`, `value`, `name`.
+ *
+ * Change reasons: a native `change` can't be cancelled, so a bubbling,
+ * cancelable `valuechange` is dispatched from this element first, with
+ * `detail: { value, reason }` — `"item-press"`, `"keyboard"` or
+ * `"typeahead"`, worked out from the last pointer/key on the control (a
+ * platform picker that's a separate OS menu may swallow those keys, so
+ * it's best-effort there). `preventDefault()` restores the previous option
+ * and stops the native `change` at this element.
  */
 export class KernelSelect extends KernelElement {
   private readonly generatedId = `kernel-select-${++selectCounter}`;
@@ -68,6 +77,27 @@ export class KernelSelect extends KernelElement {
     chevron.setAttribute("aria-hidden", "true");
     chevron.innerHTML =
       '<path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />';
+
+    let lastKey: string | null = null;
+    let previousValue = select.value;
+    select.addEventListener("keydown", (event) => (lastKey = event.key));
+    select.addEventListener("pointerdown", () => (lastKey = null));
+    select.addEventListener("focus", () => (previousValue = select.value));
+    wrapper.addEventListener("change", (event) => {
+      if (event.target !== select) return;
+      const reason =
+        inputModality(event) !== "keyboard"
+          ? "item-press"
+          : lastKey && lastKey.length === 1 && lastKey !== " "
+            ? "typeahead"
+            : "keyboard";
+      if (!this.emitChange("valuechange", { value: select.value }, reason, event)) {
+        select.value = previousValue;
+        event.stopPropagation();
+        return;
+      }
+      previousValue = select.value;
+    });
 
     wrapper.append(select, chevron);
     root.append(label, wrapper);

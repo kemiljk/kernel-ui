@@ -1,6 +1,7 @@
-import { createContext, useContext, useId } from "react";
+import { createContext, useContext, useEffect, useId } from "react";
 import type { ReactNode } from "react";
 import { resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { createChangeDetails, inputModality, trackInputModality, type ChangeDetails } from "../../utils/changeDetails";
 import { useDetailsTransition } from "../../utils/detailsTransition";
 import styles from "./Accordion.module.css";
 
@@ -43,10 +44,19 @@ export interface AccordionItemState {
   open: boolean;
 }
 
+/** What opened or closed an item: a click or tap on its summary, or
+ * Enter/Space on the focused summary. */
+export type AccordionOpenChangeReason = "trigger-press" | "keyboard";
+
 export interface AccordionItemProps {
   title: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
+  /** Called before the item opens or closes from its summary, with the
+   * reason; `details.cancel()` keeps it as it is. In a `type="single"`
+   * accordion, the item the browser closes because another one opened isn't
+   * reported. */
+  onOpenChange?: (open: boolean, details: ChangeDetails<AccordionOpenChangeReason>) => void;
   className?: ClassNameValue<AccordionItemState>;
 }
 
@@ -61,10 +71,22 @@ export function AccordionItem({
   title,
   children,
   defaultOpen = false,
+  onOpenChange,
   className,
 }: AccordionItemProps) {
   const { name } = useContext(AccordionContext);
-  const { detailsRef, contentRef, open, setOpen } = useDetailsTransition({ defaultOpen });
+  useEffect(trackInputModality, []);
+  const { detailsRef, contentRef, open } = useDetailsTransition({
+    defaultOpen,
+    onBeforeOpenChange: (next, event) => {
+      const details = createChangeDetails<AccordionOpenChangeReason>(
+        inputModality(event) === "keyboard" ? "keyboard" : "trigger-press",
+        event,
+      );
+      onOpenChange?.(next, details);
+      return !details.isCanceled;
+    },
+  });
   const state: AccordionItemState = { open };
 
   return (

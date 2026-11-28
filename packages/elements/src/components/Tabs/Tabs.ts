@@ -1,6 +1,7 @@
 import { KernelElement, kernelClass } from "../../base";
 import { syncScrollEdges } from "../../utils/scrollEdges";
 import "./Tabs.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let tabsCounter = 0;
 
@@ -14,7 +15,9 @@ let tabsCounter = 0;
  * Attributes: `value` (controlled — set it to change tabs
  * externally), `default-value` (required if `value` is never set).
  * Fires a `valuechange` `CustomEvent` (`event.detail.value`) when the
- * active tab changes. A tablist wider than its container scrolls
+ * active tab changes — before it changes, with `detail.reason`
+ * (`"trigger-press"`, `"keyboard"`, or `"programmatic"` for a `setValue()`
+ * call); it's cancelable, and `preventDefault()` keeps the current tab. A tablist wider than its container scrolls
  * sideways (scrollbar hidden, an edge fade where tabs are cut off) rather
  * than widening the page, and selecting a tab scrolls it into view.
  */
@@ -53,15 +56,19 @@ export class KernelTabs extends KernelElement {
     return Array.from(this.querySelectorAll("kernel-tab-panel"));
   }
 
-  setValue(value: string) {
+  setValue(
+    value: string,
+    reason: "trigger-press" | "keyboard" | "programmatic" = "programmatic",
+    event?: Event,
+  ) {
     if (this.currentValue === value) return;
+    if (!this.emitChange("valuechange", { value }, reason, event)) return;
     this.currentValue = value;
     if (!this.hasAttribute("value")) {
       this.render();
     } else {
       this.setAttribute("value", value);
     }
-    this.dispatchEvent(new CustomEvent("valuechange", { detail: { value }, bubbles: true }));
   }
 
   protected syncAttr(name: string, value: string | null) {
@@ -266,10 +273,11 @@ export class KernelTab extends KernelElement {
     button.type = "button";
     button.setAttribute("role", "tab");
     button.className = kernelClass("Tabs", "tab");
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
       const tabsHost = this.closest("kernel-tabs") as KernelTabs | null;
       const value = this.getAttribute("value");
-      if (tabsHost && value !== null) tabsHost.setValue(value);
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "trigger-press";
+      if (tabsHost && value !== null) tabsHost.setValue(value, reason, event);
     });
     return button;
   }

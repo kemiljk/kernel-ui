@@ -2,7 +2,8 @@ import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
 import { pillIconAttrs, usePillIconRef } from "../../utils/pillIcons";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { inputModality, type ChangeDetails } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./Toggle.module.css";
 
 export interface ToggleState {
@@ -10,11 +11,16 @@ export interface ToggleState {
   disabled: boolean;
 }
 
+/** What flipped a `Toggle`: a click or tap, or Space/Enter. */
+export type ToggleChangeReason = "press" | "keyboard";
+
 export interface ToggleProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "onChange"> {
   pressed?: boolean;
   defaultPressed?: boolean;
-  onPressedChange?: (pressed: boolean) => void;
+  /** Called before the toggle flips, with the reason (`"press"` or
+   * `"keyboard"`); `details.cancel()` keeps it as it is. */
+  onPressedChange?: (pressed: boolean, details: ChangeDetails<ToggleChangeReason>) => void;
   size?: "sm" | "md" | "lg";
   className?: ClassNameValue<ToggleState>;
 }
@@ -46,7 +52,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
   },
   ref,
 ) {
-  const [isPressed, setPressed] = useControllableState({
+  const [isPressed, setPressed] = useControllableStateWithDetails({
     value: pressed,
     defaultValue: defaultPressed,
     onChange: onPressedChange,
@@ -71,7 +77,9 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
         .join(" ")}
       onClick={(event) => {
         onClick?.(event);
-        if (!event.defaultPrevented) setPressed(!isPressed);
+        if (!event.defaultPrevented) {
+          setPressed(!isPressed, inputModality(event) === "keyboard" ? "keyboard" : "press", event);
+        }
       }}
     >
       {children}

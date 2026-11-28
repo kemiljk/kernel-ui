@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./Switch.css";
+import { inputModality } from "../../utils/changeDetails";
 
 /**
  * `<kernel-switch>` — there's no native "switch" element, so this follows
@@ -10,8 +11,10 @@ import "./Switch.css";
  *
  * Attributes: `checked`, `disabled` (both boolean). Text content, if
  * any, becomes a real `<label>` wrapping the button — omit it for a
- * bare switch. Toggling dispatches a real, bubbling `change` event,
- * same as any native form control.
+ * bare switch. Toggling dispatches a bubbling `change` event *before*
+ * the switch flips, with `detail: { checked, reason }` (`reason` is
+ * `"press"` or `"keyboard"`); it's cancelable, and `preventDefault()`
+ * leaves the switch as it was.
  */
 export class KernelSwitch extends KernelElement {
   static get observedAttributes() {
@@ -31,10 +34,11 @@ export class KernelSwitch extends KernelElement {
     thumb.className = kernelClass("Switch", "thumb");
     button.append(thumb);
 
-    button.addEventListener("click", () => {
-      if (this.hasAttribute("checked")) this.removeAttribute("checked");
-      else this.setAttribute("checked", "");
-      this.dispatchEvent(new Event("change", { bubbles: true }));
+    button.addEventListener("click", (event) => {
+      const checked = !this.hasAttribute("checked");
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
+      if (!this.emitChange("change", { checked }, reason, event)) return;
+      this.toggleAttribute("checked", checked);
     });
 
     this.native = button;

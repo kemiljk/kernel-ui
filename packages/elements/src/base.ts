@@ -20,6 +20,12 @@
  * element (a genuine `<button>`) still ends up in the DOM either way.
  */
 
+import { trackInputModality } from "./utils/changeDetails";
+
+// Change reasons need to know whether the last interaction was a pointer
+// or a key; start listening as soon as any element module loads.
+trackInputModality();
+
 /** A built-in string override: plain text, a `{name}` template, or a
  * function given the same arguments as the React `labels` function. */
 export type KernelLabelValue = string | ((...args: never[]) => string);
@@ -93,6 +99,24 @@ export class KernelElement extends HTMLElement {
 
   static get observedAttributes(): string[] {
     return [];
+  }
+
+  /**
+   * Dispatches a change event *before* the change is committed: bubbling,
+   * cancelable, with `reason` (and the triggering `event`) added to
+   * `detail`. Returns `false` when a listener called `preventDefault()` —
+   * the caller then keeps its current state and skips side effects. Event
+   * names stay whatever each element already used (`change`,
+   * `valuechange`, `close`…); see `utils/changeDetails.ts`.
+   */
+  protected emitChange(type: string, detail: object, reason: string, event?: Event): boolean {
+    return this.dispatchEvent(
+      new CustomEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        detail: { ...detail, reason, event },
+      }),
+    );
   }
 
   connectedCallback() {

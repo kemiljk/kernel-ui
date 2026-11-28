@@ -171,4 +171,14 @@ export type { SpringConfig, SpringRunOptions } from "./utils/spring";
 export { DetailsPanelAnimator } from "./utils/detailsTransition";
 export type { DetailsPanelAnimatorOptions } from "./utils/detailsTransition";
 
+// Change reasons: the `detail` shape of every cancelable change event.
+export type { KernelChangeDetail } from "./utils/changeDetails";
+
+// Ranked fuzzy matching (Combobox, CommandPalette) and 2-D grid movement
+// (the calendar grids) — the same functions `@kernelui-lib/react` exports.
+export { fuzzyScore, fuzzyFilter, fuzzySegments, normalizeFuzzyQuery } from "./utils/fuzzy";
+export type { FuzzyMatch, FuzzyResult } from "./utils/fuzzy";
+export { spatialMove, gridDirectionForKey } from "./utils/spatialMove";
+export type { SpatialCell, SpatialDirection } from "./utils/spatialMove";
+
 export { KernelElement, kernelClass, dataAttr } from "./base";

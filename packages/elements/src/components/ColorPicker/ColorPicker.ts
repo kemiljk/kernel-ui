@@ -86,9 +86,15 @@ export class KernelColorPicker extends KernelElement {
     colorInput.type = "color";
     colorInput.value = "#000000";
     colorInput.className = kernelClass("ColorPicker", "input");
-    colorInput.addEventListener("input", () => {
+    // `change` is dispatched before the colour commits, cancelable, with
+    // `detail: { value, reason }` — `"picker"` (the native colour input) or
+    // `"hex-input"`. A vetoed change keeps the current colour.
+    colorInput.addEventListener("input", (event) => {
+      if (!this.emitChange("change", { value: colorInput.value }, "picker", event)) {
+        colorInput.value = this.getAttribute("value") ?? colorInput.defaultValue;
+        return;
+      }
       this.setAttribute("value", colorInput.value);
-      this.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
     swatchLabel.append(swatch, colorInput);
@@ -102,17 +108,17 @@ export class KernelColorPicker extends KernelElement {
     hexInput.addEventListener("focus", () => {
       this.hexFocused = true;
     });
-    hexInput.addEventListener("input", () => {
+    hexInput.addEventListener("input", (event) => {
       const normalized = normalizeHex(hexInput.value);
       hexInput.setAttribute("aria-invalid", String(hexInput.value !== "" && !normalized));
-      if (normalized) {
+      if (normalized && this.emitChange("change", { value: normalized }, "hex-input", event)) {
         this.setAttribute("value", normalized);
-        this.dispatchEvent(new Event("change", { bubbles: true }));
       }
     });
     hexInput.addEventListener("blur", () => {
       this.hexFocused = false;
-      if (!normalizeHex(hexInput.value)) hexInput.value = colorInput.value;
+      // Invalid, or valid but vetoed: show the committed colour again.
+      if (normalizeHex(hexInput.value) !== colorInput.value) hexInput.value = colorInput.value;
     });
     hexInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") hexInput.blur();

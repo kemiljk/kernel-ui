@@ -21,6 +21,12 @@ function escapeRegExp(value: string): string {
  * that encoding, so use the `tags` property (or the `change` event's
  * `detail.tags`) instead when that matters.
  *
+ * `change` is dispatched before the tags change, cancelable, with
+ * `detail: { tags, reason }` — `"enter"`, `"separator"`, `"paste"`,
+ * `"remove-button"` or `"backspace"`. `preventDefault()` keeps the tags as
+ * they were: an added tag stays in the draft, and a removal (reported once
+ * the chip's exit transition has played) brings the chip back.
+ *
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value` (comma-joined),
  * `delimiters` (comma-joined, default `","`), `max`, `allow-duplicates`
@@ -79,23 +85,23 @@ export class KernelTagInput extends KernelElement {
     input.setAttribute("role", "listitem");
     input.className = kernelClass("TagInput", "input");
 
-    input.addEventListener("input", () => {
+    input.addEventListener("input", (event) => {
       const delimiterRegex = this.delimiterRegex;
       const next = input.value;
       if (delimiterRegex.test(next)) {
         const parts = next.split(delimiterRegex);
         const trailing = parts.pop() ?? "";
-        for (const part of parts) this.commitDraft(part);
-        input.value = trailing;
+        const vetoed = parts.filter((part) => !this.commitDraft(part, "separator", event));
+        // A vetoed tag stays in the draft (minus its delimiter).
+        input.value = vetoed.join("") + trailing;
       }
     });
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        this.commitDraft(input.value);
-        input.value = "";
+        if (this.commitDraft(input.value, "enter", event)) input.value = "";
       } else if (event.key === "Backspace" && input.value === "" && this.currentTags.length > 0) {
-        this.removeTag(this.currentTags[this.currentTags.length - 1]!);
+        this.removeTag(this.currentTags[this.currentTags.length - 1]!, "backspace", event);
       }
     });
     input.addEventListener("paste", (event) => {
@@ -103,7 +109,7 @@ export class KernelTagInput extends KernelElement {
       if (!text) return;
       event.preventDefault();
       const splitRegex = new RegExp(`${this.delimiterPattern}|\\r?\\n`);
-      for (const part of text.split(splitRegex)) this.commitDraft(part);
+      for (const part of text.split(splitRegex)) this.commitDraft(part, "paste", event);
     });
 
     field.append(input);
@@ -146,26 +152,32 @@ export class KernelTagInput extends KernelElement {
     return this.native?.querySelector(`.${kernelClass("TagInput", "field")}`) ?? null;
   }
 
-  private commitDraft(raw: string) {
+  /** Returns `false` only when a `change` listener vetoed the tag, so the
+   * caller can keep it in the draft; rejected input (empty, duplicate,
+   * over `max`) reports through the error event and returns `true`, as
+   * before. */
+  private commitDraft(raw: string, reason: "enter" | "separator" | "paste", event?: Event): boolean {
     const trimmed = raw.trim();
     if (trimmed === "") {
       if (raw !== "") this.emitError({ type: "empty", value: raw });
-      return;
+      return true;
     }
     const allowDuplicates = this.hasAttribute("allow-duplicates");
     if (!allowDuplicates && this.currentTags.includes(trimmed)) {
       this.emitError({ type: "duplicate", value: trimmed });
-      return;
+      return true;
     }
     const max = this.getAttribute("max");
     if (max != null && this.currentTags.length >= Number(max)) {
       this.emitError({ type: "max", value: trimmed });
-      return;
+      return true;
     }
-    this.currentTags = [...this.currentTags, trimmed];
+    const next = [...this.currentTags, trimmed];
+    if (!this.emitChange("change", { tags: next }, reason, event)) return false;
+    this.currentTags = next;
     this.renderTags();
     this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
-    this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }));
+    return true;
   }
 
   /**
@@ -184,18 +196,21 @@ export class KernelTagInput extends KernelElement {
    * captured index would then point at the wrong tag for whichever
    * removal resolves second.
    */
-  private removeTag(tag: string) {
+  private removeTag(tag: string, reason: "remove-button" | "backspace", event?: Event) {
     this.input?.focus();
     const chip = this.field?.querySelector<HTMLElement>(
       `.${kernelClass("TagInput", "tag")}[data-tag="${CSS.escape(tag)}"]`,
     );
     const finish = () => {
-      this.currentTags = this.currentTags.filter((t) => t !== tag);
+      const next = this.currentTags.filter((t) => t !== tag);
+      // The event may be long gone after a transition; the reason travels.
+      if (!this.emitChange("change", { tags: next }, reason, event)) {
+        chip?.removeAttribute("data-removing");
+        return;
+      }
+      this.currentTags = next;
       this.renderTags();
       this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
-      this.dispatchEvent(
-        new CustomEvent("change", { bubbles: true, detail: { tags: this.tags } }),
-      );
     };
     if (!chip || prefersReducedMotion()) {
       finish();
@@ -287,7 +302,7 @@ export class KernelTagInput extends KernelElement {
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>';
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
-        this.removeTag(tag);
+        this.removeTag(tag, "remove-button", event);
       });
 
       chip.append(text, remove);

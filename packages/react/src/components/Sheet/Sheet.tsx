@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 // rules are specificity-matched to Dialog's (`.sheet[open][data-side="bottom"]`
 // against `.content[open][data-side="bottom"]`), so source order is what
 // decides them. Don't reorder these two imports.
-import { Dialog, type DialogClassNames, type DialogProps } from "../Dialog/Dialog";
+import { Dialog, type DialogClassNames, type DialogOpenChangeReason, type DialogProps } from "../Dialog/Dialog";
+import type { ChangeDetails } from "../../utils/changeDetails";
 import { mergeRefs, resolveClassName } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { emitChange, useControllableState } from "../../utils/useControllableState";
 import { parseSnapPoints } from "../../utils/snapPoints";
 import {
   DEFAULT_CLOSE_THRESHOLD,
@@ -29,7 +30,16 @@ export interface SheetClassNames extends DialogClassNames {
   footer?: string;
 }
 
-export interface SheetProps extends Omit<DialogProps, "side" | "className" | "classNames"> {
+/** Why the sheet asked to close: every `Dialog` reason, plus a drag past the
+ * close threshold (`"drag-dismiss"`) and the window growing wider than
+ * `maxDisplayWidth` (`"max-display-width"`). */
+export type SheetOpenChangeReason = DialogOpenChangeReason | "drag-dismiss" | "max-display-width";
+
+export interface SheetProps extends Omit<DialogProps, "side" | "className" | "classNames" | "onOpenChange"> {
+  /** Called with `false` and the reason when the sheet asks to close: every
+   * `Dialog` reason plus `"drag-dismiss"` and `"max-display-width"`; see
+   * `Dialog`'s `onOpenChange`. */
+  onOpenChange: (open: boolean, details: ChangeDetails<SheetOpenChangeReason>) => void;
   /** Edge the sheet is anchored to and dismissed toward. */
   side?: SheetSide;
   /** Show the grabber. Purely an affordance — dragging works without it unless
@@ -144,7 +154,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
   } = classNames ?? {};
 
   const handleDismiss = useCallback(() => {
-    onOpenChange(false);
+    emitChange(onOpenChange, false, "drag-dismiss");
   }, [onOpenChange]);
 
   const snaps = useMemo(() => parseSnapPoints(snapPoints), [snapPoints]);
@@ -194,7 +204,7 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
   useEffect(() => {
     if (!open || maxDisplayWidth === undefined) return;
     const check = () => {
-      if (window.innerWidth > maxDisplayWidth) onOpenChange(false);
+      if (window.innerWidth > maxDisplayWidth) emitChange(onOpenChange, false, "max-display-width");
     };
     check();
     window.addEventListener("resize", check);

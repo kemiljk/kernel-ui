@@ -124,3 +124,16 @@
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
 }
+
+/* Characters the fuzzy filter matched. Deliberately quiet: an accent
+   underline rather than a highlighter fill, so it reads on the active
+   row's accent-subtle background and next to a selected option's bold
+   weight alike, and never competes with the option text itself. */
+.match {
+  background: none;
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--kernel-color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}

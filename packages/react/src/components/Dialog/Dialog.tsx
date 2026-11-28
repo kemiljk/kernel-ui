@@ -8,7 +8,9 @@ import {
   type ClassNameValue,
   type RenderProp,
 } from "../../utils/polymorphic";
+import type { ChangeDetails, ChangeEventSource } from "../../utils/changeDetails";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import { emitChange } from "../../utils/useControllableState";
 import { Button } from "../Button/Button";
 import styles from "./Dialog.module.css";
 
@@ -39,9 +41,19 @@ export interface DialogLabels {
 
 const defaultDialogLabels: DialogLabels = { close: "Close" };
 
+/** Why the dialog asked to close: its close button, Escape, a click on the
+ * backdrop, or the native `<dialog>` closing some other way (a
+ * `method="dialog"` form, a direct `dialog.close()`). */
+export type DialogOpenChangeReason = "close-button" | "escape-key" | "outside-press" | "programmatic";
+
 export interface DialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  /** Called with `false` and the reason when the dialog asks to close:
+   * `"close-button"`, `"escape-key"`, `"outside-press"` or `"programmatic"`.
+   * The dialog is controlled, so leaving `open` as it is keeps it open;
+   * `details.cancel()` says so explicitly, e.g. to ignore backdrop clicks
+   * while a form is dirty. */
+  onOpenChange: (open: boolean, details: ChangeDetails<DialogOpenChangeReason>) => void;
   title: ReactNode;
   description?: ReactNode;
   children?: ReactNode;
@@ -161,12 +173,12 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       // (once we allow it through), a `method="dialog"` form submission,
       // or our delayed `.close()` above. Routing them all through here
       // keeps `onOpenChange` as the single source of truth.
-      const handleClose = () => {
+      const handleClose = (event: Event) => {
         if (skipCloseSyncRef.current) {
           skipCloseSyncRef.current = false;
           return;
         }
-        onOpenChange(false);
+        emitChange(onOpenChange, false, "programmatic", event);
       };
       node.addEventListener("close", handleClose);
       return () => node.removeEventListener("close", handleClose);
@@ -176,10 +188,11 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       return () => exitAbortRef.current?.abort();
     }, []);
 
-    function requestClose() {
+    function requestClose(reason: DialogOpenChangeReason, event?: ChangeEventSource) {
       if (!open || closing) return;
-      onOpenChange(false);
+      emitChange(onOpenChange, false, reason, event);
     }
+    const closeFromButton = (event: ChangeEventSource) => requestClose("close-button", event);
 
     const closeControl =
       showCloseButton === false
@@ -195,7 +208,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
                 className: [styles.closeButton, resolveClassName(classNames?.close, state)]
                   .filter(Boolean)
                   .join(" "),
-                onClick: requestClose,
+                onClick: closeFromButton,
               },
               state,
             )
@@ -208,7 +221,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
                 className={[styles.closeButton, resolveClassName(classNames?.close, state)]
                   .filter(Boolean)
                   .join(" ")}
-                onClick={requestClose}
+                onClick={closeFromButton}
               >
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
                   <path
@@ -247,7 +260,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
           .join(" ")}
         onClick={(event) => {
           if (closeOnBackdropClick && event.target === internalRef.current) {
-            requestClose();
+            requestClose("outside-press", event);
           }
         }}
         onCancel={(event) => {
@@ -255,7 +268,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
           // otherwise consumer exit animations never get a frame.
           event.preventDefault();
           event.stopPropagation();
-          requestClose();
+          requestClose("escape-key", event);
         }}
       >
         <header

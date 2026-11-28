@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./Slider.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let sliderCounter = 0;
 
@@ -78,10 +79,18 @@ export class KernelSlider extends KernelElement {
     input.step = "1";
     input.value = "0";
     input.className = kernelClass("Slider", "input");
-    input.addEventListener("input", () => {
+    // `change` is dispatched before the value is committed, cancelable, with
+    // `detail: { value, reason }` (`"drag"` or `"keyboard"`); a vetoed move
+    // puts the thumb back.
+    input.addEventListener("input", (event) => {
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "drag";
+      if (!this.emitChange("change", { value: Number(input.value) }, reason, event)) {
+        input.value = this.getAttribute("value") ?? input.defaultValue;
+        this.updatePercent();
+        return;
+      }
       this.updatePercent();
       this.setAttribute("value", input.value);
-      this.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
     const track = document.createElement("div");
