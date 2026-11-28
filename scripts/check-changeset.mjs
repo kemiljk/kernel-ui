@@ -19,8 +19,8 @@ const changedFiles = execFileSync("git", ["diff", "--name-only", `${baseSha}...$
   .split("\n")
   .filter(Boolean);
 
-const publishableRoot = /^packages\/(react|elements|styles|cli|testing|eslint-plugin)\//;
-const packageManifest = /^packages\/(react|elements|styles|cli|testing|eslint-plugin)\/package\.json$/;
+const publishableRoot = /^packages\/(react|elements|styles|cli|testing|eslint-plugin|agent)\//;
+const packageManifest = /^packages\/(react|elements|styles|cli|testing|eslint-plugin|agent)\/package\.json$/;
 
 function showJson(rev, file) {
   try {

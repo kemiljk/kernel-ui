@@ -106,6 +106,9 @@ jobs:
       - name: Test testing kit
         run: bun run --cwd packages/testing test
 
+      - name: Test agent bridge package
+        run: bun run --cwd packages/agent test
+
       - name: Typecheck docs
         run: bun run --cwd apps/docs typecheck
 
@@ -128,3 +131,9 @@ jobs:
       - name: Pattern checks (@kernelui-lib/testing)
         if: github.event_name == 'pull_request'
         run: bun run test:patterns && bun run --cwd packages/testing test:browser
+
+      # Real act() steps against real Kernel React components on the built
+      # agent bridge guide page.
+      - name: Agent bridge browser check
+        if: github.event_name == 'pull_request'
+        run: bun run test:agent-bridge
