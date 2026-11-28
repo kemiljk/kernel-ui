@@ -21,6 +21,8 @@
     "test:select": "node scripts/select-check.mjs",
     "test:motion": "node scripts/disclosure-motion-check.mjs",
     "test:shape": "node scripts/check-shape-pairing.mjs",
+    "test:css": "node scripts/check-css-conventions.mjs",
+    "test:size": "node scripts/check-size.mjs",
     "test:svg": "node scripts/check-svg-size.mjs",
     "test:contrast": "node scripts/check-contrast.mjs",
     "test:parity": "node scripts/check-parity.mjs",

@@ -327,6 +327,17 @@
   --kernel-dialog-translate: calc(100% + var(--kernel-sheet-inset-inline)) 0;
 }
 
+/* Mirrors Dialog's RTL flip: a logical side parks off its own edge. */
+.sheet.inset[data-side="left"]:dir(rtl),
+:where([dir="rtl"]) .sheet.inset[data-side="left"] {
+  --kernel-dialog-translate: calc(100% + var(--kernel-sheet-inset-inline)) 0;
+}
+
+.sheet.inset[data-side="right"]:dir(rtl),
+:where([dir="rtl"]) .sheet.inset[data-side="right"] {
+  --kernel-dialog-translate: calc(-100% - var(--kernel-sheet-inset-inline)) 0;
+}
+
 /* The handle sits in the padding band reserved above, positioned against the
    dialog rather than flowing in the content wrapper — see the component's
    JSDoc for why it can't simply be the first child. Its box stops at the band

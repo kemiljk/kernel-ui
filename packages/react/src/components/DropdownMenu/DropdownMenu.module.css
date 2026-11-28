@@ -233,8 +233,8 @@ a.item {
     width var(--kernel-duration-base) var(--kernel-ease-overlay),
     height var(--kernel-duration-base) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .morphContent:popover-open {
@@ -248,8 +248,8 @@ a.item {
     width var(--kernel-duration-slow) var(--kernel-ease-overshoot),
     height var(--kernel-duration-slow) var(--kernel-ease-overshoot),
     border-radius var(--kernel-duration-slow) var(--kernel-ease-overshoot),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .morphContent[data-closing] {
@@ -259,8 +259,8 @@ a.item {
     width var(--kernel-duration-base) var(--kernel-ease-overlay),
     height var(--kernel-duration-base) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 @media (prefers-reduced-motion: reduce) {

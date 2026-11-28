@@ -96,7 +96,7 @@
   opacity: 0;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  transition: opacity var(--kernel-duration-fast) linear;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .input:checked + .control .checkmark {
@@ -107,12 +107,12 @@
      checkbox is toggled often, so the whole thing settles in ~240ms. */
   transition:
     stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-out) var(--kernel-duration-stagger),
-    opacity var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .dash {
   opacity: 0;
-  transition: opacity var(--kernel-duration-fast) linear;
+  transition: opacity var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .input:indeterminate + .control .dash {

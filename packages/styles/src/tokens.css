@@ -630,6 +630,13 @@
        Fading linearly over the same duration is what looks smooth, and
        is what the platforms' own scrims do. */
     --kernel-ease-scrim: linear;
+    /* For an in-place crossfade: opacity and blur on content that changes
+       without moving (an icon swap, a checkmark appearing, a morphing
+       panel's contents). Linear for the reason --kernel-ease-scrim gives:
+       with no travel to read, a front-loaded curve just looks like a pop.
+       Kept apart from the scrim token so tuning one doesn't move the
+       other. Reduced-motion fallbacks may still write `linear` directly. */
+    --kernel-ease-fade: linear;
     /* transitions.dev's `--ease-bounce` — a genuine overshoot (past 1,
        back to 1). Scoped deliberately narrow: only for a one-shot
        size/shape change that runs to completion and clips nothing (a

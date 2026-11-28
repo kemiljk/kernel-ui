@@ -211,8 +211,8 @@ a.kernel-DropdownMenu-item {
     width var(--kernel-duration-base) var(--kernel-ease-overlay),
     height var(--kernel-duration-base) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-DropdownMenu-morphContent:popover-open {
@@ -226,8 +226,8 @@ a.kernel-DropdownMenu-item {
     width var(--kernel-duration-slow) var(--kernel-ease-overshoot),
     height var(--kernel-duration-slow) var(--kernel-ease-overshoot),
     border-radius var(--kernel-duration-slow) var(--kernel-ease-overshoot),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 .kernel-DropdownMenu-morphContent[data-closing] {
@@ -237,8 +237,8 @@ a.kernel-DropdownMenu-item {
     width var(--kernel-duration-base) var(--kernel-ease-overlay),
     height var(--kernel-duration-base) var(--kernel-ease-overlay),
     border-radius var(--kernel-duration-base) var(--kernel-ease-overlay),
-    opacity var(--kernel-duration-fast) linear,
-    filter var(--kernel-duration-fast) linear;
+    opacity var(--kernel-duration-fast) var(--kernel-ease-fade),
+    filter var(--kernel-duration-fast) var(--kernel-ease-fade);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -80,6 +80,20 @@
   --kernel-dialog-translate: 100% 0;
 }
 
+/* `data-side` is logical (anchored with inset-inline-*), so under RTL "left"
+   sits on the right-hand edge and has to leave that way. `translate` has no
+   logical form, so the offset flips by hand. Both selector forms, because the
+   build rewrites `:dir()` into a `:lang()` list (see AGENTS.md). */
+.kernel-Dialog-content[data-side="left"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Dialog-content[data-side="left"] {
+  --kernel-dialog-translate: 100% 0;
+}
+
+.kernel-Dialog-content[data-side="right"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Dialog-content[data-side="right"] {
+  --kernel-dialog-translate: -100% 0;
+}
+
 .kernel-Dialog-content[data-side="top"] {
   inset-inline: 0;
   inset-block-start: 0;
