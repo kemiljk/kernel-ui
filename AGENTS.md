@@ -88,6 +88,17 @@ new component done, grep both `packages/react/src/index.ts` and
   re-apply it in `applyLabels()`. Defaults must match between packages.
   Strings the consumer already passes (`label`, `placeholder`,
   `emptyMessage`) stay plain props.
+- **Deprecating a prop or attribute.** Keep it working, give it a
+  JSDoc `@deprecated` tag that names the replacement, and warn where it's read with `warnDeprecated(component,
+  message)` from `utils/warnDeprecated.ts`: one `console.warn` per
+  component + message per page, development only. In React, gate the call
+  on `process.env.NODE_ENV !== "production" && prop !== undefined` so a
+  consumer's production build drops it (see `Dialog`'s `className`); in a
+  Custom Element just call it, since it checks `globalThis.KERNEL_DEV`, then
+  `process.env.NODE_ENV`, and stays silent when neither is set (an unbundled
+  CDN page). Don't read `import.meta.env` for this: the package's own Vite
+  build bakes it. List the deprecation in the Changeset; removal waits for a
+  major.
 - Real elements over ARIA-only patterns wherever a native element exists.
   Every component's top JSDoc comment explains *why* it's built the way
   it is (which native element, which ARIA pattern, what tradeoff) — write
