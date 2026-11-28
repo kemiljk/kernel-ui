@@ -35,8 +35,10 @@
   place-items: center;
   inline-size: 1.25em;
   block-size: 1.25em;
-  border-radius: var(--kernel-radius-sm);
-  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  /* Capped at 30% of the box: at Round, radius-sm alone (10px on a 20px
+     box) turns the checkbox into a circle that reads as a radio button. */
+  border-radius: min(var(--kernel-radius-sm), 0.375em);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-control);
   background-color: var(--kernel-color-surface);
   color: transparent;
   transition:
