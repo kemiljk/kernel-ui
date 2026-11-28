@@ -18,8 +18,27 @@ const MARGIN = 8;
  *
  * Children: one element tagged `slot="trigger"` — the area that opens
  * the menu on right-click — everything else becomes the menu content.
+ *
+ * Attributes: `label` (the menu's accessible name, e.g. "File actions";
+ * falls back to the built-in `label-menu`, "Context menu"). A
+ * `role="menu"` needs a name, and the right-click area is arbitrary
+ * content that would make a poor one, so it isn't `aria-labelledby` it.
  */
 export class KernelContextMenu extends KernelElement {
+  private menu: HTMLElement | null = null;
+
+  static get observedAttributes() {
+    return ["label", "label-menu"];
+  }
+
+  protected syncAttr(name: string) {
+    if (name === "label") this.applyLabels();
+  }
+
+  protected applyLabels() {
+    this.menu?.setAttribute("aria-label", this.getAttribute("label") || this.builtInLabel("menu", "Context menu"));
+  }
+
   connectedCallback() {
     if (this.native) return;
 
@@ -114,6 +133,8 @@ export class KernelContextMenu extends KernelElement {
     content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event));
 
     this.native = triggerArea;
+    this.menu = content;
+    this.applyLabels();
     this.append(triggerArea, content);
   }
 }

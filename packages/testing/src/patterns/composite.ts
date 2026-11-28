@@ -1,4 +1,4 @@
-import { describe, idRefs, isDisabled, isFocusable, isHidden, isShown, isTabbable, focusableWithin, within } from "../dom.js";
+import { accessibleName, describe, idRefs, isDisabled, isFocusable, isHidden, isShown, isTabbable, focusableWithin, within } from "../dom.js";
 import type { Run } from "../run.js";
 import { checkRefs, noInstances, requireName } from "./common.js";
 
@@ -204,9 +204,9 @@ export async function menu(run: Run, root: Element) {
         run.expect(popup === "menu" || popup === "true", "menu/trigger-haspopup", `The menu button should have aria-haspopup="menu" (found ${popup ? `"${popup}"` : "none"}).`, trigger, "warning");
       }
     }
-    if (!menuEl.hasAttribute("aria-label") && !menuEl.hasAttribute("aria-labelledby")) {
-      run.warn("menu/name", `The menu has no aria-labelledby (pointing at its button) or aria-label, so it's announced without a name.`, menuEl);
-    } else run.pass("menu/name");
+    // aria-labelledby/aria-label only: a menu isn't named from its items.
+    const labelled = menuEl.hasAttribute("aria-label") || menuEl.hasAttribute("aria-labelledby");
+    run.expect(labelled && accessibleName(menuEl).length > 0, "menu/name", `The menu has no aria-labelledby (pointing at its button) or aria-label, so it's announced without a name.`, menuEl, "warning");
 
     const expandedMatches = (when: string) => {
       if (!trigger || trigger.tagName === "SUMMARY") return;

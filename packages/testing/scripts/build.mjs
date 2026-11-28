@@ -18,6 +18,11 @@ rmSync(join(pkg, "dist"), { recursive: true, force: true });
 
 execFileSync(process.execPath, [require.resolve("typescript/bin/tsc"), "-p", "tsconfig.build.json"], { cwd: pkg, stdio: "inherit" });
 
+// CommonJS for the main entry: Jest's default (non-ESM) mode resolves the
+// `require` condition and can't load an ESM file without extra transform
+// config. Bundled, since the unbundled ESM files import each other by .js.
+execFileSync("bun", ["build", "src/index.ts", "--format=cjs", "--target=node", "--outfile=dist/index.cjs"], { cwd: pkg, stdio: "inherit" });
+
 const out = join(pkg, "dist/kernel-testing.global.js");
 execFileSync("bun", ["build", "scripts/browser-entry.ts", "--format=iife", "--target=browser", "--minify-syntax", "--minify-whitespace", `--outfile=${out}`], { cwd: pkg, stdio: "inherit" });
 console.log(`[testing] built dist/ (browser bundle ${(statSync(out).size / 1024).toFixed(1)} KiB)`);

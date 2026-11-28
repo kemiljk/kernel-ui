@@ -1,5 +1,6 @@
 import {
   createContext,
+  isValidElement,
   useContext,
   useEffect,
   useId,
@@ -36,6 +37,14 @@ interface MenuContextValue {
 /** Exported so other menu-shaped triggers (ContextMenu) can share
  * MenuItem/MenuSeparator without duplicating them. */
 export const MenuContext = createContext<MenuContextValue | null>(null);
+
+/** The trigger's id, which the menu points `aria-labelledby` at so the
+ * `role="menu"` is named after the button that opened it (APG menu
+ * button). Keeps a consumer's own `id` on a `render` element. */
+function triggerIdFor(render: unknown, menuId: string): string {
+  const own = isValidElement(render) ? (render.props as { id?: unknown }).id : undefined;
+  return typeof own === "string" && own ? own : `${menuId}-trigger`;
+}
 
 /** Arrow-key/Home/End roving between a menu's items — shared between
  * `DropdownMenu`, `DropdownMenuMorph` and `ContextMenu` since all three use
@@ -175,6 +184,7 @@ function DisclosureDropdownMenu({
         }}
       >
         {renderElement(render, "summary", {
+          id: triggerIdFor(render, id),
           className: styles.disclosureTrigger,
           "aria-haspopup": "menu",
           "aria-controls": id,
@@ -182,6 +192,7 @@ function DisclosureDropdownMenu({
         }, { open: Boolean(open) })}
         {renderElement(renderContent, "div", {
           ref: menuRef, id, role: "menu", inert: open === false,
+          "aria-labelledby": triggerIdFor(render, id),
           "data-slot": "dropdown-menu-content",
           "data-placement": placement, "data-align": align,
           "data-open": dataAttr(open),
@@ -248,6 +259,7 @@ function PopoverDropdownMenu({
     "button",
     {
       ref: anchorRef,
+      id: triggerIdFor(render, id),
       popoverTarget: id,
       "aria-haspopup": "menu",
       "aria-expanded": open,
@@ -259,6 +271,7 @@ function PopoverDropdownMenu({
     ref: mergeRefs(menuRef, floatingRef),
     id,
     role: "menu",
+    "aria-labelledby": triggerIdFor(render, id),
     popover: "auto",
     onKeyDown: handleKeyDown,
     "data-slot": "dropdown-menu-content",
@@ -556,6 +569,7 @@ export function DropdownMenuMorph({
     "button",
     {
       ref: anchorRef,
+      id: triggerIdFor(render, id),
       "aria-haspopup": "menu",
       "aria-expanded": open,
       onClick: () => (open ? close() : openMenu()),
@@ -567,6 +581,7 @@ export function DropdownMenuMorph({
     ref: mergeRefs(menuRef, floatingRef),
     id,
     role: "menu",
+    "aria-labelledby": triggerIdFor(render, id),
     popover: "manual",
     onKeyDown: handleMenuKeyDown,
     "data-slot": "dropdown-menu-morph-content",

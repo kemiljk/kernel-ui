@@ -67,6 +67,9 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
 
   const [visibleMonth, setVisibleMonth] = useState(() => startOfDay(range.from ?? new Date()));
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
+  // APG grid: the one Tab stop follows focus, so Tab back into the grid
+  // returns to the day the arrow keys last reached.
+  const [focusedDay, setFocusedDay] = useState<Date>();
   const today = startOfDay(new Date());
   const gridRef = useRef<HTMLTableSectionElement>(null);
   const baseId = useId();
@@ -139,7 +142,7 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
   // so hovering backwards over `from` can't preview a negative-length range.
   const previewTo = from && !to && hoverDate && hoverDate > from ? hoverDate : undefined;
   const effectiveTo = to ?? previewTo;
-  const tabStop = gridTabStop(visibleMonth, [from, to, today], minDate, maxDate);
+  const tabStop = gridTabStop(visibleMonth, [focusedDay, from, to, today], minDate, maxDate);
 
   return (
     <div className={styles.root} onPointerLeave={() => setHoverDate(null)}>
@@ -218,7 +221,11 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
                         disabled={disabled}
                         tabIndex={tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1}
                         className={styles.dayButton}
-                        onClick={() => selectDay(day)}
+                        onClick={() => {
+                          setFocusedDay(day);
+                          selectDay(day);
+                        }}
+                        onFocus={() => setFocusedDay(day)}
                         onPointerEnter={() => setHoverDate(day)}
                       >
                         {day.getDate()}

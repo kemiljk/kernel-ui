@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import "../../elements/src/index";
-import { checkComponent, checkPage, formatResult, type CheckResult } from "../../testing/src/index";
+import { accessibleName, checkComponent, checkPage, formatResult, type CheckResult } from "../../testing/src/index";
 import { Accordion, AccordionItem } from "./components/Accordion/Accordion";
 import { Button } from "./components/Button/Button";
 import { Checkbox } from "./components/Checkbox/Checkbox";
@@ -10,7 +10,9 @@ import { ColorPicker } from "./components/ColorPicker/ColorPicker";
 import { Combobox } from "./components/Combobox/Combobox";
 import { ContextMenu } from "./components/ContextMenu/ContextMenu";
 import { DatePicker } from "./components/DatePicker/DatePicker";
+import { DateRangePicker } from "./components/DateRangePicker/DateRangePicker";
 import { Dialog } from "./components/Dialog/Dialog";
+import { HoverCard } from "./components/HoverCard/HoverCard";
 import { DropdownMenu, MenuItem, MenuSeparator } from "./components/DropdownMenu/DropdownMenu";
 import { NumberField } from "./components/NumberField/NumberField";
 import { Popover } from "./components/Popover/Popover";
@@ -177,11 +179,33 @@ const cases: Case[] = [
     element: `<kernel-tooltip open-delay="0"><button type="button" slot="trigger">Copy</button>Copy to clipboard</kernel-tooltip>`,
   },
   {
+    // A link inside the card: focus moving into it must keep the card open,
+    // and Escape from there must hand focus back to the trigger.
+    name: "HoverCard",
+    react: () => (
+      <HoverCard
+        render={<a href="#ada">@ada</a>}
+        content={
+          <>
+            <p>Ada Lovelace</p>
+            <a href="#ada-posts">Posts</a>
+          </>
+        }
+      />
+    ),
+    element: `<kernel-hover-card><a slot="trigger" href="#ada">@ada</a><p>Ada Lovelace</p><a href="#ada-posts">Posts</a></kernel-hover-card>`,
+  },
+  {
     // January 2026 starts on a Thursday, so a week's first day isn't a
     // multiple of seven days from the 1st — the case Home/End used to get wrong.
     name: "DatePicker",
     react: () => <DatePicker defaultValue={new Date(2026, 0, 15)} />,
     element: `<kernel-date-picker value="2026-01-15"></kernel-date-picker>`,
+  },
+  {
+    name: "DateRangePicker",
+    react: () => <DateRangePicker defaultValue={{ from: new Date(2026, 0, 12), to: new Date(2026, 0, 15) }} />,
+    element: `<kernel-date-range-picker value-from="2026-01-12" value-to="2026-01-15"></kernel-date-range-picker>`,
   },
 ];
 
@@ -285,5 +309,77 @@ describe("@kernelui-lib/testing on Kernel's own components", () => {
     const result = await checkPage(document.body, options);
     expect(result.found).toMatchObject({ TextField: 1, Switch: 1, Tabs: 1, Button: 1 });
     expect(summary(result).errors, formatResult(result)).toEqual([]);
+  });
+
+  // role="menu" needs a name: DropdownMenu takes its trigger's, ContextMenu
+  // (whose right-click area is arbitrary content) takes `label`, falling
+  // back to the built-in "Context menu".
+  it("names every menu, in both packages", async () => {
+    render(
+      <>
+        <DropdownMenu render={<button type="button">Actions</button>}>
+          <MenuItem onSelect={() => {}}>Edit</MenuItem>
+        </DropdownMenu>
+        <DropdownMenu presentation="disclosure" render={<summary>More</summary>}>
+          <MenuItem onSelect={() => {}}>Share</MenuItem>
+        </DropdownMenu>
+        <ContextMenu render={<div>Row</div>}>
+          <MenuItem onSelect={() => {}}>Copy</MenuItem>
+        </ContextMenu>
+        <ContextMenu render={<div>Row</div>} label="File actions">
+          <MenuItem onSelect={() => {}}>Copy</MenuItem>
+        </ContextMenu>
+        <ContextMenu render={<div>Row</div>} labels={{ menu: "Kontextmenü" }}>
+          <MenuItem onSelect={() => {}}>Kopieren</MenuItem>
+        </ContextMenu>
+      </>,
+    );
+    await flush();
+    const names = () => Array.from(document.querySelectorAll("[role=menu]")).map((menu) => accessibleName(menu));
+    expect(names()).toEqual(["Actions", "More", "Context menu", "File actions", "Kontextmenü"]);
+    cleanup();
+
+    document.body.innerHTML = `
+      <kernel-dropdown-menu><button type="button" slot="trigger">Actions</button><kernel-menu-item>Edit</kernel-menu-item></kernel-dropdown-menu>
+      <kernel-dropdown-menu presentation="disclosure"><summary slot="trigger">More</summary><kernel-menu-item>Share</kernel-menu-item></kernel-dropdown-menu>
+      <kernel-dropdown-menu-morph><button type="button" slot="trigger">Add</button><kernel-menu-item>File</kernel-menu-item></kernel-dropdown-menu-morph>
+      <kernel-context-menu><div slot="trigger">Row</div><kernel-menu-item>Copy</kernel-menu-item></kernel-context-menu>
+      <kernel-context-menu label="File actions"><div slot="trigger">Row</div><kernel-menu-item>Copy</kernel-menu-item></kernel-context-menu>
+      <kernel-context-menu label-menu="Kontextmenü"><div slot="trigger">Row</div><kernel-menu-item>Kopieren</kernel-menu-item></kernel-context-menu>`;
+    await flush();
+    expect(names()).toEqual(["Actions", "More", "Add", "Context menu", "File actions", "Kontextmenü"]);
+    const contextMenu = document.querySelector("kernel-context-menu")!;
+    contextMenu.setAttribute("label", "Row actions");
+    expect(names()[3]).toBe("Row actions");
+  });
+
+  // APG grid: after arrowing, Tab away and back returns to the same day.
+  it.each([
+    { name: "DatePicker", react: () => <DatePicker defaultValue={new Date(2026, 0, 15)} />, element: `<kernel-date-picker value="2026-01-15"></kernel-date-picker>` },
+    {
+      name: "DateRangePicker",
+      react: () => <DateRangePicker defaultValue={{ from: new Date(2026, 0, 12), to: new Date(2026, 0, 15) }} />,
+      element: `<kernel-date-range-picker value-from="2026-01-12" value-to="2026-01-15"></kernel-date-range-picker>`,
+    },
+  ])("$name moves its one Tab stop with arrow-key focus", async ({ react, element }) => {
+    const tabStops = () => Array.from(document.querySelectorAll<HTMLButtonElement>("button[data-day]")).filter((b) => b.tabIndex === 0).map((b) => b.textContent);
+    const arrowRight = async () => {
+      await act(async () => {
+        document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, cancelable: true }));
+      });
+    };
+    for (const mount of [() => render(react()), () => (document.body.innerHTML = element)]) {
+      mount();
+      await flush();
+      expect(tabStops()).toHaveLength(1);
+      const start = Array.from(document.querySelectorAll<HTMLButtonElement>("button[data-day]")).find((b) => b.tabIndex === 0)!;
+      await act(async () => start.focus());
+      await arrowRight();
+      await arrowRight();
+      expect(document.activeElement?.textContent).toBe(String(Number(start.textContent) + 2));
+      expect(tabStops()).toEqual([document.activeElement?.textContent]);
+      cleanup();
+      document.body.innerHTML = "";
+    }
   });
 });

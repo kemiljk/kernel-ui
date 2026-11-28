@@ -8,6 +8,7 @@ export type PatternName =
   | "disclosure"
   | "field"
   | "grid"
+  | "hover-card"
   | "listbox"
   | "menu"
   | "radio-group"

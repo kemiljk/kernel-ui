@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import { flushSync } from "react-dom";
+import type { FocusEvent as ReactFocusEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import {
   dataAttr,
   mergeRefs,
@@ -68,10 +69,17 @@ export interface HoverCardProps {
  * `popover="auto"`'s built-in light-dismiss doesn't support, the same
  * reasoning Combobox uses for its listbox.
  *
- * `interestfor` is declared on the trigger for the same forward-looking
- * reason Tooltip declares it: a purely additive stand-in for the
- * emerging native hover-intent API, today the handlers below do the
- * actual work.
+ * `interestfor` is declared on the trigger for the same reason Tooltip
+ * declares it: the native hover-intent API. Where a browser implements
+ * it (Chromium), it also shows the card on hover or focus and drops it
+ * on a real Escape; everywhere else the handlers below do all the work,
+ * and they agree with it where both run.
+ *
+ * Keyboard: the card follows its trigger in the DOM, so Tab moves from
+ * the trigger into a link inside it, and focus anywhere in the card
+ * keeps it open. Escape dismisses it (WCAG 1.4.13, as Tooltip does),
+ * handing focus back to the trigger if it was inside the card, without
+ * also closing a dialog the trigger sits in.
  *
  * `data-open` / `data-closing` / `data-placement` / `data-align` expose
  * styling state for consumer CSS and Motion without targeting generated
@@ -96,6 +104,9 @@ export function HoverCard({
   const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const exitAbortRef = useRef<AbortController | null>(null);
+  /** Set while Escape hands focus back to the trigger, so that focus
+   * doesn't immediately reopen the card it just dismissed. */
+  const suppressFocusOpenRef = useRef(false);
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLElement, HTMLDivElement>({
     open,
     placement,
@@ -119,8 +130,12 @@ export function HoverCard({
     openTimeoutRef.current = setTimeout(() => {
       exitAbortRef.current?.abort();
       exitAbortRef.current = null;
-      setClosing(false);
-      setOpen(true);
+      // Commit (and run the Escape listener's effect) before the card is
+      // on screen, so an Escape pressed the moment it appears dismisses it.
+      flushSync(() => {
+        setClosing(false);
+        setOpen(true);
+      });
       popoverRef.current?.showPopover?.();
     }, delay);
   }
@@ -158,10 +173,43 @@ export function HoverCard({
 
   function scheduleHide() {
     clearTimeout(openTimeoutRef.current);
+    clearTimeout(closeTimeoutRef.current);
     closeTimeoutRef.current = setTimeout(() => {
+      // The pointer left, but a keyboard user is still inside the card.
+      if (popoverRef.current?.contains(document.activeElement)) return;
       void hideNow();
     }, closeDelay);
   }
+
+  /** Blur from the trigger or the card: stay open while focus moves
+   * between the two (Tab from the trigger into a link in the card). */
+  function hideOnBlur(event: ReactFocusEvent) {
+    const next = event.relatedTarget as Node | null;
+    if (next && (popoverRef.current?.contains(next) || anchorRef.current?.contains(next))) return;
+    scheduleHide();
+  }
+
+  // WCAG 1.4.13: content shown on hover or focus must be dismissible
+  // without moving the pointer or focus. preventDefault keeps that
+  // Escape from also closing a dialog the trigger sits in.
+  useEffect(() => {
+    if (!open || closing) return;
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      event.preventDefault();
+      clearTimeout(openTimeoutRef.current);
+      clearTimeout(closeTimeoutRef.current);
+      if (popoverRef.current?.contains(document.activeElement)) {
+        suppressFocusOpenRef.current = true;
+        anchorRef.current?.focus();
+        suppressFocusOpenRef.current = false;
+      }
+      void hideNow();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, closing]);
 
   function cancelHide() {
     clearTimeout(closeTimeoutRef.current);
@@ -182,8 +230,10 @@ export function HoverCard({
       interestfor: id,
       onPointerEnter: (event: ReactPointerEvent) => showOnHover(event, openDelay),
       onPointerLeave: scheduleHide,
-      onFocus: () => show(0),
-      onBlur: scheduleHide,
+      onFocus: () => {
+        if (!suppressFocusOpenRef.current) show(0);
+      },
+      onBlur: hideOnBlur,
     },
     state,
   );
@@ -204,6 +254,8 @@ export function HoverCard({
       className: [styles.content, resolveClassName(className, state)].filter(Boolean).join(" "),
       onPointerEnter: cancelHide,
       onPointerLeave: scheduleHide,
+      onFocus: cancelHide,
+      onBlur: hideOnBlur,
       children: content,
     },
     state,

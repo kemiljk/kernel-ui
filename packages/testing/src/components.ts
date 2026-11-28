@@ -32,7 +32,7 @@ export const COMPONENT_SPECS: Record<string, ComponentSpec> = {
   DropdownMenu: { anchor: "content", patterns: ["menu"] },
   FileDiff: { anchor: "root", patterns: [] },
   FileUpload: { anchor: "root", patterns: [] },
-  HoverCard: { anchor: "content", patterns: [] },
+  HoverCard: { anchor: "content", patterns: ["hover-card"] },
   InputOTP: { anchor: "root", patterns: ["field"] },
   NavigationMenu: { anchor: "root", patterns: [] },
   NumberField: { anchor: "root", patterns: ["field"], field: true },

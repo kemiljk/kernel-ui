@@ -70,9 +70,12 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
   const today = startOfDay(new Date());
   const gridRef = useRef<HTMLTableSectionElement>(null);
   const baseId = useId();
+  // APG grid: the one Tab stop follows focus, so Tab back into the grid
+  // returns to the day the arrow keys last reached.
+  const [focusedDay, setFocusedDay] = useState<Date>();
 
   const weeks = chunkIntoWeeks(getVisibleDays(visibleMonth));
-  const tabStop = gridTabStop(visibleMonth, [selected, today], minDate, maxDate);
+  const tabStop = gridTabStop(visibleMonth, [focusedDay, selected, today], minDate, maxDate);
 
   function goToPreviousMonth() {
     setVisibleMonth((month) => addMonths(month, -1));
@@ -189,7 +192,11 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
                         disabled={disabled}
                         tabIndex={tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1}
                         className={styles.dayButton}
-                        onClick={() => selectDay(day)}
+                        onClick={() => {
+                          setFocusedDay(day);
+                          selectDay(day);
+                        }}
+                        onFocus={() => setFocusedDay(day)}
                       >
                         {day.getDate()}
                       </button>

@@ -106,7 +106,7 @@ const resultSnippet = `{
 
     <h2>API</h2>
     <ul>
-      <li><code>checkPattern(root, pattern, options?)</code>: one APG pattern on <code>root</code> or anything inside it. Patterns: <code>accordion</code>, <code>button</code>, <code>checkbox</code>, <code>combobox</code>, <code>dialog</code>, <code>disclosure</code>, <code>field</code>, <code>grid</code>, <code>listbox</code>, <code>menu</code>, <code>radio-group</code>, <code>select</code>, <code>slider</code>, <code>switch</code>, <code>tabs</code>, <code>toggle-button</code>, <code>toolbar</code> and <code>tooltip</code>.</li>
+      <li><code>checkPattern(root, pattern, options?)</code>: one APG pattern on <code>root</code> or anything inside it. Patterns: <code>accordion</code>, <code>button</code>, <code>checkbox</code>, <code>combobox</code>, <code>dialog</code>, <code>disclosure</code>, <code>field</code>, <code>grid</code>, <code>hover-card</code>, <code>listbox</code>, <code>menu</code>, <code>radio-group</code>, <code>select</code>, <code>slider</code>, <code>switch</code>, <code>tabs</code>, <code>toggle-button</code>, <code>toolbar</code> and <code>tooltip</code>.</li>
       <li><code>checkComponent(root, name, options?)</code>: a Kernel component's patterns plus its invariants. <code>name</code> is the React export (<code>"DropdownMenu"</code>), the docs slug or the custom element tag. React output and custom elements pass the same checks, because they render the same DOM.</li>
       <li><code>checkPage(root?, options?)</code>: finds every Kernel component under <code>root</code> (default <code>document.body</code>) and checks each one, plus page-wide rules: unique ids, resolving references, named controls, no interactive element nested in another.</li>
       <li><code>assertPattern</code>, <code>assertComponent</code> and <code>assertPage</code> throw an error listing every issue instead of returning.</li>
@@ -126,7 +126,8 @@ const resultSnippet = `{
     <h2>Vitest and Jest</h2>
     <p>
       It's plain DOM with no test-runner globals, so it works the same in
-      vitest and jest, with jsdom or happy-dom.
+      vitest and jest, with jsdom or happy-dom. The main entry ships as ESM
+      and CommonJS, so Jest needs no transform config for it.
     </p>
     <CodeBlock code={vitestSnippet} lang="tsx" />
     <p>The custom elements are checked the same way:</p>
@@ -163,6 +164,7 @@ const resultSnippet = `{
     <ul>
       <li>A closed dialog or menu skips its open-state checks. Open it before checking.</li>
       <li>jsdom has no <code>scrollIntoView</code>. Stub it in your test setup if a combobox throws.</li>
+      <li>jsdom has no <code>HTMLDialogElement.prototype.showModal</code>. Stub it (set the <code>open</code> attribute) to render an open Dialog.</li>
       <li>Interactions change state, like a selected tab or a flipped switch, and restore it where they can. Run checks on a fresh render.</li>
     </ul>
   </div>

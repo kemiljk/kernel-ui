@@ -77,26 +77,49 @@ export async function tooltip(run: Run, root: Element) {
     const trigger = triggers[0]!;
     run.expect(isFocusable(trigger), "tooltip/trigger-focusable", "The tooltip's trigger isn't focusable, so keyboard users can never see the tooltip.", trigger);
     if (!run.canInteract("tooltip/keyboard") || isDisabled(trigger)) continue;
+    await withoutNativeInterest(run, "tooltip", trigger, () => tooltipKeyboard(run, tip, trigger));
+  }
+}
 
-    if (isShown(tip, run.env) === null && !run.env.popover) {
-      run.skip("tooltip/shows-on-focus", "environment", `Can't tell whether a [popover] tooltip is open without the Popover API (${run.env.name}).`, tip);
-    }
-    await run.focus(trigger);
-    const shown = await run.waitFor(() => isShown(tip, run.env) === true, 300);
-    const known = isShown(tip, run.env) !== null;
-    if (known) run.expect(shown, "tooltip/shows-on-focus", "Focusing the trigger didn't show the tooltip; it must appear on keyboard focus, not just hover.", trigger);
-    if (!shown) {
-      if (!known) run.skip("tooltip/escape-dismisses", "environment", "Tooltip visibility isn't observable here, so Escape wasn't checked.", tip);
-      (trigger as HTMLElement).blur();
-      continue;
-    }
-    await run.press("Escape", trigger);
-    const dismissed = await run.waitFor(() => isShown(tip, run.env) === false);
-    run.expect(dismissed, "tooltip/escape-dismisses", "Escape didn't hide the tooltip. WCAG 1.4.13 requires content shown on hover or focus to be dismissible without moving focus.", tip);
-    run.expect(run.focused === trigger, "tooltip/escape-keeps-focus", `Escape moved focus away from the trigger, to ${describe(run.focused)}.`, trigger);
-    await run.focus(trigger.ownerDocument.body);
-    (trigger as HTMLElement).blur();
-    await run.waitFor(() => isShown(tip, run.env) === false);
+async function tooltipKeyboard(run: Run, tip: Element, trigger: HTMLElement) {
+  if (isShown(tip, run.env) === null && !run.env.popover) {
+    run.skip("tooltip/shows-on-focus", "environment", `Can't tell whether a [popover] tooltip is open without the Popover API (${run.env.name}).`, tip);
+  }
+  await run.focus(trigger);
+  const shown = await run.waitFor(() => isShown(tip, run.env) === true, 300);
+  const known = isShown(tip, run.env) !== null;
+  if (known) run.expect(shown, "tooltip/shows-on-focus", "Focusing the trigger didn't show the tooltip; it must appear on keyboard focus, not just hover.", trigger);
+  if (!shown) {
+    if (!known) run.skip("tooltip/escape-dismisses", "environment", "Tooltip visibility isn't observable here, so Escape wasn't checked.", tip);
+    trigger.blur();
+    return;
+  }
+  await run.press("Escape", trigger);
+  const dismissed = await run.waitFor(() => isShown(tip, run.env) === false);
+  run.expect(dismissed, "tooltip/escape-dismisses", "Escape didn't hide the tooltip. WCAG 1.4.13 requires content shown on hover or focus to be dismissible without moving focus.", tip);
+  run.expect(run.focused === trigger, "tooltip/escape-keeps-focus", `Escape moved focus away from the trigger, to ${describe(run.focused)}.`, trigger);
+  await run.focus(trigger.ownerDocument.body);
+  trigger.blur();
+  await run.waitFor(() => isShown(tip, run.env) === false);
+}
+
+/**
+ * Chromium implements `interestfor`: a focused or hovered invoker shows its
+ * target itself, and a real Escape makes it lose interest, but a dispatched
+ * key can't. Left in place, the browser re-shows a popover the page's own
+ * Escape handler just hid. So the keyboard checks run with the attribute set
+ * aside (and put back after): they check the page's own handlers, and the
+ * native half is reported as skipped, for a real-key test to cover.
+ */
+async function withoutNativeInterest(run: Run, prefix: string, trigger: HTMLElement, check: () => Promise<void>) {
+  const value = trigger.getAttribute("interestfor");
+  if (value === null || run.env.name !== "browser" || !("interestForElement" in trigger)) return check();
+  trigger.removeAttribute("interestfor");
+  run.skip(`${prefix}/native-interest`, "native", "This browser implements interestfor, whose Escape handling dispatched keys can't reach; the keyboard checks ran with it set aside. Press a real Escape (Playwright's keyboard) to cover it.", trigger);
+  try {
+    await check();
+  } finally {
+    trigger.setAttribute("interestfor", value);
   }
 }
 
@@ -277,4 +300,97 @@ export async function accordion(run: Run, root: Element) {
     group.forEach((el, i) => (el.open = original[i]!));
     await run.settle();
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* hover-card — interactive content shown on hover or focus            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A non-modal popup that opens on hover or focus and, unlike a tooltip, may
+ * hold links (Kernel's HoverCard; Radix/shadcn's HoverCard). There's no APG
+ * pattern of its own: the rules are WCAG 1.4.13's (dismissible, hoverable,
+ * persistent) plus the keyboard half of APG's disclosure, so a keyboard user
+ * can open it, reach what's inside and leave.
+ */
+function findHoverCards(root: Element): { card: HTMLElement; trigger: HTMLElement | null }[] {
+  const doc = root.ownerDocument;
+  const cards = within(root, "[popover]").filter((el) => !/^(tooltip|menu|listbox|dialog|alertdialog)$/.test(el.getAttribute("role") ?? "")) as HTMLElement[];
+  const found: { card: HTMLElement; trigger: HTMLElement | null }[] = [];
+  for (const card of cards) {
+    if (!card.id) continue;
+    const trigger =
+      Array.from(doc.querySelectorAll<HTMLElement>("[aria-describedby], [aria-details], [interestfor]")).find(
+        (el) =>
+          !el.hasAttribute("popovertarget") &&
+          [...idRefs(el, "aria-describedby").ids, ...idRefs(el, "aria-details").ids, ...idRefs(el, "interestfor").ids].includes(card.id),
+      ) ?? null;
+    // A popover nothing describes is some other surface (a Popover's panel is a popovertarget).
+    if (trigger || card.getAttribute("data-slot") === "hover-card-content") found.push({ card, trigger });
+  }
+  return found;
+}
+
+export async function hoverCard(run: Run, root: Element) {
+  const items = findHoverCards(root);
+  if (!items.length) return noInstances(run, "hover-card", "hover card (a [popover] its trigger points at with aria-describedby, aria-details or interestfor)", root);
+  for (const { card, trigger } of items) {
+    checkRefs(run, "hover-card", card);
+    if (!run.expect(Boolean(trigger), "hover-card/trigger", "Nothing points at the card with aria-describedby, aria-details or interestfor, so it's never announced.", card)) continue;
+    const t = trigger!;
+    checkRefs(run, "hover-card", t);
+    requireName(run, "hover-card/trigger-name", t, "The hover card's trigger");
+    if (!run.expect(isFocusable(t), "hover-card/trigger-focusable", "The trigger isn't focusable, so keyboard users can never open the card.", t)) continue;
+    const inside = focusableWithin(card).filter((el) => !isDisabled(el));
+    if (inside.length) {
+      // Tab from the trigger has to reach the card's links, and a top-layer
+      // popover is still Tabbed to in DOM order.
+      const follows = Boolean(t.compareDocumentPosition(card) & 4 /* DOCUMENT_POSITION_FOLLOWING */);
+      run.expect(follows, "hover-card/reading-order", "The card holds interactive content but comes before its trigger in the DOM, so Tab from the trigger skips it.", card, "warning");
+    }
+    if (!run.canInteract("hover-card/keyboard") || isDisabled(t)) continue;
+    await withoutNativeInterest(run, "hover-card", t, () => hoverCardKeyboard(run, card, t, inside));
+  }
+}
+
+async function hoverCardKeyboard(run: Run, card: HTMLElement, t: HTMLElement, inside: HTMLElement[]) {
+  await run.focus(t);
+  const shown = await run.waitFor(() => isShown(card, run.env) === true, 400);
+  if (isShown(card, run.env) === null) {
+    run.skip("hover-card/shows-on-focus", "environment", `Can't tell whether a [popover] card is open without the Popover API (${run.env.name}).`, card);
+    t.blur();
+    return;
+  }
+  if (!run.expect(shown, "hover-card/shows-on-focus", "Focusing the trigger didn't show the card; it must open on keyboard focus, not just hover.", t)) {
+    t.blur();
+    return;
+  }
+
+  await run.press("Escape", t);
+  const dismissed = await run.waitFor(() => isShown(card, run.env) === false);
+  run.expect(dismissed, "hover-card/escape-dismisses", "Escape didn't hide the card. WCAG 1.4.13 requires content shown on hover or focus to be dismissible without moving focus.", card);
+  run.expect(run.focused === t, "hover-card/escape-keeps-focus", `Escape moved focus away from the trigger, to ${describe(run.focused)}.`, t);
+
+  if (inside.length) {
+    // Reopen, then move focus into the card the way Tab would.
+    await run.focus(t.ownerDocument.body);
+    t.blur();
+    await run.waitFor(() => isShown(card, run.env) === false);
+    await run.focus(t);
+    await run.waitFor(() => isShown(card, run.env) === true, 400);
+    await run.focus(inside[0]!);
+    // Outlast the close delay a blur from the trigger may have started.
+    await run.waitFor(() => isShown(card, run.env) === false, 400);
+    const stillOpen = isShown(card, run.env) === true && run.focused === inside[0];
+    run.expect(stillOpen, "hover-card/focus-inside-keeps-open", `Moving focus from the trigger into the card (${describe(inside[0])}) closed it, so keyboard users can't reach its content.`, card);
+    if (stillOpen) {
+      await run.press("Escape", inside[0]);
+      const closed = await run.waitFor(() => isShown(card, run.env) === false);
+      run.expect(closed, "hover-card/escape-dismisses", "Escape from inside the card didn't hide it.", card);
+      run.expect(run.focused === t, "hover-card/escape-returns-focus", `Escape from inside the card left focus on ${describe(run.focused)}; return it to the trigger rather than dropping it to <body>.`, t);
+    }
+  }
+  await run.focus(t.ownerDocument.body);
+  t.blur();
+  await run.waitFor(() => isShown(card, run.env) === false);
 }

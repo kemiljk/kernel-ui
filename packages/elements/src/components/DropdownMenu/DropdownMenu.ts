@@ -44,6 +44,13 @@ export function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
   items[nextIndex]?.focus();
 }
 
+/** Names the `role="menu"` after the button that opens it (APG menu
+ * button): `aria-labelledby` the trigger, giving it an id if it has none. */
+function labelMenuByTrigger(menu: HTMLElement, trigger: HTMLElement) {
+  if (!trigger.id) trigger.id = `${menu.id}-trigger`;
+  menu.setAttribute("aria-labelledby", trigger.id);
+}
+
 /**
  * `<kernel-dropdown-menu>` — `role="menu"` on a `popover="auto"`
  * element: outside-click/Escape dismissal and top-layer stacking are
@@ -101,6 +108,7 @@ export class KernelDropdownMenu extends KernelElement {
     if (triggerSlot) {
       const triggerEl = findTriggerElement(triggerSlot);
       triggerEl.setAttribute("popovertarget", this.contentId);
+      labelMenuByTrigger(content, triggerEl);
       triggerEl.setAttribute("aria-haspopup", "menu");
       triggerEl.setAttribute("aria-expanded", "false");
       this.positioner.attach(triggerEl, content, { placement, align, offset });
@@ -139,6 +147,7 @@ export class KernelDropdownMenu extends KernelElement {
     summary.setAttribute("aria-controls", this.contentId);
     summary.setAttribute("aria-expanded", "false");
     const content = this.createNative();
+    labelMenuByTrigger(content, summary);
     content.removeAttribute("popover");
     content.classList.add(kernelClass("DropdownMenu", "disclosureContent"));
     content.setAttribute("data-placement", placement);
@@ -260,6 +269,7 @@ export class KernelDropdownMenuMorph extends KernelElement {
     if (triggerSlot) {
       const triggerEl = findTriggerElement(triggerSlot);
       this.triggerEl = triggerEl;
+      labelMenuByTrigger(content, triggerEl);
       triggerEl.setAttribute("aria-haspopup", "menu");
       triggerEl.setAttribute("aria-expanded", "false");
       this.positioner.attach(triggerEl, content, { placement, align, offset });

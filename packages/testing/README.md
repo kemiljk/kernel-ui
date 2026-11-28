@@ -35,6 +35,8 @@ test("our own tablist", async () => {
 
 Custom elements from `@kernelui-lib/elements` are checked the same way. They render the same DOM as the React components.
 
+The package ships ESM and a CommonJS build of the main entry, so Jest's default CommonJS mode loads it with no `transformIgnorePatterns` entry.
+
 ## Playwright
 
 ```ts
@@ -78,9 +80,10 @@ Options: `act` (wraps each interaction), `interactions: false` (structure only),
 | `dialog` | `<dialog>` preferred, name, close button, focus inside when modal (browser), Escape (native) |
 | `disclosure` | `<details>`, `aria-expanded` + `aria-controls` buttons and `popovertarget` buttons: name, state matches the content, toggling |
 | `field` | Form controls have a real label, not just a placeholder; `aria-invalid` has a message |
-| `grid` | Name, `aria-selected` on cells, a single Tab stop; arrows, Home and End move by cell, row and week |
+| `grid` | Name, `aria-selected` on cells, a single Tab stop that follows focus; arrows, Home and End move by cell, row and week |
+| `hover-card` | A `[popover]` its trigger points at (`aria-describedby`, `aria-details` or `interestfor`): opens on focus, Escape dismisses without moving focus (WCAG 1.4.13), focus moving into it keeps it open, Escape from inside returns focus to the trigger |
 | `listbox` | Options named, single selection, one Tab stop, arrow keys |
-| `menu` | `menuitem` children, items out of the Tab order, `aria-haspopup`/`aria-expanded` on the button; opening focuses an item; arrows wrap; Home/End; Escape closes and returns focus |
+| `menu` | Named (`aria-labelledby` its button, or `aria-label`), `menuitem` children, items out of the Tab order, `aria-haspopup`/`aria-expanded` on the button; opening focuses an item; arrows wrap; Home/End; Escape closes and returns focus |
 | `radio-group` | Group name (`<fieldset>`/`<legend>`), shared `name` so the browser makes it a group, selection |
 | `select` | Native `<select>` with a label and option text |
 | `slider` | `<input type=range>` preferred, name, value in range |
@@ -98,6 +101,8 @@ Synthetic key events also can't trigger what the browser does itself: Space on a
 
 - A closed dialog or menu skips its open-state checks. Open it first.
 - jsdom has no `scrollIntoView`. Stub it in your test setup if a combobox throws.
+- jsdom has no `HTMLDialogElement.prototype.showModal`. Stub it (set the `open` attribute) to render an open Dialog.
+- Where a browser implements `interestfor` natively (Chromium), a dispatched Escape can't reach it, so tooltip and hover-card keyboard checks set the attribute aside while they run and report `*/native-interest` as skipped. Press a real Escape with Playwright's keyboard to cover the native half.
 - Interactions change state (a selected tab, a flipped switch) and restore it where they can. Check a fresh render.
 
 ## License

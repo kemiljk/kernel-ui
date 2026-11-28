@@ -7,8 +7,8 @@ guidance for anyone (human or agent) making changes here.
 ## Release checklist for pull requests
 
 Any PR that changes a publishable package under `packages/react`,
-`packages/elements`, `packages/styles`, `packages/cli`, or `packages/testing`
-must include a
+`packages/elements`, `packages/styles`, `packages/cli`, `packages/testing`, or
+`packages/eslint-plugin` must include a
 `.changeset/<descriptive-name>.md` file describing the affected package(s) and
 the release level (`patch`, `minor`, or `major`). Run `bunx changeset` to create
 it. Docs-only changes do not need a Changeset. A bump that only edits

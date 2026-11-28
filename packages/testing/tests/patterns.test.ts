@@ -205,6 +205,78 @@ describe("dialog, tooltip, disclosure, accordion", () => {
     expect(rules(await checkPattern(host, "tooltip"))).toEqual(["tooltip/escape-dismisses"]);
   });
 
+  // A hover card: hidden toggled by hand, since jsdom has no Popover API.
+  const hoverCard = ({ escape = true, keepOpenInside = true, returnFocus = true } = {}) => {
+    const host = f.mount(
+      `<a href="/u/ada" aria-describedby="card">@ada</a><div id="card" popover="manual" hidden><p>Ada Lovelace</p><a href="/u/ada/posts">Posts</a></div>`,
+    );
+    const trigger = host.querySelector<HTMLElement>("a")!;
+    const card = host.querySelector<HTMLElement>("#card")!;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Kernel-style data-open: without the Popover API it's what says "open".
+    const setOpen = (open: boolean) => {
+      card.hidden = !open;
+      card.toggleAttribute("data-open", open);
+    };
+    const hideSoon = (e: FocusEvent) => {
+      if (keepOpenInside && e.relatedTarget && (card.contains(e.relatedTarget as Node) || e.relatedTarget === trigger)) return;
+      timer = setTimeout(() => setOpen(false), 50);
+    };
+    trigger.addEventListener("focus", () => {
+      clearTimeout(timer);
+      setOpen(true);
+    });
+    trigger.addEventListener("blur", hideSoon);
+    if (keepOpenInside) {
+      card.addEventListener("focusin", () => clearTimeout(timer));
+      card.addEventListener("focusout", hideSoon);
+    }
+    if (escape) {
+      host.ownerDocument.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape" || card.hidden) return;
+        if (returnFocus && card.contains(document.activeElement)) {
+          trigger.focus();
+          clearTimeout(timer);
+        }
+        setOpen(false);
+      });
+    }
+    return host;
+  };
+
+  it("passes a hover card that opens on focus, keeps open while focus is inside, and dismisses on Escape", async () => {
+    const result = await checkPattern(hoverCard(), "hover-card");
+    expect(result.issues).toEqual([]);
+    expect(result.passes).toEqual(
+      expect.arrayContaining([
+        "hover-card/trigger",
+        "hover-card/shows-on-focus",
+        "hover-card/escape-dismisses",
+        "hover-card/escape-keeps-focus",
+        "hover-card/focus-inside-keeps-open",
+        "hover-card/escape-returns-focus",
+        "hover-card/reading-order",
+      ]),
+    );
+  });
+
+  it("flags a hover card Escape can't dismiss", async () => {
+    expect(rules(await checkPattern(hoverCard({ escape: false }), "hover-card"))).toContain("hover-card/escape-dismisses");
+  });
+
+  it("flags a hover card that closes when focus moves into it", async () => {
+    expect(rules(await checkPattern(hoverCard({ keepOpenInside: false }), "hover-card"))).toEqual(["hover-card/focus-inside-keeps-open"]);
+  });
+
+  it("flags Escape from inside a hover card dropping focus", async () => {
+    expect(rules(await checkPattern(hoverCard({ returnFocus: false }), "hover-card"))).toEqual(["hover-card/escape-returns-focus"]);
+  });
+
+  it("flags a hover card nothing points at", async () => {
+    const result = await checkPattern(f.mount(`<div id="c" popover="manual" data-slot="hover-card-content">Card</div>`), "hover-card");
+    expect(rules(result)).toEqual(["hover-card/trigger"]);
+  });
+
   it("checks aria-expanded disclosures against what they control", async () => {
     const host = f.mount(`<button aria-expanded="false" aria-controls="c">More</button><div id="c" hidden>Details</div>`);
     const button = host.querySelector("button")!;
