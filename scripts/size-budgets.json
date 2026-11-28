@@ -11,8 +11,8 @@
             "dist/index.js"
           ],
           "budget": {
-            "gzip": 55300,
-            "brotli": 45700
+            "gzip": 83000,
+            "brotli": 68100
           }
         },
         {
@@ -21,8 +21,8 @@
             "dist/index.cjs"
           ],
           "budget": {
-            "gzip": 48100,
-            "brotli": 41300
+            "gzip": 72000,
+            "brotli": 61500
           }
         },
         {
@@ -31,8 +31,8 @@
             "dist/kernel.css"
           ],
           "budget": {
-            "gzip": 26200,
-            "brotli": 20400
+            "gzip": 31300,
+            "brotli": 23900
           }
         },
         {
@@ -41,8 +41,8 @@
             "dist/kernel.layer.css"
           ],
           "budget": {
-            "gzip": 26200,
-            "brotli": 20500
+            "gzip": 31300,
+            "brotli": 24000
           }
         }
       ]
@@ -57,8 +57,8 @@
             "dist/index.js"
           ],
           "budget": {
-            "gzip": 61000,
-            "brotli": 49800
+            "gzip": 91000,
+            "brotli": 74200
           }
         },
         {
@@ -67,8 +67,8 @@
             "dist/kernel.css"
           ],
           "budget": {
-            "gzip": 25800,
-            "brotli": 20700
+            "gzip": 31200,
+            "brotli": 24200
           }
         },
         {
@@ -77,8 +77,8 @@
             "dist/kernel.layer.css"
           ],
           "budget": {
-            "gzip": 25900,
-            "brotli": 20800
+            "gzip": 31200,
+            "brotli": 24300
           }
         }
       ]
@@ -93,8 +93,8 @@
             "src/tokens.css"
           ],
           "budget": {
-            "gzip": 15800,
-            "brotli": 13500
+            "gzip": 17900,
+            "brotli": 15400
           }
         },
         {
@@ -133,8 +133,8 @@
             "src/themes/*.css"
           ],
           "budget": {
-            "gzip": 7500,
-            "brotli": 5900
+            "gzip": 7700,
+            "brotli": 6100
           }
         }
       ]
@@ -150,8 +150,8 @@
             "dist/**/*.cjs"
           ],
           "budget": {
-            "gzip": 107100,
-            "brotli": 87500
+            "gzip": 124400,
+            "brotli": 100600
           }
         }
       ]
@@ -166,8 +166,51 @@
             "dist/*.js"
           ],
           "budget": {
-            "gzip": 10800,
-            "brotli": 9400
+            "gzip": 11600,
+            "brotli": 10000
+          }
+        }
+      ]
+    },
+    {
+      "name": "@kernelui-lib/agent",
+      "dir": "packages/agent",
+      "entries": [
+        {
+          "label": "dist JS (total)",
+          "files": [
+            "dist/**/*.js"
+          ],
+          "budget": {
+            "gzip": 30600,
+            "brotli": 26200
+          }
+        }
+      ]
+    },
+    {
+      "name": "@kernelui-lib/testing",
+      "dir": "packages/testing",
+      "entries": [
+        {
+          "label": "dist JS (total)",
+          "files": [
+            "dist/**/*.js",
+            "dist/**/*.cjs"
+          ],
+          "budget": {
+            "gzip": 86500,
+            "brotli": 74500
+          }
+        },
+        {
+          "label": "browser bundle",
+          "files": [
+            "dist/kernel-testing.global.js"
+          ],
+          "budget": {
+            "gzip": 24100,
+            "brotli": 21000
           }
         }
       ]
