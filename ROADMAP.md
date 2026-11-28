@@ -71,6 +71,10 @@ From the full audit. P0 = broken or inaccessible, P1 = visibly unpolished, P2 = 
 | Lint pack for agent output | in progress | [#114](https://github.com/kemiljk/kernel-ui/pull/114) | `kernel check` / `check_code` shipped; ESLint plugin later |
 | Generate docs props tables from `api.json` | next | | Replaces hand-written tables |
 | Make `registry.json` a valid shadcn registry | later | | `npx shadcn add` and the shadcn MCP for free |
+| Agent discovery: decision-focused llms.txt, Choosing Kernel and AI agents guides, markdown alternates, JSON-LD | in review | [#117](https://github.com/kemiljk/kernel-ui/pull/117) | Honest fit guidance; no hidden instructions |
+| Skills discovery at /.well-known/agent-skills | in review | [#117](https://github.com/kemiljk/kernel-ui/pull/117) | Best-effort format; verify with `npx skills add https://www.kernelui.com` once live |
+| Publish to the official MCP Registry | blocked | | Needs Karl: after the next CLI release, `mcp-publisher login github` + `publish` |
+| List in skills and MCP directories (skills.sh, Smithery, Glama, PulseMCP) | later | | Needs Karl's accounts |
 | Agent eval suite: fixed prompts scored by lint, axe and screenshots | later | | |
 
 ## 4. Agent UI components
