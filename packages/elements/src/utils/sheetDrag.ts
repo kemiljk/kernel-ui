@@ -132,7 +132,10 @@ export interface SheetDragOptions {
    * attach. Null falls back to the largest snap — a sheet asked to appear should
    * show as much of itself as it's allowed to. */
   snap: number | null;
-  onDismiss: () => void;
+  /** Asked when a release crosses the dismiss threshold, *before* the exit
+   * plays. Return `false` to refuse (a cancelled close): the sheet settles
+   * back where it rested instead of being left translated off-screen. */
+  onDismiss: () => boolean | void;
   onDrag?: (percent: number) => void;
   onRelease?: (open: boolean) => void;
   /** Fires once per settle with the snap actually landed on. */
@@ -562,7 +565,7 @@ export function attachSheetDrag(
         closeThreshold: opts.closeThreshold,
         velocityThreshold: opts.velocityThreshold,
       });
-      if (dismiss) {
+      if (dismiss && opts.onDismiss() !== false) {
         // Height stays where it is; the exit is a translate, exactly as in the
         // binary path, so `Dialog`'s closing rule can carry it the rest of the way.
         delete node.dataset.dragging;
@@ -572,9 +575,9 @@ export function attachSheetDrag(
         opts.onDrag?.(1);
         clearDragState();
         opts.onRelease?.(false);
-        opts.onDismiss();
         return;
       }
+      // Not far enough, or the close was refused: back to the shortest snap.
       settleTo(lowest, opts, velocity);
       clearDragState();
       opts.onRelease?.(true);
@@ -589,13 +592,19 @@ export function attachSheetDrag(
     });
 
     if (targetPx === null) {
+      if (opts.onDismiss() === false) {
+        // Refused: settle back onto the snap it rested on.
+        settleTo(activeSnap ?? lowest, opts, 0);
+        clearDragState();
+        opts.onRelease?.(true);
+        return;
+      }
       delete node.dataset.dragging;
       void node.offsetHeight;
       node.style.translate = `0 ${node.getBoundingClientRect().height}px`;
       setDragProgress(0);
       clearDragState();
       opts.onRelease?.(false);
-      opts.onDismiss();
       return;
     }
 
@@ -646,7 +655,9 @@ export function attachSheetDrag(
       velocityThreshold: opts.velocityThreshold,
     });
 
-    if (dismiss) {
+    // Asked before the exit plays, so a refused (cancelled) close falls
+    // through to the snap-back below instead of stranding the sheet off-screen.
+    if (dismiss && opts.onDismiss() !== false) {
       // The exit can't be left to the stylesheet: an inline `translate`
       // outranks any rule, so the `[data-closing]` rule could never move a
       // sheet the drag had positioned. Drive the exit inline too — drop
@@ -658,7 +669,6 @@ export function attachSheetDrag(
       applyOffset(extent * sign, axis, opts.onDrag);
       clearDragState();
       opts.onRelease?.(false);
-      opts.onDismiss();
       return;
     }
 

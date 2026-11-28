@@ -31,7 +31,16 @@ let dialogCounter = 0;
  * Events: a `close` event fires (bubbling, matching the native
  * `<dialog>` event name) whenever the dialog finishes closing via any
  * path — Escape, backdrop click, or the close button — with the `open`
- * attribute already removed by the time it fires.
+ * attribute already removed by the time it fires, and `detail.reason`
+ * saying which path it was.
+ *
+ * Before closing for one of those reasons, a bubbling, cancelable
+ * `cancel` event fires (the native `<dialog>`'s own name for "about to
+ * close"), with `detail.reason`: `"close-button"`, `"escape-key"`,
+ * `"outside-press"`, or `"programmatic"` (the native dialog closed some
+ * other way, such as a `method="dialog"` form). `preventDefault()` keeps
+ * the dialog open. Removing the `open` attribute yourself closes it
+ * without asking.
  */
 export class KernelDialog extends KernelElement {
   private readonly titleId = `kernel-dialog-title-${++dialogCounter}`;
@@ -39,6 +48,7 @@ export class KernelDialog extends KernelElement {
   private closing = false;
   private exitAbort: AbortController | null = null;
   private skipCloseEvent = false;
+  private closeReason = "programmatic";
 
   static get observedAttributes() {
     return ["open", "title", "description", "backdrop", "show-close-button", "side", "label-close"];
@@ -89,7 +99,7 @@ export class KernelDialog extends KernelElement {
         `<span class="${kernelClass("Button", "icon")}" aria-hidden="true">` +
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">' +
         '<path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg></span>';
-      closeButton.addEventListener("click", () => this.requestClose());
+      closeButton.addEventListener("click", (event) => this.requestClose("close-button", event));
       header.append(closeButton);
     }
 
@@ -105,22 +115,50 @@ export class KernelDialog extends KernelElement {
 
     dialog.append(header, description, body);
 
+    // `closedby="any"` makes supporting browsers light-dismiss on a backdrop
+    // press by firing `cancel` — the same event Escape fires. Remembering a
+    // press on the backdrop tells the two apart, and lets the `click` that
+    // follows know it has already been handled.
+    let backdropPressAt = 0;
+    let lightDismissHandled = false;
+    dialog.addEventListener("pointerdown", (event) => {
+      lightDismissHandled = false;
+      backdropPressAt = event.target === dialog ? performance.now() : 0;
+    });
+    dialog.addEventListener("keydown", () => (backdropPressAt = 0));
     dialog.addEventListener("click", (event) => {
+      if (lightDismissHandled) {
+        lightDismissHandled = false;
+        return;
+      }
       if (this.getAttribute("close-on-backdrop-click") === "false") return;
-      if (event.target === dialog) this.requestClose();
+      if (event.target === dialog) this.requestClose("outside-press", event);
     });
     dialog.addEventListener("cancel", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      this.requestClose();
+      if (backdropPressAt && performance.now() - backdropPressAt < 1000) {
+        backdropPressAt = 0;
+        lightDismissHandled = true;
+        if (!this.backdropDismissible()) return;
+        this.requestClose("outside-press", event);
+        return;
+      }
+      this.requestClose("escape-key", event);
     });
-    dialog.addEventListener("close", () => {
+    dialog.addEventListener("close", (event) => {
       if (this.skipCloseEvent) {
         this.skipCloseEvent = false;
         return;
       }
+      // Closed natively (a `method="dialog"` form, `dialog.close()`): ask
+      // after the fact, and re-open on a veto.
+      if (this.hasAttribute("open") && !this.emitChange("cancel", {}, "programmatic", event)) {
+        dialog.showModal();
+        return;
+      }
       this.removeAttribute("open");
-      this.dispatchEvent(new Event("close", { bubbles: true }));
+      this.dispatchCloseEvent("programmatic");
     });
 
     this.native = dialog;
@@ -132,9 +170,24 @@ export class KernelDialog extends KernelElement {
     this.native?.querySelector('[data-slot="dialog-close"]')?.setAttribute("aria-label", this.builtInLabel("close", "Close"));
   }
 
-  private requestClose() {
-    if (!this.hasAttribute("open") || this.closing) return;
+  /** Whether a press on the backdrop may close the dialog. */
+  protected backdropDismissible(): boolean {
+    return this.getAttribute("close-on-backdrop-click") !== "false";
+  }
+
+  /** Asks (a cancelable `cancel` event) and, unless vetoed, closes. Returns
+   * `false` when the close was vetoed or there was nothing to close. */
+  protected requestClose(reason: string, event?: Event): boolean {
+    if (!this.hasAttribute("open") || this.closing) return false;
+    if (!this.emitChange("cancel", {}, reason, event)) return false;
+    this.closeReason = reason;
     this.removeAttribute("open");
+    return true;
+  }
+
+  private dispatchCloseEvent(reason: string) {
+    this.closeReason = "programmatic";
+    this.dispatchEvent(new CustomEvent("close", { bubbles: true, detail: { reason } }));
   }
 
   private async finishClose(dialog: HTMLDialogElement) {
@@ -164,7 +217,7 @@ export class KernelDialog extends KernelElement {
     dialog.removeAttribute("data-closing");
     dialog.removeAttribute("data-open");
     this.closing = false;
-    this.dispatchEvent(new Event("close", { bubbles: true }));
+    this.dispatchCloseEvent(this.closeReason);
   }
 
   protected syncAttr(name: string, value: string | null) {

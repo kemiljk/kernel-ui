@@ -89,7 +89,25 @@ export class KernelNumberField extends KernelElement {
     input.inputMode = "decimal";
     input.step = "1";
     input.className = kernelClass("NumberField", "input");
-    input.addEventListener("change", () => {
+    // Change reasons: every change dispatches a cancelable, bubbling
+    // `valuechange` first, `detail: { value, reason }` with `reason`
+    // `"input"`, `"keyboard"` (ArrowUp/Down), `"wheel"` or `"step-button"`.
+    // `preventDefault()` restores the previous value; for typed changes it
+    // also stops the native `change` at this element.
+    let pendingReason: "input" | "keyboard" | "wheel" = "input";
+    input.addEventListener("keydown", (event) => {
+      pendingReason = event.key === "ArrowUp" || event.key === "ArrowDown" ? "keyboard" : "input";
+    });
+    input.addEventListener("wheel", () => (pendingReason = "wheel"), { passive: true });
+    input.addEventListener("change", (event) => {
+      const reason = pendingReason;
+      pendingReason = "input";
+      const value = input.value === "" ? undefined : Number(input.value);
+      if (!this.emitChange("valuechange", { value }, reason, event)) {
+        input.value = this.getAttribute("value") ?? "";
+        event.stopPropagation();
+        return;
+      }
       this.setAttribute("value", input.value);
     });
 
@@ -102,7 +120,7 @@ export class KernelNumberField extends KernelElement {
     down.className = kernelClass("NumberField", "stepperButton");
     down.dataset.step = "down";
     down.append(glyph(MINUS));
-    down.addEventListener("click", () => this.stepBy(-1));
+    down.addEventListener("click", (event) => this.stepBy(-1, event));
 
     const up = document.createElement("button");
     up.type = "button";
@@ -110,7 +128,7 @@ export class KernelNumberField extends KernelElement {
     up.className = kernelClass("NumberField", "stepperButton");
     up.dataset.step = "up";
     up.append(glyph(PLUS));
-    up.addEventListener("click", () => this.stepBy(1));
+    up.addEventListener("click", (event) => this.stepBy(1, event));
 
     // − then +, reading in the direction the value moves.
     stepper.append(down, up);
@@ -126,11 +144,18 @@ export class KernelNumberField extends KernelElement {
     return this.native?.querySelector(`.${kernelClass("NumberField", "input")}`) ?? null;
   }
 
-  private stepBy(direction: 1 | -1) {
+  private stepBy(direction: 1 | -1, event?: Event) {
     const input = this.input;
     if (!input) return;
+    const previous = input.value;
     if (direction === 1) input.stepUp();
     else input.stepDown();
+    const value = input.value === "" ? undefined : Number(input.value);
+    if (!this.emitChange("valuechange", { value }, "step-button", event)) {
+      input.value = previous;
+      input.focus();
+      return;
+    }
     this.setAttribute("value", input.value);
     this.dispatchEvent(new Event("change", { bubbles: true }));
     input.focus();

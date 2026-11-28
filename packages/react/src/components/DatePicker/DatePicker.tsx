@@ -1,7 +1,9 @@
 import { useId, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import { dataAttr } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import { inputModality, type ChangeDetails } from "../../utils/changeDetails";
+import { gridDirectionForKey, spatialMove, tableCellPosition } from "../../utils/spatialMove";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import {
   addMonths,
   chunkIntoWeeks,
@@ -29,10 +31,15 @@ const defaultDatePickerLabels: DatePickerLabels = {
 };
 const MONTH_FORMATTER = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 
+/** What picked a day: a click or tap on it, or Space/Enter on the focused day. */
+export type DatePickerChangeReason = "day-press" | "keyboard";
+
 export interface DatePickerProps {
   value?: Date;
   defaultValue?: Date;
-  onValueChange?: (date: Date) => void;
+  /** Called before the selection moves, with the reason (`"day-press"` or `"keyboard"`); `details.cancel()`
+   * keeps the current day selected. */
+  onValueChange?: (date: Date, details: ChangeDetails<DatePickerChangeReason>) => void;
   minDate?: Date;
   maxDate?: Date;
   /** Override built-in strings (e.g. for translation); unset keys keep
@@ -58,10 +65,10 @@ export interface DatePickerProps {
  */
 export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDate, labels }: DatePickerProps) {
   const l = { ...defaultDatePickerLabels, ...labels };
-  const [selected, setSelected] = useControllableState<Date | undefined>({
+  const [selected, setSelected] = useControllableStateWithDetails<Date | undefined, DatePickerChangeReason>({
     value,
     defaultValue,
-    onChange: onValueChange as (value: Date | undefined) => void,
+    onChange: onValueChange as (value: Date | undefined, details: ChangeDetails<DatePickerChangeReason>) => void,
   });
 
   const [visibleMonth, setVisibleMonth] = useState(() => startOfDay(selected ?? new Date()));
@@ -79,49 +86,26 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
     setVisibleMonth((month) => addMonths(month, 1));
   }
 
-  function selectDay(day: Date) {
+  function selectDay(day: Date, event: MouseEvent<HTMLButtonElement>) {
     if (!isWithinRange(day, minDate, maxDate)) return;
-    setSelected(day);
+    setSelected(day, inputModality(event) === "keyboard" ? "keyboard" : "day-press", event);
   }
 
   function handleGridKeyDown(event: KeyboardEvent<HTMLTableSectionElement>) {
-    const cells = Array.from(
-      gridRef.current?.querySelectorAll<HTMLButtonElement>("button[data-day]:not(:disabled)") ?? [],
-    );
-    if (cells.length === 0) return;
-
-    const currentIndex = cells.indexOf(document.activeElement as HTMLButtonElement);
-    let nextIndex: number | null = null;
-
-    switch (event.key) {
-      case "ArrowRight":
-        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, cells.length - 1);
-        break;
-      case "ArrowLeft":
-        nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 1, 0);
-        break;
-      case "ArrowDown":
-        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 7, cells.length - 1);
-        break;
-      case "ArrowUp":
-        nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 7, 0);
-        break;
-      case "Home": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = weekStart;
-        break;
-      }
-      case "End": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = Math.min(weekStart + 6, cells.length - 1);
-        break;
-      }
-      default:
-        return;
-    }
-
+    const grid = gridRef.current;
+    const cells = Array.from(grid?.querySelectorAll<HTMLButtonElement>("button[data-day]") ?? []);
+    if (!grid || cells.length === 0) return;
+    const direction = gridDirectionForKey(event, getComputedStyle(grid).direction === "rtl");
+    if (!direction) return;
     event.preventDefault();
-    cells[nextIndex]?.focus();
+    // Real row/column positions, not index arithmetic over enabled days —
+    // see `spatialMove` for why ± 7 lands a column off once a day is disabled.
+    const next = spatialMove(
+      cells.map((cell) => ({ ...tableCellPosition(cell), disabled: cell.disabled })),
+      cells.indexOf(document.activeElement as HTMLButtonElement),
+      direction,
+    );
+    cells[next]?.focus();
   }
 
   return (
@@ -190,7 +174,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
                         disabled={disabled}
                         tabIndex={isSelected || (!selected && isToday) ? 0 : -1}
                         className={styles.dayButton}
-                        onClick={() => selectDay(day)}
+                        onClick={(event) => selectDay(day, event)}
                       >
                         {day.getDate()}
                       </button>

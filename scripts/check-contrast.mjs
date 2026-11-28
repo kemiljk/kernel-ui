@@ -50,6 +50,16 @@ const RULES = [
   { token: "--kernel-color-text-muted", lc: 60, ratio: 4.5, use: "muted text" },
   { token: "--kernel-color-focus-ring", lc: 45, ratio: 3, use: "focus ring" },
   { token: "--kernel-color-border-control", lc: 45, ratio: 3, use: "control border" },
+  // Combobox/CommandPalette's fuzzy-match underline: a 1px accent line under
+  // matched characters, on the popup surface and on the active row's
+  // accent-subtle fill. Held to the same fine-line target as a focus ring.
+  {
+    token: "--kernel-color-accent-text",
+    lc: 45,
+    ratio: 3,
+    use: "match underline",
+    backgrounds: ["--kernel-color-canvas", "--kernel-color-surface", "--kernel-color-accent-subtle"],
+  },
 ];
 const BACKGROUNDS = ["--kernel-color-canvas", "--kernel-color-surface"];
 
@@ -227,7 +237,7 @@ for (const [preset, overrides] of presets) {
       const fg = colour(`var(${rule.token})`, scheme);
       let worstLc = Infinity;
       let worstRatio = Infinity;
-      for (const bgToken of BACKGROUNDS) {
+      for (const bgToken of rule.backgrounds ?? BACKGROUNDS) {
         const bg = colour(`var(${bgToken})`, scheme);
         worstLc = Math.min(worstLc, Math.abs(apca(fg, bg)));
         worstRatio = Math.min(worstRatio, wcagRatio(fg, bg));

@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./RadioGroup.css";
+import { inputModality } from "../../utils/changeDetails";
 
 let radioGroupCounter = 0;
 
@@ -18,6 +19,12 @@ let radioGroupCounter = 0;
  * `disabled`, `value` (the selected item's value — the counterpart of
  * React's `value`/`defaultValue`; reflected back when the user picks an
  * option, alongside the native bubbling `change` event from the radio).
+ *
+ * Change reasons: a native `change` can't be cancelled, so a bubbling,
+ * cancelable `valuechange` is dispatched from the group first, with
+ * `detail: { value, reason }` (`reason` is `"press"` or `"keyboard"`).
+ * `preventDefault()` on it re-checks the previous option and stops the
+ * native `change` at the group.
  */
 export class KernelRadioGroup extends KernelElement {
   private readonly generatedName = `kernel-radio-group-${++radioGroupCounter}`;
@@ -45,7 +52,17 @@ export class KernelRadioGroup extends KernelElement {
     fieldset.append(legend, options);
     fieldset.addEventListener("change", (event) => {
       const target = event.target as HTMLInputElement;
-      if (target.type === "radio" && target.checked) this.setAttribute("value", target.value);
+      if (target.type !== "radio" || !target.checked) return;
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
+      if (!this.emitChange("valuechange", { value: target.value }, reason, event)) {
+        const previous = this.getAttribute("value");
+        for (const input of fieldset.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+          input.checked = previous !== null && input.value === previous;
+        }
+        event.stopPropagation();
+        return;
+      }
+      this.setAttribute("value", target.value);
     });
     this.native = fieldset;
     this.append(fieldset);

@@ -137,3 +137,56 @@ describe("attachSheetDrag snapTo", () => {
     node.remove();
   });
 });
+
+describe("attachSheetDrag: dismissal", () => {
+  function pointer(type: string, target: Element, clientY: number) {
+    const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientY, button: 0 });
+    Object.defineProperties(event, { pointerId: { value: 1 }, pointerType: { value: "touch" } });
+    target.dispatchEvent(event);
+  }
+
+  function setup(onDismiss: SheetDragOptions["onDismiss"]) {
+    const node = document.createElement("div");
+    const body = document.createElement("p");
+    node.append(body);
+    document.body.append(node);
+    Object.defineProperty(node, "offsetHeight", { value: 400 });
+    const onRelease = vi.fn();
+    attachSheetDrag(node, () => ({
+      side: "bottom",
+      enabled: true,
+      handleOnly: false,
+      closeThreshold: 0.25,
+      velocityThreshold: 10,
+      handle: null,
+      footer: null,
+      snapPoints: [],
+      snap: null,
+      onDismiss,
+      onRelease,
+    }));
+    // A slow drag most of the way down: past the distance threshold, under
+    // the flick speed.
+    pointer("pointerdown", body, 0);
+    for (let y = 20; y <= 300; y += 20) pointer("pointermove", body, y);
+    pointer("pointerup", body, 300);
+    return { node, onRelease };
+  }
+
+  it("plays the exit when the dismissal goes ahead", () => {
+    const onDismiss = vi.fn(() => true);
+    const { node, onRelease } = setup(onDismiss);
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(node.style.translate).toBe("0 400px");
+    expect(onRelease).toHaveBeenLastCalledWith(false);
+  });
+
+  it("settles back when the dismissal is refused (a cancelled close)", () => {
+    const onDismiss = vi.fn(() => false);
+    const { node, onRelease } = setup(onDismiss);
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    // Not left translated off-screen.
+    expect(node.style.translate).toBe("");
+    expect(onRelease).toHaveBeenLastCalledWith(true);
+  });
+});

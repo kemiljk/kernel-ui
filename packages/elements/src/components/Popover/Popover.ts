@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
+import { attachPopoverReasons } from "../../utils/popoverReasons";
 import { findTriggerElement } from "../../utils/trigger";
 import "./Popover.css";
 
@@ -20,7 +21,13 @@ let popoverCounter = 0;
  *
  * Attributes: `placement` (top/bottom/left/right, default bottom),
  * `align` (start/center/end, default center), `offset` (px, default 8).
- * Events: `toggle` `CustomEvent` (`event.detail.open`).
+ * Events: `toggle` `CustomEvent` (`event.detail.open`, plus
+ * `detail.reason`) after the popover opens or closes, and before it, a
+ * cancelable `beforetoggle` `CustomEvent` (the platform's own name) with
+ * `detail: { open, reason }` — `"trigger-press"`, `"escape-key"`,
+ * `"outside-press"` or `"programmatic"`. `preventDefault()` stops an
+ * open outright; a light-dismiss close (which the platform won't let
+ * anyone refuse) is undone by re-showing the panel straight away.
  */
 export class KernelPopover extends KernelElement {
   private readonly contentId = `kernel-popover-${++popoverCounter}`;
@@ -58,13 +65,18 @@ export class KernelPopover extends KernelElement {
       triggerEl.setAttribute("aria-expanded", "false");
       this.positioner.attach(triggerEl, content, { placement, align, offset });
 
+      let lastReason = "programmatic";
+      attachPopoverReasons(content, () => triggerEl, (open, reason, event) => {
+        lastReason = reason;
+        return this.emitChange("beforetoggle", { open }, reason, event);
+      });
       content.addEventListener("toggle", (event) => {
         const open = (event as ToggleEvent).newState === "open";
         triggerEl.setAttribute("aria-expanded", String(open));
         if (open) content.setAttribute("data-open", "true");
         else content.removeAttribute("data-open");
         this.positioner.setOpen(open);
-        this.dispatchEvent(new CustomEvent("toggle", { detail: { open }, bubbles: true }));
+        this.dispatchEvent(new CustomEvent("toggle", { detail: { open, reason: lastReason }, bubbles: true }));
       });
     }
 

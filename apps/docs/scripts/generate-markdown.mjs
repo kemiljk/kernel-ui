@@ -13,7 +13,7 @@ import { parse } from "node-html-parser";
 
 const distDir = path.join(import.meta.dirname, "..", "dist");
 const componentsDir = path.join(distDir, "components");
-const guideSlugs = ["choosing", "agents", "installation", "cli", "migration", "theming", "icons", "platforms", "support"];
+const guideSlugs = ["choosing", "agents", "installation", "cli", "migration", "state", "theming", "icons", "platforms", "support"];
 
 // JSX/HTML whitespace collapse means a `<strong>`/`<em>` can abut its
 // neighbouring text with no source space at all (`word<strong>bold</strong>word`),

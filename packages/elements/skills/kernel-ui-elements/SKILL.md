@@ -22,7 +22,7 @@ Bundlers can use `import "@kernelui-lib/styles"`, `import "@kernelui-lib/element
 1. **Pick tags first.** Use the `kernel` MCP server (`search_components`, then `get_component` with `platform: "elements"`), or read `node_modules/@kernelui-lib/elements/llms.txt`.
 2. **Use real attributes.** They're kebab-case versions of React's props (`error-message`, `hide-label`). Booleans are presence-based (`<kernel-checkbox disabled>`), and string values go in attributes.
 3. **Read rich values as DOM properties.** For example `tagInput.tags` returns an array, and CodeBlock takes `lines` or `code`.
-4. **Listen to events.** React's `onValueChange` becomes a `change` event with `event.detail`. `get_component` lists each tag's events.
+4. **Listen to events.** React's `onValueChange` becomes a `change` event with `event.detail`. `get_component` lists each tag's events. Change events fire *before* the change commits, carry `event.detail.reason` (the same per-component strings as React's `ChangeDetails`, e.g. `"trigger-press" | "keyboard"`), and are cancelable: `event.preventDefault()` vetoes the change. Checkbox, RadioGroup, Select and NumberField add a cancelable `valuechange` ahead of the native `change`; Dialog/CommandPalette ask with `cancel`, Popover/DropdownMenu/Accordion items with `beforetoggle`.
 5. **Review.** Run `npx @kernelui-lib/cli check <files>` and fix what it reports.
 
 ## Conventions

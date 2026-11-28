@@ -394,6 +394,40 @@ export type {
   UsageMeterLevel,
 } from "./components/UsageMeter/UsageMeter";
 
+// Change reasons: the second argument of every change callback, and each
+// component's own reason union.
+export { createChangeDetails } from "./utils/changeDetails";
+export type { ChangeDetails, ChangeEventSource } from "./utils/changeDetails";
+export type { CheckboxChangeReason } from "./components/Checkbox/Checkbox";
+export type { SwitchChangeReason } from "./components/Switch/Switch";
+export type { ToggleChangeReason } from "./components/Toggle/Toggle";
+export type { AccordionOpenChangeReason } from "./components/Accordion/Accordion";
+export type { DialogOpenChangeReason } from "./components/Dialog/Dialog";
+export type { RadioGroupChangeReason } from "./components/RadioGroup/RadioGroup";
+export type { SelectChangeReason } from "./components/Select/Select";
+export type { TabsChangeReason } from "./components/Tabs/Tabs";
+export type { SliderChangeReason } from "./components/Slider/Slider";
+export type { PopoverOpenChangeReason } from "./components/Popover/Popover";
+export type { DropdownMenuOpenChangeReason } from "./components/DropdownMenu/DropdownMenu";
+export type { ComboboxChangeReason, ComboboxFilter } from "./components/Combobox/Combobox";
+export type {
+  CommandPaletteOpenChangeReason,
+  CommandPaletteFilter,
+} from "./components/CommandPalette/CommandPalette";
+export type { DatePickerChangeReason } from "./components/DatePicker/DatePicker";
+export type { DateRangePickerChangeReason } from "./components/DateRangePicker/DateRangePicker";
+export type { ColorPickerChangeReason } from "./components/ColorPicker/ColorPicker";
+export type { TagInputChangeReason } from "./components/TagInput/TagInput";
+export type { NumberFieldChangeReason } from "./components/NumberField/NumberField";
+export type { SheetOpenChangeReason } from "./components/Sheet/Sheet";
+
+// Ranked fuzzy matching (Combobox, CommandPalette) and 2-D grid movement
+// (the calendar grids), exported for consumers building their own.
+export { fuzzyScore, fuzzyFilter, fuzzySegments, normalizeFuzzyQuery } from "./utils/fuzzy";
+export type { FuzzyMatch, FuzzyResult } from "./utils/fuzzy";
+export { spatialMove, gridDirectionForKey } from "./utils/spatialMove";
+export type { SpatialCell, SpatialDirection } from "./utils/spatialMove";
+
 export {
   renderElement,
   resolveClassName,

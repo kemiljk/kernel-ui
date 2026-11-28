@@ -9,6 +9,8 @@ import {
   parseDateAttr,
   startOfDay,
 } from "../../utils/dateGrid";
+import { inputModality } from "../../utils/changeDetails";
+import { gridDirectionForKey, spatialMove, tableCellPosition } from "../../utils/spatialMove";
 import "./DatePicker.css";
 
 const WEEKDAY_LABELS: readonly string[] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -55,7 +57,10 @@ let datePickerCounter = 0;
  * Sunday first; default "Su,Mo,Tu,We,Th,Fr,Sa"), or the `labels` property.
  *
  * Attributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.
- * Events: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string).
+ * Events: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string),
+ * dispatched before the selection moves with `detail.reason` (`"day-press"`
+ * or `"keyboard"`); it's cancelable, and `preventDefault()` keeps the
+ * current day.
  */
 export class KernelDatePicker extends KernelElement {
   private readonly baseId = `kernel-date-picker-${++datePickerCounter}`;
@@ -146,53 +151,28 @@ export class KernelDatePicker extends KernelElement {
     this.renderGrid();
   }
 
-  private selectDay(day: Date) {
+  private selectDay(day: Date, event?: Event) {
     if (!isWithinRange(day, this.minDate, this.maxDate)) return;
+    const reason = inputModality(event) === "keyboard" ? "keyboard" : "day-press";
+    if (!this.emitChange("valuechange", { value: formatDateAttr(day) }, reason, event)) return;
     this.selected = day;
     this.renderGrid();
-    this.dispatchEvent(
-      new CustomEvent("valuechange", { detail: { value: formatDateAttr(day) }, bubbles: true }),
-    );
   }
 
   private handleGridKeyDown(event: KeyboardEvent) {
-    const cells = Array.from(
-      this.tbodyEl.querySelectorAll<HTMLButtonElement>("button[data-day]:not(:disabled)"),
-    );
+    const cells = Array.from(this.tbodyEl.querySelectorAll<HTMLButtonElement>("button[data-day]"));
     if (cells.length === 0) return;
-
-    const currentIndex = cells.indexOf(document.activeElement as HTMLButtonElement);
-    let nextIndex: number | null = null;
-
-    switch (event.key) {
-      case "ArrowRight":
-        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, cells.length - 1);
-        break;
-      case "ArrowLeft":
-        nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 1, 0);
-        break;
-      case "ArrowDown":
-        nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 7, cells.length - 1);
-        break;
-      case "ArrowUp":
-        nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 7, 0);
-        break;
-      case "Home": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = weekStart;
-        break;
-      }
-      case "End": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = Math.min(weekStart + 6, cells.length - 1);
-        break;
-      }
-      default:
-        return;
-    }
-
+    const direction = gridDirectionForKey(event, getComputedStyle(this.tbodyEl).direction === "rtl");
+    if (!direction) return;
     event.preventDefault();
-    cells[nextIndex]?.focus();
+    // Real row/column positions, not index arithmetic over enabled days —
+    // see `spatialMove` for why ± 7 lands a column off once a day is disabled.
+    const next = spatialMove(
+      cells.map((cell) => ({ ...tableCellPosition(cell), disabled: cell.disabled })),
+      cells.indexOf(document.activeElement as HTMLButtonElement),
+      direction,
+    );
+    cells[next]?.focus();
   }
 
   protected applyLabels() {
@@ -242,7 +222,7 @@ export class KernelDatePicker extends KernelElement {
           button.tabIndex = isSelected || (!this.selected && isToday) ? 0 : -1;
           button.className = kernelClass("DatePicker", "dayButton");
           button.textContent = String(day.getDate());
-          button.addEventListener("click", () => this.selectDay(day));
+          button.addEventListener("click", (event) => this.selectDay(day, event));
           td.append(button);
         } else {
           const span = document.createElement("span");

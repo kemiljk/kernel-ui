@@ -1,12 +1,18 @@
-import { forwardRef, useId } from "react";
+import { forwardRef, useEffect, useId, useRef } from "react";
 import type { ReactNode, SelectHTMLAttributes } from "react";
-import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { inputModality, trackInputModality, type ChangeDetails } from "../../utils/changeDetails";
+import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { emitChange } from "../../utils/useControllableState";
 import styles from "./Select.module.css";
 
 export interface SelectState {
   invalid: boolean;
   disabled: boolean;
 }
+
+/** What picked an option: a click or tap, arrow keys / Enter / Space, or
+ * typing the start of an option's text (the native typeahead). */
+export type SelectChangeReason = "item-press" | "keyboard" | "typeahead";
 
 export interface SelectProps
   extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "className"> {
@@ -21,6 +27,10 @@ export interface SelectProps
    * them up with the select's own text padding (`--kernel-label-inset`). */
   labelOffset?: boolean;
   invalid?: boolean;
+  /** Called before a new option is committed, with its value and the
+   * reason; `details.cancel()` puts the previous option back (and skips
+   * `onChange`). The native `onChange` still works as it always has. */
+  onValueChange?: (value: string, details: ChangeDetails<SelectChangeReason>) => void;
   className?: ClassNameValue<SelectState>;
 }
 
@@ -29,6 +39,12 @@ export interface SelectProps
  * typeahead, and form behaviour. Supporting browsers opt into a token-styled
  * native picker with `appearance: base-select`; others retain the existing
  * styled control and platform picker. Plain options keep SSR markup portable.
+ *
+ * `onValueChange` reports *why* the value changed by remembering the last
+ * pointer or key on the control, since a native `change` event doesn't say.
+ * With the platform's own picker (a separate OS menu on some systems) the
+ * keys pressed inside it may never reach the page, so treat the reason as
+ * best-effort there.
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
   {
@@ -43,11 +59,23 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     id,
     className,
     children,
+    onValueChange,
+    onChange,
+    onKeyDown,
+    onPointerDown,
     ...rest
   },
   ref,
 ) {
   const generatedId = useId();
+  const selectRef = useRef<HTMLSelectElement>(null);
+  const previousValueRef = useRef<string | null>(null);
+  const lastKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    trackInputModality();
+    if (selectRef.current) previousValueRef.current = selectRef.current.value;
+  });
   const selectId = id ?? generatedId;
   const descriptionId = `${selectId}-description`;
   const errorId = `${selectId}-error`;
@@ -83,8 +111,33 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       <div className={styles.controlWrapper}>
         <select
           {...rest}
-          ref={ref}
+          ref={mergeRefs(ref, selectRef)}
           id={selectId}
+          onKeyDown={(event) => {
+            lastKeyRef.current = event.key;
+            onKeyDown?.(event);
+          }}
+          onPointerDown={(event) => {
+            lastKeyRef.current = null;
+            onPointerDown?.(event);
+          }}
+          onChange={(event) => {
+            const key = lastKeyRef.current;
+            const reason: SelectChangeReason =
+              inputModality(event) !== "keyboard"
+                ? "item-press"
+                : key && key.length === 1 && key !== " "
+                  ? "typeahead"
+                  : "keyboard";
+            if (!emitChange(onValueChange, event.target.value, reason, event)) {
+              // Vetoed: put the previous option back. A controlled select
+              // would be restored by React anyway; an uncontrolled one won't.
+              if (previousValueRef.current !== null) event.target.value = previousValueRef.current;
+              return;
+            }
+            previousValueRef.current = event.target.value;
+            onChange?.(event);
+          }}
           disabled={disabled}
           required={required}
           aria-invalid={invalid || undefined}

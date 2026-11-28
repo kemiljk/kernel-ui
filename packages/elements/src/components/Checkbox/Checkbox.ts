@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import "./Checkbox.css";
+import { inputModality } from "../../utils/changeDetails";
 
 /**
  * `<kernel-checkbox>` — a real `<input type="checkbox">` inside a real
@@ -12,6 +13,13 @@ import "./Checkbox.css";
  * true`) same as any native one. The real inner `<input>` fires real,
  * bubbling `change` events; listen on it directly or on this element,
  * no synthetic event needed.
+ *
+ * Change reasons: a native `change` can't be cancelled, so a bubbling,
+ * cancelable `valuechange` is dispatched from this element first, with
+ * `detail: { checked, reason }` (`reason` is `"press"` or `"keyboard"`).
+ * `preventDefault()` on it puts the box back and stops the native `change`
+ * at this element (a listener on the inner `<input>` itself has already
+ * seen it).
  */
 export class KernelCheckbox extends KernelElement {
   static get observedAttributes() {
@@ -42,6 +50,13 @@ export class KernelCheckbox extends KernelElement {
 
     label.append(input, control);
     if (labelText.childNodes.length) label.append(labelText);
+    label.addEventListener("change", (event) => {
+      if (event.target !== input) return;
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
+      if (this.emitChange("valuechange", { checked: input.checked }, reason, event)) return;
+      input.checked = !input.checked;
+      event.stopPropagation();
+    });
     return label;
   }
 

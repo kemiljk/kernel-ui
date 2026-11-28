@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import type { ChangeDetails, ChangeEventSource } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import styles from "./NumberField.module.css";
 
 export interface NumberFieldState {
@@ -18,6 +19,9 @@ export interface NumberFieldLabels {
 }
 
 const defaultNumberFieldLabels: NumberFieldLabels = { increment: "Increment", decrement: "Decrement" };
+
+/** What changed a `NumberField`. */
+export type NumberFieldChangeReason = "input" | "keyboard" | "wheel" | "step-button";
 
 export interface NumberFieldProps
   extends Omit<
@@ -36,7 +40,11 @@ export interface NumberFieldProps
   labelOffset?: boolean;
   value?: number;
   defaultValue?: number;
-  onValueChange?: (value: number | undefined) => void;
+  /** Called before the value commits, with the reason: `"input"` (typing),
+   * `"keyboard"` (ArrowUp/ArrowDown in the field), `"wheel"` (scrolling over
+   * the focused field, where the browser does that) or `"step-button"` (the
+   * − / + buttons). `details.cancel()` keeps the committed value. */
+  onValueChange?: (value: number | undefined, details: ChangeDetails<NumberFieldChangeReason>) => void;
   min?: number;
   max?: number;
   step?: number;
@@ -109,7 +117,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
     const errorId = `${inputId}-error`;
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const [current, setCurrent] = useControllableState<number | undefined>({
+    const [current, setCurrent] = useControllableStateWithDetails<number | undefined, NumberFieldChangeReason>({
       value,
       defaultValue,
       onChange: onValueChange,
@@ -122,23 +130,33 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
       if (!focused) setDraft(current !== undefined ? String(current) : "");
     }, [current, focused]);
 
-    function handleChange(raw: string) {
+    // The input's own `change` can't say whether the browser stepped the
+    // value (ArrowUp/Down, wheel) or the user typed it, so the last key or
+    // wheel on the field is remembered and read once.
+    const pendingReasonRef = useRef<NumberFieldChangeReason>("input");
+
+    function handleChange(raw: string, event: ChangeEventSource) {
+      const reason = pendingReasonRef.current;
+      pendingReasonRef.current = "input";
       setDraft(raw);
       if (raw === "") {
-        setCurrent(undefined);
+        setCurrent(undefined, reason, event);
         return;
       }
       const parsed = Number(raw);
-      if (!Number.isNaN(parsed)) setCurrent(parsed);
+      if (!Number.isNaN(parsed)) setCurrent(parsed, reason, event);
     }
 
-    function stepBy(direction: 1 | -1) {
+    function stepBy(direction: 1 | -1, event: ChangeEventSource) {
       const input = inputRef.current;
       if (!input) return;
+      const previous = input.value;
       if (direction === 1) input.stepUp();
       else input.stepDown();
-      setDraft(input.value);
-      setCurrent(input.value === "" ? undefined : Number(input.value));
+      const committed = setCurrent(input.value === "" ? undefined : Number(input.value), "step-button", event);
+      // stepUp()/stepDown() wrote the DOM directly; a vetoed step puts it back.
+      if (committed) setDraft(input.value);
+      else input.value = previous;
       input.focus();
     }
 
@@ -192,7 +210,16 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
             aria-describedby={describedBy}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            onChange={(event) => handleChange(event.target.value)}
+            onChange={(event) => handleChange(event.target.value, event)}
+            onKeyDown={(event) => {
+              rest.onKeyDown?.(event);
+              pendingReasonRef.current =
+                event.key === "ArrowUp" || event.key === "ArrowDown" ? "keyboard" : "input";
+            }}
+            onWheel={(event) => {
+              rest.onWheel?.(event);
+              pendingReasonRef.current = "wheel";
+            }}
             className={[styles.input, resolveClassName(className, state)]
               .filter(Boolean)
               .join(" ")}
@@ -205,7 +232,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               aria-label={l.decrement}
               data-step="down"
               disabled={disabled || atMin}
-              onClick={() => stepBy(-1)}
+              onClick={(event) => stepBy(-1, event)}
               className={styles.stepperButton}
             >
               <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
@@ -224,7 +251,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               aria-label={l.increment}
               data-step="up"
               disabled={disabled || atMax}
-              onClick={() => stepBy(1)}
+              onClick={(event) => stepBy(1, event)}
               className={styles.stepperButton}
             >
               <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">

@@ -1,7 +1,8 @@
 import { forwardRef, useId, useRef, useState } from "react";
 import type { ClipboardEvent, InputHTMLAttributes, KeyboardEvent, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
-import { useControllableState } from "../../utils/useControllableState";
+import type { ChangeDetails, ChangeEventSource } from "../../utils/changeDetails";
+import { useControllableStateWithDetails } from "../../utils/useControllableState";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { Badge } from "../Badge/Badge";
 import styles from "./TagInput.module.css";
@@ -24,6 +25,10 @@ export interface TagInputLabels {
 
 const defaultTagInputLabels: TagInputLabels = { removeTag: (tag) => `Remove ${tag}` };
 
+/** What changed a `TagInput`'s tags: Enter, a typed delimiter, a paste, a
+ * chip's remove button, or Backspace on an empty draft. */
+export type TagInputChangeReason = "enter" | "separator" | "paste" | "remove-button" | "backspace";
+
 export interface TagInputProps
   extends Omit<
     InputHTMLAttributes<HTMLInputElement>,
@@ -35,7 +40,11 @@ export interface TagInputProps
   hideLabel?: boolean;
   value?: string[];
   defaultValue?: string[];
-  onValueChange?: (tags: string[]) => void;
+  /** Called before the tags change, with the reason (`"enter"`, `"separator"`, `"paste"`, `"remove-button"` or `"backspace"`); `details.cancel()`
+   * keeps them as they were (an added tag stays in the draft). A removal is
+   * reported once the chip's exit transition has played, so a cancelled
+   * removal brings the chip back. */
+  onValueChange?: (tags: string[], details: ChangeDetails<TagInputChangeReason>) => void;
   /** Characters that commit the current draft as a tag, in addition to
    * Enter, which always commits. */
   delimiters?: string[];
@@ -119,7 +128,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   const descriptionId = `${inputId}-description`;
   const errorId = `${inputId}-error`;
 
-  const [tags, setTags] = useControllableState<string[]>({
+  const [tags, setTags] = useControllableStateWithDetails<string[], TagInputChangeReason>({
     value,
     defaultValue,
     onChange: onValueChange,
@@ -139,11 +148,11 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   tagsRef.current = tags;
   const tagNodesRef = useRef(new Map<string, HTMLElement>());
 
-  function removeTag(tag: string) {
+  function removeTag(tag: string, reason: "remove-button" | "backspace", event?: ChangeEventSource) {
     inputRef.current?.focus();
     const node = tagNodesRef.current.get(tag);
     if (!node || prefersReducedMotion()) {
-      setTags(tagsRef.current.filter((t) => t !== tag));
+      setTags(tagsRef.current.filter((t) => t !== tag), reason, event);
       return;
     }
     setRemovingTags((prev) => {
@@ -151,8 +160,10 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       next.add(tag);
       return next;
     });
+    // The event is long gone by the time the transition ends; only the
+    // reason travels.
     void waitForExitTransition(node).then(() => {
-      setTags(tagsRef.current.filter((t) => t !== tag));
+      setTags(tagsRef.current.filter((t) => t !== tag), reason);
       setRemovingTags((prev) => {
         if (!prev.has(tag)) return prev;
         const next = new Set(prev);
@@ -166,7 +177,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   const delimiterRegex = new RegExp(delimiterPattern);
   const splitRegex = new RegExp(`${delimiterPattern}|\\r?\\n`);
 
-  function commitDraft(raw: string) {
+  function commitDraft(raw: string, event: ChangeEventSource) {
     const trimmed = raw.trim();
     if (trimmed === "") {
       if (raw !== "") onError?.({ type: "empty", value: raw });
@@ -181,8 +192,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       onError?.({ type: "max", value: trimmed });
       return;
     }
-    setTags([...tags, trimmed]);
-    setDraft("");
+    if (setTags([...tags, trimmed], "enter", event)) setDraft("");
   }
 
   /** Committing more than one part in the same synchronous handler (a
@@ -193,7 +203,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
    * subsequent `setTags` call would overwrite the previous one instead
    * of accumulating. This folds locally over `parts` first and commits
    * the result in one `setTags` call. */
-  function commitParts(parts: string[]) {
+  function commitParts(parts: string[], reason: "separator" | "paste", event: ChangeEventSource): boolean {
     let next = tags;
     for (const raw of parts) {
       const trimmed = raw.trim();
@@ -211,15 +221,15 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       }
       next = [...next, trimmed];
     }
-    if (next !== tags) setTags(next);
+    return next === tags || setTags(next, reason, event);
   }
 
-  function handleChange(next: string) {
+  function handleChange(next: string, event: ChangeEventSource) {
     if (delimiterRegex.test(next)) {
       const parts = next.split(delimiterRegex);
       const trailing = parts.pop() ?? "";
-      commitParts(parts);
-      setDraft(trailing);
+      // Vetoed: keep the typed text (minus the delimiter) as the draft.
+      setDraft(commitParts(parts, "separator", event) ? trailing : next.replace(delimiterRegex, ""));
     } else {
       setDraft(next);
     }
@@ -228,9 +238,9 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
-      commitDraft(draft);
+      commitDraft(draft, event);
     } else if (event.key === "Backspace" && draft === "" && tags.length > 0) {
-      removeTag(tags[tags.length - 1]!);
+      removeTag(tags[tags.length - 1]!, "backspace", event);
     }
   }
 
@@ -238,8 +248,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     const text = event.clipboardData.getData("text");
     if (!text) return;
     event.preventDefault();
-    commitParts(text.split(splitRegex));
-    setDraft("");
+    if (commitParts(text.split(splitRegex), "paste", event)) setDraft("");
   }
 
   const showError = invalid && Boolean(errorMessage);
@@ -297,7 +306,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
                   aria-label={l.removeTag(tag)}
                   onClick={(event) => {
                     event.stopPropagation();
-                    removeTag(tag);
+                    removeTag(tag, "remove-button", event);
                   }}
                 >
                   <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12">
@@ -322,7 +331,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
           value={draft}
           disabled={disabled || atMax}
           aria-describedby={describedBy}
-          onChange={(event) => handleChange(event.target.value)}
+          onChange={(event) => handleChange(event.target.value, event)}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
         />

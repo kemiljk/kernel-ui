@@ -103,6 +103,9 @@ function panelKeyframes(from: PanelBox, to: PanelBox, opening: boolean, fromOpac
 
 export interface DetailsPanelAnimatorOptions {
   onOpenChange?: (open: boolean) => void;
+  /** Asked before a summary click opens or closes the panel; return
+   * `false` to veto (the click is already cancelled, so nothing toggles). */
+  onBeforeOpenChange?: (open: boolean, event: MouseEvent) => boolean;
 }
 
 /**
@@ -141,6 +144,7 @@ export class DetailsPanelAnimator {
       event.preventDefault();
       const next =
         this.animatingOpen !== null ? !this.animatingOpen : !this.details.open;
+      if (this.options.onBeforeOpenChange?.(next, event) === false) return;
       void this.setOpen(next);
     };
 

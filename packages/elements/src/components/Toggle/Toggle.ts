@@ -1,6 +1,7 @@
 import { KernelElement, kernelClass } from "../../base";
 import { observePillIcons } from "../../utils/pillIcons";
 import "./Toggle.css";
+import { inputModality } from "../../utils/changeDetails";
 
 /**
  * `<kernel-toggle>` — a real `<button aria-pressed>`, the WAI-ARIA
@@ -30,10 +31,13 @@ export class KernelToggle extends KernelElement {
     button.setAttribute("aria-pressed", "false");
     button.dataset.size = "md";
     button.dataset.state = "off";
-    button.addEventListener("click", () => {
-      if (this.hasAttribute("pressed")) this.removeAttribute("pressed");
-      else this.setAttribute("pressed", "");
-      this.dispatchEvent(new Event("change", { bubbles: true }));
+    // Dispatched before the flip, cancelable: `detail: { pressed, reason }`
+    // with `reason` `"press"` or `"keyboard"`; `preventDefault()` vetoes it.
+    button.addEventListener("click", (event) => {
+      const pressed = !this.hasAttribute("pressed");
+      const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
+      if (!this.emitChange("change", { pressed }, reason, event)) return;
+      this.toggleAttribute("pressed", pressed);
     });
     return button;
   }

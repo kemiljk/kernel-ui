@@ -38,10 +38,35 @@ import {
   roveMenuItems,
   type MenuOpenFocus,
 } from "../../utils/menuFocus";
+import {
+  inputModality,
+  trackInputModality,
+  type ChangeDetails,
+  type ChangeEventSource,
+} from "../../utils/changeDetails";
+import { attachPopoverReasons, type PopoverReasonController } from "../../utils/popoverReasons";
+import { emitChange } from "../../utils/useControllableState";
 import styles from "./DropdownMenu.module.css";
 
+/** Why a menu opened or closed: its trigger, Escape, a press outside, focus
+ * leaving a disclosure menu, an item chosen by pointer or by keyboard, or
+ * code (`programmatic`). */
+export type DropdownMenuOpenChangeReason =
+  | "trigger-press"
+  | "escape-key"
+  | "outside-press"
+  | "focus-out"
+  | "item-press"
+  | "item-keyboard"
+  | "programmatic";
+
 interface MenuContextValue {
-  close: () => void;
+  /** Close after an item was chosen; the event says pointer or keyboard. */
+  close: (event?: ChangeEventSource) => void;
+}
+
+function itemReason(event: ChangeEventSource): "item-press" | "item-keyboard" {
+  return inputModality(event) === "keyboard" ? "item-keyboard" : "item-press";
 }
 
 /** Exported so other menu-shaped triggers (ContextMenu) can share
@@ -121,6 +146,12 @@ export interface DropdownMenuProps {
   className?: ClassNameValue<DropdownMenuState>;
   /** Replace the popup element (e.g. wrap with Motion). */
   renderContent?: RenderProp<DropdownMenuState>;
+  /** Called before the menu opens or closes, with the reason:
+   * `"trigger-press"`, `"escape-key"`, `"outside-press"`, `"focus-out"`
+   * (disclosure only), `"item-press"`, `"item-keyboard"` or `"programmatic"`.
+   * `details.cancel()` keeps it as it is — e.g. cancel `"item-keyboard"` to
+   * keep the menu open while someone works through it with the keyboard. */
+  onOpenChange?: (open: boolean, details: ChangeDetails<DropdownMenuOpenChangeReason>) => void;
 }
 
 /**
@@ -147,7 +178,7 @@ export function DropdownMenu(props: DropdownMenuProps) {
  * or an animation timer. Only menu focus, dismissal and roving need JS. */
 function DisclosureDropdownMenu({
   render, children, placement = "bottom", align = "center", offset = 8,
-  className, renderContent,
+  className, renderContent, onOpenChange,
 }: DropdownMenuProps) {
   const id = useId();
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -157,13 +188,15 @@ function DisclosureDropdownMenu({
   const openFocus = useMenuOpenFocus(menuRef, {
     isOpen: () => Boolean(detailsRef.current?.open),
     open: () => {
-      if (detailsRef.current) detailsRef.current.open = true;
+      if (detailsRef.current && emitChange(onOpenChange, true, "trigger-press")) detailsRef.current.open = true;
     },
   });
+  useEffect(trackInputModality, []);
 
-  function close() {
+  function close(reason: DropdownMenuOpenChangeReason, event?: ChangeEventSource) {
     const details = detailsRef.current;
-    if (!details) return;
+    if (!details?.open) return;
+    if (!emitChange(onOpenChange, false, reason, event)) return;
     if (menuRef.current?.contains(document.activeElement)) {
       details.querySelector<HTMLElement>("summary")?.focus();
     }
@@ -173,17 +206,17 @@ function DisclosureDropdownMenu({
   useEffect(() => {
     if (!open) return;
     function dismiss(event: PointerEvent) {
-      if (!detailsRef.current?.contains(event.target as Node)) close();
+      if (!detailsRef.current?.contains(event.target as Node)) close("outside-press", event);
     }
     // Touch browsers can blur to no relatedTarget before summary's click.
     // Only an actual focus destination outside the disclosure dismisses it.
     function focusOutside(event: FocusEvent) {
-      if (!detailsRef.current?.contains(event.target as Node)) close();
+      if (!detailsRef.current?.contains(event.target as Node)) close("focus-out", event);
     }
     function escape(event: globalThis.KeyboardEvent) {
       if (event.key === "Escape" && !event.defaultPrevented) {
         event.preventDefault();
-        close();
+        close("escape-key", event);
       }
     }
     document.addEventListener("pointerdown", dismiss);
@@ -194,10 +227,11 @@ function DisclosureDropdownMenu({
       document.removeEventListener("focusin", focusOutside);
       document.removeEventListener("keydown", escape);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return (
-    <MenuContext.Provider value={{ close }}>
+    <MenuContext.Provider value={{ close: (event) => close(itemReason(event), event) }}>
       <details
         ref={detailsRef}
         className={styles.disclosure}
@@ -216,6 +250,12 @@ function DisclosureDropdownMenu({
       >
         {renderElement(render, "summary", {
           ...openFocus.triggerProps,
+          // The summary's click is what toggles <details>, and it's
+          // cancelable, so a veto simply stops the toggle.
+          onClick: (event: ReactMouseEvent<HTMLElement>) => {
+            const next = !detailsRef.current?.open;
+            if (!emitChange(onOpenChange, next, "trigger-press", event)) event.preventDefault();
+          },
           className: styles.disclosureTrigger,
           "aria-haspopup": "menu",
           "aria-controls": id,
@@ -243,10 +283,14 @@ function PopoverDropdownMenu({
   offset = 8,
   className,
   renderContent,
+  onOpenChange,
 }: DropdownMenuProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const reasonsRef = useRef<PopoverReasonController<DropdownMenuOpenChangeReason> | null>(null);
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLElement, HTMLDivElement>({
     open,
     placement,
@@ -272,11 +316,24 @@ function PopoverDropdownMenu({
     }
 
     node.addEventListener("toggle", handleToggle);
-    return () => node.removeEventListener("toggle", handleToggle);
-  }, []);
+    trackInputModality();
+    const reasons = attachPopoverReasons<DropdownMenuOpenChangeReason>(
+      node,
+      () => anchorRef.current,
+      (next, reason, event) => emitChange(onOpenChangeRef.current, next, reason, event),
+    );
+    reasonsRef.current = reasons;
+    return () => {
+      node.removeEventListener("toggle", handleToggle);
+      reasons.dispose();
+      reasonsRef.current = null;
+    };
+  }, [anchorRef]);
 
-  function close() {
-    menuRef.current?.hidePopover?.();
+  function close(event?: ChangeEventSource) {
+    const native = event && "nativeEvent" in event ? event.nativeEvent : (event ?? undefined);
+    if (reasonsRef.current) reasonsRef.current.closeWith(itemReason(event), native);
+    else menuRef.current?.hidePopover?.();
   }
 
   const trigger = renderElement(
@@ -361,7 +418,7 @@ export function MenuItem({
     // Modifier-clicks / middle-click keep native link behaviour (new tab,
     // etc.) — we never preventDefault here, only close after select.
     onSelect?.();
-    context?.close();
+    context?.close(event);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
@@ -462,6 +519,9 @@ export interface DropdownMenuMorphProps {
   className?: ClassNameValue<DropdownMenuState>;
   /** Replace the popup element (e.g. wrap with Motion). */
   renderContent?: RenderProp<DropdownMenuState>;
+  /** Called before the menu opens or closes, with the reason; see
+   * `DropdownMenu`'s `onOpenChange`. */
+  onOpenChange?: (open: boolean, details: ChangeDetails<DropdownMenuOpenChangeReason>) => void;
 }
 
 /**
@@ -495,6 +555,7 @@ export function DropdownMenuMorph({
   offset = 8,
   className,
   renderContent,
+  onOpenChange,
 }: DropdownMenuMorphProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -509,7 +570,9 @@ export function DropdownMenuMorph({
   const { playMorphOpen, playMorphClose, cancelMorph } = useMenuMorph(anchorRef, menuRef);
   const openFocus = useMenuOpenFocus(menuRef, {
     isOpen: () => open,
-    open: () => openMenu(),
+    open: () => {
+      if (emitChange(onOpenChange, true, "trigger-press")) openMenu();
+    },
   });
 
   const state: DropdownMenuState = { open, placement, align };
@@ -558,8 +621,15 @@ export function DropdownMenuMorph({
    * Focus goes back to the trigger first, as `popover="auto"` does for
    * `DropdownMenu` (a manual popover gets no such restore), except after an
    * outside press, which leaves focus wherever that press put it. */
-  function close(returnFocus = true) {
+  useEffect(trackInputModality, []);
+
+  function close(
+    reason: DropdownMenuOpenChangeReason = "programmatic",
+    event?: ChangeEventSource,
+    returnFocus = true,
+  ) {
     if (!open) return;
+    if (!emitChange(onOpenChange, false, reason, event)) return;
     if (returnFocus) returnFocusFromMenu(menuRef.current, anchorRef.current);
     openFocus.resetIntent();
     setOpen(false);
@@ -575,10 +645,10 @@ export function DropdownMenuMorph({
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target as Node;
-      if (!menuRef.current?.contains(target) && !anchorRef.current?.contains(target)) close(false);
+      if (!menuRef.current?.contains(target) && !anchorRef.current?.contains(target)) close("outside-press", event, false);
     }
     function handleEscape(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape") close("escape-key", event);
     }
 
     document.addEventListener("pointerdown", handlePointerDown);
@@ -598,7 +668,10 @@ export function DropdownMenuMorph({
       ref: anchorRef,
       "aria-haspopup": "menu",
       "aria-expanded": open,
-      onClick: () => (open ? close() : openMenu()),
+      onClick: (event: ReactMouseEvent<HTMLElement>) => {
+        if (open) close("trigger-press", event);
+        else if (emitChange(onOpenChange, true, "trigger-press", event)) openMenu();
+      },
     },
     { open },
   );
@@ -623,7 +696,7 @@ export function DropdownMenuMorph({
   const popup = renderElement(renderContent, "div", popupProps, state);
 
   return (
-    <MenuContext.Provider value={{ close: () => close() }}>
+    <MenuContext.Provider value={{ close: (event) => close(itemReason(event), event) }}>
       {trigger}
       {popup}
     </MenuContext.Provider>

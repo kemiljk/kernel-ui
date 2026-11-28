@@ -13,7 +13,12 @@ import {
   type FloatingAlign,
   type FloatingPlacement,
 } from "../../utils/useFloatingPosition";
+import type { ChangeDetails } from "../../utils/changeDetails";
+import { attachPopoverReasons, type PopoverOpenChangeReason } from "../../utils/popoverReasons";
+import { emitChange } from "../../utils/useControllableState";
 import styles from "./Popover.module.css";
+
+export type { PopoverOpenChangeReason };
 
 export interface PopoverState {
   open: boolean;
@@ -29,7 +34,12 @@ export interface PopoverProps {
   /** Gap between the trigger and the panel, in pixels. */
   offset?: number;
   open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  /** Called before the popover opens or closes, with the reason:
+   * `"trigger-press"`, `"escape-key"`, `"outside-press"` or
+   * `"programmatic"`. `details.cancel()` keeps it as it is — an open is
+   * stopped outright; a light-dismiss close (which the platform won't let
+   * anyone refuse) is undone by re-showing the panel straight away. */
+  onOpenChange?: (open: boolean, details: ChangeDetails<PopoverOpenChangeReason>) => void;
   /** Classes for the popover panel. */
   className?: ClassNameValue<PopoverState>;
   /** Replace the panel element (e.g. wrap with Motion). */
@@ -73,17 +83,26 @@ export function Popover({
 
   const state: PopoverState = { open: isOpen, placement, align };
 
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
   useEffect(() => {
     const node = popoverRef.current;
     if (!node) return;
     function handleToggle(event: Event) {
-      const nowOpen = (event as ToggleEvent).newState === "open";
-      setInternalOpen(nowOpen);
-      onOpenChange?.(nowOpen);
+      setInternalOpen((event as ToggleEvent).newState === "open");
     }
     node.addEventListener("toggle", handleToggle);
-    return () => node.removeEventListener("toggle", handleToggle);
-  }, [onOpenChange]);
+    const reasons = attachPopoverReasons(
+      node,
+      () => anchorRef.current,
+      (next, reason, event) => emitChange(onOpenChangeRef.current, next, reason, event),
+    );
+    return () => {
+      node.removeEventListener("toggle", handleToggle);
+      reasons.dispose();
+    };
+  }, [anchorRef]);
 
   useEffect(() => {
     if (open === undefined) return;
