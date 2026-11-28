@@ -264,6 +264,41 @@ describe("act", () => {
     expect(result.diff.removed.map((r) => r.role)).toContain("dialog");
   });
 
+  it("waits for a dialog that closes after its exit transition, however late", async () => {
+    // Kernel's Dialog holds the native close() until its exit transition
+    // ends; on a slow machine that lands well after the DOM has gone quiet.
+    const root = mount(`
+      <dialog open aria-label="Invite"><button data-slot="dialog-close" aria-label="Close" id="x"></button></dialog>
+    `);
+    const dialog = root.querySelector("dialog")!;
+    document.getElementById("x")!.addEventListener("click", () => {
+      setTimeout(() => dialog.removeAttribute("open"), 400);
+    });
+    const bridge = createAgentBridge({ root });
+    const result = await bridge.act({ steps: [{ ref: find(bridge, "dialog", "Invite").ref!, action: "close" }] });
+    expect(result.ok).toBe(true);
+    expect(dialog.open).toBe(false);
+    expect(result.diff.removed.map((r) => r.role)).toContain("dialog");
+  });
+
+  it("fails a close the page cancels instead of reporting success", async () => {
+    const root = mount(`
+      <dialog open aria-label="Invite"><button data-slot="dialog-close" aria-label="Close" id="x"></button></dialog>
+    `);
+    const bridge = createAgentBridge({ root });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      const pending = bridge.act({ steps: [{ ref: find(bridge, "dialog", "Invite").ref!, action: "close" }] });
+      await vi.advanceTimersByTimeAsync(5000);
+      const result = await pending;
+      expect(result.ok).toBe(false);
+      expect(result.results[0]!.error).toMatch(/stayed open/);
+      expect(root.querySelector("dialog")!.open).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("refuses disabled, hidden, unknown and excluded targets with a clear error", async () => {
     const root = mount(`<button disabled>Off</button><button id="later">Later</button><button aria-disabled="true">Soft off</button>`);
     const bridge = createAgentBridge({ root });

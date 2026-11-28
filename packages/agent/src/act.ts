@@ -401,6 +401,37 @@ function invokerOf(target: Element): Element | null {
   return scope.querySelector(`[popovertarget="${escaped}"], [commandfor="${escaped}"], [aria-controls~="${escaped}"]`);
 }
 
+/** Resolves once a `<dialog>` has really closed (`open` gone, or its
+ * `close` event), or with `false` after `timeout` ms. Closing goes through
+ * the page's own code: Kernel's Dialog holds the native `close()` until its
+ * exit transition ends, and an app may veto the close entirely, so the
+ * press returning is not the dialog closing. Waiting on the dialog itself,
+ * rather than on how long the page looks busy, keeps a slow machine from
+ * reading the snapshot mid-exit. */
+function dialogClosed(dialog: HTMLDialogElement, timeout = 3000): Promise<boolean> {
+  if (!dialog.open || !dialog.isConnected) return Promise.resolve(true);
+  const win = view(dialog);
+  return new Promise((resolve) => {
+    let observer: MutationObserver | null = null;
+    const done = (closed: boolean) => {
+      observer?.disconnect();
+      dialog.removeEventListener("close", onClose);
+      clearTimeout(timer);
+      resolve(closed);
+    };
+    const onClose = () => done(true);
+    dialog.addEventListener("close", onClose);
+    if (typeof win.MutationObserver === "function") {
+      observer = new win.MutationObserver(() => {
+        if (!dialog.open || !dialog.isConnected) done(true);
+      });
+      observer.observe(dialog, { attributes: true, attributeFilter: ["open"] });
+      if (dialog.parentNode) observer.observe(dialog.parentNode, { childList: true });
+    }
+    const timer = setTimeout(() => done(!dialog.open || !dialog.isConnected), timeout);
+  });
+}
+
 /** Opens or closes a disclosure, dialog, popover or expandable trigger
  * through the control a person would use. */
 export async function setOpen(el: Element, want: boolean): Promise<ActOutcome> {
@@ -426,12 +457,18 @@ export async function setOpen(el: Element, want: boolean): Promise<ActOutcome> {
     const close = closeButtonIn(el);
     if (close) {
       press(close);
+      if (tag === "DIALOG" && !(await dialogClosed(el as HTMLDialogElement))) {
+        throw new StepError("Pressed the dialog's close button, but the dialog stayed open (the page may have cancelled the close).");
+      }
       return {};
     }
     if (tag === "DIALOG") {
       const dialog = el as HTMLDialogElement;
       const cancel = new (view(el).Event)("cancel", { cancelable: true });
       if (dialog.dispatchEvent(cancel)) dialog.close();
+      if (!(await dialogClosed(dialog))) {
+        throw new StepError("Asked the dialog to close as Escape would, but it stayed open (the page may have cancelled the close).");
+      }
       return { note: "closed as if Escape was pressed" };
     }
     el.dispatchEvent(new (view(el).KeyboardEvent)("keydown", { key: "Escape", code: "Escape", bubbles: true, cancelable: true }));
