@@ -2,12 +2,15 @@ import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CATEGORIES, components } from "../dist/components.js";
+import { extractApi } from "./extract-api.mjs";
 
 const root = path.join(fileURLToPath(import.meta.url), "..", "..");
 const reactLlmsPath = path.join(root, "..", "react", "llms.txt");
 const elementsLlmsPath = path.join(root, "..", "elements", "llms.txt");
 const registryJsonPath = path.join(root, "dist", "registry.json");
 const docsPublicPath = path.join(root, "..", "..", "apps", "docs", "public", "registry.json");
+const apiJsonPath = path.join(root, "dist", "api.json");
+const docsApiPath = path.join(root, "..", "..", "apps", "docs", "public", "api.json");
 
 const START = "<!-- GENERATED:COMPONENTS:START -->";
 const END = "<!-- GENERATED:COMPONENTS:END -->";
@@ -110,6 +113,13 @@ async function main() {
   await writeFile(registryJsonPath, json, "utf-8");
   await mkdir(path.dirname(docsPublicPath), { recursive: true });
   await writeFile(docsPublicPath, json, "utf-8");
+
+  // Exact props/attributes/events per component, read from source. Kept out
+  // of registry.json (which stays a small catalogue) and written beside it.
+  const api = { version: 1, components: extractApi(components, path.join(root, "..", "..")) };
+  const apiJson = `${JSON.stringify(api, null, 2)}\n`;
+  await writeFile(apiJsonPath, apiJson, "utf-8");
+  await writeFile(docsApiPath, apiJson, "utf-8");
 
   await replaceGeneratedSection(reactLlmsPath, generateReactComponentsSection());
   await replaceGeneratedSection(elementsLlmsPath, generateElementsTagsSection());
