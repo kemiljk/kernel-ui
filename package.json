@@ -28,6 +28,7 @@
     "test:parity": "node scripts/check-parity.mjs",
     "test:package": "node scripts/check-package-exports.mjs",
     "test:a11y": "node scripts/check-a11y.mjs",
+    "test:screenshots": "node scripts/screenshot-suite.mjs",
     "test:motion:docs": "node scripts/disclosure-docs-check.mjs",
     "test:motion:filmstrip": "node scripts/disclosure-filmstrip.mjs",
     "check:changeset": "node scripts/check-changeset.mjs",
@@ -46,7 +47,9 @@
     "@axe-core/playwright": "^4.14.1",
     "@changesets/cli": "^3.0.3",
     "ajv": "^8.20.0",
-    "playwright": "^1.65.1"
+    "pixelmatch": "^8.0.0",
+    "playwright": "^1.65.1",
+    "pngjs": "^7.0.0"
   },
   "overrides": {
     "@astrojs/astro2tsx": "0.1.4",
