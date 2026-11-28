@@ -18,7 +18,7 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 2. **Pick components before writing markup.** If the `kernel` MCP server is connected, call `search_components` or `list_components`. Otherwise read `node_modules/@kernelui-lib/react/llms.txt`. Prefer a Kernel component over hand-rolled markup every time one exists.
 3. **Get exact props, don't guess.** Use the MCP `get_component` tool, or `npx @kernelui-lib/cli docs <name> --markdown`, or the types in `node_modules/@kernelui-lib/react/dist/index.d.ts`. Props from other libraries (`asChild`, `leftIcon`, `isDisabled`, `colorScheme`) don't exist here.
 4. **Style with tokens only.** Every colour, space, radius and duration is a `--kernel-*` custom property (MCP `get_tokens`). Never hard-code a hex colour, a pixel radius or `999px`.
-5. **Review what you wrote.** Run the MCP `check_code` tool, or `npx @kernelui-lib/cli check <files>`, and fix every error it reports before you finish.
+5. **Review what you wrote.** Run the MCP `check_code` tool, or `npx @kernelui-lib/cli check <files>`, and fix every error it reports before you finish. If the project uses ESLint, `@kernelui-lib/eslint-plugin` (`kernel.configs.recommended`) runs the same checks on every save.
 
 ## Conventions that hold across components
 
