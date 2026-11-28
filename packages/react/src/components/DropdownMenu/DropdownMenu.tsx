@@ -1,5 +1,6 @@
 import {
   createContext,
+  isValidElement,
   useContext,
   useEffect,
   useId,
@@ -72,6 +73,14 @@ function itemReason(event: ChangeEventSource): "item-press" | "item-keyboard" {
 /** Exported so other menu-shaped triggers (ContextMenu) can share
  * MenuItem/MenuSeparator without duplicating them. */
 export const MenuContext = createContext<MenuContextValue | null>(null);
+
+/** The trigger's id, which the menu points `aria-labelledby` at so the
+ * `role="menu"` is named after the button that opened it (APG menu
+ * button). Keeps a consumer's own `id` on a `render` element. */
+function triggerIdFor(render: unknown, menuId: string): string {
+  const own = isValidElement(render) ? (render.props as { id?: unknown }).id : undefined;
+  return typeof own === "string" && own ? own : `${menuId}-trigger`;
+}
 
 /**
  * How the menu was opened decides where focus lands (see
@@ -256,6 +265,7 @@ function DisclosureDropdownMenu({
             const next = !detailsRef.current?.open;
             if (!emitChange(onOpenChange, next, "trigger-press", event)) event.preventDefault();
           },
+          id: triggerIdFor(render, id),
           className: styles.disclosureTrigger,
           "aria-haspopup": "menu",
           "aria-controls": id,
@@ -264,6 +274,7 @@ function DisclosureDropdownMenu({
         {renderElement(renderContent, "div", {
           ...openFocus.menuProps,
           ref: menuRef, id, role: "menu", inert: open === false,
+          "aria-labelledby": triggerIdFor(render, id),
           "data-slot": "dropdown-menu-content",
           "data-placement": placement, "data-align": align,
           "data-open": dataAttr(open),
@@ -342,6 +353,7 @@ function PopoverDropdownMenu({
     {
       ...openFocus.triggerProps,
       ref: anchorRef,
+      id: triggerIdFor(render, id),
       popoverTarget: id,
       "aria-haspopup": "menu",
       "aria-expanded": open,
@@ -354,6 +366,7 @@ function PopoverDropdownMenu({
     ref: mergeRefs(menuRef, floatingRef),
     id,
     role: "menu",
+    "aria-labelledby": triggerIdFor(render, id),
     popover: "auto",
     "data-slot": "dropdown-menu-content",
     "data-placement": placement,
@@ -666,6 +679,7 @@ export function DropdownMenuMorph({
     {
       ...openFocus.triggerProps,
       ref: anchorRef,
+      id: triggerIdFor(render, id),
       "aria-haspopup": "menu",
       "aria-expanded": open,
       onClick: (event: ReactMouseEvent<HTMLElement>) => {
@@ -681,6 +695,7 @@ export function DropdownMenuMorph({
     id,
     role: "menu",
     ...openFocus.menuProps,
+    "aria-labelledby": triggerIdFor(render, id),
     popover: "manual",
     "data-slot": "dropdown-menu-morph-content",
     "data-placement": placement,

@@ -115,6 +115,22 @@ export function Tooltip({
     };
   }, []);
 
+  // WCAG 1.4.13 (and the APG tooltip pattern): content shown on hover or
+  // focus must be dismissible without moving the pointer or focus. Escape
+  // hides it; preventDefault keeps that Escape from also closing a dialog
+  // the trigger sits in, so the first press dismisses only the tooltip.
+  useEffect(() => {
+    if (!open || closing) return;
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      event.preventDefault();
+      void hideNow();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, closing]);
+
   function clearTimers() {
     clearTimeout(openTimeoutRef.current);
     clearTimeout(closeTimeoutRef.current);

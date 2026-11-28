@@ -200,7 +200,7 @@ export type {
 } from "./components/NavigationMenu/NavigationMenu";
 
 export { ContextMenu } from "./components/ContextMenu/ContextMenu";
-export type { ContextMenuProps } from "./components/ContextMenu/ContextMenu";
+export type { ContextMenuProps, ContextMenuLabels } from "./components/ContextMenu/ContextMenu";
 
 export { HoverCard } from "./components/HoverCard/HoverCard";
 export type { HoverCardProps, HoverCardState } from "./components/HoverCard/HoverCard";

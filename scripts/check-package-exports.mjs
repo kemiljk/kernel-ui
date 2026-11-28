@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Checks what @kernelui-lib/react and @kernelui-lib/elements would publish,
+ * Checks what @kernelui-lib/react, @kernelui-lib/elements and
+ * @kernelui-lib/testing would publish,
  * against their built dist/. Builds nothing: run it after the package
  * builds. Fails when
  *
@@ -42,6 +43,7 @@ function checkTargets(pkgDir) {
 
 // ── exports targets ──
 checkTargets("packages/react");
+checkTargets("packages/testing");
 const elementsPkg = checkTargets("packages/elements");
 if (!elementsPkg.customElements) fail(`${elementsPkg.name}: package.json has no "customElements" field`);
 
@@ -105,7 +107,7 @@ if (existsSync(manifestPath)) {
 if (failures.length) {
   console.error(`check-package-exports: ${failures.length} problem(s)\n`);
   for (const msg of failures) console.error(`  - ${msg}`);
-  console.error("\nRun `bun run build` in packages/react and packages/elements first.");
+  console.error("\nRun `bun run build` in packages/react, packages/elements and packages/testing first.");
   process.exit(1);
 }
 console.log("check-package-exports: exports, \"use client\", layered CSS and custom-elements.json all OK");

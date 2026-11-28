@@ -35,8 +35,27 @@ const MARGIN = 8;
  * `utils/menuFocus.ts`. Escape, a selection or a scroll returns focus to
  * whatever had it before the menu opened (else the right-clicked element,
  * else the trigger region); an outside press leaves focus where it put it.
+ *
+ * Attributes: `label` (the menu's accessible name, e.g. "File actions";
+ * falls back to the built-in `label-menu`, "Context menu"). A
+ * `role="menu"` needs a name, and the right-click area is arbitrary
+ * content that would make a poor one, so it isn't `aria-labelledby` it.
  */
 export class KernelContextMenu extends KernelElement {
+  private menu: HTMLElement | null = null;
+
+  static get observedAttributes() {
+    return ["label", "label-menu"];
+  }
+
+  protected syncAttr(name: string) {
+    if (name === "label") this.applyLabels();
+  }
+
+  protected applyLabels() {
+    this.menu?.setAttribute("aria-label", this.getAttribute("label") || this.builtInLabel("menu", "Context menu"));
+  }
+
   connectedCallback() {
     if (this.native) return;
 
@@ -118,6 +137,9 @@ export class KernelContextMenu extends KernelElement {
         const originX = rect.width ? clamp(((event.clientX - clampedLeft) / rect.width) * 100) : 50;
         const originY = rect.height ? clamp(((event.clientY - clampedTop) / rect.height) * 100) : 50;
         content.style.setProperty("--kernel-transform-origin", `${originX}% ${originY}%`);
+        // APG menu: opening moves focus to the first item, so arrow keys
+        // work straight away, the same as <kernel-dropdown-menu>.
+        content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
       });
 
       const handlePointerDown = (pointerEvent: PointerEvent) => {
@@ -149,6 +171,8 @@ export class KernelContextMenu extends KernelElement {
     content.addEventListener("pointerleave", () => clearMenuPointerHighlight(content));
 
     this.native = triggerArea;
+    this.menu = content;
+    this.applyLabels();
     this.append(triggerArea, content);
   }
 }

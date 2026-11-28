@@ -15,11 +15,27 @@ import styles from "./ContextMenu.module.css";
 
 const MARGIN = 8;
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface ContextMenuLabels {
+  /** The menu's accessible name when no `label` is given. Default: `"Context menu"`. */
+  menu: string;
+}
+
+const defaultContextMenuLabels: ContextMenuLabels = {
+  menu: "Context menu",
+};
+
 export interface ContextMenuProps {
   /** The area that opens the menu on right-click (or long-press). */
   render: ReactNode;
   /** The menu's content: `MenuItem`s and `MenuSeparator`s. */
   children: ReactNode;
+  /** The menu's accessible name, e.g. `"File actions"`. A `role="menu"`
+   * needs one, and unlike DropdownMenu there's no trigger button to take
+   * it from. Falls back to `labels.menu` ("Context menu"). */
+  label?: string;
+  /** Overrides for built-in strings. */
+  labels?: Partial<ContextMenuLabels>;
 }
 
 /**
@@ -41,8 +57,13 @@ export interface ContextMenuProps {
  * Escape, a selection or a scroll returns focus to whatever had it before
  * the menu opened (else the right-clicked element, else the trigger region);
  * an outside press leaves focus where that press put it.
+ *
+ * The menu is named by `label` (falling back to `labels.menu`) rather
+ * than `aria-labelledby`: the right-click area is arbitrary content,
+ * often a whole row or canvas, so its text would make a poor name.
  */
-export function ContextMenu({ render, children }: ContextMenuProps) {
+export function ContextMenu({ render, children, label, labels }: ContextMenuProps) {
+  const l = { ...defaultContextMenuLabels, ...labels };
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
@@ -157,6 +178,7 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
       <div
         ref={menuRef}
         role="menu"
+        aria-label={label || l.menu}
         popover="manual"
         tabIndex={-1}
         onKeyDown={(event) => roveMenuItems(menuRef.current, event)}

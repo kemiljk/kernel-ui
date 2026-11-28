@@ -8,6 +8,7 @@ import {
   isWithinRange,
   parseDateAttr,
   startOfDay,
+  gridTabStop,
 } from "../../utils/dateGrid";
 import { inputModality } from "../../utils/changeDetails";
 import { gridDirectionForKey, spatialMove, tableCellPosition } from "../../utils/spatialMove";
@@ -66,6 +67,7 @@ export class KernelDatePicker extends KernelElement {
   private readonly baseId = `kernel-date-picker-${++datePickerCounter}`;
   private selected: Date | undefined;
   private visibleMonth: Date;
+  private focusedDay: Date | undefined;
   private headingEl!: HTMLElement;
   private tbodyEl!: HTMLTableSectionElement;
 
@@ -187,6 +189,16 @@ export class KernelDatePicker extends KernelElement {
     });
   }
 
+  /** APG grid: the one Tab stop follows focus, so Tab back into the grid
+   * returns to the day the arrow keys last reached. Updated in place: a
+   * re-render would replace the button that just took focus. */
+  private moveTabStop(button: HTMLButtonElement, day: Date) {
+    this.focusedDay = day;
+    for (const cell of Array.from(this.tbodyEl.querySelectorAll<HTMLButtonElement>("button[data-day]"))) {
+      cell.tabIndex = cell === button ? 0 : -1;
+    }
+  }
+
   private renderGrid() {
     if (!this.headingEl || !this.tbodyEl) return;
     this.headingEl.textContent = MONTH_FORMATTER.format(this.visibleMonth);
@@ -194,6 +206,7 @@ export class KernelDatePicker extends KernelElement {
 
     const today = startOfDay(new Date());
     const weeks = chunkIntoWeeks(getVisibleDays(this.visibleMonth));
+    const tabStop = gridTabStop(this.visibleMonth, [this.focusedDay, this.selected, today], this.minDate, this.maxDate);
 
     for (const week of weeks) {
       const tr = document.createElement("tr");
@@ -219,10 +232,14 @@ export class KernelDatePicker extends KernelElement {
           td.setAttribute("aria-selected", String(isSelected));
           if (isToday) button.setAttribute("aria-current", "date");
           button.disabled = disabled;
-          button.tabIndex = isSelected || (!this.selected && isToday) ? 0 : -1;
+          button.tabIndex = tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1;
           button.className = kernelClass("DatePicker", "dayButton");
           button.textContent = String(day.getDate());
-          button.addEventListener("click", (event) => this.selectDay(day, event));
+          button.addEventListener("click", (event) => {
+            this.focusedDay = day;
+            this.selectDay(day, event);
+          });
+          button.addEventListener("focus", () => this.moveTabStop(button, day));
           td.append(button);
         } else {
           const span = document.createElement("span");

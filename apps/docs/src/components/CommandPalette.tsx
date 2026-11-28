@@ -22,6 +22,7 @@ const pages = [
   { name: "Theming", href: "/theming/", summary: "Every token that drives a component's appearance." },
   { name: "Icons", href: "/icons/", summary: "Use any icon set, tuned with two tokens." },
   { name: "CLI", href: "/cli/", summary: "Install and diagnose Kernel in a project." },
+  { name: "Testing", href: "/testing/", summary: "Check keyboard behaviour and ARIA in your own tests." },
   { name: "Migration", href: "/migration/", summary: "Move an existing app onto Kernel." },
 ] as const;
 

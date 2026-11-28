@@ -1,0 +1,68 @@
+{
+  "name": "@kernelui-lib/testing",
+  "version": "0.0.0",
+  "description": "WAI-ARIA pattern and Kernel UI component checks for your own test suite: roles, accessible names, state consistency and keyboard behaviour, in jsdom, happy-dom or a real browser.",
+  "license": "MIT",
+  "author": "Karl Koch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiljk/kernel-ui.git",
+    "directory": "packages/testing"
+  },
+  "homepage": "https://www.kernelui.com/testing/",
+  "bugs": "https://github.com/kemiljk/kernel-ui/issues",
+  "keywords": [
+    "kernel",
+    "accessibility",
+    "a11y",
+    "wai-aria",
+    "apg",
+    "testing",
+    "vitest",
+    "jest",
+    "playwright",
+    "agents"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./playwright": {
+      "types": "./dist/playwright.d.ts",
+      "import": "./dist/playwright.js"
+    },
+    "./browser": "./dist/kernel-testing.global.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "build": "bun run --cwd ../registry build && node scripts/generate.mjs && node scripts/build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:browser": "node scripts/smoke-playwright.mjs"
+  },
+  "devDependencies": {
+    "happy-dom": "^18.0.1",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.7"
+  }
+}

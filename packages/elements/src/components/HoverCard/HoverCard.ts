@@ -19,6 +19,12 @@ let hoverCardCounter = 0;
  * `open-delay`. Touch is short-circuited to skip the hover-delay path
  * entirely (no real hover on touch), relying on focus instead.
  *
+ * Keyboard: the card follows its trigger in the DOM, so Tab moves from
+ * the trigger into a link inside it, and focus anywhere in the card
+ * keeps it open. Escape dismisses it (WCAG 1.4.13, as Tooltip does),
+ * handing focus back to the trigger if it was inside the card, without
+ * also closing a dialog the trigger sits in.
+ *
  * Children: one element tagged `slot="trigger"`, everything else
  * becomes the card's content.
  *
@@ -34,6 +40,10 @@ export class KernelHoverCard extends KernelElement {
   private exitAbort: AbortController | null = null;
   private open = false;
   private closing = false;
+  private escapeListener: ((event: KeyboardEvent) => void) | null = null;
+  /** Set while Escape hands focus back to the trigger, so that focus
+   * doesn't immediately reopen the card it just dismissed. */
+  private suppressFocusOpen = false;
 
   protected createNative(): HTMLElement {
     const content = document.createElement("div");
@@ -83,6 +93,7 @@ export class KernelHoverCard extends KernelElement {
           this.positioner.setOpen(true);
           content.setAttribute("data-open", "true");
           content.showPopover?.();
+          document.addEventListener("keydown", onEscape);
         }, delay);
       };
 
@@ -109,13 +120,42 @@ export class KernelHoverCard extends KernelElement {
         content.removeAttribute("data-closing");
         this.positioner.setOpen(false);
         content.hidePopover?.();
+        document.removeEventListener("keydown", onEscape);
       };
+
+      // WCAG 1.4.13: content shown on hover or focus must be dismissible
+      // without moving the pointer or focus. preventDefault keeps that
+      // Escape from also closing a dialog the trigger sits in.
+      const onEscape = (event: KeyboardEvent) => {
+        if (event.key !== "Escape" || event.defaultPrevented || !this.open || this.closing) return;
+        event.preventDefault();
+        clearTimeout(this.openTimer);
+        clearTimeout(this.closeTimer);
+        if (content.contains(document.activeElement)) {
+          this.suppressFocusOpen = true;
+          triggerEl.focus();
+          this.suppressFocusOpen = false;
+        }
+        void hideNow();
+      };
+      this.escapeListener = onEscape;
 
       const scheduleHide = () => {
         clearTimeout(this.openTimer);
+        clearTimeout(this.closeTimer);
         this.closeTimer = setTimeout(() => {
+          // The pointer left, but a keyboard user is still inside the card.
+          if (content.contains(document.activeElement)) return;
           void hideNow();
         }, closeDelay);
+      };
+
+      /** Blur from the trigger or the card: stay open while focus moves
+       * between the two (Tab from the trigger into a link in the card). */
+      const hideOnBlur = (event: FocusEvent) => {
+        const next = event.relatedTarget as Node | null;
+        if (next && (content.contains(next) || triggerEl.contains(next))) return;
+        scheduleHide();
       };
 
       const cancelHide = () => {
@@ -135,10 +175,14 @@ export class KernelHoverCard extends KernelElement {
         show(openDelay);
       });
       triggerEl.addEventListener("pointerleave", scheduleHide);
-      triggerEl.addEventListener("focus", () => show(0));
-      triggerEl.addEventListener("blur", scheduleHide);
+      triggerEl.addEventListener("focus", () => {
+        if (!this.suppressFocusOpen) show(0);
+      });
+      triggerEl.addEventListener("blur", hideOnBlur);
       content.addEventListener("pointerenter", cancelHide);
       content.addEventListener("pointerleave", scheduleHide);
+      content.addEventListener("focusin", cancelHide);
+      content.addEventListener("focusout", hideOnBlur);
     }
 
     this.native = content;
@@ -149,6 +193,7 @@ export class KernelHoverCard extends KernelElement {
     clearTimeout(this.openTimer);
     clearTimeout(this.closeTimer);
     this.exitAbort?.abort();
+    if (this.escapeListener) document.removeEventListener("keydown", this.escapeListener);
     // Removes the fallback path's window scroll/resize listeners if the
     // card is torn down while open (they'd otherwise reference a detached
     // element forever on browsers without CSS anchor positioning).

@@ -105,6 +105,9 @@ interface RegisteredOption {
 }
 
 interface CompoundComboboxContext {
+  /** The id Combobox's own <label htmlFor> points at. */
+  inputId: string;
+  open: boolean;
   listboxId: string;
   query: string;
   selectedValue: string;
@@ -167,12 +170,15 @@ function CompoundComboboxInput({ value, onValueChange, ...props }: ComboboxInput
     <input
       {...props}
       ref={context.setInputElement}
+      // Combobox renders the <label htmlFor>; without this id the input was
+      // unlabelled (named only by its placeholder).
+      id={props.id ?? context.inputId}
       type={props.type ?? "text"}
       role="combobox"
-      aria-expanded="true"
+      aria-expanded={context.open}
       aria-controls={context.listboxId}
       aria-autocomplete="list"
-      aria-activedescendant={context.activeId ?? undefined}
+      aria-activedescendant={context.open ? context.activeId ?? undefined : undefined}
       value={value ?? context.query}
       autoComplete="off"
       onFocus={context.openList}
@@ -436,6 +442,8 @@ export function Combobox({
   }, [compoundSelectable]);
 
   const compoundContext = useMemo<CompoundComboboxContext>(() => ({
+    inputId: id,
+    open,
     listboxId,
     query: compoundQuery,
     selectedValue,
@@ -451,7 +459,7 @@ export function Combobox({
     closeList,
     setInputElement,
     setListboxElement,
-  }), [closeList, compoundActiveId, compoundOptions, compoundQuery, compoundSetActiveId, compoundVisible, listboxId, openList, registerOption, selectCompoundOption, selectedValue, setInputElement, setListboxElement, shouldFilter]);
+  }), [closeList, compoundActiveId, compoundOptions, compoundQuery, compoundSetActiveId, compoundVisible, id, listboxId, open, openList, registerOption, selectCompoundOption, selectedValue, setInputElement, setListboxElement, shouldFilter]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     const maxIndex = filtered.entries.length - 1;

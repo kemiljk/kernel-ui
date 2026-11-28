@@ -156,7 +156,8 @@ export class KernelColorPicker extends KernelElement {
     const hasError = invalid && this.hasAttribute("error-message");
     const ids = [
       hasError ? `${id}-error` : null,
-      this.hasAttribute("description") ? `${id}-description` : null,
+      // The error replaces the description while it shows: reference one, never a missing id.
+      !hasError && this.hasAttribute("description") ? `${id}-description` : null,
     ].filter(Boolean);
     if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
     else input.removeAttribute("aria-describedby");
