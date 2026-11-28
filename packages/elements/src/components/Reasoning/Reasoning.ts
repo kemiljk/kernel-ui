@@ -36,7 +36,9 @@ function svg(paths: string[], className: string): SVGSVGElement {
  * `streaming` (auto-opens while present; auto-closes ~600ms after it's
  * removed, unless the user has manually interacted with the summary
  * since), `duration-label` (text shown once streaming ends, default
- * "Reasoning"), `default-open` (read once at connect).
+ * "Reasoning"), `default-open` (read once at connect). Built-in strings:
+ * `label-thinking` ("Thinking"), `label-reasoning` ("Reasoning", shown
+ * when there's no `duration-label`), or the `labels` property.
  */
 export class KernelReasoning extends KernelElement {
   private wasStreaming = false;
@@ -44,7 +46,7 @@ export class KernelReasoning extends KernelElement {
   private animator: DetailsPanelAnimator | undefined;
 
   static get observedAttributes() {
-    return ["streaming", "duration-label"];
+    return ["streaming", "duration-label", "label-thinking", "label-reasoning"];
   }
 
   connectedCallback() {
@@ -85,6 +87,10 @@ export class KernelReasoning extends KernelElement {
     this.animator = undefined;
   }
 
+  protected applyLabels() {
+    this.renderSummary();
+  }
+
   private renderSummary() {
     const details = this.native as HTMLDetailsElement | null;
     if (!details) return;
@@ -96,14 +102,14 @@ export class KernelReasoning extends KernelElement {
     summaryContent.replaceChildren();
     if (this.hasAttribute("streaming")) {
       const indicator = document.createElement("kernel-thinking-indicator");
-      indicator.setAttribute("label", "Thinking");
+      indicator.setAttribute("label", this.builtInLabel("thinking", "Thinking"));
       summaryContent.append(indicator);
     } else {
       const label = document.createElement("span");
       label.className = kernelClass("Reasoning", "label");
       label.append(svg(REASONING_ICON_PATHS, kernelClass("Reasoning", "icon")));
       const text = document.createElement("span");
-      text.textContent = this.getAttribute("duration-label") || "Reasoning";
+      text.textContent = this.getAttribute("duration-label") || this.builtInLabel("reasoning", "Reasoning");
       label.append(text);
       summaryContent.append(label);
     }

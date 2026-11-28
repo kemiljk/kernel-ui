@@ -49,8 +49,15 @@ function setContent(target: HTMLElement, content: ToastContent | undefined) {
  * `toast()` function (also `toast.success`/`.warning`/`.danger`/
  * `.dismiss`), identical API to `@kernelui-lib/react`'s own `toast()`. Same
  * hover-to-expand stack, swipe-to-dismiss, and pause-on-hover behaviour.
+ *
+ * Built-in strings: `label-dismiss` (default "Dismiss"), or the `labels`
+ * property — see `ToastLabels` in `@kernelui-lib/react`.
  */
 export class KernelToastViewport extends KernelElement {
+  static get observedAttributes() {
+    return ["label-dismiss"];
+  }
+
   private tracked = new Map<string, TrackedToast>();
   private expanded = false;
   private collapseTimer: ReturnType<typeof setTimeout> | undefined;
@@ -67,6 +74,12 @@ export class KernelToastViewport extends KernelElement {
       if (!related || !element.contains(related)) this.collapse();
     });
     return element;
+  }
+
+  protected applyLabels() {
+    this.native?.querySelectorAll(`.${kernelClass("Toast", "close")}`).forEach((button) => {
+      button.setAttribute("aria-label", this.builtInLabel("dismiss", "Dismiss"));
+    });
   }
 
   connectedCallback() {
@@ -103,7 +116,7 @@ export class KernelToastViewport extends KernelElement {
     if (!root) return;
     const toasts = getToastSnapshot();
 
-    if (this.expanded) root.setAttribute("data-expanded", "");
+    if (this.expanded) root.setAttribute("data-expanded", "true");
     else root.removeAttribute("data-expanded");
 
     for (const [id, entry] of this.tracked) {
@@ -146,9 +159,9 @@ export class KernelToastViewport extends KernelElement {
     el.setAttribute("role", isUrgent ? "alert" : "status");
     el.setAttribute("data-variant", item.variant);
     el.setAttribute("data-depth", String(depth));
-    if (item.closing) el.setAttribute("data-closing", "");
+    if (item.closing) el.setAttribute("data-closing", "true");
     else el.removeAttribute("data-closing");
-    if (entry.dragging) el.setAttribute("data-dragging", "");
+    if (entry.dragging) el.setAttribute("data-dragging", "true");
     else el.removeAttribute("data-dragging");
 
     el.style.setProperty("--offset", `${offset}px`);
@@ -197,7 +210,7 @@ export class KernelToastViewport extends KernelElement {
 
     const close = document.createElement("button");
     close.type = "button";
-    close.setAttribute("aria-label", "Dismiss");
+    close.setAttribute("aria-label", this.builtInLabel("dismiss", "Dismiss"));
     close.className = kernelClass("Toast", "close");
     close.innerHTML =
       '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">' +
@@ -242,7 +255,7 @@ export class KernelToastViewport extends KernelElement {
       entry.dragStart = { x: event.clientX, time: performance.now() };
       entry.dragging = true;
       el.setPointerCapture(event.pointerId);
-      el.setAttribute("data-dragging", "");
+      el.setAttribute("data-dragging", "true");
     });
 
     el.addEventListener("pointermove", (event) => {

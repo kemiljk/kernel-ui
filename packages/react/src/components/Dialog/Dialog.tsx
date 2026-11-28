@@ -31,6 +31,14 @@ export type DialogBackdrop = "default" | "blur" | "opaque" | "transparent";
 
 export type DialogSide = "center" | "left" | "right" | "top" | "bottom";
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface DialogLabels {
+  /** Accessible name of the built-in close button. Default `"Close"`. */
+  close: string;
+}
+
+const defaultDialogLabels: DialogLabels = { close: "Close" };
+
 export interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,6 +65,9 @@ export interface DialogProps {
   className?: ClassNameValue<DialogState>;
   /** Typed class hooks for every structural slot. */
   classNames?: DialogClassNames;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<DialogLabels>;
 }
 
 /**
@@ -83,9 +94,11 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       side = "center",
       className,
       classNames,
+      labels,
     },
     forwardedRef,
   ) {
+    const l = { ...defaultDialogLabels, ...labels };
     const internalRef = useRef<HTMLDialogElement>(null);
     const titleId = useId();
     const descriptionId = useId();
@@ -177,7 +190,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
               "button",
               {
                 type: "button",
-                "aria-label": "Close",
+                "aria-label": l.close,
                 "data-slot": "dialog-close",
                 className: [styles.closeButton, resolveClassName(classNames?.close, state)]
                   .filter(Boolean)
@@ -190,7 +203,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label="Close"
+                aria-label={l.close}
                 data-slot="dialog-close"
                 className={[styles.closeButton, resolveClassName(classNames?.close, state)]
                   .filter(Boolean)

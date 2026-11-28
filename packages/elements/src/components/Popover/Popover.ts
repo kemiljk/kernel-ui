@@ -61,7 +61,8 @@ export class KernelPopover extends KernelElement {
       content.addEventListener("toggle", (event) => {
         const open = (event as ToggleEvent).newState === "open";
         triggerEl.setAttribute("aria-expanded", String(open));
-        content.toggleAttribute("data-open", open);
+        if (open) content.setAttribute("data-open", "true");
+        else content.removeAttribute("data-open");
         this.positioner.setOpen(open);
         this.dispatchEvent(new CustomEvent("toggle", { detail: { open }, bubbles: true }));
       });

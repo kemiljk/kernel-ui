@@ -102,7 +102,7 @@
 
 .kernel-RadioGroup-input:focus-visible + .kernel-RadioGroup-control {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-RadioGroup-input:disabled + .kernel-RadioGroup-control {

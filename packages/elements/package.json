@@ -25,12 +25,19 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/kernel.css",
+  "customElements": "dist/custom-elements.json",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./styles.css": "./dist/kernel.css"
+    "./styles.css": "./dist/kernel.css",
+    "./styles.layer.css": "./dist/kernel.layer.css",
+    "./jsx": {
+      "types": "./dist/jsx.d.ts"
+    },
+    "./custom-elements.json": "./dist/custom-elements.json",
+    "./vscode.html-custom-data.json": "./dist/vscode.html-custom-data.json"
   },
   "files": [
     "dist",
@@ -52,7 +59,7 @@
     "vite-plugin-dts": "^4.4.0"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "bun run --cwd ../registry build && vite build && node scripts/generate-manifest.mjs",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"

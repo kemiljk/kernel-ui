@@ -4,6 +4,7 @@ import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import SheetDemo from "../../components/demos/SheetDemo";
 import SheetPlayground from "../../components/demos/SheetPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 const usageSnippet = `import { useState } from "react";
 import { Button, Sheet } from "@kernelui-lib/react";
@@ -54,30 +55,7 @@ const [open, setOpen] = useState(false);
       <code>side</code> narrowed to the four edges and defaulting to{" "}
       <code>"bottom"</code>. On top of those:
     </p>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props Sheet adds to Dialog.</caption>
-      <thead>
-        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>side</code></td><td>"bottom" | "top" | "left" | "right"</td><td>"bottom"</td></tr>
-        <tr><td><code>showHandle</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>handleOnly</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>dismissible</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>closeThreshold</code></td><td>number</td><td>0.25</td></tr>
-        <tr><td><code>velocityThreshold</code></td><td>number (px/ms)</td><td>0.5</td></tr>
-        <tr><td><code>inset</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>maxDisplayWidth</code></td><td>number (px)</td><td>—</td></tr>
-        <tr><td><code>footer</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>snapPoints</code></td><td>number[] (dvh / dvw by side)</td><td>—</td></tr>
-        <tr><td><code>snap</code> / <code>defaultSnap</code></td><td>number</td><td>largest snap</td></tr>
-        <tr><td><code>onSnapChange</code></td><td>(snap: number) =&gt; void</td><td>—</td></tr>
-        <tr><td><code>spring</code></td><td>boolean | &#123; attraction, friction &#125;</td><td>true</td></tr>
-        <tr><td><code>onDrag</code></td><td>(percent: number) =&gt; void</td><td>—</td></tr>
-        <tr><td><code>onRelease</code></td><td>(open: boolean) =&gt; void</td><td>—</td></tr>
-        <tr><td><code>classNames</code></td><td>Dialog's slots plus <code>handle</code></td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="sheet" />
 
     <h2>Gestures</h2>
     <p>

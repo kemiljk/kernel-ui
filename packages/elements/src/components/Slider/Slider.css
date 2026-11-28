@@ -25,32 +25,50 @@
 }
 
 .kernel-Slider-input {
+  /* The track's thickness, read by the track and progress pseudo-elements
+     below and by the WebKit thumb's centring offset, so the three can't
+     drift apart. */
+  --track-size: calc(var(--kernel-space-unit) * 1.5);
   appearance: none;
   inline-size: 100%;
   background: transparent;
   block-size: 1.25rem;
   cursor: pointer;
+  /* A drag that starts on the track shouldn't select the label beside it. */
+  -webkit-user-select: none;
+  user-select: none;
 }
+
+/* A range input fills from its inline start, so in RTL the fill grows
+   from the right and has to meet the thumb from that side. Paired
+   selector, not `:dir(rtl)` alone: the build rewrites `:dir()` to
+   `:lang()`, which no longer tracks `dir`. Inherited into the track
+   pseudo-element below. */
+.kernel-Slider-input:dir(rtl),
+:where([dir="rtl"]) .kernel-Slider-input {
+  --fill-direction: to left;
+}
+
 
 .kernel-Slider-input::-webkit-slider-runnable-track {
   --fill-stop: calc(0.875rem + (100% - 1.75rem) * var(--ratio, 0));
-  block-size: 6px;
+  block-size: var(--track-size);
   border-radius: var(--kernel-radius-full);
-    background: linear-gradient(
-    to right,
+  background: linear-gradient(
+    var(--fill-direction, to right),
     var(--kernel-color-accent) var(--fill-stop),
     var(--kernel-color-fill-strong) var(--fill-stop)
   );
 }
 
 .kernel-Slider-input::-moz-range-track {
-  block-size: 6px;
+  block-size: var(--track-size);
   border-radius: var(--kernel-radius-full);
   background: var(--kernel-color-fill-strong);
 }
 
 .kernel-Slider-input::-moz-range-progress {
-  block-size: 6px;
+  block-size: var(--track-size);
   border-radius: var(--kernel-radius-full);
   background: var(--kernel-color-accent);
 }
@@ -60,7 +78,7 @@
   box-sizing: border-box;
   inline-size: 1.75rem;
   block-size: 1.25rem;
-    margin-block-start: calc((6px - 1.25rem) / 2);
+    margin-block-start: calc((var(--track-size) - 1.25rem) / 2);
   border-radius: var(--kernel-radius-full);
   background-color: var(--kernel-color-thumb);
     box-shadow:
@@ -90,12 +108,12 @@
 
 .kernel-Slider-input:focus-visible::-webkit-slider-thumb {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Slider-input:focus-visible::-moz-range-thumb {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Slider-input:disabled {
@@ -153,6 +171,8 @@
   border-radius: inherit;
   background: transparent;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .kernel-Slider-insetInput::-webkit-slider-runnable-track {
@@ -228,7 +248,7 @@
 
 .kernel-Slider-insetInput:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Slider-insetInput:disabled {

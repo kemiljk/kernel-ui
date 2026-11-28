@@ -1,6 +1,7 @@
 import { Children, createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { HTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { prefersReducedMotion } from "../../utils/exitTransition";
 import styles from "./Carousel.module.css";
 
 interface CarouselContextValue {
@@ -18,11 +19,32 @@ function useCarouselContext(component: string) {
   return context;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface CarouselLabels {
+  /** Accessible name of the previous-slide button. Default `"Previous slide"`. */
+  previousSlide: string;
+  /** Accessible name of the next-slide button. Default `"Next slide"`. */
+  nextSlide: string;
+  /** Accessible name of a pagination dot (1-based). Default ``(slide) => `Go to slide ${slide}` ``. */
+  goToSlide: (slide: number) => string;
+}
+
+const defaultCarouselLabels: CarouselLabels = {
+  previousSlide: "Previous slide",
+  nextSlide: "Next slide",
+  goToSlide: (slide) => `Go to slide ${slide}`,
+};
+
 export interface CarouselProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "className" | "children"> {
+  /** The slides: each direct child is one slide (wrap each in `CarouselSlide`). */
   children: ReactNode;
+  /** Accessible name for the carousel region. Required: there's no visible heading to name it. */
   "aria-label": string;
   className?: ClassNameValue<Record<string, never>>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<CarouselLabels>;
 }
 
 /**
@@ -33,7 +55,8 @@ export interface CarouselProps
  * that watches each slide against the scroll container to know which one
  * is currently in view.
  */
-export function Carousel({ children, "aria-label": ariaLabel, className, ...rest }: CarouselProps) {
+export function Carousel({ children, "aria-label": ariaLabel, className, labels, ...rest }: CarouselProps) {
+  const l = { ...defaultCarouselLabels, ...labels };
   const trackRef = useRef<HTMLDivElement>(null);
   const slideNodes = useRef(new Map<string, HTMLElement>());
   const [order, setOrder] = useState<string[]>([]);
@@ -89,7 +112,13 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
   }, [order.join(",")]);
 
   function scrollToSlide(id: string) {
-    slideNodes.current.get(id)?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    // An explicit "smooth" overrides the CSS reduced-motion preference, so
+    // check it here: reduced motion jumps straight to the slide.
+    slideNodes.current.get(id)?.scrollIntoView({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+      inline: "start",
+      block: "nearest",
+    });
   }
 
   const context = useMemo<CarouselContextValue>(
@@ -128,7 +157,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
 
           <button
             type="button"
-            aria-label="Previous slide"
+            aria-label={l.previousSlide}
             className={styles.prev}
             disabled={currentIndex <= 0}
             onClick={() => {
@@ -136,13 +165,13 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
               if (target) scrollToSlide(target);
             }}
           >
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" data-icon-directional="" width="16" height="16">
               <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
           <button
             type="button"
-            aria-label="Next slide"
+            aria-label={l.nextSlide}
             className={styles.next}
             disabled={currentIndex === -1 || currentIndex >= order.length - 1}
             onClick={() => {
@@ -150,7 +179,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
               if (target) scrollToSlide(target);
             }}
           >
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" data-icon-directional="" width="16" height="16">
               <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -162,7 +191,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, ...rest
               <button
                 key={id}
                 type="button"
-                aria-label={`Go to slide ${index + 1}`}
+                aria-label={l.goToSlide(index + 1)}
                 aria-current={dataAttr(id === currentId)}
                 data-current={dataAttr(id === currentId)}
                 className={styles.dot}

@@ -35,8 +35,19 @@ const icons: Partial<Record<ToastVariant, string>> = {
   danger: "✕",
 };
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface ToastLabels {
+  /** Accessible name of each toast's dismiss button. Default `"Dismiss"`. */
+  dismiss: string;
+}
+
+const defaultToastLabels: ToastLabels = { dismiss: "Dismiss" };
+
 export interface ToastViewportProps {
   className?: ClassNameValue<Record<string, never>>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<ToastLabels>;
 }
 
 /** Matches --kernel-space-2, the gap real flex layout used to provide.
@@ -52,7 +63,8 @@ const MAX_COLLAPSED_DEPTH = 3;
  * `role="alert"` (assertive), `default`/`success` use `role="status"`
  * (polite), the same reasoning as `Callout`.
  */
-export function ToastViewport({ className }: ToastViewportProps) {
+export function ToastViewport({ className, labels }: ToastViewportProps) {
+  const l = { ...defaultToastLabels, ...labels };
   const toasts = useSyncExternalStore(subscribeToasts, getToastSnapshot, getToastSnapshot);
   const [expanded, setExpanded] = useState(false);
   const [heights, setHeights] = useState<Map<string, number>>(() => new Map());
@@ -145,6 +157,7 @@ export function ToastViewport({ className }: ToastViewportProps) {
             offset={expandedOffsetByDepth[depth] ?? 0}
             zIndex={toasts.length - depth}
             onHeight={(height) => reportHeight(item.id, height)}
+            labels={l}
           />
         );
       })}
@@ -170,12 +183,14 @@ function ToastItem({
   offset,
   zIndex,
   onHeight,
+  labels,
 }: {
   item: ToastRecord;
   depth: number;
   offset: number;
   zIndex: number;
   onHeight: (height: number) => void;
+  labels: ToastLabels;
 }) {
   const isUrgent = item.variant === "danger" || item.variant === "warning";
   const [dragging, setDragging] = useState(false);
@@ -324,7 +339,7 @@ function ToastItem({
       </div>
       <button
         type="button"
-        aria-label="Dismiss"
+        aria-label={labels.dismiss}
         className={styles.close}
         onClick={() => dismissToast(item.id)}
       >

@@ -7,6 +7,7 @@ export interface SourcesProps extends Omit<HTMLAttributes<HTMLElement>, "classNa
   /** Visible heading above the list. Pass `null` to omit it when the
    * surrounding chat message already labels the sources. */
   heading?: ReactNode | null;
+  /** `Source` items. */
   children: ReactNode;
   className?: ClassNameValue<Record<string, never>>;
 }
@@ -85,6 +86,7 @@ export const Source = forwardRef<HTMLAnchorElement, SourceProps>(function Source
         ) : null}
         <svg
           className={styles.arrow}
+          data-icon-directional=""
           viewBox="0 0 16 16"
           width="12"
           height="12"

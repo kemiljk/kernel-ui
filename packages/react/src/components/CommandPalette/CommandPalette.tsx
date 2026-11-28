@@ -17,14 +17,26 @@ export interface CommandPaletteGroup {
   items: CommandPaletteItem[];
 }
 
+/** Built-in strings, overridable for translation via `labels`. The
+ * filter field's text and the empty state are the `placeholder` and
+ * `emptyMessage` props. */
+export interface CommandPaletteLabels {
+  /** Accessible name of the palette's `<dialog>`. Default `"Command palette"`. */
+  dialog: string;
+}
+
+const defaultCommandPaletteLabels: CommandPaletteLabels = { dialog: "Command palette" };
+
 export interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   items?: CommandPaletteItem[];
   groups?: CommandPaletteGroup[];
+  /** Filter field placeholder, also its accessible name. Defaults to `"Filter commands"`. */
   placeholder?: string;
+  /** Shown when nothing matches. Defaults to `"No results"`. */
   emptyMessage?: ReactNode;
-  /** Light frost on the `::backdrop` (`backdrop-filter: blur(8px)`). */
+  /** Light frost on the `::backdrop` (`backdrop-filter: blur(8px)`). Defaults to `false`. */
   blur?: boolean;
   /** Set to false when results are filtered by the consumer. */
   shouldFilter?: boolean;
@@ -33,6 +45,9 @@ export interface CommandPaletteProps {
     state: { active: boolean; group?: CommandPaletteGroup; index: number },
   ) => ReactNode;
   children?: ReactNode;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<CommandPaletteLabels>;
 }
 
 export interface CommandPaletteInputProps
@@ -238,7 +253,9 @@ function CommandPaletteRoot({
   shouldFilter = true,
   renderItem,
   children,
+  labels,
 }: CommandPaletteProps) {
+  const l = { ...defaultCommandPaletteLabels, ...labels };
   const [query, setQuery] = useState("");
   const [registeredItems, setRegisteredItems] = useState<RegisteredItem[]>([]);
   const [activeId, setActiveIdState] = useState<string | null>(null);
@@ -327,7 +344,7 @@ function CommandPaletteRoot({
       <CommandPaletteShorthand items={items} groups={groups} renderItem={renderItem} />
     </CommandPaletteList></>;
 
-  return <PaletteContext.Provider value={context}><dialog ref={dialogRef} className={styles.content} aria-label="Command palette"
+  return <PaletteContext.Provider value={context}><dialog ref={dialogRef} className={styles.content} aria-label={l.dialog}
     data-state={open ? "open" : undefined} data-open={dataAttr(open)} data-blur={dataAttr(blur)}
     onClick={(event) => { if (event.target === dialogRef.current) onOpenChange(false); }}
     onCancel={(event) => { event.preventDefault(); event.stopPropagation(); onOpenChange(false); }}>

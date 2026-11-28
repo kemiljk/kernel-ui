@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import SkeletonDemo from "../../components/demos/SkeletonDemo";
 import SkeletonPlayground from "../../components/demos/SkeletonPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 ---
 
@@ -24,6 +25,9 @@ import SkeletonPlayground from "../../components/demos/SkeletonPlayground";
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <SkeletonPlayground client:visible />
+
+    <h2>Props</h2>
+    <ApiTable slug="skeleton" />
 
       </div>
 </BaseLayout>

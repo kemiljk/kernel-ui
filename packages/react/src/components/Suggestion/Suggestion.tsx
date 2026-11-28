@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { createContext, forwardRef, useContext } from "react";
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { pillIconAttrs, usePillIconRef } from "../../utils/pillIcons";
@@ -8,10 +8,16 @@ export interface SuggestionState {
   disabled: boolean;
 }
 
+/** A disabled `Suggestion` disables every chip in it, not just the pointer:
+ * `pointer-events: none` alone would still let Tab + Enter fire them. */
+const SuggestionDisabledContext = createContext(false);
+
 export interface SuggestionProps extends Omit<HTMLAttributes<HTMLUListElement>, "className"> {
   /** Accessible name for the suggestion list. */
   label?: string;
+  /** Disables every `SuggestionItem` inside (each chip's real `disabled`). */
   disabled?: boolean;
+  /** `SuggestionItem`s. */
   children: ReactNode;
   className?: ClassNameValue<SuggestionState>;
 }
@@ -44,7 +50,7 @@ export function Suggestion({
       data-disabled={dataAttr(disabled)}
       className={[styles.root, resolveClassName(className, state)].filter(Boolean).join(" ")}
     >
-      {children}
+      <SuggestionDisabledContext.Provider value={disabled}>{children}</SuggestionDisabledContext.Provider>
     </ul>
   );
 }
@@ -64,9 +70,10 @@ export interface SuggestionItemProps
 
 export const SuggestionItem = forwardRef<HTMLButtonElement, SuggestionItemProps>(
   function SuggestionItem(
-    { value, onSelect, disabled = false, className, children, onClick, ...rest },
+    { value, onSelect, disabled: ownDisabled = false, className, children, onClick, ...rest },
     ref,
   ) {
+    const disabled = useContext(SuggestionDisabledContext) || ownDisabled;
     const state: SuggestionItemState = { disabled };
     const pillRef = usePillIconRef<HTMLButtonElement>();
     return (

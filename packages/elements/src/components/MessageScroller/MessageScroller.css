@@ -55,7 +55,7 @@ kernel-message-scroller {
 
 .kernel-MessageScroller-viewport:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-MessageScroller-content {
@@ -106,7 +106,8 @@ kernel-message-scroller {
     transform var(--kernel-duration-exit-fast) var(--kernel-ease-out),
     visibility 0s linear var(--kernel-duration-exit-fast),
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .kernel-MessageScroller-jump[data-visible] {
@@ -127,7 +128,7 @@ kernel-message-scroller {
 
 .kernel-MessageScroller-jump:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-MessageScroller-jumpIcon {
@@ -140,5 +141,17 @@ kernel-message-scroller {
   .kernel-MessageScroller-jump,
   .kernel-MessageScroller-jump[data-visible] {
     transition: none;
+  }
+}
+
+/* Press feedback. The individual scale property composes with the
+   transform that positions the button, so the two don't fight. */
+.kernel-MessageScroller-jump[data-visible]:active {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-MessageScroller-jump[data-visible]:active {
+    scale: 1;
   }
 }

@@ -85,11 +85,14 @@ kernel-carousel-slide {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--kernel-space-2);
+  /* 8px dots on a 24px pitch: each dot's invisible 24px target (below)
+     sits edge to edge with its neighbour's instead of overlapping it. */
+  gap: var(--kernel-space-4);
   margin-block-start: var(--kernel-space-3);
 }
 
 .kernel-Carousel-dot {
+  position: relative;
   inline-size: var(--kernel-space-2);
   block-size: var(--kernel-space-2);
   padding: 0;
@@ -106,6 +109,15 @@ kernel-carousel-slide {
   .kernel-Carousel-dot:hover {
     background-color: var(--kernel-color-border-hover);
   }
+}
+
+/* The dot stays 8px; the target doesn't. An invisible 24×24 square
+   centred on it (WCAG 2.5.8's minimum), which the 24px pitch above keeps
+   from covering the next dot. */
+.kernel-Carousel-dot::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--kernel-space-2) * -1);
 }
 
 .kernel-Carousel-dot:focus-visible {

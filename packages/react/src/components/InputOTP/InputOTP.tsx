@@ -4,6 +4,16 @@ import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/pol
 import { useControllableState } from "../../utils/useControllableState";
 import styles from "./InputOTP.module.css";
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface InputOTPLabels {
+  /** Accessible name of each cell (1-based). Default ``(digit, length) => `Digit ${digit} of ${length}` ``. */
+  digit: (digit: number, length: number) => string;
+}
+
+const defaultInputOTPLabels: InputOTPLabels = {
+  digit: (digit, length) => `Digit ${digit} of ${length}`,
+};
+
 export interface InputOTPProps {
   length?: number;
   value?: string;
@@ -17,6 +27,9 @@ export interface InputOTPProps {
   label?: ReactNode;
   disabled?: boolean;
   className?: ClassNameValue<Record<string, never>>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<InputOTPLabels>;
 }
 
 /**
@@ -34,7 +47,9 @@ export function InputOTP({
   label,
   disabled = false,
   className,
+  labels,
 }: InputOTPProps) {
+  const l = { ...defaultInputOTPLabels, ...labels };
   const [code, setCode] = useControllableState({
     value,
     defaultValue: defaultValue ?? "",
@@ -137,7 +152,7 @@ export function InputOTP({
             pattern="[0-9]*"
             maxLength={1}
             autoComplete="one-time-code"
-            aria-label={`Digit ${index + 1} of ${length}`}
+            aria-label={l.digit(index + 1, length)}
             disabled={disabled}
             data-filled={dataAttr(Boolean(digit))}
             value={digit}

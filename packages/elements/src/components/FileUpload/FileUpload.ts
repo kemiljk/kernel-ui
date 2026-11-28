@@ -139,7 +139,9 @@ const PREVIEW_GRID_CAP = 4;
  * hard-aligns the error text flush left instead of the default inset;
  * doesn't affect `label` or the hint text, which sit above the dropzone
  * as a heading rather than inset text-field content), `invalid`,
- * `disabled`, `name`.
+ * `disabled`, `name`. Built-in strings: `label-selected-files` (default
+ * "Selected files"), `label-remove-file` (template, default
+ * `"Remove {fileName}"`), or the `labels` property.
  *
  * While a drag is over the dropzone, page scroll is locked (`documentElement`
  * `overflow`/`touch-action`) so mobile browsers don't scroll/rubber-band the
@@ -201,6 +203,8 @@ export class KernelFileUpload extends KernelElement {
       "invalid",
       "disabled",
       "name",
+      "label-selected-files",
+      "label-remove-file",
     ];
   }
 
@@ -333,7 +337,6 @@ export class KernelFileUpload extends KernelElement {
     const fileList = document.createElement("ul");
     fileList.className = kernelClass("FileUpload", "fileList");
     fileList.setAttribute("data-slot", "file-upload-list");
-    fileList.setAttribute("aria-label", "Selected files");
 
     root.append(dropzone, fileList);
     this.native = root;
@@ -487,6 +490,13 @@ export class KernelFileUpload extends KernelElement {
     this.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  protected applyLabels() {
+    this.native
+      ?.querySelector(`.${kernelClass("FileUpload", "fileList")}`)
+      ?.setAttribute("aria-label", this.builtInLabel("selectedFiles", "Selected files"));
+    this.renderFileList();
+  }
+
   private renderFileList() {
     const fileList = this.native?.querySelector(`.${kernelClass("FileUpload", "fileList")}`);
     const input = this.input;
@@ -507,7 +517,7 @@ export class KernelFileUpload extends KernelElement {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = kernelClass("FileUpload", "remove");
-      remove.setAttribute("aria-label", `Remove ${file.name}`);
+      remove.setAttribute("aria-label", this.builtInLabel("removeFile", "Remove {fileName}", { fileName: file.name }));
       remove.innerHTML =
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="14" height="14"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>';
       remove.addEventListener("click", () => this.removeFileAt(index));
@@ -630,7 +640,7 @@ export class KernelFileUpload extends KernelElement {
         this.updateHint();
         break;
       case "preview":
-        if (value !== null) this.native.setAttribute("data-preview", "");
+        if (value !== null) this.native.setAttribute("data-preview", "true");
         else this.native.removeAttribute("data-preview");
         this.renderPreview();
         break;
@@ -651,7 +661,7 @@ export class KernelFileUpload extends KernelElement {
         else this.native.removeAttribute("data-label-offset");
         break;
       case "invalid":
-        if (value !== null) this.native.setAttribute("data-invalid", "");
+        if (value !== null) this.native.setAttribute("data-invalid", "true");
         else this.native.removeAttribute("data-invalid");
         this.updateDescribedBy();
         break;

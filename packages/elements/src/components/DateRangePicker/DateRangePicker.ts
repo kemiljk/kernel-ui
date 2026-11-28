@@ -11,7 +11,7 @@ import {
 } from "../../utils/dateGrid";
 import "./DateRangePicker.css";
 
-const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAY_LABELS: readonly string[] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTH_FORMATTER = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 const PREV_PATH = "M10 3L5 8L10 13";
 const NEXT_PATH = "M6 3L11 8L6 13";
@@ -24,6 +24,8 @@ function arrowIcon(path: string, className: string): SVGSVGElement {
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("class", className);
+  // Mirrors in RTL (reset.css), where "previous month" sits on the right.
+  svg.setAttribute("data-icon-directional", "");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
   p.setAttribute("d", path);
   p.setAttribute("stroke", "currentColor");
@@ -44,6 +46,10 @@ let rangePickerCounter = 0;
  * in-progress second half of a range (before it's clicked) is a hover
  * preview only — it never reaches the `valuechange` event.
  *
+ * Built-in strings: `label-previous-month` ("Previous month"),
+ * `label-next-month` ("Next month"), `label-weekdays` (comma-separated,
+ * Sunday first; default "Su,Mo,Tu,We,Th,Fr,Sa"), or the `labels` property.
+ *
  * Attributes: `value-from`, `value-to`, `min-date`, `max-date` — all
  * `YYYY-MM-DD`. Events: `valuechange`
  * (`event.detail` = `{ from?, to? }`, each a `YYYY-MM-DD` string).
@@ -58,7 +64,7 @@ export class KernelDateRangePicker extends KernelElement {
   private tbodyEl!: HTMLTableSectionElement;
 
   static get observedAttributes() {
-    return ["value-from", "value-to", "min-date", "max-date"];
+    return ["value-from", "value-to", "min-date", "max-date", "label-previous-month", "label-next-month", "label-weekdays"];
   }
 
   get minDate(): Date | undefined {
@@ -88,7 +94,7 @@ export class KernelDateRangePicker extends KernelElement {
 
     const prevButton = document.createElement("button");
     prevButton.type = "button";
-    prevButton.setAttribute("aria-label", "Previous month");
+    prevButton.setAttribute("aria-label", this.builtInLabel("previousMonth", "Previous month"));
     prevButton.className = kernelClass("DateRangePicker", "navButton");
     prevButton.append(arrowIcon(PREV_PATH, kernelClass("DateRangePicker", "navIcon")));
     prevButton.addEventListener("click", () => {
@@ -102,7 +108,7 @@ export class KernelDateRangePicker extends KernelElement {
 
     const nextButton = document.createElement("button");
     nextButton.type = "button";
-    nextButton.setAttribute("aria-label", "Next month");
+    nextButton.setAttribute("aria-label", this.builtInLabel("nextMonth", "Next month"));
     nextButton.className = kernelClass("DateRangePicker", "navButton");
     nextButton.append(arrowIcon(NEXT_PATH, kernelClass("DateRangePicker", "navIcon")));
     nextButton.addEventListener("click", () => {
@@ -113,12 +119,13 @@ export class KernelDateRangePicker extends KernelElement {
     header.append(prevButton, this.headingEl, nextButton);
 
     const table = document.createElement("table");
+    table.setAttribute("role", "grid");
     table.className = kernelClass("DateRangePicker", "table");
     table.setAttribute("aria-labelledby", `${this.baseId}-heading`);
 
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
-    for (const label of WEEKDAY_LABELS) {
+    for (const label of this.builtInLabelList("weekdays", WEEKDAY_LABELS)) {
       const th = document.createElement("th");
       th.scope = "col";
       th.className = kernelClass("DateRangePicker", "weekdayHead");
@@ -203,6 +210,18 @@ export class KernelDateRangePicker extends KernelElement {
     cells[nextIndex]?.focus();
   }
 
+  protected applyLabels() {
+    const root = this.native;
+    if (!root) return;
+    const [prev, next] = Array.from(root.querySelectorAll(`.${kernelClass("DateRangePicker", "navButton")}`));
+    prev?.setAttribute("aria-label", this.builtInLabel("previousMonth", "Previous month"));
+    next?.setAttribute("aria-label", this.builtInLabel("nextMonth", "Next month"));
+    const weekdays = this.builtInLabelList("weekdays", WEEKDAY_LABELS);
+    root.querySelectorAll(`.${kernelClass("DateRangePicker", "weekdayHead")}`).forEach((th, index) => {
+      th.textContent = weekdays[index] ?? "";
+    });
+  }
+
   private renderGrid() {
     if (!this.headingEl || !this.tbodyEl) return;
     this.headingEl.textContent = MONTH_FORMATTER.format(this.visibleMonth);
@@ -228,6 +247,8 @@ export class KernelDateRangePicker extends KernelElement {
 
         const td = document.createElement("td");
         td.className = kernelClass("DateRangePicker", "cell");
+        // ARIA grid: aria-selected goes on the gridcell, not the button.
+        td.setAttribute("role", "gridcell");
         const cellInRange = dataAttr(inCurrentMonth && isInRange);
         if (cellInRange) td.setAttribute("data-in-range", cellInRange);
 
@@ -243,7 +264,8 @@ export class KernelDateRangePicker extends KernelElement {
           if (inRangeAttr) button.setAttribute("data-in-range", inRangeAttr);
           const todayAttr = dataAttr(isToday);
           if (todayAttr) button.setAttribute("data-today", todayAttr);
-          button.setAttribute("aria-selected", String(isSelected));
+          td.setAttribute("aria-selected", String(isSelected));
+          if (isToday) button.setAttribute("aria-current", "date");
           button.disabled = disabled;
           button.tabIndex = isSelected || (!from && isToday) ? 0 : -1;
           button.className = kernelClass("DateRangePicker", "dayButton");

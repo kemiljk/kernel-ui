@@ -1,12 +1,40 @@
+/* An optical pill when --kernel-radius-control is a pill (Round), and an
+   optically padded rounded rectangle otherwise: Button's recipe (see
+   Button.module.css, and Badge.module.css for the maths). The height is
+   fixed by the control-height tokens, so --pill-py is derived from it,
+   and line-height is cap height so the ::before strut centres the
+   capitals whatever the font's ascent and descent.
+
+   Toggle's icons are bare children (a toolbar's <svg>), not wrapped like
+   Button's, so the icon selectors are Badge's: data-icon-start/-end come
+   from pillIconAttrs()/observePillIcons(). The padding stays compact
+   (--kernel-space-2) because a toggle lives in a toolbar. */
 .root {
+  --pill-bw: var(--kernel-border-width);
+  --pill-lh: 1.25em;
+  --pill-cap: 0.7em;
+  --pill-height: var(--kernel-control-height-md);
+  --pill-px: var(--kernel-space-2);
+  --pill-py: calc((var(--pill-height) - var(--pill-lh)) / 2 - var(--pill-bw));
+  --pill-max: calc(var(--pill-height) / 2);
+  --pill-r: min(var(--kernel-radius-control), var(--pill-max));
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+  --pill-icon-edge: calc(var(--pill-py) - var(--pill-px) - var(--pill-label-edge));
+  --pill-gap: var(--pill-py);
+
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: var(--kernel-space-2);
-  border-radius: var(--kernel-radius-control);
-  border: var(--kernel-border-width) solid transparent;
+  gap: var(--pill-gap);
+  block-size: var(--pill-height);
+  padding-block: 0;
+  padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
+  border-radius: var(--pill-r);
+  border: var(--pill-bw) solid transparent;
   background-color: transparent;
   color: var(--kernel-color-text);
+  line-height: var(--pill-cap);
+  white-space: nowrap;
   cursor: pointer;
   /* Same convention as Button/Checkbox/Switch: a clickable control's
      own label text never drag-selects. */
@@ -34,21 +62,79 @@
    label push the box wider via its own padding instead of spilling past
    it. */
 .root[data-size="sm"] {
-  min-inline-size: var(--kernel-control-height-sm);
-  block-size: var(--kernel-control-height-sm);
-  padding-inline: var(--kernel-space-2);
+  --pill-height: var(--kernel-control-height-sm);
+  min-inline-size: var(--pill-height);
+  font-size: var(--kernel-font-size-sm);
 }
 
 .root[data-size="md"] {
-  min-inline-size: var(--kernel-control-height-md);
-  block-size: var(--kernel-control-height-md);
-  padding-inline: var(--kernel-space-2);
+  --pill-height: var(--kernel-control-height-md);
+  min-inline-size: var(--pill-height);
+  font-size: var(--kernel-font-size-base);
 }
 
 .root[data-size="lg"] {
-  min-inline-size: var(--kernel-control-height-lg);
-  block-size: var(--kernel-control-height-lg);
-  padding-inline: var(--kernel-space-3);
+  --pill-height: var(--kernel-control-height-lg);
+  --pill-px: var(--kernel-space-3);
+  min-inline-size: var(--pill-height);
+  font-size: var(--kernel-font-size-lg);
+}
+
+/* Baseline strut: see Badge.module.css, part 4. */
+.root::before {
+  content: "";
+  block-size: calc(var(--pill-height) / 2 + var(--pill-cap) / 2 - var(--pill-bw));
+  margin-inline-end: calc(var(--pill-gap) * -1);
+}
+
+@supports (width: 1cap) {
+  .root {
+    --pill-cap: 1cap;
+  }
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .root {
+    --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut) * var(--pill-r) / var(--pill-max));
+  }
+}
+
+/* An icon at either end: a 1lh slot pulled in until it's --pill-py from
+   the edge on every side, concentric with the corner. */
+.root[data-icon-start] > :first-child,
+.root[data-icon-end] > :last-child {
+  flex: none;
+  align-self: flex-start;
+  margin-block-start: var(--pill-py);
+  inline-size: var(--pill-lh);
+  block-size: var(--pill-lh);
+  max-inline-size: none;
+  box-sizing: border-box;
+  padding: max(0px, (var(--pill-lh) - var(--kernel-icon-size)) / 2);
+}
+
+@container not style(--kernel-icon-stroke-width: auto) {
+  .root[data-icon-start] > :first-child,
+  .root[data-icon-end] > :last-child {
+    stroke-width: var(--kernel-icon-stroke-width);
+  }
+}
+
+.root[data-icon-start] > :first-child {
+  margin-inline-start: var(--pill-icon-edge);
+}
+
+.root[data-icon-end] > :last-child {
+  margin-inline-end: var(--pill-icon-edge);
+}
+
+/* Icon-only: square at every size, a circle at Round. */
+.root[data-icon-start][data-icon-end]:has(> :only-child) {
+  padding-inline: var(--pill-py);
+}
+
+.root[data-icon-start][data-icon-end] > :only-child {
+  margin-inline: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -64,7 +150,7 @@
 
 .root:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .root:disabled {

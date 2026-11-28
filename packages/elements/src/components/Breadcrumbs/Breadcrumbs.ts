@@ -5,19 +5,30 @@ import "./Breadcrumbs.css";
  * `<kernel-breadcrumbs>` — a real `<nav aria-label="Breadcrumb">`
  * wrapping a real `<ol>`; it's an ordered trail, so list semantics are
  * correct. Compose with `<kernel-breadcrumb-item>`.
+ *
+ * Built-in string: `label-navigation` (the `<nav>`'s name, default
+ * "Breadcrumb"), or the `labels` property.
  */
 export class KernelBreadcrumbs extends KernelElement {
+  static get observedAttributes() {
+    return ["label-navigation"];
+  }
+
+  protected applyLabels() {
+    this.native?.setAttribute("aria-label", this.builtInLabel("navigation", "Breadcrumb"));
+  }
+
   connectedCallback() {
     if (this.native) return;
     const nav = document.createElement("nav");
     nav.className = kernelClass("Breadcrumbs");
-    nav.setAttribute("aria-label", "Breadcrumb");
     const list = document.createElement("ol");
     list.className = kernelClass("Breadcrumbs", "list");
     this.moveChildrenInto(list);
     nav.append(list);
     this.native = nav;
     this.append(nav);
+    this.applyLabels();
   }
 }
 

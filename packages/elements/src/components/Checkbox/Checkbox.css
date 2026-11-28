@@ -66,7 +66,7 @@
 
 .kernel-Checkbox-input:focus-visible + .kernel-Checkbox-control {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Checkbox-input:disabled + .kernel-Checkbox-control {
@@ -104,7 +104,7 @@
      above) reads as "the box fills, then the check draws" rather than
      both firing at once. */
   transition:
-    stroke-dashoffset var(--kernel-duration-slow) var(--kernel-ease-out) var(--kernel-duration-fast),
+    stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-out) var(--kernel-duration-stagger),
     opacity var(--kernel-duration-fast) linear;
 }
 

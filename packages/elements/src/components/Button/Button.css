@@ -79,7 +79,7 @@
 
 .kernel-Button-root:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Button-root:disabled,
@@ -157,7 +157,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-Button-root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
-    background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+    background-color: var(--kernel-color-danger-hover);
   }
 }
 
@@ -218,7 +218,7 @@
   border-radius: var(--kernel-radius-full);
   border: 2px solid currentColor;
   border-inline-end-color: transparent;
-  animation: kernel-elements-button-spin var(--kernel-duration-slow) linear infinite;
+  animation: kernel-elements-button-spin var(--kernel-duration-spin) var(--kernel-ease-loop) infinite;
 }
 
 @keyframes kernel-elements-button-spin {
@@ -237,6 +237,6 @@
   }
 
   .kernel-Button-spinner {
-    animation-duration: 1.2s;
+    animation-duration: calc(var(--kernel-duration-spin) * 2);
   }
 }

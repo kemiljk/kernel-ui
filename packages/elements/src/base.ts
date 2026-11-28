@@ -20,10 +20,76 @@
  * element (a genuine `<button>`) still ends up in the DOM either way.
  */
 
+/** A built-in string override: plain text, a `{name}` template, or a
+ * function given the same arguments as the React `labels` function. */
+export type KernelLabelValue = string | ((...args: never[]) => string);
+export type KernelLabels = Record<string, KernelLabelValue | readonly string[] | undefined>;
+
+function kebab(key: string): string {
+  return key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+}
+
 export class KernelElement extends HTMLElement {
   /** The real native element this custom element renders through.
    * Built once in connectedCallback and reused across reconnects. */
   protected native: HTMLElement | null = null;
+
+  private kernelLabels: KernelLabels = {};
+
+  constructor() {
+    super();
+    // `el.labels = {…}` assigned before the tag was defined lands as an
+    // own property that would shadow the accessor below; re-route it.
+    if (Object.prototype.hasOwnProperty.call(this, "labels")) {
+      const early = (this as unknown as { labels: KernelLabels }).labels;
+      delete (this as unknown as { labels?: KernelLabels }).labels;
+      this.labels = early;
+    }
+  }
+
+  /**
+   * Overrides for the component's built-in strings (aria-labels, button
+   * text, announcements) — the same keys as the React component's
+   * `labels` prop. A value is plain text, a template with `{name}`
+   * placeholders, or a function receiving the React function's
+   * arguments. Each key is also readable from a `label-<kebab-key>`
+   * attribute (`label-remove-tag="Supprimer {tag}"`); the property wins.
+   */
+  get labels(): KernelLabels {
+    return this.kernelLabels;
+  }
+
+  set labels(value: KernelLabels) {
+    this.kernelLabels = { ...(value ?? {}) };
+    if (this.native) this.applyLabels();
+  }
+
+  /** Resolves one built-in string: `labels` property, then the
+   * `label-<kebab-key>` attribute, then `fallback` (today's English).
+   * `{name}` placeholders are filled from `params`. */
+  protected builtInLabel(key: string, fallback: string, params?: Record<string, string | number>): string {
+    const override = this.kernelLabels[key];
+    if (typeof override === "function") {
+      return (override as (...args: unknown[]) => string)(...Object.values(params ?? {}));
+    }
+    const template =
+      typeof override === "string" ? override : (this.getAttribute(`label-${kebab(key)}`) ?? fallback);
+    if (!params) return template;
+    return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in params ? String(params[name]) : match));
+  }
+
+  /** A list-valued built-in string (e.g. weekday names): `labels`
+   * property array, or a comma-separated `label-<kebab-key>` attribute. */
+  protected builtInLabelList(key: string, fallback: readonly string[]): readonly string[] {
+    const override = this.kernelLabels[key];
+    if (Array.isArray(override)) return override;
+    const attr = this.getAttribute(`label-${kebab(key)}`);
+    return attr ? attr.split(",").map((s) => s.trim()) : fallback;
+  }
+
+  /** Re-applies built-in strings after a `labels` / `label-*` change.
+   * Override in components that have any; the default does nothing. */
+  protected applyLabels(): void {}
 
   static get observedAttributes(): string[] {
     return [];
@@ -61,15 +127,17 @@ export class KernelElement extends HTMLElement {
 
   attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
     if (!this.native) return; // not connected yet — syncAllAttrs() will catch up
-    this.syncAttr(name, newValue);
+    if (name.startsWith("label-")) this.applyLabels();
+    else this.syncAttr(name, newValue);
   }
 
   /** Re-applies every observed attribute to `native`. */
   protected syncAllAttrs() {
     const ctor = this.constructor as typeof KernelElement;
     for (const name of ctor.observedAttributes) {
-      this.syncAttr(name, this.getAttribute(name));
+      if (!name.startsWith("label-")) this.syncAttr(name, this.getAttribute(name));
     }
+    this.applyLabels();
   }
 
   /** Default: mirror the attribute onto `native` as `data-{name}`,

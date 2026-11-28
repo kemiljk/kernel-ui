@@ -189,9 +189,9 @@
   transition:
     height var(--kernel-duration-slow) var(--kernel-ease-out),
     width var(--kernel-duration-slow) var(--kernel-ease-out),
-    translate var(--kernel-duration-enter) var(--kernel-ease-overlay),
-    overlay var(--kernel-duration-enter) allow-discrete,
-    display var(--kernel-duration-enter) allow-discrete;
+    translate var(--kernel-duration-sheet) var(--kernel-ease-drawer),
+    overlay var(--kernel-duration-sheet) allow-discrete,
+    display var(--kernel-duration-sheet) allow-discrete;
 }
 
 /* `::backdrop` inherits custom properties from its originating element, which is

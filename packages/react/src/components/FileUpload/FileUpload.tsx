@@ -25,6 +25,19 @@ export interface FileUploadError {
   files: File[];
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface FileUploadLabels {
+  /** Accessible name of the selected-files list. Default `"Selected files"`. */
+  selectedFiles: string;
+  /** Accessible name of a file's remove button. Default ``(fileName) => `Remove ${fileName}` ``. */
+  removeFile: (fileName: string) => string;
+}
+
+const defaultFileUploadLabels: FileUploadLabels = {
+  selectedFiles: "Selected files",
+  removeFile: (fileName) => `Remove ${fileName}`,
+};
+
 export interface FileUploadProps
   extends Omit<
     InputHTMLAttributes<HTMLInputElement>,
@@ -75,6 +88,9 @@ export interface FileUploadProps
   disabled?: boolean;
   className?: ClassNameValue<FileUploadState>;
   wrapperClassName?: ClassNameValue<FileUploadState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<FileUploadLabels>;
 }
 
 function formatBytes(bytes: number): string {
@@ -321,10 +337,12 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       id,
       className,
       wrapperClassName,
+      labels,
       ...rest
     },
     ref,
   ) {
+    const l = { ...defaultFileUploadLabels, ...labels };
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const descriptionId = `${inputId}-description`;
@@ -653,7 +671,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           <ul
             className={styles.fileList}
             data-slot="file-upload-list"
-            aria-label="Selected files"
+            aria-label={l.selectedFiles}
           >
             {keyedFiles.map(({ file, key }, index) => (
               <li className={styles.fileItem} key={key}>
@@ -662,7 +680,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
                 <button
                   type="button"
                   className={styles.remove}
-                  aria-label={`Remove ${file.name}`}
+                  aria-label={l.removeFile(file.name)}
                   onClick={() => removeFile(index)}
                 >
                   <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="14" height="14">

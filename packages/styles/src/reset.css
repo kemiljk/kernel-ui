@@ -115,13 +115,29 @@
     }
   }
 
+  /* Reduced motion means fewer and gentler animations, not none.
+
+     Transitions are left to each component: every Kernel component that
+     moves something ships its own prefers-reduced-motion block, which swaps
+     travel and scale for a short opacity cross-fade. A blanket
+     transition-duration override here used to defeat all of those: it sits
+     in a cascade layer with !important, which outranks every unlayered rule,
+     so no gentle variant ever ran.
+
+     Keyframe animations still stop, as a safety net for decorative loops,
+     except the ones that carry meaning (a busy spinner, indeterminate
+     progress), marked data-kernel-motion="essential". Those slow down in
+     their component's own reduced-motion block instead of freezing, so a
+     loading state still reads as loading. */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    :not([data-kernel-motion="essential"]),
+    :not([data-kernel-motion="essential"])::before,
+    :not([data-kernel-motion="essential"])::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+    }
+
+    * {
       scroll-behavior: auto !important;
     }
   }
@@ -205,7 +221,7 @@
      element in the library. Never removed, only ever restyled. */
   :focus-visible {
     outline: 2px solid var(--kernel-color-focus-ring);
-    outline-offset: 2px;
+    outline-offset: var(--kernel-focus-offset);
   }
 
   /* Shared "visually hidden, still in the accessibility tree" utility —
@@ -224,6 +240,19 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+
+  /* Icons that point along the reading direction — previous/next
+     chevrons, an outbound "↗" — mirror in right-to-left text, where
+     "previous" sits on the right and points right. Opt in per icon with
+     `data-icon-directional`; most icons (a check, a close ×, a clock)
+     mean the same thing either way and must not flip. `scale` rather
+     than `transform` so it composes with any transform the component
+     already animates. Paired selector, not `:dir(rtl)` alone: Kernel's
+     build rewrites `:dir()` to `:lang()`, which stops tracking `dir`. */
+  [data-icon-directional]:dir(rtl),
+  :where([dir="rtl"]) [data-icon-directional] {
+    scale: -1 1;
   }
 }
 

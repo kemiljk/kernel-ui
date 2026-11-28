@@ -93,20 +93,21 @@
    steps. `[data-expanded]` above resets all of these back to full. */
 .toast[data-depth="1"] {
   --y: -10px;
-  scale: 0.96;
+  /* Halfway to --kernel-scale-recede: one step back. */
+  scale: calc((1 + var(--kernel-scale-recede)) / 2);
   opacity: 0.9;
 }
 
 .toast[data-depth="2"] {
   --y: -20px;
-  scale: 0.92;
+  scale: var(--kernel-scale-recede);
   opacity: 0.55;
   filter: blur(var(--kernel-blur-xs));
 }
 
 .toast[data-depth="3"] {
   --y: -30px;
-  scale: 0.92;
+  scale: var(--kernel-scale-recede);
   opacity: 0;
   filter: blur(var(--kernel-blur-xs));
   pointer-events: none;
@@ -147,17 +148,24 @@
        moment `@starting-style` describes — or there'd be nothing to
        transition FROM. */
     translate: 0 var(--kernel-space-12) !important;
-    /* A deliberately bigger pop than the depth steps below (0.8, not
-       0.9+): those are a subtle recede for something still fully in view,
-       this is a toast arriving from nothing, and reads better with more
-       room to visibly grow into. */
-    scale: 0.8;
+    /* The arrival reads through its travel up from below; the scale is the
+       standard entrance dip (never far below 0.9, or it reads as appearing
+       from nothing). */
+    scale: var(--kernel-scale-enter);
   }
 }
 
+/* Leaves the way it arrived (down, toward the edge it came from) and
+   faster than it entered: exits are shorter than entrances. */
 .toast[data-closing] {
   opacity: 0;
-  scale: 0.96;
+  scale: var(--kernel-scale-enter);
+  translate: 0 calc(var(--y) + var(--kernel-translate-enter));
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-out),
+    translate var(--kernel-duration-exit) var(--kernel-ease-out),
+    scale var(--kernel-duration-exit) var(--kernel-ease-out),
+    filter var(--kernel-duration-exit) var(--kernel-ease-out);
 }
 
 /* Same "tint the whole surface" convention Callout already uses for
@@ -255,6 +263,21 @@
   color: var(--kernel-color-text-muted);
 }
 
+/* On a tinted toast the warm muted grey goes muddy against green, amber
+   or red and loses contrast. The variant's own text colour — the one
+   the close × already uses — is tuned for exactly that tint. */
+.toast[data-variant="success"] .description {
+  color: var(--kernel-color-success-text);
+}
+
+.toast[data-variant="warning"] .description {
+  color: var(--kernel-color-warning-text);
+}
+
+.toast[data-variant="danger"] .description {
+  color: var(--kernel-color-danger-text);
+}
+
 .close {
   flex-shrink: 0;
   display: inline-flex;
@@ -279,7 +302,8 @@
   opacity: 0.7;
   transition: opacity var(--kernel-duration-fast) var(--kernel-ease-out),
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
-    color var(--kernel-duration-fast) var(--kernel-ease-out);
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .toast[data-variant="success"] .close {
@@ -343,5 +367,16 @@
 
   .icon {
     transition: opacity var(--kernel-duration-fast) linear;
+  }
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.close:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close:active:not(:disabled) {
+    scale: 1;
   }
 }

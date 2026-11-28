@@ -53,12 +53,12 @@ export class KernelTextarea extends KernelElement {
     textarea.id = id;
     textarea.className = kernelClass("Textarea", "input");
     textarea.setAttribute("data-slot", "textarea-control");
-    textarea.addEventListener("focus", () => root.setAttribute("data-focused", ""));
+    textarea.addEventListener("focus", () => root.setAttribute("data-focused", "true"));
     textarea.addEventListener("blur", () => root.removeAttribute("data-focused"));
     textarea.addEventListener("input", () => this.syncFilled());
     textarea.addEventListener("animationstart", (event) => {
       if ((event as AnimationEvent).animationName.toLowerCase().includes("onautofillstart")) {
-        root.setAttribute("data-filled", "");
+        root.setAttribute("data-filled", "true");
       }
     });
 
@@ -73,7 +73,7 @@ export class KernelTextarea extends KernelElement {
     const root = this.native;
     const textarea = this.textarea;
     if (!root || !textarea) return;
-    if (textarea.value.length > 0) root.setAttribute("data-filled", "");
+    if (textarea.value.length > 0) root.setAttribute("data-filled", "true");
     else root.removeAttribute("data-filled");
   }
 
@@ -158,7 +158,7 @@ export class KernelTextarea extends KernelElement {
         break;
       case "disabled":
         textarea.disabled = value !== null;
-        if (value !== null) root.setAttribute("data-disabled", "");
+        if (value !== null) root.setAttribute("data-disabled", "true");
         else root.removeAttribute("data-disabled");
         break;
       case "placeholder":
@@ -174,8 +174,10 @@ export class KernelTextarea extends KernelElement {
         else textarea.name = value;
         break;
       case "invalid":
-        textarea.setAttribute("aria-invalid", value !== null ? "true" : "false");
-        if (value !== null) root.setAttribute("data-invalid", "");
+        // Omitted when valid, like React's `aria-invalid={invalid || undefined}`.
+        if (value !== null) textarea.setAttribute("aria-invalid", "true");
+        else textarea.removeAttribute("aria-invalid");
+        if (value !== null) root.setAttribute("data-invalid", "true");
         else root.removeAttribute("data-invalid");
         this.updateDescribedBy();
         break;

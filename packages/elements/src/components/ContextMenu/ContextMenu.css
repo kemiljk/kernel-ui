@@ -23,8 +23,8 @@ kernel-context-menu {
 
   /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
      lets page content paint through a half-transparent panel — a flash
-     that looks like a compositing bug. Enter still fades in via
-     `@starting-style` below; exit is scale-only. */
+     that looks like a compositing bug. Exit is scale-only; the enter
+     fades and pops (see :popover-open below). */
   opacity: 1;
   scale: var(--kernel-scale-exit);
   /* Set in ContextMenu.ts as a cursor-relative percentage — so this
@@ -34,13 +34,18 @@ kernel-context-menu {
     scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay);
 }
 
+/* Pops open from the cursor: a quick fade plus a scale with a slight
+   overshoot (--kernel-ease-overshoot), kept short because a context menu
+   is opened often. This is a deliberate exception to the tokens' "no
+   overshoot on overlays" rule, chosen for how the menu should feel; the
+   exit stays a plain, faster scale with no overshoot. */
 .kernel-ContextMenu-content:popover-open {
   display: flex;
   opacity: 1;
   scale: 1;
   transition:
     opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
-    scale var(--kernel-duration-fast) var(--kernel-ease-overlay);
+    scale var(--kernel-duration-base) var(--kernel-ease-overshoot);
 }
 
 @starting-style {
@@ -51,8 +56,10 @@ kernel-context-menu {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kernel-ContextMenu-content {
-    transition: none;
+  .kernel-ContextMenu-content,
+  .kernel-ContextMenu-content:popover-open,
+  .kernel-ContextMenu-content[data-closing] {
+    transition: opacity var(--kernel-duration-fast) linear;
     scale: 1;
   }
 }

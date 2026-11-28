@@ -55,7 +55,7 @@ kernel-accordion-item:last-of-type .kernel-Accordion-item:not([open]) .kernel-Ac
 
 .kernel-Accordion-trigger:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: -2px;
+  outline-offset: var(--kernel-focus-offset-inset);
 }
 
 .kernel-Accordion-chevron {

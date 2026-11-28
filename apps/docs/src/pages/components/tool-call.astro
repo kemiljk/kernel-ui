@@ -6,6 +6,7 @@ import Example from "../../components/Example.astro";
 import ToolCallDemo from "../../components/demos/ToolCallDemo";
 import ToolCallPlayground from "../../components/demos/ToolCallPlayground";
 import { Source, Sources, ToolCall } from "@kernelui-lib/react";
+import ApiTable from "../../components/ApiTable.astro";
 
 const runningSnippet = `<ToolCall
   label={'Searching "JWT auth vulnerabilities"'}
@@ -92,17 +93,7 @@ const statusOnlySnippet = `<ToolCall label="Reading src/auth.ts" status="complet
     <ToolCallPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Tool Call.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>label</code></td><td>ReactNode (required)</td><td>—</td></tr>
-        <tr><td><code>status</code></td><td>"pending" | "running" | "complete" | "error"</td><td>"pending"</td></tr>
-        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>true while pending/running</td></tr>
-        <tr><td><code>open</code> / <code>onOpenChange</code></td><td>controlled open state</td><td>—</td></tr>
-        <tr><td><code>children</code></td><td>ReactNode</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="tool-call" />
 
     <h2>Accessibility</h2>
     <ul>

@@ -22,6 +22,9 @@ export const Progress = forwardRef<HTMLProgressElement, ProgressProps>(
   function Progress({ label, className, max = 100, ...rest }, ref) {
     return (
       <progress
+        // Indeterminate progress keeps moving (slower) under reduced motion,
+        // so it still reads as working; see the reset in @kernelui-lib/styles.
+        data-kernel-motion="essential"
         {...rest}
         ref={ref}
         max={max}

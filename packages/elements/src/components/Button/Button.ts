@@ -96,13 +96,17 @@ export class KernelButton extends KernelElement {
     const loading = this.hasAttribute("loading");
     const disabled = this.hasAttribute("disabled") || loading;
     button.disabled = disabled;
-    button.dataset.loading = loading ? "true" : "false";
+    // "true" or absent, like React's `dataAttr(loading)`.
+    if (loading) button.dataset.loading = "true";
+    else delete button.dataset.loading;
     if (loading) {
       button.setAttribute("aria-busy", "true");
       if (!button.querySelector(`.${kernelClass("Button", "spinner")}`)) {
         const spinner = document.createElement("span");
         spinner.className = kernelClass("Button", "spinner");
         spinner.setAttribute("aria-hidden", "true");
+        // A busy state: reduced motion slows it, never freezes it (reset.css).
+        spinner.dataset.kernelMotion = "essential";
         button.append(spinner);
       }
     } else {

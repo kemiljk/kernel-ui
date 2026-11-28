@@ -36,7 +36,7 @@
 @keyframes kernel-message-enter {
   from {
     opacity: 0;
-    transform: translateY(var(--kernel-space-2)) scale(var(--kernel-scale-enter));
+    transform: translateY(var(--kernel-translate-enter)) scale(var(--kernel-scale-enter));
   }
   to {
     opacity: 1;
@@ -265,6 +265,8 @@
 .expandTrigger {
   display: inline-flex;
   align-items: center;
+  /* 24px minimum target (WCAG 2.5.8) for a one-line text summary. */
+  min-block-size: var(--kernel-space-6);
   gap: var(--kernel-space-1);
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
@@ -280,7 +282,7 @@
 
 .expandTrigger:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
   border-radius: var(--kernel-radius-sm);
 }
 

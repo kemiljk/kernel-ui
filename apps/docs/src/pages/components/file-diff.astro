@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import FileDiffDemo from "../../components/demos/FileDiffDemo";
 import FileDiffPlayground from "../../components/demos/FileDiffPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="File Diff" withSidebar>
@@ -26,19 +27,7 @@ import FileDiffPlayground from "../../components/demos/FileDiffPlayground";
     <FileDiffPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for File Diff.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>path</code></td><td>ReactNode</td><td>required</td></tr>
-        <tr><td><code>rows</code></td><td>DiffRow[]</td><td>required</td></tr>
-        <tr><td><code>streaming</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>showLineNumbers</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>collapseOnComplete</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>defaultOpen</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>additions</code> / <code>deletions</code></td><td>number</td><td>derived</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="file-diff" />
 
     <p>
       A <code>DiffRow</code> is

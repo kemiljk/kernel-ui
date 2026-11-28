@@ -12,7 +12,21 @@ import {
 } from "../../utils/dateGrid";
 import styles from "./DateRangePicker.module.css";
 
-const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+/** Built-in strings, overridable for translation via `labels`. */
+export interface DateRangePickerLabels {
+  /** Accessible name of the previous-month button. Default `"Previous month"`. */
+  previousMonth: string;
+  /** Accessible name of the next-month button. Default `"Next month"`. */
+  nextMonth: string;
+  /** Column headers, Sunday first. Default `["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]`. */
+  weekdays: readonly string[];
+}
+
+const defaultDateRangePickerLabels: DateRangePickerLabels = {
+  previousMonth: "Previous month",
+  nextMonth: "Next month",
+  weekdays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+};
 const MONTH_FORMATTER = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 
 export interface DateRange {
@@ -22,10 +36,14 @@ export interface DateRange {
 
 export interface DateRangePickerProps {
   value?: DateRange;
+  /** Defaults to `{}` (no range selected). */
   defaultValue?: DateRange;
   onValueChange?: (range: DateRange) => void;
   minDate?: Date;
   maxDate?: Date;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<DateRangePickerLabels>;
 }
 
 /**
@@ -37,7 +55,8 @@ export interface DateRangePickerProps {
  * The in-progress second half of a range (before it's actually clicked)
  * is a hover preview only, `hoverDate` never reaches `onValueChange`.
  */
-export function DateRangePicker({ value, defaultValue, onValueChange, minDate, maxDate }: DateRangePickerProps) {
+export function DateRangePicker({ value, defaultValue, onValueChange, minDate, maxDate, labels }: DateRangePickerProps) {
+  const l = { ...defaultDateRangePickerLabels, ...labels };
   const [range, setRange] = useControllableState<DateRange>({
     value,
     defaultValue: defaultValue ?? {},
@@ -128,11 +147,11 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
       <div className={styles.header}>
         <button
           type="button"
-          aria-label="Previous month"
+          aria-label={l.previousMonth}
           className={styles.navButton}
           onClick={goToPreviousMonth}
         >
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" className={styles.navIcon}>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" data-icon-directional="" className={styles.navIcon}>
             <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -141,20 +160,20 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
         </span>
         <button
           type="button"
-          aria-label="Next month"
+          aria-label={l.nextMonth}
           className={styles.navButton}
           onClick={goToNextMonth}
         >
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" className={styles.navIcon}>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" data-icon-directional="" className={styles.navIcon}>
             <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       </div>
 
-      <table className={styles.table} aria-labelledby={`${baseId}-heading`}>
+      <table className={styles.table} role="grid" aria-labelledby={`${baseId}-heading`}>
         <thead>
           <tr>
-            {WEEKDAY_LABELS.map((label, index) => (
+            {l.weekdays.map((label, index) => (
               <th key={index} scope="col" className={styles.weekdayHead}>
                 {label}
               </th>
@@ -179,9 +198,13 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
                 const isSelected = isStart || isEnd;
 
                 return (
+                  // ARIA grid: aria-selected belongs on the gridcell, not the
+                  // button inside it (ARIA doesn't allow it on a button).
                   <td
                     key={day.toISOString()}
                     className={styles.cell}
+                    role="gridcell"
+                    aria-selected={inCurrentMonth ? isSelected : undefined}
                     data-in-range={dataAttr(inCurrentMonth && isInRange)}
                   >
                     {inCurrentMonth ? (
@@ -192,7 +215,7 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
                         data-range-end={dataAttr(isEnd)}
                         data-in-range={dataAttr(isInRange)}
                         data-today={dataAttr(isToday)}
-                        aria-selected={isSelected}
+                        aria-current={isToday ? "date" : undefined}
                         disabled={disabled}
                         tabIndex={isSelected || (!from && isToday) ? 0 : -1}
                         className={styles.dayButton}

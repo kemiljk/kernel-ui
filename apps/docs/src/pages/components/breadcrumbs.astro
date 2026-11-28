@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import BreadcrumbsDemo from "../../components/demos/BreadcrumbsDemo";
 import BreadcrumbsPlayground from "../../components/demos/BreadcrumbsPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Breadcrumbs" withSidebar>
@@ -26,13 +27,6 @@ import BreadcrumbsPlayground from "../../components/demos/BreadcrumbsPlayground"
     <BreadcrumbsPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Breadcrumbs.</caption>
-      <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
-      <tbody>
-        <tr><td><code>BreadcrumbItem</code></td><td><code>current</code></td><td>boolean</td></tr>
-        <tr><td><code>BreadcrumbItem</code></td><td><code>href</code></td><td>string</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="breadcrumbs" />
   </div>
 </BaseLayout>

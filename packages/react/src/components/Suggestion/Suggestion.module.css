@@ -50,7 +50,15 @@
   gap: var(--pill-gap);
   max-inline-size: 100%;
   min-block-size: var(--pill-h);
-  padding-block: 0 var(--pill-py);
+  /* The strut lifts the baseline to centre the capitals, which pushes the
+     text's descent down by however low the font's glyphs sit in their
+     line box: (cap − (ascent − descent)) / 2, about 0.04em in the docs
+     font, which made a one-line pill 40.6px instead of 40. CSS can't
+     read ascent or descent, so the bottom padding gives back 0.1em,
+     enough for any reasonably centred font. One line then comes out at
+     exactly --pill-h (min-block-size wins); a wrapped one keeps all but
+     0.1em of its bottom padding. */
+  padding-block: 0 max(0px, var(--pill-py) - 0.1em);
   padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
   border: var(--pill-bw) solid var(--kernel-color-border);
   border-radius: var(--pill-r);
@@ -86,7 +94,7 @@
 
 .button:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .button:disabled {
@@ -149,4 +157,17 @@
 
 .button[data-icon-start][data-icon-end] > :only-child {
   margin-inline: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition:
+      background-color var(--kernel-duration-fast) linear,
+      border-color var(--kernel-duration-fast) linear,
+      color var(--kernel-duration-fast) linear;
+  }
+
+  .button:active:not(:disabled) {
+    scale: 1;
+  }
 }

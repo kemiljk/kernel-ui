@@ -11,7 +11,26 @@ const overrideSnippet = `@import "@kernelui-lib/styles";
   --kernel-space-unit: 0.25rem;  /* → every gap and padding rescales */
 }`;
 
-const presetSnippet = `<html data-kernel-accent="violet">`;
+const layerSnippet = `@import "@kernelui-lib/styles";
+@import "@kernelui-lib/react/styles.layer.css";
+/* or @kernelui-lib/elements/styles.layer.css */`;
+
+const layerOverrideSnippet = `/* Unlayered, so it beats Kernel's rules at any specificity. */
+.checkout-button {
+  border-radius: 0;
+  text-transform: uppercase;
+}`;
+
+const layerResetSnippet = `/* Layer order is set by first mention, so this goes above the imports. */
+@layer reset, kernel.tokens, kernel.base, kernel.components;
+@import "@kernelui-lib/styles";
+@import "@kernelui-lib/react/styles.layer.css";
+
+@layer reset {
+  button { background: none; border: 0; }
+}`;
+
+const presetSnippet =`<html data-kernel-accent="violet">`;
 
 const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
 --kernel-accent-3   through -5   component background (rest / hover / pressed)
@@ -183,5 +202,35 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       size or shape change like a morphing container, never for
       reversible overlay motion.
     </p>
+
+    <h2 id="overriding-component-styles">Overriding component styles</h2>
+    <p>
+      Tokens cover most changes. When you need to restyle a component
+      itself, import the layered stylesheet in place of the plain one:
+    </p>
+    <CodeBlock code={layerSnippet} lang="css" />
+    <p>
+      <code>styles.layer.css</code> holds the same rules as{" "}
+      <code>styles.css</code>, inside <code>@layer kernel.components</code>,
+      and declares the order <code>kernel.tokens</code>,{" "}
+      <code>kernel.base</code>, <code>kernel.components</code>. The tokens
+      and reset in <code>@kernelui-lib/styles</code> are already layered.
+      Any CSS you write outside a layer then beats every Kernel rule,
+      whatever its specificity and wherever it loads, so a plain class
+      selector is enough and you never need <code>!important</code>. Target
+      a component through your own <code>className</code>, its{" "}
+      <code>data-*</code> state attributes, or its stable{" "}
+      <code>kernel-Name-part</code> class names.
+    </p>
+    <CodeBlock code={layerOverrideSnippet} lang="css" />
+    <p>
+      The plain <code>styles.css</code> stays unlayered on purpose. Layered
+      rules lose to every unlayered rule, including a CSS reset's bare
+      element selectors (<code>button {"{"} background: none {"}"}</code>),
+      so switching an existing app over silently could let its reset strip
+      Kernel's styling. If your own CSS includes a broad reset, put it in a
+      layer named before Kernel's, or keep using <code>styles.css</code>:
+    </p>
+    <CodeBlock code={layerResetSnippet} lang="css" />
   </div>
 </BaseLayout>

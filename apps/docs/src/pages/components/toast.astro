@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import ToastExamples from "../../components/demos/ToastExamples";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Toast" withSidebar>
@@ -23,7 +24,7 @@ import ToastExamples from "../../components/demos/ToastExamples";
 
     <h2>API</h2>
     <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Toast.</caption>
+      <caption>The <code>toast</code> function.</caption>
       <thead><tr><th>Call</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td><code>toast(title, options?)</code></td><td>Default variant</td></tr>
@@ -36,5 +37,8 @@ import ToastExamples from "../../components/demos/ToastExamples";
     <p>
       <code>options</code>: <code>&#123; description?, duration? &#125;</code>. <code>duration</code> defaults to 4000ms; pass <code>0</code> to require a manual dismiss.
     </p>
+
+    <h2>Props</h2>
+    <ApiTable slug="toast" />
   </div>
 </BaseLayout>
