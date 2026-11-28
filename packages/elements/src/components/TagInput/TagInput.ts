@@ -11,10 +11,14 @@ function escapeRegExp(value: string): string {
 
 /**
  * `<kernel-tag-input>` — freeform text that commits into discrete tags,
- * same `role="list"` of `role="listitem"` chips + trailing `listitem`
- * input as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full
- * interaction rationale: Backspace-removes-last-tag, chip remove buttons
- * excluded from the tab sequence, no autocomplete).
+ * same DOM as `@kernelui-lib/react`'s `<TagInput>`: a `role="list"` of
+ * `role="listitem"` chips (a `display: contents` wrapper, only present
+ * while there are tags) followed by a sibling text input that keeps its
+ * native textbox role, label and description. The input is deliberately
+ * not a listitem: overriding a textbox's role hides it from assistive
+ * tech. See the React file for the full interaction rationale
+ * (Backspace-removes-last-tag, chip remove buttons excluded from the tab
+ * sequence, no autocomplete).
  *
  * `value` serializes as a comma-joined attribute string — a tag
  * containing the delimiter character itself can't round-trip through
@@ -67,8 +71,6 @@ export class KernelTagInput extends KernelElement {
 
     const field = document.createElement("div");
     field.className = kernelClass("TagInput", "field");
-    field.setAttribute("role", "list");
-    field.setAttribute("aria-labelledby", labelId);
     field.addEventListener("click", (event) => {
       if (event.target === field) this.input?.focus();
     });
@@ -76,7 +78,6 @@ export class KernelTagInput extends KernelElement {
     const input = document.createElement("input");
     input.id = id;
     input.type = "text";
-    input.setAttribute("role", "listitem");
     input.className = kernelClass("TagInput", "input");
 
     input.addEventListener("input", () => {
@@ -262,7 +263,19 @@ export class KernelTagInput extends KernelElement {
     const field = this.field;
     const input = this.input;
     if (!field || !input) return;
-    field.querySelectorAll(`.${kernelClass("TagInput", "tag")}`).forEach((node) => node.remove());
+    // The chips live in their own role="list" before the input (never
+    // the input itself, which keeps its textbox role); rebuilt from
+    // scratch each render and left out entirely while there are no tags.
+    field.querySelector(`.${kernelClass("TagInput", "tags")}`)?.remove();
+    let list: HTMLElement | null = null;
+    if (this.currentTags.length > 0) {
+      list = document.createElement("div");
+      list.className = kernelClass("TagInput", "tags");
+      list.setAttribute("role", "list");
+      const labelId = this.native?.querySelector(`.${kernelClass("TagInput", "label")}`)?.id;
+      if (labelId) list.setAttribute("aria-labelledby", labelId);
+      field.insertBefore(list, input);
+    }
 
     this.currentTags.forEach((tag) => {
       const chip = document.createElement("span");
@@ -291,7 +304,7 @@ export class KernelTagInput extends KernelElement {
       });
 
       chip.append(text, remove);
-      field.insertBefore(chip, input);
+      list?.append(chip);
     });
 
     const max = this.getAttribute("max");

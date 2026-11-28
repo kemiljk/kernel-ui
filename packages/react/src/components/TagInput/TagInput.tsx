@@ -66,8 +66,17 @@ function escapeRegExp(value: string): string {
 
 /**
  * No native element for this — freeform text that commits into discrete
- * tags. `role="list"` wraps `role="listitem"` chips plus a trailing
- * `role="listitem"` text input, deliberately lighter than a full
+ * tags. The committed tags are a `role="list"` of `role="listitem"`
+ * chips, named by the field's label. The text input sits *beside* that
+ * list, not inside it: a plain `<input type="text">` that keeps its
+ * native textbox role, its `<label for>` name and its `aria-describedby`.
+ * (An earlier version gave the input `role="listitem"` so the list would
+ * own only listitems, but overriding a textbox's role hides it from
+ * assistive tech, and from agents looking for a text field.) The list
+ * wrapper is `display: contents`, so the chips and the input are still
+ * sibling flex items of the field and flow inline together, and it is
+ * only rendered while there are tags, since an empty list is noise.
+ * Deliberately lighter than a full
  * `listbox`/`grid` (no roving-tabindex or arrow-key contract, since
  * there's no selection or navigation model here, just insertion and
  * removal). Each chip's remove button is a real `<button>` but
@@ -262,52 +271,53 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       </label>
       <div
         className={[styles.field, resolveClassName(className, state)].filter(Boolean).join(" ")}
-        role="list"
-        aria-labelledby={labelId}
         onClick={() => inputRef.current?.focus()}
       >
-        {tags.map((tag) => (
-          <Badge
-            key={tag}
-            ref={(node) => {
-              if (node) tagNodesRef.current.set(tag, node);
-              else tagNodesRef.current.delete(tag);
-            }}
-            role="listitem"
-            variant="neutral"
-            className={styles.tag}
-            data-tag={tag}
-            data-removing={dataAttr(removingTags.has(tag))}
-          >
-            <span>{tag}</span>
-            <button
-              type="button"
-              className={styles.tagRemove}
-              data-icon
-              tabIndex={-1}
-              aria-label={l.removeTag(tag)}
-              onClick={(event) => {
-                event.stopPropagation();
-                removeTag(tag);
-              }}
-            >
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12">
-                <path
-                  d="M4 4L12 12M12 4L4 12"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-          </Badge>
-        ))}
+        {tags.length > 0 ? (
+          <div className={styles.tags} role="list" aria-labelledby={labelId}>
+            {tags.map((tag) => (
+              <Badge
+                key={tag}
+                ref={(node) => {
+                  if (node) tagNodesRef.current.set(tag, node);
+                  else tagNodesRef.current.delete(tag);
+                }}
+                role="listitem"
+                variant="neutral"
+                className={styles.tag}
+                data-tag={tag}
+                data-removing={dataAttr(removingTags.has(tag))}
+              >
+                <span>{tag}</span>
+                <button
+                  type="button"
+                  className={styles.tagRemove}
+                  data-icon
+                  tabIndex={-1}
+                  aria-label={l.removeTag(tag)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeTag(tag);
+                  }}
+                >
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="12" height="12">
+                    <path
+                      d="M4 4L12 12M12 4L4 12"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </Badge>
+            ))}
+          </div>
+        ) : null}
         <input
           {...rest}
           ref={mergeRefs(ref, inputRef)}
           id={inputId}
           type="text"
-          role="listitem"
           className={styles.input}
           value={draft}
           disabled={disabled || atMax}

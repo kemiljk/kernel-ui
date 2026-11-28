@@ -204,6 +204,13 @@ const cases: Case[] = [
     element: `<kernel-tag-input label="Tags" value="design,a11y"></kernel-tag-input>`,
   },
   {
+    // No tags yet: neither package renders the (empty) tag list, and the
+    // input stays a plain, described textbox rather than a listitem.
+    name: "TagInput (empty, described)",
+    react: () => <TagInput label="Tags" description="Press Enter to add" />,
+    element: `<kernel-tag-input label="Tags" description="Press Enter to add"></kernel-tag-input>`,
+  },
+  {
     name: "Toggle",
     react: () => (
       <Toggle defaultPressed aria-label="Bold">

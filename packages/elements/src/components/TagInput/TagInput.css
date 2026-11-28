@@ -110,6 +110,16 @@
   padding-inline-start: var(--label-offset);
 }
 
+/* The tag list exists for the accessibility tree only (a role="list"
+   that owns just the chips, with the text input as its sibling rather
+   than a fake listitem). display: contents takes its box out of layout,
+   so the chips and the input stay sibling flex items of the field and
+   keep flowing inline together. The explicit role="list" keeps the list
+   semantics that display: contents would otherwise risk dropping. */
+.kernel-TagInput-tags {
+  display: contents;
+}
+
 /* Each chip also carries kernel-Badge-root, the same as React's tags
    (which render through <Badge>), so it's an optical pill: the remove
    button is marked data-icon and sits as Badge's trailing 1lh icon
