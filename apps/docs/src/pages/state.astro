@@ -1,0 +1,147 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const controlledSnippet = `const [tab, setTab] = useState("account");
+
+<Tabs value={tab} onValueChange={setTab}>…</Tabs>   // controlled
+<Tabs defaultValue="account">…</Tabs>                // uncontrolled`;
+
+const menuSnippet = `import { DropdownMenu, MenuItem } from "@kernelui-lib/react";
+
+<DropdownMenu
+  render={<Button>Edit</Button>}
+  onOpenChange={(open, details) => {
+    // Keep the menu open while someone works through it with the keyboard.
+    if (!open && details.reason === "item-keyboard") details.cancel();
+  }}
+>
+  <MenuItem onSelect={bold}>Bold</MenuItem>
+  <MenuItem onSelect={italic}>Italic</MenuItem>
+</DropdownMenu>`;
+
+const analyticsSnippet = `<Select
+  label="Plan"
+  onValueChange={(plan, { reason }) => {
+    // reason: "item-press" | "keyboard" | "typeahead"
+    track("plan_changed", { plan, via: reason });
+  }}
+>
+  …
+</Select>`;
+
+const dialogSnippet = `<Dialog
+  open={open}
+  title="Edit profile"
+  onOpenChange={(next, details) => {
+    // A stray click on the backdrop shouldn't throw away unsaved edits.
+    if (dirty && details.reason === "outside-press") {
+      details.cancel();
+      return;
+    }
+    setOpen(next);
+  }}
+>
+  …
+</Dialog>`;
+
+const elementsSnippet = `<kernel-tabs default-value="account">…</kernel-tabs>
+<script type="module">
+  document.querySelector("kernel-tabs").addEventListener("valuechange", (event) => {
+    const { value, reason } = event.detail;   // reason: "trigger-press" | "keyboard" | …
+    if (value === "billing" && !confirmLeave()) event.preventDefault();
+  });
+</script>`;
+
+const fuzzySnippet = `import { fuzzyFilter, fuzzyScore } from "@kernelui-lib/react";
+
+fuzzyScore("nwfl", "New file");
+// → { score: 16.5, ranges: [[0, 1], [2, 3], [4, 5], [6, 7]] }
+
+fuzzyFilter(commands, query, (command) => [command.label, ...command.keywords]);
+// → matches only, best first, each with { item, score, ranges, field }`;
+---
+
+<BaseLayout title="State & changes" description="Controlled and uncontrolled state in Kernel, the reason behind every change, and how to cancel one." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>State &amp; changes</h1>
+    <p>
+      Every stateful component can be controlled or uncontrolled. Pass
+      <code>value</code> (or <code>checked</code>, <code>pressed</code>,
+      <code>open</code>) to own the state yourself, or a
+      <code>defaultValue</code> and let the component keep it. Either way the
+      matching callback — <code>onValueChange</code>,
+      <code>onCheckedChange</code>, <code>onOpenChange</code> — tells you about
+      each change. <code>onChange</code> stays the native DOM event.
+    </p>
+    <CodeBlock code={controlledSnippet} lang="tsx" />
+
+    <h2>Why it changed</h2>
+    <p>
+      Each callback gets a second argument, <code>details</code>:
+      <code>{"{ reason, event, cancel(), isCanceled }"}</code>. The
+      <code>reason</code> is a string union specific to the component —
+      Tabs reports <code>"trigger-press"</code> or <code>"keyboard"</code>,
+      Dialog reports <code>"close-button"</code>, <code>"escape-key"</code>,
+      <code>"outside-press"</code> or <code>"programmatic"</code> — so a
+      handler can treat a click differently from a key press, or keep
+      programmatic changes out of analytics. <code>event</code> is the DOM
+      event behind the change, when there is one. Each component's reasons
+      are listed in its API table, typed as <code>ChangeDetails&lt;Reason&gt;</code>.
+    </p>
+    <CodeBlock code={analyticsSnippet} lang="tsx" />
+    <p>
+      It's purely additive: a callback that takes one argument never sees it.
+    </p>
+
+    <h2>Cancelling a change</h2>
+    <p>
+      The component calls your callback <em>before</em> it updates anything.
+      Call <code>details.cancel()</code> and it keeps its current state and
+      skips side effects such as closing a menu.
+    </p>
+    <CodeBlock code={menuSnippet} lang="tsx" />
+    <p>
+      A controlled component is already yours to keep: not updating your state
+      leaves the old value in place, and <code>cancel()</code> just says so —
+      check <code>details.isCanceled</code> if one handler both cancels and
+      sets state.
+    </p>
+    <CodeBlock code={dialogSnippet} lang="tsx" />
+    <p>
+      Where the platform owns the change, cancelling does the closest honest
+      thing. A native <code>popover</code>'s light-dismiss can't be refused,
+      so a cancelled Popover or DropdownMenu close re-shows the panel at once.
+      A TagInput removal is reported once the chip's exit transition has
+      played, so cancelling it brings the chip back.
+    </p>
+
+    <h2>Web Components</h2>
+    <p>
+      The custom elements carry the same reasons on their existing events'
+      <code>detail.reason</code>. Those events are now dispatched before the
+      change commits and are cancelable: <code>event.preventDefault()</code>
+      vetoes the change. Event names are unchanged; elements whose only
+      change event was the native, uncancelable <code>change</code>
+      (Checkbox, RadioGroup, Select, NumberField) add a cancelable
+      <code>valuechange</code> that fires first. Dialog and CommandPalette
+      ask with a cancelable <code>cancel</code> (the native dialog's own name
+      for "about to close"); Popover, DropdownMenu and Accordion items with
+      <code>beforetoggle</code>.
+    </p>
+    <CodeBlock code={elementsSnippet} lang="html" />
+
+    <h2>Filtering</h2>
+    <p>
+      Combobox and CommandPalette filter with a ranked fuzzy match: the
+      characters you type have to appear in order, not together, and results
+      that match at the start, at word starts, or in one unbroken run rise to
+      the top. Case and accents are ignored, and the matched characters are
+      underlined. Both take a <code>filter</code> prop to replace it, and the
+      matcher is exported for your own lists.
+    </p>
+    <CodeBlock code={fuzzySnippet} lang="tsx" />
+  </div>
+</BaseLayout>

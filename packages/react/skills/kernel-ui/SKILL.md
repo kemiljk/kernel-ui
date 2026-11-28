@@ -23,6 +23,14 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 ## Conventions that hold across components
 
 - **State.** Use `value` / `defaultValue` / `onValueChange` for controlled or uncontrolled use. `onChange` stays the native DOM event. Toggles use `checked` / `defaultChecked` / `onCheckedChange`.
+- **Change reasons.** Every change callback gets a second argument, `details: ChangeDetails<Reason>` = `{ reason, event?, cancel(), isCanceled }`. `reason` is a per-component string union (Tabs: `"trigger-press" | "keyboard"`; Dialog `onOpenChange`: `"close-button" | "escape-key" | "outside-press" | "programmatic"`; DropdownMenu adds `"item-press" | "item-keyboard"`). The callback runs *before* the update; `details.cancel()` keeps the current state and skips side effects such as closing. Use it instead of re-deriving intent from events:
+  ```tsx
+  <DropdownMenu render={<Button>Edit</Button>} onOpenChange={(open, d) => {
+    if (!open && d.reason === "item-keyboard") d.cancel(); // stay open for keyboard users
+  }}>…</DropdownMenu>
+  ```
+  In a controlled component, not updating your state already keeps the value; `cancel()` makes it explicit. Custom elements: the same `reason` is on the existing event's `detail`, and the event is cancelable (`event.preventDefault()`).
+- **Filtering.** Combobox and CommandPalette rank results with a fuzzy match and underline matched characters. Pass `filter={(text, query) => score}` (0 hides) to replace it; `fuzzyScore` / `fuzzyFilter` are exported for your own lists.
 - **Form fields** (TextField, Textarea, Select, Combobox, TagInput, NumberField, ColorPicker, Slider, FileUpload):
   - `label` is required: it's the accessible name, rendered as a real `<label>`. To hide it visually, use `hideLabel`. Never drop it.
   - The rest of the scaffold: `description`, `invalid` plus `errorMessage` (shown instead of the description), `disabled` and `required`.

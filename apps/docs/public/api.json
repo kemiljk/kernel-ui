@@ -47,6 +47,12 @@
               "default": "false"
             },
             {
+              "name": "onOpenChange",
+              "type": "(open: boolean, details: ChangeDetails<AccordionOpenChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the item opens or closes from its summary, with the\nreason; `details.cancel()` keeps it as it is. In a `type=\"single\"`\naccordion, the item the browser closes because another one opened isn't\nreported."
+            },
+            {
               "name": "className",
               "type": "ClassNameValue<AccordionItemState>",
               "optional": true
@@ -61,7 +67,7 @@
           "events": []
         },
         "kernel-accordion-item": {
-          "description": "`<kernel-accordion-item>` — a real `<details>`/`<summary>`; expand/\ncollapse, keyboard support, find-in-page, and print all come from the\nbrowser. The open/close transition uses measured-height WAAPI on the\ncontent panel (see `DetailsPanelAnimator`).\n\nAttributes: `title` (the summary text — for richer markup, use a\nchild tagged `slot=\"title\"` instead), `default-open` (boolean, read\nonce at connect).",
+          "description": "`<kernel-accordion-item>` — a real `<details>`/`<summary>`; expand/\ncollapse, keyboard support, find-in-page, and print all come from the\nbrowser. The open/close transition uses measured-height WAAPI on the\ncontent panel (see `DetailsPanelAnimator`).\n\nAttributes: `title` (the summary text — for richer markup, use a\nchild tagged `slot=\"title\"` instead), `default-open` (boolean, read\nonce at connect).\n\nEvents: a bubbling, cancelable `beforetoggle` `CustomEvent` before the\nsummary opens or closes the item, `detail: { open, reason }` with\n`reason` `\"trigger-press\"` or `\"keyboard\"`; `preventDefault()` keeps it\nas it is. (An item the browser closes because another in the same\nsingle-open accordion opened isn't reported.)",
           "attributes": [
             "title"
           ],
@@ -700,8 +706,9 @@
             },
             {
               "name": "onCheckedChange",
-              "type": "(checked: boolean) => void",
-              "optional": true
+              "type": "(checked: boolean, details: ChangeDetails<CheckboxChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the box changes, with the reason (`\"press\"` or\n`\"keyboard\"`); `details.cancel()` leaves it as it was."
             },
             {
               "name": "children",
@@ -719,7 +726,7 @@
       },
       "elements": {
         "kernel-checkbox": {
-          "description": "`<kernel-checkbox>` — a real `<input type=\"checkbox\">` inside a real\n`<label>`, so clicking the text toggles the box for free. Mirrors\n`@kernelui-lib/react`'s `<Checkbox>`.\n\nAttributes: `checked`, `disabled`, `required` (all boolean), `name`,\n`value`. `indeterminate` has no HTML attribute on the platform's own\ncheckbox either — set it as a live property (`el.indeterminate =\ntrue`) same as any native one. The real inner `<input>` fires real,\nbubbling `change` events; listen on it directly or on this element,\nno synthetic event needed.",
+          "description": "`<kernel-checkbox>` — a real `<input type=\"checkbox\">` inside a real\n`<label>`, so clicking the text toggles the box for free. Mirrors\n`@kernelui-lib/react`'s `<Checkbox>`.\n\nAttributes: `checked`, `disabled`, `required` (all boolean), `name`,\n`value`. `indeterminate` has no HTML attribute on the platform's own\ncheckbox either — set it as a live property (`el.indeterminate =\ntrue`) same as any native one. The real inner `<input>` fires real,\nbubbling `change` events; listen on it directly or on this element,\nno synthetic event needed.\n\nChange reasons: a native `change` can't be cancelled, so a bubbling,\ncancelable `valuechange` is dispatched from this element first, with\n`detail: { checked, reason }` (`reason` is `\"press\"` or `\"keyboard\"`).\n`preventDefault()` on it puts the box back and stops the native `change`\nat this element (a listener on the inner `<input>` itself has already\nseen it).",
           "attributes": [
             "checked",
             "disabled",
@@ -864,8 +871,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(value: string) => void",
-              "optional": true
+              "type": "(value: string, details: ChangeDetails<ColorPickerChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the colour changes, with the reason (`\"picker\"` or `\"hex-input\"`); `details.cancel()`\nkeeps the current colour."
             },
             {
               "name": "showHexInput",
@@ -993,8 +1001,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(value: string) => void",
-              "optional": true
+              "type": "(value: string, details: ChangeDetails<ComboboxChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the selection changes, with the reason (`\"item-press\"`, `\"keyboard\"` or `\"clear\"`); `details.cancel()`\nkeeps the current selection (and the listbox open)."
             },
             {
               "name": "placeholder",
@@ -1012,6 +1021,12 @@
               "type": "boolean",
               "optional": true,
               "default": "true"
+            },
+            {
+              "name": "filter",
+              "type": "ComboboxFilter",
+              "optional": true,
+              "description": "Replace the built-in ranked fuzzy match (see `fuzzyScore`). Return a\nscore above 0 to keep an option, higher first; 0 hides it."
             },
             {
               "name": "placement",
@@ -1036,7 +1051,7 @@
             },
             {
               "name": "renderOption",
-              "type": "( option: ComboboxOption, state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number }, ) => ReactNode",
+              "type": "( option: ComboboxOption, state: { active: boolean; selected: boolean; group?: ComboboxGroup; index: number; /** Matched `[start, end)` spans of `option.label` for the current * query, for drawing your own highlight. Empty with a custom `filter`. */ matches: Array<[number, number]>; }, ) => ReactNode",
               "optional": true
             },
             {
@@ -1049,7 +1064,7 @@
       },
       "elements": {
         "kernel-combobox": {
-          "description": "`<kernel-combobox>` — the WAI-ARIA 1.2 combobox pattern: a real\n`<input role=\"combobox\">` that keeps DOM focus the whole time, an\n`aria-activedescendant` pointing at whichever option is highlighted\n(the highlight moves, focus doesn't), and a `role=\"listbox\"` popup.\n`popover=\"manual\"` is used deliberately — this needs its own\nopen/close rules (open on focus or typing, not just a click), so\nlight-dismiss is handled by hand: Escape in the keydown handler,\noutside-click via a `pointerdown` listener.\n\nOptions are declared as real `<option>` children (same convention\nas `<kernel-select>`), moved out of the light DOM at connect and\nrendered as the listbox's own `role=\"option\"` divs.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `no-label-offset`\n(boolean — hard-aligns the label flush left instead of the default\ninset that lines it up with the input's own text padding),\n`placeholder`, `value`, `empty-message` (default \"No results\"),\n`placement` (default bottom), `align` (start/center/end, default\ncenter), `offset` (px, default 8).\nEvents: `valuechange` (`event.detail.value`).",
+          "description": "`<kernel-combobox>` — the WAI-ARIA 1.2 combobox pattern: a real\n`<input role=\"combobox\">` that keeps DOM focus the whole time, an\n`aria-activedescendant` pointing at whichever option is highlighted\n(the highlight moves, focus doesn't), and a `role=\"listbox\"` popup.\n`popover=\"manual\"` is used deliberately — this needs its own\nopen/close rules (open on focus or typing, not just a click), so\nlight-dismiss is handled by hand: Escape in the keydown handler,\noutside-click via a `pointerdown` listener.\n\nOptions are declared as real `<option>` children (same convention\nas `<kernel-select>`), moved out of the light DOM at connect and\nrendered as the listbox's own `role=\"option\"` divs.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `no-label-offset`\n(boolean — hard-aligns the label flush left instead of the default\ninset that lines it up with the input's own text padding),\n`placeholder`, `value`, `empty-message` (default \"No results\"),\n`placement` (default bottom), `align` (start/center/end, default\ncenter), `offset` (px, default 8).\nEvents: `valuechange` (`event.detail.value`), dispatched before the\nselection changes with `detail.reason` — `\"item-press\"`, `\"keyboard\"`\n(Enter on the highlighted option) or `\"clear\"` (the text field emptied).\nIt's cancelable: `preventDefault()` keeps the current selection.\n\nFiltering is a ranked fuzzy match (`fuzzyScore`): best matches first\nwithin each group, matched characters wrapped in `<mark>`. Set the\n`filter` property to `(text, query) => number` to replace it (a score\nabove 0 keeps an option, higher first).",
           "attributes": [
             "label",
             "hide-label",
@@ -1057,9 +1072,7 @@
             "placeholder",
             "value"
           ],
-          "events": [
-            "valuechange"
-          ]
+          "events": []
         }
       }
     },
@@ -1076,8 +1089,9 @@
             },
             {
               "name": "onOpenChange",
-              "type": "(open: boolean) => void",
-              "optional": false
+              "type": "(open: boolean, details: ChangeDetails<CommandPaletteOpenChangeReason>) => void",
+              "optional": false,
+              "description": "Called with the reason the palette wants to close — `\"escape-key\"`,\n`\"outside-press\"`, `\"item-press\"`, `\"item-keyboard\"` or\n`\"programmatic\"`. The palette is\ncontrolled, so not updating `open` keeps it open; `details.cancel()`\nsays so explicitly (an item's `onSelect` still runs either way)."
             },
             {
               "name": "items",
@@ -1114,6 +1128,12 @@
               "description": "Set to false when results are filtered by the consumer."
             },
             {
+              "name": "filter",
+              "type": "CommandPaletteFilter",
+              "optional": true,
+              "description": "Replace the built-in ranked fuzzy match (see `fuzzyScore`). Return a\nscore above 0 to keep an item, higher first; 0 hides it."
+            },
+            {
               "name": "renderItem",
               "type": "( item: CommandPaletteItem, state: { active: boolean; group?: CommandPaletteGroup; index: number }, ) => ReactNode",
               "optional": true
@@ -1134,7 +1154,7 @@
       },
       "elements": {
         "kernel-command-palette": {
-          "description": "`<kernel-command-palette>` — a real `<dialog>`, opened with\n`showModal()`, same reasoning as `<kernel-dialog>`: native top-layer\nstacking, a native focus trap, native Escape-to-close. The filter\ninput follows the same WAI-ARIA combobox pattern as\n`<kernel-combobox>`: a `role=\"listbox\"` of `role=\"option\"` items, an\n`aria-activedescendant` pointing at whichever is highlighted, focus\nstaying on the input throughout.\n\nOpening and closing are immediate because this keyboard-driven surface\nshould respond in the same frame as its shortcut.\n\nItems carry an `onSelect` callback, which isn't expressible as an\nHTML attribute — set them via the `items` property (not attribute):\n`paletteEl.items = [{ id, label, description?, onSelect }]`.\n\nAttributes: `open` (toggle to show/hide), `placeholder` (default\n\"Filter commands\"), `empty-message` (default \"No results\"), `blur`\n(boolean — light frost on the `::backdrop`), and the built-in string\n`label-dialog` (default \"Command palette\") — or the `labels` property.",
+          "description": "`<kernel-command-palette>` — a real `<dialog>`, opened with\n`showModal()`, same reasoning as `<kernel-dialog>`: native top-layer\nstacking, a native focus trap, native Escape-to-close. The filter\ninput follows the same WAI-ARIA combobox pattern as\n`<kernel-combobox>`: a `role=\"listbox\"` of `role=\"option\"` items, an\n`aria-activedescendant` pointing at whichever is highlighted, focus\nstaying on the input throughout.\n\nOpening and closing are immediate because this keyboard-driven surface\nshould respond in the same frame as its shortcut.\n\nItems carry an `onSelect` callback, which isn't expressible as an\nHTML attribute — set them via the `items` property (not attribute):\n`paletteEl.items = [{ id, label, description?, onSelect }]`.\n\nAttributes: `open` (toggle to show/hide), `placeholder` (default\n\"Filter commands\"), `empty-message` (default \"No results\"), `blur`\n(boolean — light frost on the `::backdrop`), and the built-in string\n`label-dialog` (default \"Command palette\") — or the `labels` property.\n\nClosing dispatches a bubbling, cancelable `cancel` event first (the\nnative `<dialog>`'s name for \"about to close\", as on `kernel-dialog`), with\n`detail.reason` — `\"escape-key\"`, `\"outside-press\"`, `\"item-press\"`,\n`\"item-keyboard\"` or `\"programmatic\"` (the native dialog closing some\nother way). `preventDefault()` keeps the palette open; an item's\n`onSelect` still runs.\n\nFiltering is a ranked fuzzy match over each item's label and\ndescription (`fuzzyFilter`): best matches first within each group, the\nmatched characters wrapped in `<mark>`. Set the `filter` property to\n`(text, query) => number` to replace it (above 0 keeps an item).",
           "attributes": [
             "open",
             "placeholder",
@@ -1368,8 +1388,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(date: Date) => void",
-              "optional": true
+              "type": "(date: Date, details: ChangeDetails<DatePickerChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the selection moves, with the reason (`\"day-press\"` or `\"keyboard\"`); `details.cancel()`\nkeeps the current day selected."
             },
             {
               "name": "minDate",
@@ -1392,7 +1413,7 @@
       },
       "elements": {
         "kernel-date-picker": {
-          "description": "`<kernel-date-picker>` — the real WAI-ARIA \"grid\" pattern applied to\nan actual `<table>`: rows are weeks, columns are days of the week.\nDays outside the displayed month render as dimmed, non-interactive\ntext, not disabled buttons — they're a different month's day shown\nfor layout, not \"this month's grid, minus some options\".\n\nKeyboard support moves focus within the days currently rendered in\nthe grid (arrow keys clamp at the grid's edges rather than\nauto-paging to the adjacent month); crossing a month boundary\nrequires the Previous/Next month buttons.\n\nBuilt-in strings: `label-previous-month` (\"Previous month\"),\n`label-next-month` (\"Next month\"), `label-weekdays` (comma-separated,\nSunday first; default \"Su,Mo,Tu,We,Th,Fr,Sa\"), or the `labels` property.\n\nAttributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.\nEvents: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string).",
+          "description": "`<kernel-date-picker>` — the real WAI-ARIA \"grid\" pattern applied to\nan actual `<table>`: rows are weeks, columns are days of the week.\nDays outside the displayed month render as dimmed, non-interactive\ntext, not disabled buttons — they're a different month's day shown\nfor layout, not \"this month's grid, minus some options\".\n\nKeyboard support moves focus within the days currently rendered in\nthe grid (arrow keys clamp at the grid's edges rather than\nauto-paging to the adjacent month); crossing a month boundary\nrequires the Previous/Next month buttons.\n\nBuilt-in strings: `label-previous-month` (\"Previous month\"),\n`label-next-month` (\"Next month\"), `label-weekdays` (comma-separated,\nSunday first; default \"Su,Mo,Tu,We,Th,Fr,Sa\"), or the `labels` property.\n\nAttributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.\nEvents: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string),\ndispatched before the selection moves with `detail.reason` (`\"day-press\"`\nor `\"keyboard\"`); it's cancelable, and `preventDefault()` keeps the\ncurrent day.",
           "attributes": [
             "value",
             "min-date",
@@ -1401,9 +1422,7 @@
             "label-next-month",
             "label-weekdays"
           ],
-          "events": [
-            "valuechange"
-          ]
+          "events": []
         }
       }
     },
@@ -1427,8 +1446,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(range: DateRange) => void",
-              "optional": true
+              "type": "(range: DateRange, details: ChangeDetails<DateRangePickerChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the range changes, with the reason (`\"day-press\"` or `\"keyboard\"`); `details.cancel()`\nkeeps the current range."
             },
             {
               "name": "minDate",
@@ -1451,7 +1471,7 @@
       },
       "elements": {
         "kernel-date-range-picker": {
-          "description": "`<kernel-date-range-picker>` — same table-grid markup and month\nnavigation as `<kernel-date-picker>`, but tracking two endpoints\ninstead of one. A click either starts a fresh range or completes the\nopen one; once both ends are set, the next click starts over. The\nin-progress second half of a range (before it's clicked) is a hover\npreview only — it never reaches the `valuechange` event.\n\nBuilt-in strings: `label-previous-month` (\"Previous month\"),\n`label-next-month` (\"Next month\"), `label-weekdays` (comma-separated,\nSunday first; default \"Su,Mo,Tu,We,Th,Fr,Sa\"), or the `labels` property.\n\nAttributes: `value-from`, `value-to`, `min-date`, `max-date` — all\n`YYYY-MM-DD`. Events: `valuechange`\n(`event.detail` = `{ from?, to? }`, each a `YYYY-MM-DD` string).",
+          "description": "`<kernel-date-range-picker>` — same table-grid markup and month\nnavigation as `<kernel-date-picker>`, but tracking two endpoints\ninstead of one. A click either starts a fresh range or completes the\nopen one; once both ends are set, the next click starts over. The\nin-progress second half of a range (before it's clicked) is a hover\npreview only — it never reaches the `valuechange` event.\n\nBuilt-in strings: `label-previous-month` (\"Previous month\"),\n`label-next-month` (\"Next month\"), `label-weekdays` (comma-separated,\nSunday first; default \"Su,Mo,Tu,We,Th,Fr,Sa\"), or the `labels` property.\n\nAttributes: `value-from`, `value-to`, `min-date`, `max-date` — all\n`YYYY-MM-DD`. Events: `valuechange`\n(`event.detail` = `{ from?, to?, reason }`, each date a `YYYY-MM-DD`\nstring), dispatched before the range changes; `reason` is `\"day-press\"`\nor `\"keyboard\"`, and `preventDefault()` keeps the current range.",
           "attributes": [
             "value-from",
             "value-to",
@@ -1461,9 +1481,7 @@
             "label-next-month",
             "label-weekdays"
           ],
-          "events": [
-            "valuechange"
-          ]
+          "events": []
         }
       }
     },
@@ -1481,8 +1499,9 @@
             },
             {
               "name": "onOpenChange",
-              "type": "(open: boolean) => void",
-              "optional": false
+              "type": "(open: boolean, details: ChangeDetails<DialogOpenChangeReason>) => void",
+              "optional": false,
+              "description": "Called with `false` and the reason when the dialog asks to close:\n`\"close-button\"`, `\"escape-key\"`, `\"outside-press\"` or `\"programmatic\"`.\nThe dialog is controlled, so leaving `open` as it is keeps it open;\n`details.cancel()` says so explicitly, e.g. to ignore backdrop clicks\nwhile a form is dirty."
             },
             {
               "name": "title",
@@ -1555,7 +1574,7 @@
       },
       "elements": {
         "kernel-dialog": {
-          "description": "`<kernel-dialog>` — a real `<dialog>`, opened with `showModal()`.\nThat single call gets a native top-layer stacking context, a native\nfocus trap, native Escape-to-close, and a native `::backdrop`, none\nof it reimplemented here. Closing is delayed until exit transitions\nfinish so consumer animations can run; focus restores when the final\nnative `close()` fires.\n\nAttributes: `open` (toggle to show/hide — set it, don't call\n`showModal()` yourself), `title` (required — or use a child tagged\n`slot=\"title\"` for richer markup), `description`,\n`close-on-backdrop-click` (default true — set to `\"false\"` to\nrequire an explicit close), `show-close-button` (default true — set\nto `\"false\"` to omit), `backdrop` (default/blur/opaque/transparent),\n`side` (center/left/right/top/bottom, default center — a side turns\nthe dialog into an edge-anchored sheet that slides in by translate\ninstead of the default scale settle, for drawers like a mobile nav).\n\nBuilt-in strings: `label-close` (default \"Close\"), or the `labels`\nproperty (`{ close }`) — see `DialogLabels` in `@kernelui-lib/react`.\n\nPart classes (stable `data-slot` hooks too): dialog, header, title,\ndescription, content, close.\n\nEvents: a `close` event fires (bubbling, matching the native\n`<dialog>` event name) whenever the dialog finishes closing via any\npath — Escape, backdrop click, or the close button — with the `open`\nattribute already removed by the time it fires.",
+          "description": "`<kernel-dialog>` — a real `<dialog>`, opened with `showModal()`.\nThat single call gets a native top-layer stacking context, a native\nfocus trap, native Escape-to-close, and a native `::backdrop`, none\nof it reimplemented here. Closing is delayed until exit transitions\nfinish so consumer animations can run; focus restores when the final\nnative `close()` fires.\n\nAttributes: `open` (toggle to show/hide — set it, don't call\n`showModal()` yourself), `title` (required — or use a child tagged\n`slot=\"title\"` for richer markup), `description`,\n`close-on-backdrop-click` (default true — set to `\"false\"` to\nrequire an explicit close), `show-close-button` (default true — set\nto `\"false\"` to omit), `backdrop` (default/blur/opaque/transparent),\n`side` (center/left/right/top/bottom, default center — a side turns\nthe dialog into an edge-anchored sheet that slides in by translate\ninstead of the default scale settle, for drawers like a mobile nav).\n\nBuilt-in strings: `label-close` (default \"Close\"), or the `labels`\nproperty (`{ close }`) — see `DialogLabels` in `@kernelui-lib/react`.\n\nPart classes (stable `data-slot` hooks too): dialog, header, title,\ndescription, content, close.\n\nEvents: a `close` event fires (bubbling, matching the native\n`<dialog>` event name) whenever the dialog finishes closing via any\npath — Escape, backdrop click, or the close button — with the `open`\nattribute already removed by the time it fires, and `detail.reason`\nsaying which path it was.\n\nBefore closing for one of those reasons, a bubbling, cancelable\n`cancel` event fires (the native `<dialog>`'s own name for \"about to\nclose\"), with `detail.reason`: `\"close-button\"`, `\"escape-key\"`,\n`\"outside-press\"`, or `\"programmatic\"` (the native dialog closed some\nother way, such as a `method=\"dialog\"` form). `preventDefault()` keeps\nthe dialog open. Removing the `open` attribute yourself closes it\nwithout asking.",
           "attributes": [
             "open",
             "title",
@@ -1565,7 +1584,9 @@
             "side",
             "label-close"
           ],
-          "events": []
+          "events": [
+            "close"
+          ]
         }
       }
     },
@@ -1622,6 +1643,12 @@
               "type": "RenderProp<DropdownMenuState>",
               "optional": true,
               "description": "Replace the popup element (e.g. wrap with Motion)."
+            },
+            {
+              "name": "onOpenChange",
+              "type": "(open: boolean, details: ChangeDetails<DropdownMenuOpenChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the menu opens or closes, with the reason:\n`\"trigger-press\"`, `\"escape-key\"`, `\"outside-press\"`, `\"focus-out\"`\n(disclosure only), `\"item-press\"`, `\"item-keyboard\"` or `\"programmatic\"`.\n`details.cancel()` keeps it as it is — e.g. cancel `\"item-keyboard\"` to\nkeep the menu open while someone works through it with the keyboard."
             }
           ]
         },
@@ -1670,6 +1697,12 @@
               "type": "RenderProp<DropdownMenuState>",
               "optional": true,
               "description": "Replace the popup element (e.g. wrap with Motion)."
+            },
+            {
+              "name": "onOpenChange",
+              "type": "(open: boolean, details: ChangeDetails<DropdownMenuOpenChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the menu opens or closes, with the reason; see\n`DropdownMenu`'s `onOpenChange`."
             }
           ]
         },
@@ -1705,12 +1738,12 @@
       },
       "elements": {
         "kernel-dropdown-menu": {
-          "description": "`<kernel-dropdown-menu>` — `role=\"menu\"` on a `popover=\"auto\"`\nelement: outside-click/Escape dismissal and top-layer stacking are\nnative to the popover; arrow-key roving between items is the one\npart of the WAI-ARIA menu pattern with no native element, wired up\nby hand.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\n(`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.\n\nAttributes: `placement` (default bottom), `align` (start/center/end,\ndefault center), `offset` (px, default 8). `presentation=\"disclosure\"`\nuses a native details/summary in the page's stacking context; provide\n<summary slot=\"trigger\">. CSS owns entry/exit without a top-layer backdrop.",
+          "description": "`<kernel-dropdown-menu>` — `role=\"menu\"` on a `popover=\"auto\"`\nelement: outside-click/Escape dismissal and top-layer stacking are\nnative to the popover; arrow-key roving between items is the one\npart of the WAI-ARIA menu pattern with no native element, wired up\nby hand.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\n(`<kernel-menu-item>`/`<kernel-menu-separator>`) becomes the menu.\n\nAttributes: `placement` (default bottom), `align` (start/center/end,\ndefault center), `offset` (px, default 8). `presentation=\"disclosure\"`\nuses a native details/summary in the page's stacking context; provide\n<summary slot=\"trigger\">. CSS owns entry/exit without a top-layer backdrop.\n\nEvents: a bubbling, cancelable `beforetoggle` `CustomEvent` before the\nmenu opens or closes, `detail: { open, reason }` — `\"trigger-press\"`,\n`\"escape-key\"`, `\"outside-press\"`, `\"focus-out\"` (disclosure only),\n`\"item-press\"`, `\"item-keyboard\"` or `\"programmatic\"`. `preventDefault()`\nkeeps the menu as it is (e.g. veto `\"item-keyboard\"` to keep it open\nwhile someone works through it with the keyboard).",
           "attributes": [],
           "events": []
         },
         "kernel-dropdown-menu-morph": {
-          "description": "`<kernel-dropdown-menu-morph>` — `<kernel-dropdown-menu>`'s trigger-\nmorphs-into-menu variant, transitions.dev's \"plus menu morph\" recipe:\nthe panel's own box animates width/height/border-radius out from the\ntrigger's exact footprint (see `utils/menuMorph.ts`'s FLIP technique)\ninstead of scaling/fading in place.\n\nThat forces `popover=\"manual\"` instead of `\"auto\"`: a popover's hide\nis deliberately not cancelable, so there's no way to defer it long\nenough for the shrink-back-to-the-trigger animation to play first —\nthe same tradeoff `<kernel-context-menu>` already makes for its own\nmanual popover, with outside-click/Escape dismissal wired up by hand\nto replace what `popover=\"auto\"` gives for free.\n\nReuses `<kernel-menu-item>`/`<kernel-menu-separator>` directly, same\nas `<kernel-context-menu>` does — only the trigger/panel open-close\nmechanism differs.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\nbecomes the menu. Attributes: `placement` (default bottom), `align`\n(start/center/end, default center), `offset` (px, default 8).",
+          "description": "`<kernel-dropdown-menu-morph>` — `<kernel-dropdown-menu>`'s trigger-\nmorphs-into-menu variant, transitions.dev's \"plus menu morph\" recipe:\nthe panel's own box animates width/height/border-radius out from the\ntrigger's exact footprint (see `utils/menuMorph.ts`'s FLIP technique)\ninstead of scaling/fading in place.\n\nThat forces `popover=\"manual\"` instead of `\"auto\"`: a popover's hide\nis deliberately not cancelable, so there's no way to defer it long\nenough for the shrink-back-to-the-trigger animation to play first —\nthe same tradeoff `<kernel-context-menu>` already makes for its own\nmanual popover, with outside-click/Escape dismissal wired up by hand\nto replace what `popover=\"auto\"` gives for free.\n\nReuses `<kernel-menu-item>`/`<kernel-menu-separator>` directly, same\nas `<kernel-context-menu>` does — only the trigger/panel open-close\nmechanism differs.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\nbecomes the menu. Attributes: `placement` (default bottom), `align`\n(start/center/end, default center), `offset` (px, default 8).\nEvents: the same cancelable `beforetoggle` as `<kernel-dropdown-menu>`.",
           "attributes": [],
           "events": []
         },
@@ -2838,8 +2871,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(value: number | undefined) => void",
-              "optional": true
+              "type": "(value: number | undefined, details: ChangeDetails<NumberFieldChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the value commits, with the reason: `\"input\"` (typing),\n`\"keyboard\"` (ArrowUp/ArrowDown in the field), `\"wheel\"` (scrolling over\nthe focused field, where the browser does that) or `\"step-button\"` (the\n− / + buttons). `details.cancel()` keeps the committed value."
             },
             {
               "name": "min",
@@ -3031,8 +3065,9 @@
             },
             {
               "name": "onOpenChange",
-              "type": "(open: boolean) => void",
-              "optional": true
+              "type": "(open: boolean, details: ChangeDetails<PopoverOpenChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the popover opens or closes, with the reason:\n`\"trigger-press\"`, `\"escape-key\"`, `\"outside-press\"` or\n`\"programmatic\"`. `details.cancel()` keeps it as it is — an open is\nstopped outright; a light-dismiss close (which the platform won't let\nanyone refuse) is undone by re-showing the panel straight away."
             },
             {
               "name": "className",
@@ -3057,7 +3092,7 @@
       },
       "elements": {
         "kernel-popover": {
-          "description": "`<kernel-popover>` — `popover=\"auto\"` on the content panel gets\nnative light-dismiss (outside click, Escape) and top-layer stacking\nfor free; the trigger is wired up with the native `popovertarget`\nattribute, so open/close/toggle all work with zero JavaScript beyond\npositioning. The one bit of JS here is mirroring the native `toggle`\nevent into an `open` attribute/event, the same as\n`@kernelui-lib/react`'s own `<Popover>`.\n\nChildren: one element tagged `slot=\"trigger\"` (a `<kernel-button>`\nor plain `<button>`/`<a>`), everything else becomes the popover's\ncontent.\n\nAttributes: `placement` (top/bottom/left/right, default bottom),\n`align` (start/center/end, default center), `offset` (px, default 8).\nEvents: `toggle` `CustomEvent` (`event.detail.open`).",
+          "description": "`<kernel-popover>` — `popover=\"auto\"` on the content panel gets\nnative light-dismiss (outside click, Escape) and top-layer stacking\nfor free; the trigger is wired up with the native `popovertarget`\nattribute, so open/close/toggle all work with zero JavaScript beyond\npositioning. The one bit of JS here is mirroring the native `toggle`\nevent into an `open` attribute/event, the same as\n`@kernelui-lib/react`'s own `<Popover>`.\n\nChildren: one element tagged `slot=\"trigger\"` (a `<kernel-button>`\nor plain `<button>`/`<a>`), everything else becomes the popover's\ncontent.\n\nAttributes: `placement` (top/bottom/left/right, default bottom),\n`align` (start/center/end, default center), `offset` (px, default 8).\nEvents: `toggle` `CustomEvent` (`event.detail.open`, plus\n`detail.reason`) after the popover opens or closes, and before it, a\ncancelable `beforetoggle` `CustomEvent` (the platform's own name) with\n`detail: { open, reason }` — `\"trigger-press\"`, `\"escape-key\"`,\n`\"outside-press\"` or `\"programmatic\"`. `preventDefault()` stops an\nopen outright; a light-dismiss close (which the platform won't let\nanyone refuse) is undone by re-showing the panel straight away.",
           "attributes": [],
           "events": [
             "toggle"
@@ -3129,8 +3164,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(value: string) => void",
-              "optional": true
+              "type": "(value: string, details: ChangeDetails<RadioGroupChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the selection moves, with the reason (`\"press\"` or `\"keyboard\"`); `details.cancel()`\nkeeps the current option checked."
             },
             {
               "name": "disabled",
@@ -3170,7 +3206,7 @@
       },
       "elements": {
         "kernel-radio-group": {
-          "description": "`<kernel-radio-group>` — a real `<fieldset>` + `<legend>` grouping\nreal `<input type=\"radio\">` elements (via `<kernel-radio-group-item>`)\nthat share one `name`. Arrow-key roving between options, \"exactly one\nselected\", and disabling every option at once (a real `<fieldset\ndisabled>` cascades to every form control inside it, no JS needed)\nare all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s\n`<RadioGroup>` + `<RadioGroupItem>`.\n\nAttributes: `label` (required — a `<fieldset>` needs a `<legend>` the\nsame way a form field needs a label), `name` (generated if omitted,\nso items still share a real name without the author inventing one),\n`disabled`, `value` (the selected item's value — the counterpart of\nReact's `value`/`defaultValue`; reflected back when the user picks an\noption, alongside the native bubbling `change` event from the radio).",
+          "description": "`<kernel-radio-group>` — a real `<fieldset>` + `<legend>` grouping\nreal `<input type=\"radio\">` elements (via `<kernel-radio-group-item>`)\nthat share one `name`. Arrow-key roving between options, \"exactly one\nselected\", and disabling every option at once (a real `<fieldset\ndisabled>` cascades to every form control inside it, no JS needed)\nare all native radio/fieldset behaviour. Mirrors `@kernelui-lib/react`'s\n`<RadioGroup>` + `<RadioGroupItem>`.\n\nAttributes: `label` (required — a `<fieldset>` needs a `<legend>` the\nsame way a form field needs a label), `name` (generated if omitted,\nso items still share a real name without the author inventing one),\n`disabled`, `value` (the selected item's value — the counterpart of\nReact's `value`/`defaultValue`; reflected back when the user picks an\noption, alongside the native bubbling `change` event from the radio).\n\nChange reasons: a native `change` can't be cancelled, so a bubbling,\ncancelable `valuechange` is dispatched from the group first, with\n`detail: { value, reason }` (`reason` is `\"press\"` or `\"keyboard\"`).\n`preventDefault()` on it re-checks the previous option and stops the\nnative `change` at the group.",
           "attributes": [
             "label",
             "disabled",
@@ -3352,7 +3388,7 @@
       "name": "Select",
       "react": {
         "Select": {
-          "description": "A real `<select>`: the browser owns selection, keyboard navigation,\ntypeahead, and form behaviour. Supporting browsers opt into a token-styled\nnative picker with `appearance: base-select`; others retain the existing\nstyled control and platform picker. Plain options keep SSR markup portable.",
+          "description": "A real `<select>`: the browser owns selection, keyboard navigation,\ntypeahead, and form behaviour. Supporting browsers opt into a token-styled\nnative picker with `appearance: base-select`; others retain the existing\nstyled control and platform picker. Plain options keep SSR markup portable.\n\n`onValueChange` reports *why* the value changed by remembering the last\npointer or key on the control, since a native `change` event doesn't say.\nWith the platform's own picker (a separate OS menu on some systems) the\nkeys pressed inside it may never reach the page, so treat the reason as\nbest-effort there.",
           "extends": [
             "Omit<SelectHTMLAttributes<HTMLSelectElement>, \"className\">"
           ],
@@ -3393,6 +3429,12 @@
               "default": "false"
             },
             {
+              "name": "onValueChange",
+              "type": "(value: string, details: ChangeDetails<SelectChangeReason>) => void",
+              "optional": true,
+              "description": "Called before a new option is committed, with its value and the\nreason; `details.cancel()` puts the previous option back (and skips\n`onChange`). The native `onChange` still works as it always has."
+            },
+            {
               "name": "className",
               "type": "ClassNameValue<SelectState>",
               "optional": true
@@ -3423,7 +3465,7 @@
       },
       "elements": {
         "kernel-select": {
-          "description": "`<kernel-select>` — a real `<select>`. Options, keyboard navigation,\ntypeahead, and form behaviour come from the browser. Supporting browsers\nget a token-styled native picker; others keep the platform picker. Mirrors\n`@kernelui-lib/react`'s `<Select>`.\n\nWrite real `<option>`/`<optgroup>` elements as children — not a\n`kernel-select-option` wrapper: a native `<select>` only renders its\nOWN native picker UI for direct `<option>`/`<optgroup>` children, not\nfor arbitrary custom elements, so wrapping them would silently break\nthe one thing this component exists to keep native.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the select's own text padding), `invalid`,\n`required`, `disabled`, `value`, `name`.",
+          "description": "`<kernel-select>` — a real `<select>`. Options, keyboard navigation,\ntypeahead, and form behaviour come from the browser. Supporting browsers\nget a token-styled native picker; others keep the platform picker. Mirrors\n`@kernelui-lib/react`'s `<Select>`.\n\nWrite real `<option>`/`<optgroup>` elements as children — not a\n`kernel-select-option` wrapper: a native `<select>` only renders its\nOWN native picker UI for direct `<option>`/`<optgroup>` children, not\nfor arbitrary custom elements, so wrapping them would silently break\nthe one thing this component exists to keep native.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `description`,\n`error-message`, `no-label-offset` (boolean — hard-aligns the label,\ndescription, and error text flush left instead of the default inset\nthat lines them up with the select's own text padding), `invalid`,\n`required`, `disabled`, `value`, `name`.\n\nChange reasons: a native `change` can't be cancelled, so a bubbling,\ncancelable `valuechange` is dispatched from this element first, with\n`detail: { value, reason }` — `\"item-press\"`, `\"keyboard\"` or\n`\"typeahead\"`, worked out from the last pointer/key on the control (a\nplatform picker that's a separate OS menu may swallow those keys, so\nit's best-effort there). `preventDefault()` restores the previous option\nand stops the native `change` at this element.",
           "attributes": [
             "label",
             "hide-label",
@@ -3479,9 +3521,15 @@
         "Sheet": {
           "description": "An edge-anchored sheet: Kernel's `Dialog` plus the gesture layer it doesn't\nhave.\n\nEverything modal about this is the platform's — `Dialog` renders a real\n`<dialog>` opened with `showModal()`, so the focus trap, top-layer stacking,\nEscape handling, `::backdrop`, and focus restoration are native rather than\nreimplemented, and there is no portal, no scroll-lock hack, and no\n`aria-modal`. What's added here is drag-to-dismiss with velocity, damped\noverdrag, and a backdrop that tracks the drag — the parts that make a sheet\nfeel like a sheet instead of a modal that happens to sit at the bottom.\n\nThe handle is `aria-hidden` decoration (the sheet is already dismissable by\nEscape, the close button, and the backdrop), which is why it can be\nabsolutely positioned at the anchored edge rather than needing to come first\nin the DOM: `Dialog` puts its `<header>` first, and reordering that for a\ndecorative grabber would be the wrong trade.",
           "extends": [
-            "Omit<DialogProps, \"side\" | \"className\" | \"classNames\">"
+            "Omit<DialogProps, \"side\" | \"className\" | \"classNames\" | \"onOpenChange\">"
           ],
           "props": [
+            {
+              "name": "onOpenChange",
+              "type": "(open: boolean, details: ChangeDetails<SheetOpenChangeReason>) => void",
+              "optional": false,
+              "description": "Called with `false` and the reason when the sheet asks to close: every\n`Dialog` reason plus `\"drag-dismiss\"` and `\"max-display-width\"`; see\n`Dialog`'s `onOpenChange`."
+            },
             {
               "name": "side",
               "type": "SheetSide",
@@ -3601,7 +3649,7 @@
       },
       "elements": {
         "kernel-sheet": {
-          "description": "`<kernel-sheet>` — an edge-anchored sheet: `<kernel-dialog>` plus the gesture\nlayer it doesn't have. It *is* a `kernel-dialog` (it extends it), so every\nattribute, part class, and the `close` event all carry over unchanged.\n\nEverything modal about this is the platform's — the real `<dialog>` is opened\nwith `showModal()`, so the focus trap, top-layer stacking, Escape handling,\n`::backdrop`, and focus restoration are native rather than reimplemented.\nWhat's added here is drag-to-dismiss with velocity, damped overdrag, and a\nbackdrop that tracks the drag.\n\nAttributes, on top of every `<kernel-dialog>` attribute: `side`\n(bottom/top/left/right, default **bottom** rather than the dialog's centre),\n`show-handle` (default true — set `\"false\"` to omit the grabber),\n`handle-only` (only the handle starts a drag; worth setting whenever the\nbody scrolls), `dismissible` (default true — `\"false\"` disables both dragging\nand backdrop dismissal), `close-threshold`, `velocity-threshold`, `inset`\n(detach from the screen edges — all four corners rounded, a gap on three\nsides, no JavaScript involved), `max-display-width` (a viewport width above\nwhich the sheet closes itself, for a sheet on small screens and a centred\n`<kernel-dialog>` on large ones), `snap-points` (comma or space separated\nviewport percentages, e.g. `\"25,55,92\"` — a flick steps exactly one, a slower\nrelease lands on the nearest, and dragging below the smallest dismisses.\nPercentages are of the extent the sheet grows along, so `dvh` for bottom and\ntop and `dvw` for left and right), `snap` (the resting snap, reflected as it\nchanges; set it to retarget the sheet, or call `snapTo()`), `spring` (on by\ndefault — a real spring carries the snap settle at the speed the finger was\nmoving; set `\"false\"` for the stylesheet's transition, or `\"0.065,0.3\"` to\ntune attraction and friction).\n\nPart classes: everything `<kernel-dialog>` exposes, plus a\n`data-slot=\"sheet-handle\"` grabber, a `data-slot=\"sheet-body\"` scroll region,\nand — when a child carries `slot=\"footer\"` — a pinned\n`data-slot=\"sheet-footer\"` that owns the bottom safe area and is a drag\nsurface in its own right.\n\nEvents: `close` (inherited), plus `sheetdrag` (`detail.percent`, 0–1, on\nevery drag frame), `sheetrelease` (`detail.open`, whether the sheet stayed\nopen), and `snapchange` (`detail.from` / `detail.to`, once per settle that\nactually moves). All bubble.\n\nThe handle is `aria-hidden` decoration — the sheet is already dismissable by\nEscape, the close button, and the backdrop — which is why it can be\nabsolutely positioned at the anchored edge instead of having to come first in\nthe DOM, ahead of the dialog's own `<header>`.",
+          "description": "`<kernel-sheet>` — an edge-anchored sheet: `<kernel-dialog>` plus the gesture\nlayer it doesn't have. It *is* a `kernel-dialog` (it extends it), so every\nattribute, part class, and the `close` event all carry over unchanged.\n\nEverything modal about this is the platform's — the real `<dialog>` is opened\nwith `showModal()`, so the focus trap, top-layer stacking, Escape handling,\n`::backdrop`, and focus restoration are native rather than reimplemented.\nWhat's added here is drag-to-dismiss with velocity, damped overdrag, and a\nbackdrop that tracks the drag.\n\nAttributes, on top of every `<kernel-dialog>` attribute: `side`\n(bottom/top/left/right, default **bottom** rather than the dialog's centre),\n`show-handle` (default true — set `\"false\"` to omit the grabber),\n`handle-only` (only the handle starts a drag; worth setting whenever the\nbody scrolls), `dismissible` (default true — `\"false\"` disables both dragging\nand backdrop dismissal), `close-threshold`, `velocity-threshold`, `inset`\n(detach from the screen edges — all four corners rounded, a gap on three\nsides, no JavaScript involved), `max-display-width` (a viewport width above\nwhich the sheet closes itself, for a sheet on small screens and a centred\n`<kernel-dialog>` on large ones), `snap-points` (comma or space separated\nviewport percentages, e.g. `\"25,55,92\"` — a flick steps exactly one, a slower\nrelease lands on the nearest, and dragging below the smallest dismisses.\nPercentages are of the extent the sheet grows along, so `dvh` for bottom and\ntop and `dvw` for left and right), `snap` (the resting snap, reflected as it\nchanges; set it to retarget the sheet, or call `snapTo()`), `spring` (on by\ndefault — a real spring carries the snap settle at the speed the finger was\nmoving; set `\"false\"` for the stylesheet's transition, or `\"0.065,0.3\"` to\ntune attraction and friction).\n\nPart classes: everything `<kernel-dialog>` exposes, plus a\n`data-slot=\"sheet-handle\"` grabber, a `data-slot=\"sheet-body\"` scroll region,\nand — when a child carries `slot=\"footer\"` — a pinned\n`data-slot=\"sheet-footer\"` that owns the bottom safe area and is a drag\nsurface in its own right.\n\nEvents: `close` and the cancelable `cancel` (inherited; `cancel`'s\n`detail.reason` adds `\"drag-dismiss\"` and `\"max-display-width\"`), plus `sheetdrag` (`detail.percent`, 0–1, on\nevery drag frame), `sheetrelease` (`detail.open`, whether the sheet stayed\nopen), and `snapchange` (`detail.from` / `detail.to`, once per settle that\nactually moves). All bubble.\n\nThe handle is `aria-hidden` decoration — the sheet is already dismissable by\nEscape, the close button, and the backdrop — which is why it can be\nabsolutely positioned at the anchored edge instead of having to come first in\nthe DOM, ahead of the dialog's own `<header>`.",
           "attributes": [
             "show-handle",
             "handle-only",
@@ -3714,8 +3762,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(value: number) => void",
-              "optional": true
+              "type": "(value: number, details: ChangeDetails<SliderChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the value moves, with the reason (`\"drag\"` or `\"keyboard\"`); `details.cancel()`\nkeeps the thumb where it was."
             },
             {
               "name": "min",
@@ -3918,8 +3967,9 @@
             },
             {
               "name": "onCheckedChange",
-              "type": "(checked: boolean) => void",
-              "optional": true
+              "type": "(checked: boolean, details: ChangeDetails<SwitchChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the switch flips, with the reason (`\"press\"` or\n`\"keyboard\"`); `details.cancel()` keeps it as it is."
             },
             {
               "name": "children",
@@ -3936,7 +3986,7 @@
       },
       "elements": {
         "kernel-switch": {
-          "description": "`<kernel-switch>` — there's no native \"switch\" element, so this follows\nthe WAI-ARIA switch pattern: a real `<button role=\"switch\">` (click,\nSpace/Enter, and focus all free) with `aria-checked` telling assistive\ntech it's a two-state toggle, not a regular button. Mirrors\n`@kernelui-lib/react`'s `<Switch>`.\n\nAttributes: `checked`, `disabled` (both boolean). Text content, if\nany, becomes a real `<label>` wrapping the button — omit it for a\nbare switch. Toggling dispatches a real, bubbling `change` event,\nsame as any native form control.",
+          "description": "`<kernel-switch>` — there's no native \"switch\" element, so this follows\nthe WAI-ARIA switch pattern: a real `<button role=\"switch\">` (click,\nSpace/Enter, and focus all free) with `aria-checked` telling assistive\ntech it's a two-state toggle, not a regular button. Mirrors\n`@kernelui-lib/react`'s `<Switch>`.\n\nAttributes: `checked`, `disabled` (both boolean). Text content, if\nany, becomes a real `<label>` wrapping the button — omit it for a\nbare switch. Toggling dispatches a bubbling `change` event *before*\nthe switch flips, with `detail: { checked, reason }` (`reason` is\n`\"press\"` or `\"keyboard\"`); it's cancelable, and `preventDefault()`\nleaves the switch as it was.",
           "attributes": [
             "checked",
             "disabled"
@@ -4122,8 +4172,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(value: string) => void",
-              "optional": true
+              "type": "(value: string, details: ChangeDetails<TabsChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the selection moves, with the reason (`\"trigger-press\"` or `\"keyboard\"`); `details.cancel()`\nkeeps the current tab selected."
             },
             {
               "name": "children",
@@ -4213,13 +4264,11 @@
       },
       "elements": {
         "kernel-tabs": {
-          "description": "`<kernel-tabs>` — the WAI-ARIA `tablist` pattern (there's no native\ntabs element). Wraps a `<kernel-tabs-list>` (containing\n`<kernel-tab>` triggers) and one `<kernel-tab-panel>` per tab, as\nflat light-DOM children — same shape as `@kernelui-lib/react`'s\n`<Tabs><TabsList>...</TabsList><TabPanel/>...</Tabs>`.\n\nAttributes: `value` (controlled — set it to change tabs\nexternally), `default-value` (required if `value` is never set).\nFires a `valuechange` `CustomEvent` (`event.detail.value`) when the\nactive tab changes. A tablist wider than its container scrolls\nsideways (scrollbar hidden, an edge fade where tabs are cut off) rather\nthan widening the page, and selecting a tab scrolls it into view.",
+          "description": "`<kernel-tabs>` — the WAI-ARIA `tablist` pattern (there's no native\ntabs element). Wraps a `<kernel-tabs-list>` (containing\n`<kernel-tab>` triggers) and one `<kernel-tab-panel>` per tab, as\nflat light-DOM children — same shape as `@kernelui-lib/react`'s\n`<Tabs><TabsList>...</TabsList><TabPanel/>...</Tabs>`.\n\nAttributes: `value` (controlled — set it to change tabs\nexternally), `default-value` (required if `value` is never set).\nFires a `valuechange` `CustomEvent` (`event.detail.value`) when the\nactive tab changes — before it changes, with `detail.reason`\n(`\"trigger-press\"`, `\"keyboard\"`, or `\"programmatic\"` for a `setValue()`\ncall); it's cancelable, and `preventDefault()` keeps the current tab. A tablist wider than its container scrolls\nsideways (scrollbar hidden, an edge fade where tabs are cut off) rather\nthan widening the page, and selecting a tab scrolls it into view.",
           "attributes": [
             "value"
           ],
-          "events": [
-            "valuechange"
-          ]
+          "events": []
         },
         "kernel-tabs-list": {
           "description": "`<kernel-tabs-list>` — `role=\"tablist\"`. Attributes: `aria-label`\n(required), `shape` (`default` follows the theme's control radius,\n`pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`\nchildren and the animated sliding indicator.",
@@ -4278,8 +4327,9 @@
             },
             {
               "name": "onValueChange",
-              "type": "(tags: string[]) => void",
-              "optional": true
+              "type": "(tags: string[], details: ChangeDetails<TagInputChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the tags change, with the reason (`\"enter\"`, `\"separator\"`, `\"paste\"`, `\"remove-button\"` or `\"backspace\"`); `details.cancel()`\nkeeps them as they were (an added tag stays in the draft). A removal is\nreported once the chip's exit transition has played, so a cancelled\nremoval brings the chip back."
             },
             {
               "name": "delimiters",
@@ -4355,7 +4405,7 @@
       },
       "elements": {
         "kernel-tag-input": {
-          "description": "`<kernel-tag-input>` — freeform text that commits into discrete tags,\nsame `role=\"list\"` of `role=\"listitem\"` chips + trailing `listitem`\ninput as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full\ninteraction rationale: Backspace-removes-last-tag, chip remove buttons\nexcluded from the tab sequence, no autocomplete).\n\n`value` serializes as a comma-joined attribute string — a tag\ncontaining the delimiter character itself can't round-trip through\nthat encoding, so use the `tags` property (or the `change` event's\n`detail.tags`) instead when that matters.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (comma-joined),\n`delimiters` (comma-joined, default `\",\"`), `max`, `allow-duplicates`\n(boolean), `description`, `error-message`, `no-label-offset` (boolean —\nhard-aligns the label, description, and error text flush left instead\nof the default inset that lines them up with the input's own text\npadding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,\ndefault `\"Remove {tag}\"`; or the `labels` property's `removeTag`).",
+          "description": "`<kernel-tag-input>` — freeform text that commits into discrete tags,\nsame `role=\"list\"` of `role=\"listitem\"` chips + trailing `listitem`\ninput as `@kernelui-lib/react`'s `<TagInput>` (see that file for the full\ninteraction rationale: Backspace-removes-last-tag, chip remove buttons\nexcluded from the tab sequence, no autocomplete).\n\n`value` serializes as a comma-joined attribute string — a tag\ncontaining the delimiter character itself can't round-trip through\nthat encoding, so use the `tags` property (or the `change` event's\n`detail.tags`) instead when that matters.\n\n`change` is dispatched before the tags change, cancelable, with\n`detail: { tags, reason }` — `\"enter\"`, `\"separator\"`, `\"paste\"`,\n`\"remove-button\"` or `\"backspace\"`. `preventDefault()` keeps the tags as\nthey were: an added tag stays in the draft, and a removal (reported once\nthe chip's exit transition has played) brings the chip back.\n\nAttributes: `label` (required, still the accessible name even when\n`hide-label` is set), `hide-label` (boolean), `value` (comma-joined),\n`delimiters` (comma-joined, default `\",\"`), `max`, `allow-duplicates`\n(boolean), `description`, `error-message`, `no-label-offset` (boolean —\nhard-aligns the label, description, and error text flush left instead\nof the default inset that lines them up with the input's own text\npadding), `invalid`, `disabled`, `name`, `label-remove-tag` (template,\ndefault `\"Remove {tag}\"`; or the `labels` property's `removeTag`).",
           "attributes": [
             "label",
             "hide-label",
@@ -4372,7 +4422,6 @@
             "label-remove-tag"
           ],
           "events": [
-            "change",
             "kernel-tag-input-error"
           ]
         }
@@ -4660,8 +4709,9 @@
             },
             {
               "name": "onPressedChange",
-              "type": "(pressed: boolean) => void",
-              "optional": true
+              "type": "(pressed: boolean, details: ChangeDetails<ToggleChangeReason>) => void",
+              "optional": true,
+              "description": "Called before the toggle flips, with the reason (`\"press\"` or\n`\"keyboard\"`); `details.cancel()` keeps it as it is."
             },
             {
               "name": "size",
