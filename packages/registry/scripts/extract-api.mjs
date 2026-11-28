@@ -13,8 +13,10 @@
  * Elements: for every tag, finds the class passed to `customElements.define`,
  * its `observedAttributes`, the `CustomEvent`s it dispatches, and its JSDoc.
  *
- * Purely syntactic (no type checker), so it stays fast and never needs the
- * React or DOM type graph resolved.
+ * Each tag also gets `eventDetails`: what each dispatched event carries in
+ * `detail`. Syntactic (no type checker) except for `eventDetails`, which
+ * type-checks the elements sources alone (see `eventDetailsByClass`). It
+ * never needs the React type graph resolved, so it stays fast.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
@@ -85,9 +87,89 @@ function defaultsFor(sourceFile, componentName) {
   return defaults;
 }
 
+/**
+ * What each element's events carry, keyed by tag file and event name:
+ * `{ "kernel-file-upload-error": "{ type: "accept" | …; files: File[] }",
+ * change: null }`. A `CustomEvent`'s `detail` type is printed with its
+ * properties spelled out, so an agent sees `{ tags: string[] }` rather than
+ * guessing a shape; a plain `new Event(…)` is recorded with `null` (no
+ * detail). The one place this script uses the type checker: a detail like
+ * `result.error` has no readable shape without it. Only the elements
+ * sources go into the program, so it stays quick.
+ */
+function eventDetailsByClass(elementFiles) {
+  const program = ts.createProgram(
+    elementFiles.map((sf) => sf.fileName),
+    {
+      target: ts.ScriptTarget.ESNext,
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+      lib: ["lib.esnext.d.ts", "lib.dom.d.ts", "lib.dom.iterable.d.ts"],
+      types: [],
+      noEmit: true,
+      skipLibCheck: true,
+    },
+  );
+  const checker = program.getTypeChecker();
+  const flags = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType;
+  const print = (type, at) => {
+    if (type.isUnion() || !(type.flags & ts.TypeFlags.Object) || checker.isArrayType(type)) {
+      return checker.typeToString(type, at, flags).replace(/'/g, '"');
+    }
+    const props = checker.getPropertiesOfType(type);
+    if (props.length === 0) return checker.typeToString(type, at, flags);
+    return `{ ${props
+      .map((p) => `${p.name}: ${checker.typeToString(checker.getTypeOfSymbolAtLocation(p, at), at, flags).replace(/'/g, '"')}`)
+      .join("; ")} }`;
+  };
+
+  /** "file:classStart" → { eventName: detail | null } */
+  const byClass = new Map();
+  for (const source of elementFiles) {
+    const sf = program.getSourceFile(source.fileName);
+    if (!sf) continue;
+    const visitClass = (cls) => {
+      const details = {};
+      const visit = (n) => {
+        if (
+          ts.isNewExpression(n) &&
+          (n.expression.getText(sf) === "CustomEvent" || n.expression.getText(sf) === "Event") &&
+          n.arguments?.[0] &&
+          ts.isStringLiteralLike(n.arguments[0])
+        ) {
+          const name = n.arguments[0].text;
+          const init = n.arguments[1];
+          const detailProp =
+            init && ts.isObjectLiteralExpression(init)
+              ? init.properties.find((p) => p.name?.getText(sf) === "detail")
+              : undefined;
+          let detail = null;
+          if (detailProp && (ts.isPropertyAssignment(detailProp) || ts.isShorthandPropertyAssignment(detailProp))) {
+            const expr = ts.isPropertyAssignment(detailProp) ? detailProp.initializer : detailProp.name;
+            detail = print(checker.getTypeAtLocation(expr), expr);
+          }
+          // The first dispatch with a detail wins; others of the same name
+          // carry the same type (a shared interface) in practice.
+          if (!(name in details) || (details[name] === null && detail !== null)) details[name] = detail;
+        }
+        ts.forEachChild(n, visit);
+      };
+      visit(cls);
+      byClass.set(`${source.fileName}:${cls.getStart(sf)}`, details);
+    };
+    const find = (n) => {
+      if (ts.isClassDeclaration(n) || ts.isClassExpression(n)) visitClass(n);
+      ts.forEachChild(n, find);
+    };
+    find(sf);
+  }
+  return byClass;
+}
+
 export function extractApi(registryComponents, repoRoot) {
   const reactFiles = walk(path.join(repoRoot, "packages/react/src/components"), [".tsx", ".ts"]).map(parse);
   const elementFiles = walk(path.join(repoRoot, "packages/elements/src/components"), [".ts"]).map(parse);
+  const detailsByClass = eventDetailsByClass(elementFiles);
 
   // Named types, so `ButtonState["variant"]` or `Variant` can be shown as the
   // literal union an agent actually needs ("primary" | "secondary" | …).
@@ -240,12 +322,13 @@ export function extractApi(registryComponents, repoRoot) {
         ts.forEachChild(n, visit);
       };
       visit(cls);
+      const eventDetails = detailsByClass.get(`${sourceFile.fileName}:${cls.getStart(sourceFile)}`) ?? {};
       elements[tag] = {
         ...(docOf(cls) ? { description: docOf(cls) } : {}),
         attributes,
         events: [...events],
+        ...(Object.keys(eventDetails).length ? { eventDetails } : {}),
       };
-      void sourceFile;
     }
 
     api[entry.slug] = { name: entry.name, react, elements };

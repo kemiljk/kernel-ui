@@ -263,7 +263,10 @@
           ],
           "events": [
             "remove"
-          ]
+          ],
+          "eventDetails": {
+            "remove": "{ name: string }"
+          }
         },
         "kernel-attachment-list": {
           "description": "`<kernel-attachment-list>` — a row of attachments on a real `<ul>`, with\n`role=\"list\"` restated because Safari drops list semantics once markers\nare removed. Each `<kernel-attachment>` inside renders as its `<li>`.\nMirrors `@kernelui-lib/react`'s `<AttachmentList>`.",
@@ -939,7 +942,10 @@
             "name",
             "label-hex-value"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": null
+          }
         }
       }
     },
@@ -1059,7 +1065,10 @@
           ],
           "events": [
             "valuechange"
-          ]
+          ],
+          "eventDetails": {
+            "valuechange": "{ value: string }"
+          }
         }
       }
     },
@@ -1241,7 +1250,10 @@
           ],
           "events": [
             "submit"
-          ]
+          ],
+          "eventDetails": {
+            "submit": "{ value: string }"
+          }
         }
       }
     },
@@ -1403,7 +1415,10 @@
           ],
           "events": [
             "valuechange"
-          ]
+          ],
+          "eventDetails": {
+            "valuechange": "{ value: string }"
+          }
         }
       }
     },
@@ -1463,7 +1478,10 @@
           ],
           "events": [
             "valuechange"
-          ]
+          ],
+          "eventDetails": {
+            "valuechange": "{ from: string; to: string }"
+          }
         }
       }
     },
@@ -1565,7 +1583,10 @@
             "side",
             "label-close"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "close": null
+          }
         }
       }
     },
@@ -1725,7 +1746,10 @@
           ],
           "events": [
             "select"
-          ]
+          ],
+          "eventDetails": {
+            "select": null
+          }
         },
         "kernel-menu-separator": {
           "description": "`<kernel-menu-separator>` — `role=\"separator\"`.",
@@ -2044,7 +2068,11 @@
           ],
           "events": [
             "kernel-file-upload-error"
-          ]
+          ],
+          "eventDetails": {
+            "kernel-file-upload-error": "{ type: \"max-files\" | \"max-size\" | \"accept\" | \"directory\"; files: File[] }",
+            "change": null
+          }
         }
       }
     },
@@ -2254,7 +2282,11 @@
           ],
           "events": [
             "complete"
-          ]
+          ],
+          "eventDetails": {
+            "change": null,
+            "complete": "{ value: string }"
+          }
         }
       }
     },
@@ -2600,7 +2632,10 @@
           ],
           "events": [
             "kernel-pinned-change"
-          ]
+          ],
+          "eventDetails": {
+            "kernel-pinned-change": "{ pinned: boolean }"
+          }
         }
       }
     },
@@ -2909,7 +2944,10 @@
             "label-increment",
             "label-decrement"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": null
+          }
         }
       }
     },
@@ -3061,7 +3099,10 @@
           "attributes": [],
           "events": [
             "toggle"
-          ]
+          ],
+          "eventDetails": {
+            "toggle": "{ open: boolean }"
+          }
         }
       }
     },
@@ -3618,7 +3659,12 @@
             "sheetdrag",
             "sheetrelease",
             "snapchange"
-          ]
+          ],
+          "eventDetails": {
+            "sheetdrag": "{ percent: number }",
+            "sheetrelease": "{ open: boolean }",
+            "snapchange": "{ from: number; to: number }"
+          }
         }
       }
     },
@@ -3786,7 +3832,10 @@
             "disabled",
             "name"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": null
+          }
         }
       }
     },
@@ -3941,7 +3990,10 @@
             "checked",
             "disabled"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": null
+          }
         }
       }
     },
@@ -4027,7 +4079,10 @@
           ],
           "events": [
             "select"
-          ]
+          ],
+          "eventDetails": {
+            "select": "{ value: string }"
+          }
         }
       }
     },
@@ -4219,7 +4274,10 @@
           ],
           "events": [
             "valuechange"
-          ]
+          ],
+          "eventDetails": {
+            "valuechange": "{ value: string }"
+          }
         },
         "kernel-tabs-list": {
           "description": "`<kernel-tabs-list>` — `role=\"tablist\"`. Attributes: `aria-label`\n(required), `shape` (`default` follows the theme's control radius,\n`pill` makes the list fully rounded whatever the theme). Handles arrow-key/Home/End roving between `<kernel-tab>`\nchildren and the animated sliding indicator.",
@@ -4374,7 +4432,11 @@
           "events": [
             "change",
             "kernel-tag-input-error"
-          ]
+          ],
+          "eventDetails": {
+            "change": "{ tags: string[] }",
+            "kernel-tag-input-error": "{ type: \"duplicate\" | \"max\" | \"empty\"; value: string }"
+          }
         }
       }
     },
@@ -4686,7 +4748,10 @@
             "size",
             "aria-label"
           ],
-          "events": []
+          "events": [],
+          "eventDetails": {
+            "change": null
+          }
         }
       }
     },
