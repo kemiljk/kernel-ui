@@ -13,6 +13,13 @@ name: Screenshots
 # pixels. Every run uploads screenshots/ (current, baseline, report/
 # index.html with diffs) as an artifact. With no baseline yet, or after
 # cache eviction (7 days unused), the PR run just captures.
+#
+# The cache key starts with a hash of scripts/screenshot-suite.mjs. A PR that
+# changes how the suite captures (the fake clock, settle time, variants...)
+# therefore finds no baseline with its own hash and just captures, instead of
+# reporting every shot that the new capture logic draws differently as a
+# visual change. The first push to main after it merges saves a baseline
+# under the new hash.
 
 on:
   push:
@@ -60,7 +67,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: screenshots/baseline
-          key: screenshots-baseline-${{ github.sha }}
+          key: screenshots-baseline-${{ hashFiles('scripts/screenshot-suite.mjs') }}-${{ github.sha }}
 
       # Pull requests and manual runs on other branches: compare.
       - name: Restore baseline from main
@@ -68,8 +75,8 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: screenshots/baseline
-          key: screenshots-baseline-${{ github.event.pull_request.base.sha || github.sha }}
-          restore-keys: screenshots-baseline-
+          key: screenshots-baseline-${{ hashFiles('scripts/screenshot-suite.mjs') }}-${{ github.event.pull_request.base.sha || github.sha }}
+          restore-keys: screenshots-baseline-${{ hashFiles('scripts/screenshot-suite.mjs') }}-
 
       - name: Capture and compare
         if: github.ref != 'refs/heads/main'
