@@ -363,15 +363,22 @@ function CommandPaletteRoot({
 
   useEffect(trackInputModality, []);
 
-  // After commit, so the DOM already shows the newly ranked order.
+  // After commit, so the DOM already shows the newly ranked order: opening
+  // the palette or changing the query highlights the first match in that order,
+  // as cmdk-style palettes do, so typing and pressing Enter runs the top
+  // result. Any other change to the results (async items replaced, an item
+  // disabled) keeps the highlighted item while it's still selectable.
+  // Opening used to clear the highlight and rely on the results changing to
+  // set it again, so reopening over the same items left nothing for Enter.
+  const highlightKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    const ordered = inDomOrder(selectableItems);
+    const key = open ? query : null;
+    const reset = highlightKeyRef.current !== key;
+    highlightKeyRef.current = key;
     setActiveIdState((current) =>
-      query.trim() === "" && selectableItems.some((item) => item.id === current)
-        ? current
-        : ordered[0]?.id ?? null,
+      !reset && selectableItems.some((item) => item.id === current) ? current : inDomOrder(selectableItems)[0]?.id ?? null,
     );
-  }, [query, selectableItems]);
+  }, [open, query, selectableItems]);
 
   useEffect(() => {
     if (!keyboardNavRef.current || !activeId) return;
@@ -421,7 +428,6 @@ function CommandPaletteRoot({
   useEffect(() => {
     if (!open) return;
     setQuery("");
-    setActiveIdState(null);
     requestAnimationFrame(() => inputElementRef.current?.focus());
   }, [open]);
 
