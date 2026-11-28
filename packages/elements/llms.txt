@@ -73,6 +73,10 @@ separate "install this one component" step.
   icon-only pill on the icon itself (`role="img" aria-label="…"`), or an
   icon-only `<kernel-button>` with `aria-label` on the tag.
 
+## Agent skills and MCP
+
+This package ships agent skills in `skills/` (`kernel-ui-elements`), versioned with the code. `npx @kernelui-lib/cli agents` installs them, registers the `kernel` MCP server (exact props, tokens, `check_code`), and adds a Kernel section to AGENTS.md.
+
 <!-- GENERATED:COMPONENTS:START -->
 ## Tags (grouped to match @kernelui-lib/react's component groups; composite
 ## components' sub-tags are one level deeper, e.g. <kernel-card-header>

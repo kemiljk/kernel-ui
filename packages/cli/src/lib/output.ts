@@ -21,6 +21,7 @@ Usage:
   kernel init [options]     Install packages and wire up styles
   kernel doctor [options]   Check Kernel setup and flag migration hints
   kernel docs [component]   Look up component metadata locally
+  kernel agents             Make this project agent-ready (skills, MCP, AGENTS.md)
   kernel mcp                Run the MCP server for coding agents (stdio)
   kernel mcp init           Register the MCP server in this project
   kernel check <files…>     Review Kernel code for common mistakes
@@ -43,6 +44,11 @@ docs options:
   --json                    Output registry entry as JSON
   --markdown                Output a short markdown summary
 
+agents options:
+  --client <name>           MCP client config to write (default claude)
+  --dir <path>              Where to install skills (default .claude/skills)
+  --no-skills / --no-mcp / --no-agents-md   Skip a step
+
 mcp init options:
   --client <name>           claude (.mcp.json) | cursor | vscode
 
@@ -50,6 +56,7 @@ Examples:
   npx @kernelui-lib/cli init
   kernel doctor --path ./apps/web
   kernel docs text-field --json
+  kernel agents
   kernel mcp init --client claude
   kernel check src/App.tsx
 `);

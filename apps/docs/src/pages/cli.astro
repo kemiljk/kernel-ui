@@ -18,6 +18,10 @@ const docsSnippet = `kernel docs
 kernel docs text-field --json
 kernel docs dialog --markdown`;
 
+const agentsSnippet = `kernel agents                    # skills + MCP (.mcp.json) + AGENTS.md
+kernel agents --client cursor    # register MCP for Cursor instead
+kernel agents --dir .agents/skills --no-mcp`;
+
 const mcpSnippet = `kernel mcp init                  # Claude Code: writes .mcp.json
 kernel mcp init --client cursor  # .cursor/mcp.json
 kernel mcp init --client vscode  # .vscode/mcp.json`;
@@ -77,6 +81,27 @@ const checkSnippet = `kernel check src/App.tsx src/Settings.tsx`;
       offline development. Accepts a slug, component name, or shadcn alias.
     </p>
     <CodeBlock code={docsSnippet} lang="bash" />
+
+    <h2><code>kernel agents</code></h2>
+    <p>
+      Makes a project agent-ready in one step. It installs Kernel's agent
+      skills into <code>.claude/skills</code>, registers the MCP server
+      below, and adds a short Kernel UI section to <code>AGENTS.md</code>
+      (and <code>CLAUDE.md</code>, if the project has one). It's safe to run
+      again: it replaces its own section rather than adding another.
+    </p>
+    <CodeBlock code={agentsSnippet} lang="bash" />
+    <p>
+      The skills ship inside <code>@kernelui-lib/react</code> and
+      <code>@kernelui-lib/elements</code> (in their <code>skills/</code>
+      folders), so they always match the version you installed:
+    </p>
+    <ul>
+      <li><code>kernel-ui</code>: the workflow and conventions for building React UI with Kernel.</li>
+      <li><code>kernel-ui-theming</code>: accent, radius, spacing, dark mode and icon-set tokens.</li>
+      <li><code>kernel-ui-migrate</code>: moving from shadcn/ui or Radix.</li>
+      <li><code>kernel-ui-elements</code>: building with the Custom Elements.</li>
+    </ul>
 
     <h2><code>kernel mcp</code></h2>
     <p>

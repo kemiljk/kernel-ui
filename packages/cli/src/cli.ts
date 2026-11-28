@@ -1,3 +1,4 @@
+import { runAgents } from "./commands/agents.js";
 import { runCheck } from "./commands/check.js";
 import { runDoctor } from "./commands/doctor.js";
 import { runDocs } from "./commands/docs.js";
@@ -67,6 +68,9 @@ export async function runCli(argv: string[]) {
       return;
     case "mcp":
       await runMcp(global, rest);
+      return;
+    case "agents":
+      await runAgents(global, rest);
       return;
     case "check":
       await runCheck(global, rest);

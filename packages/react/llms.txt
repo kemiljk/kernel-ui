@@ -88,6 +88,10 @@ real underlying element, fully functional, just unstyled — never broken.
   attributes). Reach for it in Vue/Svelte/Astro/plain-HTML projects
   instead of this package.
 
+## Agent skills and MCP
+
+This package ships agent skills in `skills/` (`kernel-ui`, `kernel-ui-theming` and `kernel-ui-migrate`), versioned with the code. `npx @kernelui-lib/cli agents` installs them, registers the `kernel` MCP server (exact props, tokens, `check_code`), and adds a Kernel section to AGENTS.md.
+
 <!-- GENERATED:COMPONENTS:START -->
 ## Components
 

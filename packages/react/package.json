@@ -16,7 +16,9 @@
     "components",
     "accessibility",
     "design-system",
-    "semantic-html"
+    "semantic-html",
+    "agent-skills",
+    "tanstack-intent"
   ],
   "type": "module",
   "main": "./dist/index.cjs",
@@ -33,6 +35,7 @@
   },
   "files": [
     "dist",
+    "skills",
     "llms.txt",
     "LICENSE",
     "README.md"
