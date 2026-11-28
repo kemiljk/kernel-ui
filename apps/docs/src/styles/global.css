@@ -2187,6 +2187,48 @@ dialog.mobile-nav-panel[data-side="left"] {
   opacity: 1;
 }
 
+/* Theming page: the same form at both densities, side by side. The gaps
+   read Kernel's space tokens, so they tighten with the card they're in. */
+.density-demo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--kernel-space-4);
+  margin-block: var(--kernel-space-4);
+}
+
+.density-demo-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--kernel-space-4);
+}
+
+.density-demo-content > :is(.density-demo-label, .density-demo-actions) {
+  margin: 0;
+}
+
+.density-demo-label {
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text-muted);
+}
+
+.density-demo-actions {
+  display: flex;
+  gap: var(--kernel-space-2);
+  align-self: stretch;
+  justify-content: flex-end;
+}
+
+/* Sharp pins the container radii to 0 on <html> (lib/theme.ts). A density
+   scope recomputes those radii from its own padding, so the pin has to be
+   carried in: the style query reads the value the scope inherits. */
+@container style(--kernel-radius-container: 0px) {
+  [data-kernel-density] {
+    --kernel-radius-container: 0px;
+    --kernel-radius-sheet: 0px;
+  }
+}
+
 /* Theme builder: a launch button in the page, the controls in a panel
    outside the flow (see ThemeBuilder.tsx for why). */
 .theme-launch {

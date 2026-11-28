@@ -735,7 +735,7 @@
       "name": "Code Block",
       "react": {
         "CodeBlock": {
-          "description": "A code surface: a real `<pre><code>` inside a `<figure>`, with optional\nline numbers, emphasised lines, copy, and stable streaming.\n\nIt highlights nothing itself — it takes pre-tokenised `lines` (see\n`utils/codeTokens.ts`) — which is what keeps this package dependency-free\nand lets the same component serve Shiki, Prism, a server-side highlighter,\nor plain text. `code` is the un-highlighted path.\n\n\"Stable streaming\" is the interesting part. Lines are keyed by index, so\nappending output re-renders only the last line: earlier lines aren't\nunmounted and re-created, which is what causes the flicker and lost text\nselection you get from re-rendering a growing block as one string. Following\nthe last line reuses `StickToBottomController` — the same behaviour\n`MessageScroller` is built on — rather than a second scroll implementation.\n\nLine numbers are rendered as real text but marked `aria-hidden` and made\nunselectable: a screen reader reading \"one const two import three…\" is\nnoise, and a copy that interleaves line numbers with code is worse than no\ncopy button at all.",
+          "description": "A code surface: a real `<pre><code>` inside a `<figure>`, with optional\nline numbers, emphasised lines, copy, and stable streaming.\n\nIt highlights nothing itself — it takes pre-tokenised `lines` (see\n`utils/codeTokens.ts`) — which is what keeps this package dependency-free\nand lets the same component serve Shiki, Prism, a server-side highlighter,\nor plain text. `code` is the un-highlighted path.\n\n\"Stable streaming\" is the interesting part. Lines are keyed by index, so\nappending output re-renders only the last line: earlier lines aren't\nunmounted and re-created, which is what causes the flicker and lost text\nselection you get from re-rendering a growing block as one string. Following\nthe last line reuses `StickToBottomController` — the same behaviour\n`MessageScroller` is built on — rather than a second scroll implementation.\n\nLine numbers are rendered as real text but marked `aria-hidden` and made\nunselectable: a screen reader reading \"one const two import three…\" is\nnoise, and a copy that interleaves line numbers with code is worse than no\ncopy button at all.\n\nEach line is one row of a single grid (a CSS subgrid), so the number column\nis as wide as the widest number and every line's code starts at the same x.\nThat is also what makes `wrap` safe: a wrapped line just grows taller in its\nown row, and its number stays baseline-aligned with the first visual line\ninstead of drifting to the middle or needing a second column kept in sync\nby script. Wrapping is off by default because scrolling keeps the author's\nown line breaks, which is what code is usually read by.",
           "extends": [
             "Omit<HTMLAttributes<HTMLElement>, \"className\" | \"children\">"
           ],
@@ -797,6 +797,13 @@
               "description": "Height at which the block starts scrolling."
             },
             {
+              "name": "wrap",
+              "type": "boolean",
+              "optional": true,
+              "default": "false",
+              "description": "Wrap long lines instead of scrolling sideways. Off by default: code\nreads best with its own line breaks, but a narrow column (a chat\nmessage, a phone) is often better wrapped. Line numbers stay on the\nfirst visual line of each wrapped line."
+            },
+            {
               "name": "className",
               "type": "ClassNameValue<CodeBlockState>",
               "optional": true
@@ -812,13 +819,14 @@
       },
       "elements": {
         "kernel-code-block": {
-          "description": "`<kernel-code-block>` — a real `<pre><code>` in a `<figure>`, with optional\nline numbers, emphasised lines, copy, and stable streaming. See\n`@kernelui-lib/react`'s `<CodeBlock>` for why it highlights nothing itself\nand why line numbers are unselectable and `aria-hidden`.\n\nContent comes in three ways, in precedence order:\n\n  1. `el.lines = [{ tokens: [{ text, className?, color? }] }]` — a DOM\n     property, because structured data can't travel through an attribute\n     and shouldn't pretend to.\n  2. `el.code = \"...\"` — un-highlighted source.\n  3. Light-DOM `<pre><code>…</code></pre>` written into the tag, read once\n     at connect. That's the progressive-enhancement path: the code is real\n     page content before any script sets a property.\n\nAttributes: `language`, `label`, `show-line-numbers`, `highlight-lines`\n(comma-separated 1-based numbers), `streaming`, `no-copy`,\n`max-block-size`, and built-in strings `label-copy` (\"Copy\"),\n`label-copied` (\"Copied\"), `label-copied-announcement` (\"Copied to\nclipboard\") — or the `labels` property.",
+          "description": "`<kernel-code-block>` — a real `<pre><code>` in a `<figure>`, with optional\nline numbers, emphasised lines, copy, and stable streaming. See\n`@kernelui-lib/react`'s `<CodeBlock>` for why it highlights nothing itself\nand why line numbers are unselectable and `aria-hidden`.\n\nContent comes in three ways, in precedence order:\n\n  1. `el.lines = [{ tokens: [{ text, className?, color? }] }]` — a DOM\n     property, because structured data can't travel through an attribute\n     and shouldn't pretend to.\n  2. `el.code = \"...\"` — un-highlighted source.\n  3. Light-DOM `<pre><code>…</code></pre>` written into the tag, read once\n     at connect. That's the progressive-enhancement path: the code is real\n     page content before any script sets a property.\n\nAttributes: `language`, `label`, `show-line-numbers`, `highlight-lines`\n(comma-separated 1-based numbers), `streaming`, `no-copy`,\n`max-block-size`, `wrap` (wrap long lines instead of scrolling sideways;\nline numbers stay on each wrapped line's first visual line, because every\nline is a row of one subgrid), and built-in strings `label-copy` (\"Copy\"),\n`label-copied` (\"Copied\"), `label-copied-announcement` (\"Copied to\nclipboard\") — or the `labels` property.",
           "attributes": [
             "language",
             "label",
             "show-line-numbers",
             "highlight-lines",
             "streaming",
+            "wrap",
             "no-copy",
             "max-block-size",
             "label-copy",
@@ -2087,7 +2095,7 @@
               "type": "boolean",
               "optional": true,
               "default": "false",
-              "description": "Pins the header to the top of its scroll container with a blurred\nbackdrop. Off by default; a page can have more than one `<header>`,\nonly the top-level site one is usually sticky."
+              "description": "Pins the header to the top of its scroll container with a blurred\nbackdrop. Off by default; a page can have more than one `<header>`,\nonly the top-level site one is usually sticky. The bar turns solid\nunder `prefers-reduced-transparency: reduce` (it reads\n`--kernel-opacity-glass` and `--kernel-blur-backdrop`)."
             },
             {
               "name": "className",
@@ -2099,7 +2107,7 @@
       },
       "elements": {
         "kernel-header": {
-          "description": "`<kernel-header>` — a real `<header>` landmark, not a `<div>`\npretending to be one.\n\nAttributes: `sticky` (boolean) — pins the header to the top of its\nscroll container with a blurred backdrop.",
+          "description": "`<kernel-header>` — a real `<header>` landmark, not a `<div>`\npretending to be one.\n\nAttributes: `sticky` (boolean) — pins the header to the top of its\nscroll container with a blurred backdrop, which turns solid under\n`prefers-reduced-transparency: reduce`.",
           "attributes": [
             "sticky"
           ],

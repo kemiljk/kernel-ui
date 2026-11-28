@@ -10,7 +10,9 @@ export interface HeaderState {
 export interface HeaderProps extends Omit<HTMLAttributes<HTMLElement>, "className"> {
   /** Pins the header to the top of its scroll container with a blurred
    * backdrop. Off by default; a page can have more than one `<header>`,
-   * only the top-level site one is usually sticky. */
+   * only the top-level site one is usually sticky. The bar turns solid
+   * under `prefers-reduced-transparency: reduce` (it reads
+   * `--kernel-opacity-glass` and `--kernel-blur-backdrop`). */
   sticky?: boolean;
   className?: ClassNameValue<HeaderState>;
 }

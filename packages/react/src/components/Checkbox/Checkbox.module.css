@@ -146,3 +146,26 @@
     scale: 1;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so a checked box would read as an outline with a faint mark.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .input:checked + .control,
+  .input:indeterminate + .control {
+    background-color: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+
+  .input:disabled + .control {
+    border-color: GrayText;
+  }
+
+  .input:disabled:is(:checked, :indeterminate) + .control {
+    background-color: GrayText;
+    color: Canvas;
+  }
+}

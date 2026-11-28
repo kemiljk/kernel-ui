@@ -161,3 +161,19 @@
     scale: 1;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the dots (plain backgrounds with no border) would vanish.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .dot {
+    border: var(--kernel-border-width) solid ButtonText;
+  }
+
+  .dot[data-current] {
+    background-color: Highlight;
+    border-color: Highlight;
+  }
+}

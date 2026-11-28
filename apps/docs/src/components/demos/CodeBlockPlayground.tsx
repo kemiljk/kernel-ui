@@ -13,6 +13,7 @@ const controls = [
   { type: "text" as const, prop: "language", label: "language", default: "ts" },
   { type: "boolean" as const, prop: "showLineNumbers", label: "line numbers", default: true },
   { type: "boolean" as const, prop: "copyable", label: "copyable", default: true },
+  { type: "boolean" as const, prop: "wrap", label: "wrap", default: false },
   { type: "number" as const, prop: "highlight", label: "highlight line", default: 4, min: 0, max: 6, step: 1 },
   { type: "text" as const, prop: "maxBlockSize", label: "max block size", default: "" },
 ];
@@ -28,7 +29,7 @@ function code(values: PlaygroundValues) {
   label="${values.label}"
   language="${values.language}"
   showLineNumbers={${values.showLineNumbers}}
-  copyable={${values.copyable}}${highlight.length ? `\n  highlightLines={[${highlight.join(", ")}]}` : ""}${
+  copyable={${values.copyable}}${values.wrap ? "\n  wrap" : ""}${highlight.length ? `\n  highlightLines={[${highlight.join(", ")}]}` : ""}${
     values.maxBlockSize ? `\n  maxBlockSize="${values.maxBlockSize}"` : ""
   }
   // or lines={await codeToTokens(source)} from your highlighter
@@ -42,7 +43,7 @@ function elementsCode(values: PlaygroundValues) {
   label="${values.label}"
   language="${values.language}"${values.showLineNumbers ? "\n  show-line-numbers" : ""}${
     values.copyable ? "" : "\n  no-copy"
-  }${highlight.length ? `\n  highlight-lines="${highlight.join(",")}"` : ""}${
+  }${values.wrap ? "\n  wrap" : ""}${highlight.length ? `\n  highlight-lines="${highlight.join(",")}"` : ""}${
     values.maxBlockSize ? `\n  max-block-size="${values.maxBlockSize}"` : ""
   }
 ><pre><code>const a = 1
@@ -68,6 +69,7 @@ export default function CodeBlockPlayground() {
           language={String(values.language)}
           showLineNumbers={Boolean(values.showLineNumbers)}
           copyable={Boolean(values.copyable)}
+          wrap={Boolean(values.wrap)}
           highlightLines={highlightList(values)}
           maxBlockSize={String(values.maxBlockSize) || undefined}
           code={SOURCE}

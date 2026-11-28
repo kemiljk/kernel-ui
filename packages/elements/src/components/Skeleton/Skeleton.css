@@ -28,3 +28,15 @@
     background-color: var(--kernel-color-fill-strong);
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the placeholder, a gradient, would vanish and leave a
+   blank gap. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Skeleton-root {
+    background-image: none;
+    background-color: GrayText;
+  }
+}

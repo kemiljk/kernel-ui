@@ -190,7 +190,7 @@
 }
 
 .kernel-Dialog-content[data-backdrop="blur"]::backdrop {
-  --kernel-dialog-backdrop-bg: color-mix(in oklab, var(--kernel-color-scrim) 70%, transparent);
+  --kernel-dialog-backdrop-bg: color-mix(in oklab, var(--kernel-color-scrim) var(--kernel-opacity-frost, 70%), transparent);
   --kernel-dialog-backdrop-filter: blur(var(--kernel-blur-backdrop));
 }
 
@@ -264,5 +264,16 @@
   .kernel-Dialog-content[data-state="closing"][data-side="top"],
   .kernel-Dialog-content[data-state="closing"][data-side="bottom"] {
     translate: 0 0;
+  }
+}
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the dialog, which relies on its shadow for an edge, would
+   have none. System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Dialog-content {
+    border: var(--kernel-border-width) solid CanvasText;
   }
 }

@@ -207,3 +207,16 @@
     scale: 1;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the swatch would lose the very colour it exists to show.
+   It opts out of the repaint: the colour is the content, not decoration.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-ColorPicker-swatch {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+  }
+}

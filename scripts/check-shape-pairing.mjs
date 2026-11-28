@@ -18,6 +18,10 @@
  *      the same value — Safari still needs the prefix to actually suppress
  *      selection on a double-tap.
  *
+ *   3. tokens.css's `[data-kernel-density]` block re-declares exactly the
+ *      tokens derived from `--kernel-space-unit`, with the same formulas as
+ *      `:root`, so density works on a subtree.
+ *
  * Native form controls are exempt from the cursor:pointer half of (2):
  * there's no text in an `<input>` to select. Anything else can opt out
  * with an inline marker naming a reason:
@@ -133,6 +137,70 @@ for (const { dir, suffix } of SOURCES) {
         failures.push(
           `${relative}: \`${selector}\` is clickable but doesn't set ` +
             `user-select: none (see AGENTS.md).`,
+        );
+      }
+    }
+  }
+}
+
+// 3. The density block in tokens.css re-declares every token derived from
+//    --kernel-space-unit, so the scale re-resolves inside a
+//    `data-kernel-density` subtree. Its formulas have to match :root's
+//    exactly; a fix to one that misses the other would make compact (or any
+//    density scope) quietly disagree with the page around it.
+{
+  const tokens = stripComments(readFileSync(join(root, "packages/styles/src/tokens.css"), "utf8"));
+  const declarations = (block) =>
+    new Map([...block.matchAll(/(--kernel-[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].replace(/\s+/g, " ").trim()]));
+  const blockAfter = (selector) => {
+    const start = tokens.indexOf(`${selector} {`);
+    if (start === -1) return null;
+    const open = tokens.indexOf("{", start);
+    let depth = 1;
+    let cursor = open + 1;
+    while (depth > 0 && cursor < tokens.length) {
+      if (tokens[cursor] === "{") depth += 1;
+      else if (tokens[cursor] === "}") depth -= 1;
+      cursor += 1;
+    }
+    return tokens.slice(open + 1, cursor - 1);
+  };
+  const rootBlock = blockAfter(":root");
+  const densityBlock = blockAfter("[data-kernel-density]");
+  if (!rootBlock || !densityBlock) {
+    failures.push("packages/styles/src/tokens.css: couldn't find the :root and [data-kernel-density] blocks.");
+  } else {
+    const rootTokens = declarations(rootBlock);
+    const densityTokens = declarations(densityBlock);
+    for (const [name, value] of densityTokens) {
+      if (rootTokens.get(name) !== value) {
+        failures.push(
+          `packages/styles/src/tokens.css: ${name} in [data-kernel-density] is \`${value}\` but :root has ` +
+            `\`${rootTokens.get(name) ?? "nothing"}\`. Keep the density block's formulas identical to :root's.`,
+        );
+      }
+    }
+    // And the reverse: anything on :root built from the unit (directly or
+    // through a token that is) must be in the density block, or it stays
+    // frozen at :root's value inside a density scope.
+    const derived = new Set(["--kernel-space-unit"]);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const [name, value] of rootTokens) {
+        if (derived.has(name)) continue;
+        if ([...derived].some((token) => value.includes(`var(${token})`))) {
+          derived.add(name);
+          grew = true;
+        }
+      }
+    }
+    derived.delete("--kernel-space-unit");
+    for (const name of derived) {
+      if (!densityTokens.has(name)) {
+        failures.push(
+          `packages/styles/src/tokens.css: ${name} is derived from --kernel-space-unit but isn't ` +
+            `re-declared in [data-kernel-density], so it won't follow density on a subtree.`,
         );
       }
     }

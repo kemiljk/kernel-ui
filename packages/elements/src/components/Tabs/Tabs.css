@@ -146,3 +146,35 @@ kernel-tabs {
     transition-duration: 0ms !important;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the sliding indicator (a raised background) would vanish
+   and leave no selected tab. The selected tab paints its own fill here
+   instead of the indicator, because the indicator is positioned by script
+   and has no size before it runs. System colours survive the repaint, so the
+   state comes back in Highlight/HighlightText and the edges in CanvasText.
+   Anything with text on a Highlight fill also sets forced-color-adjust:
+   none, or the browser paints a Canvas backplate behind the text and hides
+   it. */
+@media (forced-colors: active) {
+  .kernel-Tabs-list {
+    outline: var(--kernel-border-width) solid CanvasText;
+    outline-offset: calc(var(--kernel-border-width) * -1);
+  }
+
+  .kernel-Tabs-indicator {
+    display: none;
+  }
+
+  .kernel-Tabs-tab[aria-selected="true"] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
+  }
+
+  .kernel-Tabs-tab:disabled {
+    color: GrayText;
+  }
+}

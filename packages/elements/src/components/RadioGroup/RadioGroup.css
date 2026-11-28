@@ -123,3 +123,31 @@
     scale: 1;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the selected dot (a background on ::after) would vanish.
+   System colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-RadioGroup-input:checked + .kernel-RadioGroup-control {
+    background-color: Highlight;
+    border-color: Highlight;
+  }
+
+  .kernel-RadioGroup-input:checked + .kernel-RadioGroup-control::after {
+    background-color: HighlightText;
+  }
+
+  .kernel-RadioGroup-input:disabled + .kernel-RadioGroup-control {
+    border-color: GrayText;
+  }
+
+  .kernel-RadioGroup-input:disabled:checked + .kernel-RadioGroup-control {
+    background-color: GrayText;
+  }
+
+  .kernel-RadioGroup-input:disabled:checked + .kernel-RadioGroup-control::after {
+    background-color: Canvas;
+  }
+}
