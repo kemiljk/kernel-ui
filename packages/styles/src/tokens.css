@@ -183,6 +183,13 @@
        for every preset. Fields keep the softer border-interactive, because
        their fill, label and placeholder identify them as well. */
     --kernel-color-border-control: light-dark(var(--kernel-gray-9), var(--kernel-gray-11));
+    /* A Switch's off track: a solid fill instead of an outline. The white
+       thumb and its shadow identify the control; the track only has to read
+       as a shape. gray-7 in light (1.75:1 to the thumb, so the thumb's
+       shadow still does work) and gray-6 in dark, where the thumb is over
+       10:1 against it. Hover steps one darker/lighter. */
+    --kernel-color-track: light-dark(var(--kernel-gray-7), var(--kernel-gray-6));
+    --kernel-color-track-hover: light-dark(var(--kernel-gray-8), var(--kernel-gray-7));
     /* Kept as an alias so nothing else has to change: "strong" always
        meant "the more prominent of the two borders in use". */
     --kernel-color-border-strong: var(--kernel-color-border-hover);
