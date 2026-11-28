@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-18T06:49:57.130Z",
+  "generatedAt": "2026-11-28T15:47:02.397Z",
   "components": [
     {
       "name": "Accordion",
@@ -702,6 +702,23 @@
       "migrationCaveats": []
     },
     {
+      "name": "Model Picker",
+      "category": "AI",
+      "slug": "model-picker",
+      "element": "<button aria-haspopup=\"listbox\"> + popover listbox",
+      "summary": "A compact composer-toolbar pill for choosing a model, with groups, badges and typeahead.",
+      "status": "available",
+      "reactExports": [
+        "ModelPicker"
+      ],
+      "elementTag": "kernel-model-picker",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/model-picker/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "Nav",
       "category": "Layout",
       "slug": "nav",
@@ -1074,6 +1091,25 @@
         "kernel-citation"
       ],
       "docsUrl": "https://www.kernelui.com/components/sources/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Streaming Markdown",
+      "category": "AI",
+      "slug": "streaming-markdown",
+      "element": "<div> of real <p>/<ol>/<table>/<blockquote> + CodeBlock",
+      "summary": "Model Markdown rendered as real elements while it streams, without flicker or raw syntax.",
+      "status": "available",
+      "reactExports": [
+        "StreamingMarkdown",
+        "parseMarkdown",
+        "safeHref"
+      ],
+      "elementTag": "kernel-streaming-markdown",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/streaming-markdown/",
       "shadcnAliases": [],
       "radixPackages": [],
       "migrationCaveats": []

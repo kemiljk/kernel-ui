@@ -157,6 +157,23 @@ export {
 } from "./components/Attachment/Attachment";
 export { KernelUsageMeter, usageMeterLevel } from "./components/UsageMeter/UsageMeter";
 
+export { KernelStreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
+export { parseMarkdown, safeHref } from "./utils/markdown";
+export type {
+  MarkdownBlock,
+  MarkdownInline,
+  MarkdownListItem,
+  MarkdownAlign,
+  MarkdownTopBlock,
+  ParseMarkdownOptions,
+} from "./utils/markdown";
+export { KernelModelPicker } from "./components/ModelPicker/ModelPicker";
+export type {
+  ModelPickerOption,
+  ModelPickerBadge,
+  ModelPickerBadgeVariant,
+} from "./components/ModelPicker/ModelPicker";
+
 export { attachSheetDrag } from "./utils/sheetDrag";
 export type {
   SheetDragOptions,

@@ -1,0 +1,325 @@
+/* The trigger is an optical pill at --kernel-control-height-sm, so it sits
+   level with a small send button in Composer's action row. The recipe is
+   Button's (see Button.module.css, and Badge.module.css for the maths):
+   the radius stops at a true half-height pill, the inline padding grows by
+   what the end caps cut away, edge icons are 1lh slots pulled in until
+   they're concentric with the cap, and a baseline strut centres the
+   capitals. The chevron is always an end icon; a model logo, when the
+   selected option has one, is a start icon. */
+.trigger {
+  --pill-bw: var(--kernel-border-width);
+  --pill-lh: 1.25em;
+  --pill-cap: 0.7em;
+  --pill-height: var(--kernel-control-height-sm);
+  --pill-px: var(--kernel-space-3);
+  --pill-py: calc((var(--pill-height) - var(--pill-lh)) / 2 - var(--pill-bw));
+  --pill-max: calc(var(--pill-height) / 2);
+  --pill-r: min(var(--kernel-radius-control), var(--pill-max));
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+  --pill-icon-edge: calc(var(--pill-py) - var(--pill-px) - var(--pill-label-edge));
+  --pill-gap: var(--pill-py);
+
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pill-gap);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  block-size: var(--pill-height);
+  margin: 0;
+  padding-block: 0;
+  padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
+  border: var(--pill-bw) solid transparent;
+  border-radius: var(--pill-r);
+  background-color: transparent;
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  line-height: var(--pill-cap);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  transition:
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+/* Baseline strut: see Badge.module.css, part 4. */
+.trigger::before {
+  content: "";
+  block-size: calc(var(--pill-height) / 2 + var(--pill-cap) / 2 - var(--pill-bw));
+  margin-inline-end: calc(var(--pill-gap) * -1);
+}
+
+@supports (width: 1cap) {
+  .trigger {
+    --pill-cap: 1cap;
+  }
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .trigger {
+    --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut) * var(--pill-r) / var(--pill-max));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trigger:hover:not(:disabled) {
+    background-color: var(--kernel-color-accent-subtle);
+  }
+}
+
+.trigger[data-open] {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.trigger:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset);
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.trigger[data-placeholder] .triggerLabel {
+  color: var(--kernel-color-text-muted);
+}
+
+.triggerLabel {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.triggerIcon {
+  display: inline-flex;
+  flex: none;
+  align-self: flex-start;
+  margin-block-start: var(--pill-py);
+  inline-size: var(--pill-lh);
+  block-size: var(--pill-lh);
+  padding: max(0px, (var(--pill-lh) - var(--kernel-icon-size)) / 2);
+  color: var(--kernel-color-text-muted);
+}
+
+.trigger .triggerIcon > * {
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+}
+
+.trigger[data-icon-start] > .triggerIcon:first-child {
+  margin-inline-start: var(--pill-icon-edge);
+}
+
+.trigger[data-icon-end] > .triggerIcon:last-child {
+  margin-inline-end: var(--pill-icon-edge);
+}
+
+.chevron {
+  transition: rotate var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.trigger[aria-expanded="true"] .chevron {
+  rotate: 180deg;
+}
+
+/* The list. `display` is gated to :popover-open and nothing else is — see
+   AGENTS.md: :popover-open stops matching the moment the exit begins, so
+   any layout property there would re-lay-out the list while it animates
+   away. Enter and exit follow DropdownMenu's: scale in from the trigger
+   (useFloatingPosition's --kernel-transform-origin), leave faster. */
+.list {
+  position: fixed;
+  margin: 0;
+  flex-direction: column;
+  gap: 1px;
+  inline-size: max-content;
+  min-inline-size: 16rem;
+  max-inline-size: min(24rem, calc(100vi - var(--kernel-space-8)));
+  max-block-size: min(28rem, calc(100dvh - var(--kernel-space-8)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--kernel-space-1);
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-md);
+  background-color: var(--kernel-color-surface-raised);
+  --kernel-color-fill-subtle: var(--kernel-gray-4);
+  --kernel-color-fill: var(--kernel-gray-5);
+  --kernel-color-fill-strong: var(--kernel-gray-6);
+  color: var(--kernel-color-text);
+  box-shadow: var(--kernel-shadow-md);
+  font-family: var(--kernel-font-sans);
+  opacity: 1;
+  scale: var(--kernel-scale-exit);
+  transform-origin: var(--kernel-transform-origin, center);
+  transition:
+    scale var(--kernel-duration-exit-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit-fast) allow-discrete,
+    display var(--kernel-duration-exit-fast) allow-discrete;
+}
+
+.list:popover-open {
+  display: flex;
+  scale: 1;
+  transition:
+    opacity var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    scale var(--kernel-duration-fast) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-fast) allow-discrete,
+    display var(--kernel-duration-fast) allow-discrete;
+}
+
+@starting-style {
+  .list:popover-open {
+    opacity: 0;
+    scale: var(--kernel-scale-enter);
+  }
+}
+
+/* The list itself takes focus (the active option is tracked with
+   aria-activedescendant), so the visible focus is the active option's
+   ring, not an outline around the whole panel. */
+.list:focus-visible {
+  outline: none;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.group + .group,
+.option + .group,
+.group + .option {
+  margin-block-start: var(--kernel-space-1);
+  padding-block-start: var(--kernel-space-1);
+  border-block-start: var(--kernel-border-width) solid var(--kernel-color-border);
+}
+
+.groupLabel {
+  padding: var(--kernel-space-2) var(--kernel-space-3) var(--kernel-space-1);
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kernel-space-3);
+  padding: var(--kernel-space-2) var(--kernel-space-3);
+  /* Concentric with the list's corner: its radius minus the gap between. */
+  border-radius: calc(var(--kernel-radius-md) - var(--kernel-space-1));
+  color: var(--kernel-color-text);
+  font-size: var(--kernel-font-size-sm);
+  line-height: var(--kernel-line-height-tight);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Highlight moves instantly: it follows the keyboard, and AGENTS.md's
+   frequency rule says option highlight never animates. */
+.option[data-active] {
+  background-color: var(--kernel-color-accent-subtle);
+}
+
+.list:focus-visible .option[data-active] {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset-inset);
+}
+
+.option[data-disabled] {
+  color: var(--kernel-color-text-muted);
+  cursor: not-allowed;
+}
+
+.optionIcon {
+  display: inline-flex;
+  flex: none;
+  inline-size: var(--kernel-icon-size);
+  block-size: var(--kernel-icon-size);
+  margin-block-start: calc((1lh - var(--kernel-icon-size)) / 2);
+  color: var(--kernel-color-text-muted);
+}
+
+.option .optionIcon > * {
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+}
+
+.optionText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--kernel-space-1);
+  min-inline-size: 0;
+}
+
+.optionTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kernel-space-1) var(--kernel-space-2);
+}
+
+.optionLabel {
+  font-weight: 500;
+}
+
+.optionDescription {
+  color: var(--kernel-color-text-muted);
+  text-wrap: pretty;
+}
+
+.check {
+  flex: none;
+  inline-size: var(--kernel-icon-size);
+  block-size: var(--kernel-icon-size);
+  margin-block-start: calc((1lh - var(--kernel-icon-size)) / 2);
+  color: var(--kernel-color-accent-text);
+  visibility: hidden;
+}
+
+.option[aria-selected="true"] .check {
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger {
+    transition:
+      background-color var(--kernel-duration-fast) linear,
+      color var(--kernel-duration-fast) linear;
+  }
+
+  .trigger:active:not(:disabled) {
+    scale: 1;
+  }
+
+  .chevron {
+    transition: none;
+  }
+
+  .list,
+  .list:popover-open {
+    scale: 1;
+    transition:
+      opacity var(--kernel-duration-fast) linear,
+      overlay var(--kernel-duration-fast) allow-discrete,
+      display var(--kernel-duration-fast) allow-discrete;
+  }
+}

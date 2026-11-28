@@ -467,6 +467,19 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("message-scroller"),
   },
   {
+    name: "Model Picker",
+    category: "AI",
+    slug: "model-picker",
+    element: '<button aria-haspopup="listbox"> + popover listbox',
+    summary: "A compact composer-toolbar pill for choosing a model, with groups, badges and typeahead.",
+    llmsNote:
+      "options is ModelPickerOption[]: { value, label, description?, group?, badges?: (string | { label, variant? })[], icon?, disabled? }. Consecutive options with the same group render under one role=\"group\" heading. value/defaultValue/onValueChange via useControllableState; name submits through a hidden input. Not a native <select> because options carry descriptions, badges and logos; the popover=\"auto\" still owns top layer, light dismiss, Escape and focus return, and the WAI-ARIA listbox keyboard pattern (aria-activedescendant, arrows, Home/End, Enter/Space, typeahead, Tab closes) is added by hand. Opens upward by default (placement=\"top\") because a composer sits at the bottom of the screen; drop it into Composer's actionsLeading. In the elements package, options come from the `options` property or from light-DOM <option>s (optionally in <optgroup label>) with data-description and data-badges=\"New:accent, Fast\"; it fires `valuechange` with detail.value.",
+    status: "available",
+    reactExports: ["ModelPicker"],
+    elementTag: "kernel-model-picker",
+    docsUrl: docs("model-picker"),
+  },
+  {
     name: "Nav",
     category: "Layout",
     slug: "nav",
@@ -709,6 +722,19 @@ export const components: RegistryEntry[] = [
     elementTag: "kernel-sources",
     elementSubTags: ["kernel-source", "kernel-citation"],
     docsUrl: docs("sources"),
+  },
+  {
+    name: "Streaming Markdown",
+    category: "AI",
+    slug: "streaming-markdown",
+    element: "<div> of real <p>/<ol>/<table>/<blockquote> + CodeBlock",
+    summary: "Model Markdown rendered as real elements while it streams, without flicker or raw syntax.",
+    llmsNote:
+      "Pass the text so far as `content` and set `streaming` while it arrives. A built-in, dependency-free parser covers paragraphs, ATX headings, emphasis/strong/strikethrough, inline code, fenced code (rendered with CodeBlock, streaming while the fence is open), nested ordered/unordered lists, blockquotes, links, bare-URL autolinks, GFM tables and rules. It never produces HTML: raw HTML in content is text, links keep only http/https/mailto/relative hrefs (external ones get target=_blank rel=\"noopener noreferrer\"), and images render as links, never loaded. Top-level blocks are keyed by index and memoised on their source slice, so a new chunk re-renders only the last block. While streaming, unfinished syntax (open fence, unclosed **, half a link or table row) renders as its finished form. Not a live region: it sets aria-busy while streaming and leaves announcing to MessageScroller. React takes `components` overrides per tag plus `codeBlock` for a highlighter; parseMarkdown and safeHref are exported from both packages.",
+    status: "available",
+    reactExports: ["StreamingMarkdown", "parseMarkdown", "safeHref"],
+    elementTag: "kernel-streaming-markdown",
+    docsUrl: docs("streaming-markdown"),
   },
   {
     name: "Switch",
