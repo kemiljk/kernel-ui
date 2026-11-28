@@ -1872,10 +1872,18 @@ dialog.mobile-nav-panel[data-side="left"] {
    Button, so it covers the characters beneath it cleanly while it's
    there); on touch screens, where it has to be visible all the time,
    it sits below the block instead of on top of the code. */
+/* Long lines wrap rather than scroll: on a phone a sideways-scrolling
+   block hides half of every token and fights the page's own vertical
+   scroll. `pre-wrap` keeps indentation and breaks at spaces; `anywhere`
+   only splits a run with no spaces (a long `var(--kernel-…)` value or
+   URL) when it can't fit on a line by itself. `overflow-x` stays as a
+   safety net for anything that still can't break. */
 .code-block pre {
   margin: 0;
   padding: var(--kernel-space-4);
   overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .code-block-copy {
