@@ -102,6 +102,20 @@ export interface SheetProps extends Omit<DialogProps, "side" | "className" | "cl
  * overdrag, and a backdrop that tracks the drag — the parts that make a sheet
  * feel like a sheet instead of a modal that happens to sit at the bottom.
  *
+ * The dismiss decision is distance *or* velocity: a release past 25% of the
+ * sheet's size, or one whose last 100ms moved faster than 0.5px/ms toward the
+ * edge, closes it — so a short flick works and a long, slow drag works, and a
+ * drag that parks before letting go doesn't fling the sheet away. Velocity is
+ * windowed rather than averaged over the gesture, which is why the bar is 0.5
+ * and not Vaul's 0.11 (see `gesture.ts`, shared with Toast's swipe). A finger
+ * pulling back at release keeps the sheet open even past the distance line.
+ * Anything short of dismissal eases back on `--kernel-ease-drawer` over
+ * `--kernel-duration-sheet` (the stylesheet's own open transition, so the
+ * settle and the entrance are one motion); dragging past the open position
+ * rubber-bands asymptotically instead of stopping dead. A dismissal leaves
+ * from wherever the finger let go, on the exit timing, rather than restarting
+ * from the resting position.
+ *
  * The handle is `aria-hidden` decoration (the sheet is already dismissable by
  * Escape, the close button, and the backdrop), which is why it can be
  * absolutely positioned at the anchored edge rather than needing to come first
