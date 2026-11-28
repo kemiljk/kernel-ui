@@ -52,3 +52,40 @@ export function chunkIntoWeeks(days: Date[]): Date[][] {
   for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
   return weeks;
 }
+
+/** The one day in `month` that holds the calendar grid's Tab stop (the APG
+ * grid pattern: exactly one cell has tabindex="0"): the first of
+ * `preferred` that's in the month and enabled, else the month's first
+ * enabled day. Without the fallback, a month showing neither the selection
+ * nor today had no Tab stop at all, so keyboard users couldn't reach its
+ * days; and a range with both ends in view had two. */
+export function gridTabStop(
+  month: Date,
+  preferred: (Date | undefined)[],
+  minDate: Date | undefined,
+  maxDate: Date | undefined,
+): Date | undefined {
+  const inMonth = (date: Date) => date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth();
+  for (const date of preferred) {
+    if (date && inMonth(date) && isWithinRange(startOfDay(date), minDate, maxDate)) return startOfDay(date);
+  }
+  const last = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  for (let day = 1; day <= last; day++) {
+    const date = new Date(month.getFullYear(), month.getMonth(), day);
+    if (isWithinRange(date, minDate, maxDate)) return date;
+  }
+  return undefined;
+}
+
+/** Home/End in a calendar grid: the index (into `cells`, the enabled day
+ * buttons) of the first or last day in the focused day's week row. The
+ * days aren't seven to a row from the 1st (the first week starts part-way
+ * through), so this reads the row from the DOM instead of doing index
+ * arithmetic, which landed on the wrong day in most months. */
+export function weekEdgeIndex(cells: HTMLElement[], currentIndex: number, edge: "start" | "end"): number {
+  if (currentIndex === -1) return 0;
+  const row = cells[currentIndex]?.closest("tr");
+  const inRow = cells.filter((cell) => cell.closest("tr") === row);
+  const target = edge === "start" ? inRow[0] : inRow[inRow.length - 1];
+  return target ? cells.indexOf(target) : currentIndex;
+}

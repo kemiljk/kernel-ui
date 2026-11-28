@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
-import { MenuContext } from "../DropdownMenu/DropdownMenu";
+import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import { MenuContext, roveMenuItems } from "../DropdownMenu/DropdownMenu";
 import { dataAttr } from "../../utils/polymorphic";
 import { usePopoverExit } from "../../utils/usePopoverExit";
 import styles from "./ContextMenu.module.css";
@@ -29,6 +29,7 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   const { closing, playExit, cancelExit } = usePopoverExit(menuRef);
 
@@ -41,6 +42,9 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
   function close() {
     if (!open) return;
     setOpen(false);
+    // Focus was moved into the menu on open; hand it back rather than
+    // letting it fall to <body> when the popover hides.
+    if (menuRef.current?.contains(document.activeElement)) returnFocusRef.current?.focus();
     void playExit();
   }
 
@@ -49,7 +53,14 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
     cancelExit();
     setPosition({ top: event.clientY, left: event.clientX });
     setOpen(true);
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     menuRef.current?.showPopover();
+    // APG menu: opening moves focus to the first item, so arrow keys work
+    // straight away (a keyboard user opens this with Shift+F10 or the
+    // context-menu key) — the same as DropdownMenu.
+    requestAnimationFrame(() => {
+      menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
+    });
   }
 
   // The panel is sized by its content, which isn't known until after it
@@ -115,6 +126,7 @@ export function ContextMenu({ render, children }: ContextMenuProps) {
         data-closing={dataAttr(closing)}
         className={styles.content}
         style={{ position: "fixed", top: position.top, left: position.left }}
+        onKeyDown={(event: ReactKeyboardEvent<HTMLDivElement>) => roveMenuItems(menuRef.current, event)}
       >
         {children}
       </div>

@@ -9,6 +9,8 @@ import {
   isSameDay,
   isWithinRange,
   startOfDay,
+  gridTabStop,
+  weekEdgeIndex,
 } from "../../utils/dateGrid";
 import styles from "./DatePicker.module.css";
 
@@ -70,6 +72,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
   const baseId = useId();
 
   const weeks = chunkIntoWeeks(getVisibleDays(visibleMonth));
+  const tabStop = gridTabStop(visibleMonth, [selected, today], minDate, maxDate);
 
   function goToPreviousMonth() {
     setVisibleMonth((month) => addMonths(month, -1));
@@ -106,16 +109,12 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
       case "ArrowUp":
         nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 7, 0);
         break;
-      case "Home": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = weekStart;
+      case "Home":
+        nextIndex = weekEdgeIndex(cells, currentIndex, "start");
         break;
-      }
-      case "End": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = Math.min(weekStart + 6, cells.length - 1);
+      case "End":
+        nextIndex = weekEdgeIndex(cells, currentIndex, "end");
         break;
-      }
       default:
         return;
     }
@@ -188,7 +187,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
                         data-today={dataAttr(isToday)}
                         aria-current={isToday ? "date" : undefined}
                         disabled={disabled}
-                        tabIndex={isSelected || (!selected && isToday) ? 0 : -1}
+                        tabIndex={tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1}
                         className={styles.dayButton}
                         onClick={() => selectDay(day)}
                       >

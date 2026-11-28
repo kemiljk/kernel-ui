@@ -1,5 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
-import "../DropdownMenu/DropdownMenu";
+import { handleMenuKeyDown } from "../DropdownMenu/DropdownMenu";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import "./ContextMenu.css";
 
@@ -44,9 +44,13 @@ export class KernelContextMenu extends KernelElement {
     // Play the exit before hiding, the same as React's usePopoverExit: once
     // hidePopover() runs, the panel is gone and can't animate.
     let closing = false;
+    let returnFocus: HTMLElement | null = null;
     const close = async () => {
       if (closing || !content.matches(":popover-open")) return;
       closing = true;
+      // Focus was moved into the menu on open; hand it back rather than
+      // letting it fall to <body> when the popover hides.
+      if (content.contains(document.activeElement)) returnFocus?.focus();
       content.setAttribute("data-closing", "true");
       if (!prefersReducedMotion()) await waitForExitTransition(content);
       content.removeAttribute("data-closing");
@@ -58,6 +62,7 @@ export class KernelContextMenu extends KernelElement {
       event.preventDefault();
       content.style.top = `${event.clientY}px`;
       content.style.left = `${event.clientX}px`;
+      returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       content.showPopover?.();
 
       requestAnimationFrame(() => {
@@ -77,6 +82,9 @@ export class KernelContextMenu extends KernelElement {
         const originX = rect.width ? clamp(((event.clientX - clampedLeft) / rect.width) * 100) : 50;
         const originY = rect.height ? clamp(((event.clientY - clampedTop) / rect.height) * 100) : 50;
         content.style.setProperty("--kernel-transform-origin", `${originX}% ${originY}%`);
+        // APG menu: opening moves focus to the first item, so arrow keys
+        // work straight away, the same as <kernel-dropdown-menu>.
+        content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
       });
 
       const handlePointerDown = (pointerEvent: PointerEvent) => {
@@ -103,26 +111,7 @@ export class KernelContextMenu extends KernelElement {
       );
     });
 
-    content.addEventListener("keydown", (event) => {
-      const items = Array.from(
-        content.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'),
-      );
-      if (items.length === 0) return;
-      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-      let nextIndex: number | null = null;
-      switch (event.key) {
-        case "ArrowDown":
-          nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
-          break;
-        case "ArrowUp":
-          nextIndex = currentIndex === -1 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
-          break;
-        default:
-          return;
-      }
-      event.preventDefault();
-      items[nextIndex]?.focus();
-    });
+    content.addEventListener("keydown", (event) => handleMenuKeyDown(content, event));
 
     this.native = triggerArea;
     this.append(triggerArea, content);

@@ -9,6 +9,8 @@ import {
   isSameDay,
   isWithinRange,
   startOfDay,
+  gridTabStop,
+  weekEdgeIndex,
 } from "../../utils/dateGrid";
 import styles from "./DateRangePicker.module.css";
 
@@ -118,16 +120,12 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
       case "ArrowUp":
         nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 7, 0);
         break;
-      case "Home": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = weekStart;
+      case "Home":
+        nextIndex = weekEdgeIndex(cells, currentIndex, "start");
         break;
-      }
-      case "End": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = Math.min(weekStart + 6, cells.length - 1);
+      case "End":
+        nextIndex = weekEdgeIndex(cells, currentIndex, "end");
         break;
-      }
       default:
         return;
     }
@@ -141,6 +139,7 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
   // so hovering backwards over `from` can't preview a negative-length range.
   const previewTo = from && !to && hoverDate && hoverDate > from ? hoverDate : undefined;
   const effectiveTo = to ?? previewTo;
+  const tabStop = gridTabStop(visibleMonth, [from, to, today], minDate, maxDate);
 
   return (
     <div className={styles.root} onPointerLeave={() => setHoverDate(null)}>
@@ -217,7 +216,7 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
                         data-today={dataAttr(isToday)}
                         aria-current={isToday ? "date" : undefined}
                         disabled={disabled}
-                        tabIndex={isSelected || (!from && isToday) ? 0 : -1}
+                        tabIndex={tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1}
                         className={styles.dayButton}
                         onClick={() => selectDay(day)}
                         onPointerEnter={() => setHoverDate(day)}

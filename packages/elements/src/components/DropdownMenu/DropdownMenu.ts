@@ -13,7 +13,9 @@ type MenuClosable = HTMLElement & {
   __kernelMenuClose?: () => void;
 };
 
-function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
+/** Arrow-key/Home/End roving between a menu's items, shared by the
+ * dropdown menus and `<kernel-context-menu>`. */
+export function handleMenuKeyDown(menu: HTMLElement, event: KeyboardEvent) {
   const items = Array.from(
     menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'),
   );

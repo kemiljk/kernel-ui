@@ -8,6 +8,8 @@ import {
   isWithinRange,
   parseDateAttr,
   startOfDay,
+  gridTabStop,
+  weekEdgeIndex,
 } from "../../utils/dateGrid";
 import "./DateRangePicker.css";
 
@@ -192,16 +194,12 @@ export class KernelDateRangePicker extends KernelElement {
       case "ArrowUp":
         nextIndex = currentIndex === -1 ? 0 : Math.max(currentIndex - 7, 0);
         break;
-      case "Home": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = weekStart;
+      case "Home":
+        nextIndex = weekEdgeIndex(cells, currentIndex, "start");
         break;
-      }
-      case "End": {
-        const weekStart = currentIndex === -1 ? 0 : currentIndex - (currentIndex % 7);
-        nextIndex = Math.min(weekStart + 6, cells.length - 1);
+      case "End":
+        nextIndex = weekEdgeIndex(cells, currentIndex, "end");
         break;
-      }
       default:
         return;
     }
@@ -233,6 +231,7 @@ export class KernelDateRangePicker extends KernelElement {
     const previewTo =
       from && !this.to && this.hoverDate && this.hoverDate > from ? this.hoverDate : undefined;
     const effectiveTo = this.to ?? previewTo;
+    const tabStop = gridTabStop(this.visibleMonth, [from, this.to, today], this.minDate, this.maxDate);
 
     for (const week of weeks) {
       const tr = document.createElement("tr");
@@ -267,7 +266,7 @@ export class KernelDateRangePicker extends KernelElement {
           td.setAttribute("aria-selected", String(isSelected));
           if (isToday) button.setAttribute("aria-current", "date");
           button.disabled = disabled;
-          button.tabIndex = isSelected || (!from && isToday) ? 0 : -1;
+          button.tabIndex = tabStop !== undefined && isSameDay(day, tabStop) ? 0 : -1;
           button.className = kernelClass("DateRangePicker", "dayButton");
           button.textContent = String(day.getDate());
           button.addEventListener("click", () => this.selectDay(day));

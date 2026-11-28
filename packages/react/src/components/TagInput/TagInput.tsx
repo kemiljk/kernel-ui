@@ -234,10 +234,9 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   }
 
   const showError = invalid && Boolean(errorMessage);
-  const describedBy =
-    [showError ? errorId : null, description ? descriptionId : null]
-      .filter(Boolean)
-      .join(" ") || undefined;
+  // The error replaces the description while it shows, so only one id is
+  // ever referenced: pointing at both left a dangling aria-describedby.
+  const describedBy = showError ? errorId : description ? descriptionId : undefined;
 
   const state: TagInputState = { disabled, invalid };
   const atMax = max != null && tags.length >= max;

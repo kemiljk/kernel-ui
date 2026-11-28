@@ -38,10 +38,10 @@ interface MenuContextValue {
 export const MenuContext = createContext<MenuContextValue | null>(null);
 
 /** Arrow-key/Home/End roving between a menu's items — shared between
- * `DropdownMenu` and `DropdownMenuMorph` since both use the same
- * `role="menu"` of `role="menuitem"` shape and differ only in how the
- * panel itself opens and closes. */
-function roveMenuItems(menu: HTMLElement | null, event: KeyboardEvent<HTMLElement>) {
+ * `DropdownMenu`, `DropdownMenuMorph` and `ContextMenu` since all three use
+ * the same `role="menu"` of `role="menuitem"` shape and differ only in how
+ * the panel itself opens and closes. */
+export function roveMenuItems(menu: HTMLElement | null, event: KeyboardEvent<HTMLElement>) {
   const items = Array.from(
     menu?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])') ?? [],
   );
