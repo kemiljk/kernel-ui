@@ -76,6 +76,9 @@ jobs:
       - name: Test CLI package
         run: bun run --cwd packages/cli test
 
+      - name: Test ESLint plugin
+        run: bun run --cwd packages/eslint-plugin test
+
       - name: Typecheck docs
         run: bun run --cwd apps/docs typecheck
 
