@@ -30,9 +30,33 @@ Checks that stop regressions before review, so the rest of the roadmap can move 
 | Docs page that swaps icon packages | in review | [#112](https://github.com/kemiljk/kernel-ui/pull/112) | Lucide, Phosphor, Heroicons, Tabler, Radix, each tuned by measurement |
 | Roll the recipe out to Toggle, Tabs, Select, TextField at Round, citation chips | next | | |
 | Cap-height centring for inputs and Tabs | next | | |
-| Full design audit of all components | in progress | | Findings land as items below |
-| TagInput remove hover invisible in dark mode | next | | Hard-coded translucent black |
+| Full design audit of all components | done | | 60 components × light/dark/Round/Sharp, RTL, 390px. Findings below |
+| Fix: pill icon detection treated component children as icons | in review | [#109](https://github.com/kemiljk/kernel-ui/pull/109) | Audit P0; hid translated/Astro labels. Fixed with DOM detection |
 | UI polish references from Mobbin | next | | Mobbin MCP installed and signed in; needs a fresh session to load |
+
+## 2a. Design audit findings
+
+From the full audit. P0 = broken or inaccessible, P1 = visibly unpolished, P2 = refinement.
+
+| Item | Priority | Status | PR | Notes |
+| --- | --- | --- | --- | --- |
+| Focus ring fails 3:1 contrast in light mode | P0 | next | | `--kernel-color-focus-ring` is accent-9 (2.06:1) |
+| Unchecked control borders too faint | P0 | next | | gray-7 is 1.75:1 light, 2.36:1 dark |
+| Switch thumb breaks in RTL | P0 | next | | Physical translate on a logical inset |
+| Checkbox becomes a circle at Round | P0 | next | | Cap small-control radii by size |
+| NumberField steppers cramped at Round; sub-24px targets | P1 | next | | |
+| Tabs, InputOTP and Pagination overflow or wrap at 390px | P1 | next | | |
+| Slider fill and directional icons don't mirror in RTL | P1 | next | | Shared `--dir` and icon-flip utility |
+| TagInput remove hover invisible in dark mode | P1 | next | | Hover-overlay token instead of black alpha |
+| Small hit areas: Carousel dots, citations, sort buttons, Resizable divider | P1 | next | | Hit-area utility |
+| Citation chips: overflow, line-height jump, comma gap | P1 | next | | Optical pill |
+| AgentActivity chevrons placed two ways | P1 | next | | |
+| Optical pill for fields at Round, Toggle, NavigationMenu, Pagination | P2 | next | | Make the recipe a shared utility first |
+| Off-grid control heights (Suggestion 40.6px, NavigationMenu, CodeBlock copy) | P2 | next | | |
+| Focus offset token; motion loop tokens; shared keyframes | P2 | later | | |
+| Toast muted text on tints; danger hover mixes with black | P2 | later | | |
+| Resizable radius and grip; Slider track token; Label demo inputs | P2 | later | | |
+| CI checks: physical translate/`to right` without RTL pair, black-alpha hovers, literal durations | P2 | later | | Next to `test:shape` |
 
 ## 3. Agent-native
 
