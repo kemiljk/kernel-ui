@@ -1,9 +1,12 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { COMPONENT_SPECS, KERNEL_COMPONENTS } from "../src/index.js";
 
-const registry = JSON.parse(readFileSync(new URL("../../../apps/docs/public/registry.json", import.meta.url), "utf8")) as {
+const registry = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../../../apps/docs/public/registry.json", import.meta.url)), "utf8"),
+) as {
   components: { name: string; status: string; reactExports: string[]; elementTag: string }[];
 };
 
