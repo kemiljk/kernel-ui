@@ -30,3 +30,6 @@ apps/docs/public/r/
 screenshots/
 # Agent eval output (screenshots, transcripts, built files)
 evals/results/
+
+# Registry build lock (scripts/build-once.mjs)
+packages/registry/.build-lock

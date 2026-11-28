@@ -60,7 +60,7 @@
     "vite-plugin-dts": "^4.4.0"
   },
   "scripts": {
-    "build": "bun run --cwd ../registry build && vite build && node scripts/generate-manifest.mjs",
+    "build": "node ../registry/scripts/build-once.mjs && vite build && node scripts/generate-manifest.mjs",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"

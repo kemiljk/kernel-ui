@@ -54,7 +54,7 @@
   },
   "scripts": {
     "generate": "node scripts/generate-components.mjs",
-    "build": "bun run --cwd ../registry build && node scripts/generate-components.mjs && node scripts/clean.mjs && tsc -p tsconfig.build.json",
+    "build": "node ../registry/scripts/build-once.mjs && node scripts/generate-components.mjs && node scripts/clean.mjs && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },

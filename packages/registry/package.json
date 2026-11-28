@@ -17,10 +17,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && node scripts/generate-assets.mjs",
+    "build": "node scripts/build-once.mjs",
     "generate": "node scripts/generate-assets.mjs",
     "check": "node scripts/check-consistency.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:force": "tsc && node scripts/generate-assets.mjs"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

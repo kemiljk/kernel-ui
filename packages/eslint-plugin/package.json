@@ -40,7 +40,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "bun run --cwd ../registry build && node scripts/build.mjs",
+    "build": "node ../registry/scripts/build-once.mjs && node scripts/build.mjs",
     "typecheck": "node --check src/index.js && node --check scripts/build.mjs",
     "test": "node scripts/build.mjs && vitest run"
   },
