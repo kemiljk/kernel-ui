@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/eslint-plugin",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ESLint rules for Kernel UI: catch foreign props, invalid values, missing labels and other mistakes people and coding agents make, with the fix in every message.",
   "license": "MIT",
   "author": "Karl Koch",
