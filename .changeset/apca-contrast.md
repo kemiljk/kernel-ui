@@ -10,4 +10,5 @@ Contrast fixes, measured with APCA (the method proposed for WCAG 3) with WCAG 2 
 - **New `--kernel-color-border-control` token:** gray-9 in light, gray-11 in dark, for controls whose border is their only outline. Checkbox, Radio and the Switch track now use it, where they used to measure 1.66:1 in light mode.
 - **Muted text:** gray-11 is lighter in dark mode (78%, up from 72%), so muted text clears Lc 60.
 - **Checkbox at Round:** its radius is capped, so it no longer turns into a circle that looks like a radio button.
-- **Switch in RTL:** the thumb now slides the correct way.
+- **Switch in RTL:** the thumb now moves by its logical inset, so it sits on the left when on in right-to-left layouts.
+- **Sheet in RTL:** the left/right edge bleed now also flips under `dir="rtl"`. The build had compiled its `:dir(rtl)` rule down to RTL `lang` selectors only.

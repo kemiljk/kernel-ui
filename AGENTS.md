@@ -218,6 +218,15 @@ new component done, grep both `packages/react/src/index.ts` and
   property descriptor's setter (`Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, x)`)
   before dispatching a synthetic `input`/`change` event.
 
+- **`:dir(rtl)` doesn't survive the build on its own.** Vite 8 minifies
+  CSS with Lightning CSS, targeting Chrome 111. `:dir()` arrived in Chrome
+  120, so it gets compiled into a list of `:lang(ar)`, `:lang(he)`…
+  selectors. That only matches pages that declare an RTL language, not ones
+  that set `dir="rtl"`. Prefer logical properties, which need no
+  direction selector: Switch moves its thumb with `inset-inline-start`, not
+  `translate`, for this reason. When a value really must flip, pair the
+  selector: `.x:dir(rtl), :where([dir="rtl"]) .x`.
+
 ## Before calling a component done
 
 - `bun run typecheck` in both `packages/react` and `packages/elements`.

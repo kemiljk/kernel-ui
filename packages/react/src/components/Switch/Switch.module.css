@@ -89,18 +89,22 @@
      nearly disappears against dark mode's equally dark neutral track). */
   background-color: var(--kernel-color-thumb);
   box-shadow: var(--kernel-shadow-sm);
-  translate: 0 0;
   /* +25% over --kernel-duration-base (200ms -> 250ms): the wider,
      heavier-looking oval thumb reads better with a slightly more
      deliberate slide than the old circular one needed. Bezier, not a
      spring — see the token's own comment in tokens.css for why. */
-  transition: translate calc(var(--kernel-duration-base) * 1.25) var(--kernel-ease-spring);
+  /* The thumb moves by its logical inset, not by translate: translate is
+     physical, so it would slide the wrong way in RTL, and the :dir()
+     selector that could flip it is compiled away for older targets. A
+     logical inset follows the reading direction with nothing to flip. */
+  transition: inset-inline-start calc(var(--kernel-duration-base) * 1.25) var(--kernel-ease-spring);
 }
 
 .control[data-state="checked"] .thumb {
-  translate: calc(var(--_dir, 1) * (
+  inset-inline-start: calc(
+    var(--kernel-switch-inset) - var(--kernel-border-width) +
     var(--kernel-switch-inline) - var(--kernel-switch-block) - var(--kernel-switch-thumb-extra)
-  )) 0;
+  );
 }
 
 .label {
@@ -114,7 +118,7 @@
   }
 
   .thumb {
-    transition: translate var(--kernel-duration-fast) linear;
+    transition: inset-inline-start var(--kernel-duration-fast) linear;
   }
 
   .control:active:not(:disabled) {
@@ -122,8 +126,3 @@
   }
 }
 
-/* The thumb starts at inset-inline-start, so in RTL it has to slide the
-   other way: translate is physical, unlike the logical inset. */
-.thumb:dir(rtl) {
-  --_dir: -1;
-}
