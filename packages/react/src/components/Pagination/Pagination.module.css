@@ -39,7 +39,8 @@
      own label text never drag-selects. */
   -webkit-user-select: none;
   user-select: none;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .item {
@@ -69,7 +70,7 @@
 .item:focus-visible,
 .control:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .control:disabled {
@@ -108,5 +109,16 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.control:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control:active:not(:disabled) {
+    scale: 1;
   }
 }

@@ -19,7 +19,7 @@
 
 .kernel-Carousel-track:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 kernel-carousel-slide {
@@ -51,7 +51,8 @@ kernel-carousel-slide {
      own label text never drag-selects. */
   -webkit-user-select: none;
   user-select: none;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .kernel-Carousel-prev {
@@ -72,7 +73,7 @@ kernel-carousel-slide {
 .kernel-Carousel-prev:focus-visible,
 .kernel-Carousel-next:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Carousel-prev:disabled,
@@ -102,7 +103,8 @@ kernel-carousel-slide {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -122,7 +124,7 @@ kernel-carousel-slide {
 
 .kernel-Carousel-dot:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Carousel-dot[data-current] {
@@ -132,5 +134,20 @@ kernel-carousel-slide {
 @media (prefers-reduced-motion: reduce) {
   .kernel-Carousel-track {
     scroll-behavior: auto;
+  }
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.kernel-Carousel-prev:active:not(:disabled),
+.kernel-Carousel-next:active:not(:disabled),
+.kernel-Carousel-dot:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Carousel-prev:active:not(:disabled),
+  .kernel-Carousel-next:active:not(:disabled),
+  .kernel-Carousel-dot:active:not(:disabled) {
+    scale: 1;
   }
 }

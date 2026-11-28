@@ -59,6 +59,7 @@
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  transition: scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 .swatch {
@@ -196,4 +197,15 @@
   font-size: var(--kernel-font-size-sm);
   color: var(--kernel-color-danger-text);
   padding-inline-start: var(--label-offset);
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.swatchLabel:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatchLabel:active:not(:disabled) {
+    scale: 1;
+  }
 }

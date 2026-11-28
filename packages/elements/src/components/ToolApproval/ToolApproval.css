@@ -145,7 +145,7 @@ kernel-tool-approval {
 
 .kernel-ToolApproval-status:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
   border-radius: var(--kernel-radius-sm);
 }
 
