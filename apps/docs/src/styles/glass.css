@@ -1,0 +1,510 @@
+/* Liquid Glass for the docs site's own chrome.
+   ------------------------------------------------------------------
+   Technique: the edge-light material from karlkoch.me, ported from its
+   Tailwind utilities to plain CSS on Kernel's tokens. Three parts:
+
+   1. A lit edge. One warm overhead light source, painted as a radial +
+      linear gradient on a pseudo-element and masked down to a 1px ring
+      with `mask-composite: exclude`, over an inset stroke + top glow.
+      The light doesn't follow the pointer; hover and focus nudge it a
+      few percent, like tilting a pane of glass under a lamp.
+   2. Frost. Floating surfaces sit at 85% of their Kernel surface colour
+      with a backdrop blur. Bars keep the blur on a separate layer behind
+      their content (`::before`), so a glass control inside a glass bar
+      still samples the page and not just the bar.
+   3. A button material. A gradient face with layered inset highlights
+      and bounce light, a hairline edge, and (dark scheme, secondary
+      only) a translucent face over a blur.
+
+   Scope. Site chrome and the home page's showcases only. Every rule
+   below names a docs-only hook (`.site-header`, `.theme-panel`, …), and
+   every one is fenced with `:not(:is(.docs-example, .prop-playground-stage) *)`
+   so a live component example never changes, even if a hook class ends
+   up inside one. `scripts/check-glass-scope.mjs` asserts that.
+
+   Not a cascade layer: Kernel's component styles are unlayered, and an
+   unlayered rule beats every layered one whatever its specificity. This
+   file is unlayered and imported after global.css, and wins on
+   specificity and source order. No !important anywhere.
+
+   Accessibility. Text never sits on less than 85% of a Kernel surface.
+   The source uses 80%; at 85% body and muted text keep their APCA
+   targets (Lc 75 / 60) over the page canvas and the modal scrim in every
+   accent preset, and body text stays at Lc 74+ even over a solid black
+   (light) or white (dark) field behind the glass. `prefers-reduced-transparency`
+   turns every surface opaque and drops the blur. `prefers-reduced-motion`
+   drops the light's travel. In forced colours none of this applies, so
+   Kernel's own borders and system colours are left alone. */
+
+@property --edge-light-x {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 50%;
+}
+
+@property --edge-light-y {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: -42%;
+}
+
+@media (forced-colors: none) {
+  :root {
+    /* The material's inputs. Kernel has no equivalent for these, so they
+       keep the source values. */
+    --glass-warm-white: oklch(0.99 0.02 85);
+    --glass-edge-stroke: light-dark(oklch(0.8 0.012 83 / 0.44), oklch(0.68 0.018 52 / 0.22));
+    --glass-top-glow: light-dark(oklch(0.99 0.018 85 / 0.5), oklch(0.99 0.018 85 / 0.12));
+    --glass-hover-glow: light-dark(oklch(0.99 0.018 85 / 0.18), oklch(0.99 0.018 85 / 0.1));
+    /* 85% surface + blur. Reduced transparency flips both (below). */
+    --glass-alpha: 85%;
+    --glass-backdrop: blur(calc(var(--kernel-blur-backdrop) * 1.5)) saturate(1.4);
+    --glass-backdrop-button: blur(calc(var(--kernel-blur-backdrop) * 2.25)) saturate(1.2);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    :root {
+      --glass-alpha: 100%;
+      --glass-backdrop: none;
+      --glass-backdrop-button: none;
+    }
+  }
+
+  /* ── 1. The lit edge ─────────────────────────────────────────────── */
+
+  /* Hosts. `::after`, not `::before`: Button already uses `::before` as
+     its baseline strut, and the header uses it for its frost layer. */
+  :is(
+      .site-header,
+      [data-slot="popover-content"]:is(.theme-menu-panel, .mobile-header-nav-panel),
+      .theme-panel,
+      dialog.theme-panel-scope,
+      dialog.mobile-nav-panel,
+      .site-command-palette .kernel-CommandPalette-content,
+      .install-command-line,
+      .docs-markdown-chip,
+      :is(.site-nav-desktop, .docs-sidebar-slot, .mobile-header-nav-panel, .mobile-nav-panel)
+        .kernel-Nav-link[aria-current="page"]
+    ):not(:is(.docs-example, .prop-playground-stage) *) {
+    --edge-light-x: 50%;
+    --edge-light-y: -42%;
+    --edge-light-opacity: 0.72;
+    --edge-stroke: var(--glass-edge-stroke);
+    --edge-interaction-glow: transparent;
+    --edge-shadow:
+      inset 0 0 0 1px var(--edge-stroke),
+      inset 0 1px 0 var(--glass-top-glow),
+      inset 0 0 18px var(--edge-interaction-glow);
+    --edge-light-gradient:
+      radial-gradient(
+        120% 180% at var(--edge-light-x) var(--edge-light-y),
+        color-mix(in oklch, var(--glass-warm-white) 92%, transparent) 0 10%,
+        color-mix(in oklch, var(--glass-warm-white) 52%, transparent) 18%,
+        transparent 44%
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--glass-warm-white) 20%, transparent),
+        transparent 42%
+      );
+  }
+
+  :is(
+      .site-header,
+      [data-slot="popover-content"]:is(.theme-menu-panel, .mobile-header-nav-panel),
+      .theme-panel,
+      dialog.theme-panel-scope,
+      dialog.mobile-nav-panel,
+      .site-command-palette .kernel-CommandPalette-content,
+      .install-command-line,
+      .docs-markdown-chip,
+      :is(.site-nav-desktop, .docs-sidebar-slot, .mobile-header-nav-panel, .mobile-nav-panel)
+        .kernel-Nav-link[aria-current="page"]
+    ):not(:is(.docs-example, .prop-playground-stage) *)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    padding: 1px;
+    border-radius: inherit;
+    background: var(--edge-light-gradient);
+    opacity: var(--edge-light-opacity);
+    pointer-events: none;
+    transition: opacity var(--kernel-duration-base) var(--kernel-ease-magnetic);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+
+  /* Small hosts that aren't already positioned, and the light's travel.
+     Transitioned on the host, where the registered properties live; the
+     gradient that reads them is inherited by `::after` already resolved. */
+  :is(
+      .install-command-line,
+      .docs-markdown-chip,
+      :is(.site-nav-desktop, .docs-sidebar-slot, .mobile-header-nav-panel, .mobile-nav-panel)
+        .kernel-Nav-link[aria-current="page"]
+    ):not(:is(.docs-example, .prop-playground-stage) *) {
+    position: relative;
+    isolation: isolate;
+    box-shadow: var(--edge-shadow);
+    transition:
+      background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+      color var(--kernel-duration-fast) var(--kernel-ease-out),
+      box-shadow var(--kernel-duration-base) var(--kernel-ease-magnetic),
+      --edge-light-x var(--kernel-duration-slow) var(--kernel-ease-magnetic),
+      --edge-light-y var(--kernel-duration-slow) var(--kernel-ease-magnetic);
+  }
+
+  :is(
+      .site-header,
+      [data-slot="popover-content"]:is(.theme-menu-panel, .mobile-header-nav-panel),
+      .theme-panel,
+      dialog.theme-panel-scope,
+      dialog.mobile-nav-panel,
+      .site-command-palette .kernel-CommandPalette-content,
+      .install-command-line,
+      .docs-markdown-chip,
+      :is(.site-nav-desktop, .docs-sidebar-slot, .mobile-header-nav-panel, .mobile-nav-panel)
+        .kernel-Nav-link[aria-current="page"]
+    ):not(:is(.docs-example, .prop-playground-stage) *):is(:hover, :focus-visible, :focus-within) {
+    --edge-light-x: 56%;
+    --edge-light-y: -38%;
+    --edge-light-opacity: 1;
+    --edge-interaction-glow: var(--glass-hover-glow);
+  }
+
+  /* A nav pill is a control, not a pane: a touch brighter at rest. */
+  :is(.site-nav-desktop, .docs-sidebar-slot, .mobile-header-nav-panel, .mobile-nav-panel)
+    .kernel-Nav-link[aria-current="page"]:not(:is(.docs-example, .prop-playground-stage) *) {
+    --edge-light-opacity: 0.85;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :is(
+        .install-command-line,
+        .docs-markdown-chip,
+        :is(.site-nav-desktop, .docs-sidebar-slot, .mobile-header-nav-panel, .mobile-nav-panel)
+          .kernel-Nav-link[aria-current="page"]
+      ):not(:is(.docs-example, .prop-playground-stage) *) {
+      transition:
+        background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+        color var(--kernel-duration-fast) var(--kernel-ease-out);
+    }
+  }
+
+  /* ── 2. Frost ────────────────────────────────────────────────────── */
+
+  /* The site header: Kernel's sticky Header, with its frost moved off the
+     root onto a layer behind the content. On the root, `backdrop-filter`
+     makes the header a backdrop root, and the dark-scheme glass buttons
+     inside it would then blur the header instead of the page. */
+  .site-header:not(:is(.docs-example, .prop-playground-stage) *) {
+    isolation: isolate;
+    background-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: inset 0 1px 0 var(--glass-top-glow);
+  }
+
+  .site-header:not(:is(.docs-example, .prop-playground-stage) *)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: color-mix(in oklch, var(--kernel-color-surface) var(--glass-alpha), transparent);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+    backdrop-filter: var(--glass-backdrop);
+    pointer-events: none;
+  }
+
+  /* A bar's edge light is quieter than a floating pane's: it spans the
+     whole viewport, so the overhead highlight reads as a top sheen. */
+  .site-header:not(:is(.docs-example, .prop-playground-stage) *) {
+    --edge-light-opacity: 0.45;
+  }
+
+  /* Floating panes: popovers, the theme panel, the theme sheet, the docs
+     menu drawer and the command palette. The edge stroke replaces the
+     Kernel border (same box, transparent border, so nothing moves). */
+  :is(
+      [data-slot="popover-content"]:is(.theme-menu-panel, .mobile-header-nav-panel),
+      .theme-panel,
+      dialog.theme-panel-scope,
+      dialog.mobile-nav-panel,
+      .site-command-palette .kernel-CommandPalette-content
+    ):not(:is(.docs-example, .prop-playground-stage) *) {
+    border-color: transparent;
+    background-color: color-mix(in oklch, var(--kernel-color-surface-raised) var(--glass-alpha), transparent);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+    backdrop-filter: var(--glass-backdrop);
+    box-shadow: var(--edge-shadow), var(--kernel-shadow-lg);
+  }
+
+  /* Sheet's overdrag bleed is a spread shadow in the opaque surface
+     colour; match it to the glass so a drag past the edge doesn't show a
+     differently coloured strip. */
+  dialog.theme-panel-scope[data-side="bottom"]:not(:is(.docs-example, .prop-playground-stage) *) {
+    box-shadow:
+      var(--edge-shadow),
+      var(--kernel-shadow-lg),
+      0 50vh 0 color-mix(in oklch, var(--kernel-color-surface-raised) var(--glass-alpha), transparent);
+  }
+
+  /* The grabber sits on glass now, so it reads off the edge stroke
+     rather than a solid grey bar. */
+  dialog.theme-panel-scope .kernel-Sheet-handleBar {
+    background: color-mix(in oklch, var(--kernel-color-text) 28%, transparent);
+    box-shadow: 0 1px 0 var(--glass-top-glow);
+    opacity: 1;
+  }
+
+  /* ── 3. Button material ──────────────────────────────────────────── */
+
+  /* Which buttons: the docs' own primary and secondary Buttons in the
+     header, its panels, the theme controls, the hero, the theme launch,
+     the docs menu trigger and every code block's copy button. Ghost
+     buttons stay flat, as in the source. */
+  :is(
+      :is(
+          .site-header,
+          .theme-menu-panel,
+          .mobile-header-nav-panel,
+          .theme-panel-scope,
+          .hero-ctas,
+          .theme-launch
+        )
+        .kernel-Button-root,
+      .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+    ):is([data-variant="primary"], [data-variant="secondary"]):not(
+      :is(.docs-example, .prop-playground-stage) *
+    ) {
+    --glass-button-hover-tint: var(--glass-button-tint);
+    --glass-button-face: var(--glass-button-tint);
+    --glass-button-dark: color-mix(in srgb, var(--glass-button-face) 82%, black);
+    --glass-button-edge: color-mix(in srgb, var(--glass-button-dark) 50%, transparent);
+    --glass-button-bounce: color-mix(in srgb, var(--glass-button-face) 55%, white);
+    --glass-button-shadow:
+      inset 0 0.5px 0 rgb(255 255 255 / 0.45),
+      inset 0 4px 5px -4px rgb(255 255 255 / 0.55),
+      inset 0 -0.5px 0 rgb(255 255 255 / 0.26),
+      inset 0 -6px 7px -6px var(--glass-button-bounce),
+      inset 0 0 0 0.5px color-mix(in srgb, var(--glass-button-face) 82%, white),
+      0 0 0 0.5px var(--glass-button-edge),
+      0 2px 3px -2px color-mix(in srgb, var(--glass-button-dark) 40%, transparent);
+    border-color: transparent;
+    background-color: var(--glass-button-face);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glass-button-face) 96%, white) 0%,
+      var(--glass-button-face) 28%,
+      color-mix(in srgb, var(--glass-button-face) 98%, black) 65%,
+      color-mix(in srgb, var(--glass-button-face) 97%, white) 100%
+    );
+    box-shadow: var(--glass-button-shadow);
+    transition:
+      background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+      box-shadow var(--kernel-duration-fast) var(--kernel-ease-out),
+      color var(--kernel-duration-fast) var(--kernel-ease-out),
+      opacity var(--kernel-duration-fast) var(--kernel-ease-out),
+      scale var(--kernel-duration-fast) var(--kernel-ease-out);
+  }
+
+  /* Primary: the accent, with Kernel's own hover and pressed steps rather
+     than the source's mix toward black, so the label keeps the pairing
+     Kernel already checks (--kernel-color-on-accent). */
+  :is(
+      :is(
+          .site-header,
+          .theme-menu-panel,
+          .mobile-header-nav-panel,
+          .theme-panel-scope,
+          .hero-ctas,
+          .theme-launch
+        )
+        .kernel-Button-root,
+      .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+    )[data-variant="primary"]:not(:is(.docs-example, .prop-playground-stage) *) {
+    --glass-button-tint: var(--kernel-color-accent);
+    --glass-button-hover-tint: var(--kernel-color-accent-hover);
+    --glass-button-pressed-tint: var(--kernel-color-accent-active);
+  }
+
+  /* Secondary, light scheme: an opaque surface face. The darker hairline
+     is the source's secondary edge. */
+  :is(
+      :is(
+          .site-header,
+          .theme-menu-panel,
+          .mobile-header-nav-panel,
+          .theme-panel-scope,
+          .hero-ctas,
+          .theme-launch
+        )
+        .kernel-Button-root,
+      .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+    )[data-variant="secondary"]:not(:is(.docs-example, .prop-playground-stage) *) {
+    --glass-button-tint: var(--kernel-color-surface);
+    --glass-button-hover-tint: var(--kernel-color-surface-raised);
+    --glass-button-pressed-tint: var(--kernel-color-surface-raised);
+    --glass-button-dark: color-mix(in srgb, var(--glass-button-face) 60%, black);
+    --glass-button-edge: color-mix(in srgb, var(--glass-button-dark) 85%, transparent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    :is(
+        :is(
+            .site-header,
+            .theme-menu-panel,
+            .mobile-header-nav-panel,
+            .theme-panel-scope,
+            .hero-ctas,
+            .theme-launch
+          )
+          .kernel-Button-root,
+        .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+      ):is([data-variant="primary"], [data-variant="secondary"]):not(
+        :is(.docs-example, .prop-playground-stage) *
+      ):hover:not(:disabled, [aria-disabled="true"]) {
+      --glass-button-face: var(--glass-button-hover-tint);
+    }
+  }
+
+  :is(
+      :is(
+          .site-header,
+          .theme-menu-panel,
+          .mobile-header-nav-panel,
+          .theme-panel-scope,
+          .hero-ctas,
+          .theme-launch
+        )
+        .kernel-Button-root,
+      .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+    ):is([data-variant="primary"], [data-variant="secondary"]):not(
+      :is(.docs-example, .prop-playground-stage) *
+    ):active:not(:disabled, [aria-disabled="true"]) {
+    --glass-button-face: var(--glass-button-pressed-tint);
+  }
+
+  /* Secondary, dark scheme: glass. The surface behind contributes through
+     a translucent face and a blur, without the light material's bright
+     bevel. Written for both ways the docs pick dark (OS preference with
+     no override, and the explicit toggle), since `backdrop-filter` can't
+     be switched with light-dark(). */
+  :root[data-theme="dark"]
+    :is(
+      :is(
+          .site-header,
+          .theme-menu-panel,
+          .mobile-header-nav-panel,
+          .theme-panel-scope,
+          .hero-ctas,
+          .theme-launch
+        )
+        .kernel-Button-root,
+      .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+    )[data-variant="secondary"]:not(:is(.docs-example, .prop-playground-stage) *) {
+    --glass-button-tint: var(--kernel-color-surface-raised);
+    --glass-button-hover-tint: color-mix(in oklch, var(--kernel-color-surface-raised) 88%, white);
+    --glass-button-pressed-tint: color-mix(in oklch, var(--kernel-color-surface-raised) 92%, white);
+    --glass-button-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--kernel-color-text) 14%, transparent),
+      inset 0 0 0 1px color-mix(in oklab, var(--kernel-color-text) 12%, transparent),
+      0 1px 3px color-mix(in oklab, var(--kernel-color-canvas) 35%, transparent);
+    background-color: color-mix(in oklab, var(--glass-button-face) calc(var(--glass-alpha) - 2%), transparent);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--kernel-color-text) 7%, transparent),
+      transparent 65%
+    );
+    -webkit-backdrop-filter: var(--glass-backdrop-button);
+    backdrop-filter: var(--glass-backdrop-button);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"])
+      :is(
+        :is(
+            .site-header,
+            .theme-menu-panel,
+            .mobile-header-nav-panel,
+            .theme-panel-scope,
+            .hero-ctas,
+            .theme-launch
+          )
+          .kernel-Button-root,
+        .kernel-Button-root:is(.mobile-nav-trigger, .code-block-copy)
+      )[data-variant="secondary"]:not(:is(.docs-example, .prop-playground-stage) *) {
+      --glass-button-tint: var(--kernel-color-surface-raised);
+      --glass-button-hover-tint: color-mix(in oklch, var(--kernel-color-surface-raised) 88%, white);
+      --glass-button-pressed-tint: color-mix(in oklch, var(--kernel-color-surface-raised) 92%, white);
+      --glass-button-shadow:
+        inset 0 1px 0 color-mix(in oklab, var(--kernel-color-text) 14%, transparent),
+        inset 0 0 0 1px color-mix(in oklab, var(--kernel-color-text) 12%, transparent),
+        0 1px 3px color-mix(in oklab, var(--kernel-color-canvas) 35%, transparent);
+      background-color: color-mix(in oklab, var(--glass-button-face) calc(var(--glass-alpha) - 2%), transparent);
+      background-image: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--kernel-color-text) 7%, transparent),
+        transparent 65%
+      );
+      -webkit-backdrop-filter: var(--glass-backdrop-button);
+      backdrop-filter: var(--glass-backdrop-button);
+    }
+  }
+
+  /* ── 4. Segmented controls ───────────────────────────────────────── */
+
+  /* The docs' own Tabs (install command, platforms, Usage format, the
+     theme panel's corners): a frosted track with the lit-edge stroke as
+     an inset shadow (no ring pseudo-element, because the track scrolls
+     when it overflows), and the selected segment as a small pane of
+     light material instead of a flat card with a drop shadow. */
+  :is(.install-command, .platform-tabs, .prop-playground-format-tabs, .theme-panel-scope)
+    .kernel-Tabs-list:not(:is(.docs-example, .prop-playground-stage) *) {
+    background-color: color-mix(in oklch, var(--kernel-color-fill) var(--glass-alpha), transparent);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+    backdrop-filter: var(--glass-backdrop);
+    box-shadow:
+      inset 0 0 0 1px var(--glass-edge-stroke),
+      inset 0 1px 1px color-mix(in oklch, black 6%, transparent);
+  }
+
+  :is(.install-command, .platform-tabs, .prop-playground-format-tabs, .theme-panel-scope)
+    .kernel-Tabs-indicator:not(:is(.docs-example, .prop-playground-stage) *) {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--kernel-color-surface) 96%, white),
+      var(--kernel-color-surface) 40%
+    );
+    box-shadow:
+      inset 0 0.5px 0 light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.14)),
+      inset 0 0 0 0.5px var(--glass-edge-stroke),
+      var(--kernel-shadow-sm);
+  }
+
+  /* ── 5. The install line is a field shell ────────────────────────── */
+
+  .install-command-line:not(:is(.docs-example, .prop-playground-stage) *) {
+    --edge-light-opacity: 0.78;
+    border-color: transparent;
+    background-color: light-dark(
+      color-mix(in oklch, var(--kernel-color-surface) 74%, white),
+      color-mix(in oklch, var(--kernel-color-surface) 86%, black)
+    );
+  }
+
+  .docs-markdown-chip:not(:is(.docs-example, .prop-playground-stage) *) {
+    border-color: transparent;
+    background-color: light-dark(
+      color-mix(in oklch, var(--kernel-color-surface) 74%, white),
+      color-mix(in oklch, var(--kernel-color-surface) 86%, black)
+    );
+  }
+}
