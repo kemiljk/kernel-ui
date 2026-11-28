@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import EmptyStateDemo from "../../components/demos/EmptyStateDemo";
+import EmptyStatePlayground from "../../components/demos/EmptyStatePlayground";
+import { EmptyState } from "@kernelui-lib/react";
+
+const minimalSnippet = `<EmptyState title="No files" description="Drop files here to add them." />`;
+const plainSnippet = `<Card>
+  <EmptyState variant="plain" headingLevel={2} title="Nothing scheduled" />
+</Card>`;
+---
+
+<BaseLayout title="Empty State" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Empty State</h1>
+    <p>
+      The "nothing here yet" panel for an empty list, inbox, search or
+      project. It's a real <code>&lt;section&gt;</code> labelled by its own
+      heading through <code>aria-labelledby</code>, and the heading is a
+      real <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code> picked with
+      <code>headingLevel</code>, so someone moving through the page by
+      heading or landmark lands on it and hears what's missing.
+    </p>
+
+    <div class="docs-example">
+      <EmptyStateDemo client:visible />
+    </div>
+
+    <h2>Shape</h2>
+    <p>
+      It's a container: <code>--kernel-radius-container</code> paired with
+      <code>--kernel-padding-container-curve</code>, plus extra block
+      padding added on top of the curve padding rather than in place of
+      it, so the content sits calmly in the middle and still clears the
+      corners at Round.
+    </p>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Minimal" description="Just a heading and a sentence." code={minimalSnippet}>
+        <EmptyState title="No files" description="Drop files here to add them." />
+      </Example>
+      <Example
+        title="Plain"
+        description="No outline, for a surface that already has its own edge."
+        code={plainSnippet}
+      >
+        <EmptyState variant="plain" headingLevel={2} title="Nothing scheduled" />
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <EmptyStatePlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Empty State.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>title</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>headingLevel</code></td><td>1 | 2 | 3 | 4 | 5 | 6</td><td>3</td></tr>
+        <tr><td><code>description</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>icon</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>actions</code></td><td>ReactNode</td><td>—</td></tr>
+        <tr><td><code>variant</code></td><td>"dashed" | "plain"</td><td>"dashed"</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode (between description and actions)</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      The custom element uses a <code>heading</code> attribute rather than
+      <code>title</code>, which every element already has as its native
+      hover tooltip, and takes <code>slot="icon"</code>,
+      <code>slot="heading"</code>, <code>slot="description"</code> and
+      <code>slot="actions"</code> children.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The section's accessible name is its heading, and its description is the description text.</li>
+      <li>The icon is <code>aria-hidden</code>: the heading already says what it means.</li>
+      <li>Pick <code>headingLevel</code> to fit the page outline, rather than for its size; the size stays the same.</li>
+    </ul>
+  </div>
+</BaseLayout>

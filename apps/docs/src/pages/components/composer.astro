@@ -6,6 +6,7 @@ import Example from "../../components/Example.astro";
 import ComposerDemo from "../../components/demos/ComposerDemo";
 import ComposerActionsExample from "../../components/demos/ComposerActionsExample";
 import ComposerThinkingExample from "../../components/demos/ComposerThinkingExample";
+import ComposerAttachmentsExample from "../../components/demos/ComposerAttachmentsExample";
 import ComposerPlayground from "../../components/demos/ComposerPlayground";
 import { Composer } from "@kernelui-lib/react";
 import ApiTable from "../../components/ApiTable.astro";
@@ -22,6 +23,23 @@ const actionsSnippet = `<Composer
       Send
     </Button>
   )}
+/>`;
+
+const attachmentsSnippet = `<AttachmentList aria-label="Attached files">
+  {files.map((file) => (
+    <Attachment
+      key={file.name}
+      name={file.name}
+      size={file.size}
+      onRemove={() => remove(file)}
+    />
+  ))}
+</AttachmentList>
+<Composer
+  placeholder="Ask about these files…"
+  actionsLeading={
+    <Button variant="ghost" size="sm" aria-label="Attach a file" iconStart={<PaperclipIcon />} />
+  }
 />`;
 
 const thinkingSnippet = `<Composer
@@ -42,7 +60,8 @@ const thinkingSnippet = `<Composer
       with leading/trailing action slots and a <code>thinking</code> state
       for when a response is in flight. Pair it with{" "}
       <a href="/components/suggestion/">Suggestion</a> chips for empty-state
-      prompts.
+      prompts, and an <a href="/components/attachment/">Attachment</a> list
+      for files.
     </p>
 
     <div class="docs-example">
@@ -67,6 +86,13 @@ const thinkingSnippet = `<Composer
         code={thinkingSnippet}
       >
         <ComposerThinkingExample client:visible />
+      </Example>
+      <Example
+        title="With attachments"
+        description="An AttachmentList above the composer: middle-truncated names, sizes, and a remove button per file."
+        code={attachmentsSnippet}
+      >
+        <ComposerAttachmentsExample client:visible />
       </Example>
     </ExampleGrid>
 

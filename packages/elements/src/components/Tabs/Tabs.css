@@ -78,8 +78,9 @@ kernel-tabs {
   background-color: var(--kernel-color-surface);
   border-radius: var(--kernel-radius-control-inner);
   box-shadow: var(--kernel-shadow-sm);
-  transition-property: transform;
-  transition-timing-function: var(--kernel-ease-magnetic);
+  /* Width travels with the position (see React's Tabs.module.css). */
+  transition-property: transform, inline-size;
+  transition-timing-function: var(--kernel-ease-spring);
 }
 
 .kernel-Tabs-tab {
@@ -123,7 +124,7 @@ kernel-tabs {
 
 .kernel-Tabs-tab:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Tabs-panel {
@@ -133,7 +134,7 @@ kernel-tabs {
 
 .kernel-Tabs-panel:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
   border-radius: var(--kernel-radius-sm);
 }
 

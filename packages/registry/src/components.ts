@@ -49,6 +49,20 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("agent-activity"),
   },
   {
+    name: "Attachment",
+    category: "AI",
+    slug: "attachment",
+    element: "<ul> of <li> chips + <progress>",
+    summary: "File chips for composers and messages, with size, preview, upload progress, and remove.",
+    llmsNote:
+      "Attachment takes name, size (bytes, formatted with Intl.NumberFormat unit style in decimal steps; formatFileSize is exported), type (MIME), previewSrc (image thumbnail), progress (0–1; a native <progress> labelled \"Uploading {name}\" shows while below 1), onRemove (adds a <button> named \"Remove {name}\"; override with removeLabel), and locale. The name truncates in the middle so the extension stays visible. Wrap several in AttachmentList (a <ul role=\"list\">) and each renders as an <li>; on its own it's a <div>. The element version fires a bubbling `remove` CustomEvent instead of removing itself.",
+    status: "available",
+    reactExports: ["Attachment", "AttachmentList"],
+    elementTag: "kernel-attachment",
+    elementSubTags: ["kernel-attachment-list"],
+    docsUrl: docs("attachment"),
+  },
+  {
     name: "Avatar",
     category: "Primitives",
     slug: "avatar",
@@ -313,6 +327,19 @@ export const components: RegistryEntry[] = [
     migrationCaveats: ["Use render prop instead of asChild on the trigger: <DropdownMenu render={<Button />}>."],
   },
   {
+    name: "Empty State",
+    category: "Feedback",
+    slug: "empty-state",
+    element: "<section> + heading",
+    summary: "A calm zero-data placeholder with icon, heading, description, and actions.",
+    llmsNote:
+      "EmptyState takes title (required, rendered as a real heading and used as the <section>'s aria-labelledby name), headingLevel (1–6, default 3), description (also aria-describedby), icon (decorative, aria-hidden), actions (buttons/links), children (between description and actions), and variant (\"dashed\" default | \"plain\"). The element version uses a `heading` attribute rather than `title`, which would show a native tooltip, plus slot=\"icon\"/\"heading\"/\"description\"/\"actions\".",
+    status: "available",
+    reactExports: ["EmptyState"],
+    elementTag: "kernel-empty-state",
+    docsUrl: docs("empty-state"),
+  },
+  {
     name: "File Diff",
     category: "AI",
     slug: "file-diff",
@@ -385,6 +412,19 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("input-otp"),
     shadcnAliases: ["input-otp"],
     radixPackages: ["input-otp"],
+  },
+  {
+    name: "Kbd",
+    category: "Primitives",
+    slug: "kbd",
+    element: "<kbd> (nested for combinations)",
+    summary: "Keyboard keys and shortcuts, with a platform-aware mod key.",
+    llmsNote:
+      "Kbd renders a single key from children, or a combination from keys (string[]), which nests one <kbd> per key inside an outer <kbd> with a real-text separator (default \"+\") so it reads as \"Command plus K\". The lowercase aliases mod, alt, shift and ctrl resolve per platform (mod is ⌘ on Apple platforms, Ctrl elsewhere); platform=\"auto\" (default) detects after hydration and renders the non-Apple names on the server. Symbol keys (⌘ ⌥ ⇧ ⌃ ↵ arrows) get a visually hidden spoken name. The element version takes keys as a space-separated attribute: keys=\"mod shift P\".",
+    status: "available",
+    reactExports: ["Kbd"],
+    elementTag: "kernel-kbd",
+    docsUrl: docs("kbd"),
   },
   {
     name: "Label",
@@ -826,6 +866,19 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("todo-list"),
   },
   {
+    name: "Tool Approval",
+    category: "AI",
+    slug: "tool-approval",
+    element: '<section role="group"> + <button>s',
+    summary: "Ask before an agent runs a tool: approve, deny, or always allow.",
+    llmsNote:
+      "ToolApproval takes tool (the tool name, shown in monospace in a real heading; replace the whole heading with title), headingLevel (default 3), status (\"pending\" | \"approved\" | \"denied\") or defaultStatus with onStatusChange, onApprove, onDeny, onAlwaysAllow (its presence adds an \"Always allow\" button, which approves), and labels (Partial<{ approve, deny, alwaysAllow, approved, alwaysAllowed, denied }>). Children are the summary/arguments. After a decision the buttons are replaced by a status line in a role=\"status\" live region that is mounted from the start, and focus moves to it if it was on a button. The element version fires cancelable, bubbling `approve` / `deny` / `always-allow` CustomEvents and sets its own status attribute unless one is prevented.",
+    status: "available",
+    reactExports: ["ToolApproval"],
+    elementTag: "kernel-tool-approval",
+    docsUrl: docs("tool-approval"),
+  },
+  {
     name: "Tool Call",
     category: "AI",
     slug: "tool-call",
@@ -849,6 +902,19 @@ export const components: RegistryEntry[] = [
     shadcnAliases: ["tooltip"],
     radixPackages: ["@radix-ui/react-tooltip"],
     migrationCaveats: ["Use render prop on the trigger instead of asChild."],
+  },
+  {
+    name: "Usage Meter",
+    category: "AI",
+    slug: "usage-meter",
+    element: "<meter> + <label>",
+    summary: "Token, credit, or quota usage on a real meter, with warning and danger bands.",
+    llmsNote:
+      "UsageMeter takes label (a real <label for> the <meter>; hideLabel keeps it for assistive tech only), value, min (default 0), max, low, high, optimum (default min, since less usage is better), unit (e.g. \"tokens\"), locale, formatValue((value, max) => string), and description. The default text is \"12,340 / 200,000 tokens\" via Intl.NumberFormat, used both visibly (aria-hidden) and as the meter's aria-valuetext. data-level is \"ok\" | \"warning\" | \"danger\" from the HTML meter region algorithm (above high is warning, or danger when low is also set) and is always danger when full; usageMeterLevel() is exported. className goes on the <meter>, wrapperClassName on the wrapper.",
+    status: "available",
+    reactExports: ["UsageMeter"],
+    elementTag: "kernel-usage-meter",
+    docsUrl: docs("usage-meter"),
   },
 ];
 

@@ -38,7 +38,10 @@ const statusOnlySnippet = `<ToolCall label="Reading src/auth.ts" status="complet
       code runs — on real <code>&lt;details&gt;</code>/
       <code>&lt;summary&gt;</code>, the same foundation as{" "}
       <a href="/components/reasoning/">Reasoning</a>. Compose results with{" "}
-      <a href="/components/sources/">Sources</a> or any other content.
+      <a href="/components/sources/">Sources</a> or any other content. When a
+      tool needs the user's permission before it runs, show a{" "}
+      <a href="/components/tool-approval/">Tool Approval</a> first, then the
+      Tool Call once it's approved.
     </p>
 
     <div class="docs-example docs-example-start" style="flex-direction: column; align-items: stretch;">

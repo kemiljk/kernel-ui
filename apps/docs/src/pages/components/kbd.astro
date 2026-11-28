@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import KbdDemo from "../../components/demos/KbdDemo";
+import KbdPlayground from "../../components/demos/KbdPlayground";
+import { Kbd } from "@kernelui-lib/react";
+
+const singleSnippet = `<Kbd>Esc</Kbd>`;
+const comboSnippet = `<Kbd keys={["mod", "K"]} />`;
+const inlineSnippet = `<p>Press <Kbd keys={["mod", "↵"]} /> to send.</p>`;
+---
+
+<BaseLayout title="Kbd" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Kbd</h1>
+    <p>
+      A keyboard key or shortcut on the real <code>&lt;kbd&gt;</code>
+      element, the one HTML element that means "input from a keyboard". A
+      combination follows the HTML spec's own pattern: an outer
+      <code>&lt;kbd&gt;</code> holding one nested <code>&lt;kbd&gt;</code>
+      per key, with the separator as real text between them, so a screen
+      reader hears "Command plus K" as one shortcut rather than a row of
+      unrelated glyphs.
+    </p>
+
+    <div class="docs-example">
+      <KbdDemo client:visible />
+    </div>
+
+    <h2>Platform-aware keys</h2>
+    <p>
+      The lowercase aliases <code>mod</code>, <code>alt</code>,
+      <code>shift</code> and <code>ctrl</code> resolve per platform:
+      <code>mod</code> is ⌘ on Apple platforms and Ctrl everywhere else.
+      They render as text, not icons, so they inherit the font and scale
+      with it. With <code>platform="auto"</code> (the default) the
+      platform is read after hydration; the server and the first client
+      render use the non-Apple names, so the markup always matches. Pass
+      <code>platform="apple"</code> or <code>"other"</code> to pin it.
+    </p>
+    <p>
+      Symbol keys (⌘ ⌥ ⇧ ⌃, ↵, the arrows) get a visually hidden spoken
+      name, because screen readers announce those glyphs inconsistently.
+    </p>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Single key" description="Children render as one key." code={singleSnippet}>
+        <Kbd>Esc</Kbd>
+      </Example>
+      <Example title="Combination" description="One nested key per entry in keys." code={comboSnippet}>
+        <Kbd keys={["mod", "K"]} client:visible />
+      </Example>
+      <Example title="Inline" description="Sized like Badge, it sits on the text baseline." code={inlineSnippet}>
+        <p style="margin: 0;">Press <Kbd keys={["mod", "↵"]} client:visible /> to send.</p>
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <KbdPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Kbd.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>keys</code></td><td>string[]</td><td>—</td></tr>
+        <tr><td><code>separator</code></td><td>ReactNode</td><td>"+"</td></tr>
+        <tr><td><code>platform</code></td><td>"auto" | "apple" | "other"</td><td>"auto"</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode (a single key, when <code>keys</code> is omitted)</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      The custom element takes <code>keys</code> as a space-separated
+      attribute: <code>&lt;kernel-kbd keys="mod shift P"&gt;</code>.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li><code>&lt;kbd&gt;</code> is the semantic element for keyboard input; nesting follows the HTML spec's example for combinations.</li>
+      <li>The separator is real text, so the combination is read as one phrase.</li>
+      <li>Modifier symbols are <code>aria-hidden</code> and paired with a visually hidden name ("Command", "Shift", "Enter").</li>
+    </ul>
+  </div>
+</BaseLayout>

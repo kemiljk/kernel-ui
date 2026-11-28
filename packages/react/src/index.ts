@@ -362,6 +362,38 @@ export type { CodeToken, CodeLine } from "./utils/codeTokens";
 export { DropdownMenuMorph } from "./components/DropdownMenu/DropdownMenu";
 export type { DropdownMenuMorphProps } from "./components/DropdownMenu/DropdownMenu";
 
+export { Kbd, resolveKbdKey } from "./components/Kbd/Kbd";
+export type { KbdProps, KbdState, KbdPlatform } from "./components/Kbd/Kbd";
+
+export { EmptyState } from "./components/EmptyState/EmptyState";
+export type {
+  EmptyStateProps,
+  EmptyStateState,
+  EmptyStateHeadingLevel,
+} from "./components/EmptyState/EmptyState";
+
+export { ToolApproval } from "./components/ToolApproval/ToolApproval";
+export type {
+  ToolApprovalProps,
+  ToolApprovalState,
+  ToolApprovalStatus,
+  ToolApprovalLabels,
+} from "./components/ToolApproval/ToolApproval";
+
+export { Attachment, AttachmentList, formatFileSize } from "./components/Attachment/Attachment";
+export type {
+  AttachmentProps,
+  AttachmentState,
+  AttachmentListProps,
+} from "./components/Attachment/Attachment";
+
+export { UsageMeter, usageMeterLevel } from "./components/UsageMeter/UsageMeter";
+export type {
+  UsageMeterProps,
+  UsageMeterState,
+  UsageMeterLevel,
+} from "./components/UsageMeter/UsageMeter";
+
 export {
   renderElement,
   resolveClassName,

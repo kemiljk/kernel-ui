@@ -1,0 +1,93 @@
+/* A combination's outer <kbd> carries no chrome of its own; the nested
+   <kbd> elements are the keys. A lone <kbd> (no `keys`) is the key. */
+.root {
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.root[data-combo] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+/* Each key is Badge's optical pill (see Badge.module.css for the full
+   derivation), minus the icon slots a key never has:
+
+   1. Radius. --pill-max is half the box height; --pill-r follows
+      --kernel-radius-control but never passes it, so a key is a true
+      pill at Round and the maths below holds.
+   2. Text. The two corners on one side cut away r² × (1 − π/4) / pill
+      of width, folded into padding-inline as --pill-label-edge.
+   3. Vertical centring. An empty ::before strut, aligned by baseline,
+      puts the first baseline half a cap height below the middle of the
+      box, so capitals and digits centre on the font's cap height rather
+      than on its ascent + descent. line-height is the cap height, and
+      the box is sized from --pill-lh, as Badge does.
+
+   min-inline-size equals the height, so a single glyph is a square key
+   at Sharp and a circle at Round rather than a sliver. A one-pixel lower
+   lip reads as a key cap without reading as a button. */
+.key,
+.root:not([data-combo]) {
+  --pill-py: 0.15em;
+  --pill-px: var(--kernel-space-1);
+  --pill-bw: var(--kernel-border-width);
+  --pill-lh: 1.4em;
+  --pill-cap: 0.7em;
+  --pill-h: calc(2 * (var(--pill-bw) + var(--pill-py)) + var(--pill-lh));
+  --pill-max: calc(var(--pill-h) / 2);
+  --pill-r: min(var(--kernel-radius-control), var(--pill-max));
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  box-sizing: border-box;
+  min-inline-size: var(--pill-h);
+  block-size: var(--pill-h);
+  padding-block: 0;
+  padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
+  border: var(--pill-bw) solid var(--kernel-color-border);
+  border-radius: var(--pill-r);
+  box-shadow: inset 0 calc(var(--pill-bw) * -1) 0 var(--kernel-color-border);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-gray-11);
+  line-height: var(--pill-cap);
+}
+
+/* A nested key takes the outer <kbd>'s type, not the UA's monospace. */
+.key {
+  font: inherit;
+  line-height: var(--pill-cap);
+}
+
+.key::before,
+.root:not([data-combo])::before {
+  content: "";
+  block-size: calc(var(--pill-h) / 2 + var(--pill-cap) / 2 - var(--pill-bw));
+}
+
+@supports (width: 1cap) {
+  .key,
+  .root:not([data-combo]) {
+    --pill-cap: 1cap;
+  }
+}
+
+/* Typed division (Chrome 140+): the exact label edge at radii smaller
+   than a full pill, as in Badge. */
+@supports (width: calc(1px * 1px / 1px)) {
+  .key,
+  .root:not([data-combo]) {
+    --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut) * var(--pill-r) / var(--pill-max));
+  }
+}
+
+.separator {
+  color: var(--kernel-color-text-muted);
+  font-weight: 400;
+}

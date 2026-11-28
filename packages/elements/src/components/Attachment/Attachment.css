@@ -1,0 +1,230 @@
+/* Hand-written twin of Attachment.module.css from @kernelui-lib/react — same
+   rules, under the class names React's CSS Modules compile to (kernelClass()
+   in packages/elements/src/base.ts). Keep the two in step. */
+
+/* The item host is display: contents so its <li> is a direct child of the
+   list's <ul> (custom elements can't be <li>). */
+kernel-attachment {
+  display: contents;
+}
+
+kernel-attachment-list {
+  display: block;
+}
+
+.kernel-Attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kernel-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A fixed-height chip, so its corner can be reasoned about in CSS:
+   --att-r follows --kernel-radius-lg (paired with --kernel-space-*
+   padding) but stops at a true half-height pill, the same clamp Badge
+   uses. Everything inside is concentric with that corner:
+
+   - the type tile sits --att-inset in from the top, bottom and start,
+     so its radius is --att-r minus that inset;
+   - the remove button is centred vertically, and its inline inset is
+     set to match its block inset, so its radius is --att-r minus that.
+
+   Text against the end edge (no remove button) adds the width the
+   rounded corners cut away, r × --kernel-pill-cut, as Badge does. */
+.kernel-Attachment-root {
+  --att-inset: var(--kernel-space-2);
+  --att-tile: 2.25rem;
+  --att-button: 1.5rem;
+  --att-h: calc(var(--att-tile) + 2 * var(--att-inset) + 2 * var(--kernel-border-width));
+  --att-r: min(var(--kernel-radius-lg), var(--att-h) / 2);
+  --att-button-inset: calc((var(--att-h) - var(--att-button)) / 2 - var(--kernel-border-width));
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  box-sizing: border-box;
+  inline-size: min(100%, 15rem);
+  block-size: var(--att-h);
+  padding: var(--att-inset);
+  padding-inline-end: calc(var(--kernel-space-3) + var(--att-r) * var(--kernel-pill-cut));
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--att-r);
+  /* Clips the progress bar to the rounded corners. */
+  overflow: clip;
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-out),
+    scale var(--kernel-duration-enter) var(--kernel-ease-out),
+    border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+/* A just-added file grows in rather than popping into the row. */
+@starting-style {
+  .kernel-Attachment-root {
+    opacity: 0;
+    scale: var(--kernel-scale-enter);
+  }
+}
+
+.kernel-Attachment-root[data-removable] {
+  padding-inline-end: var(--att-button-inset);
+}
+
+.kernel-Attachment-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--att-tile);
+  block-size: var(--att-tile);
+  overflow: hidden;
+  border-radius: max(0px, var(--att-r) - var(--att-inset) - var(--kernel-border-width));
+  background-color: var(--kernel-color-fill);
+  color: var(--kernel-color-text-muted);
+}
+
+.kernel-Attachment-icon > svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.kernel-Attachment-thumbnail {
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  object-fit: cover;
+}
+
+.kernel-Attachment-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+  line-height: var(--kernel-line-height-tight);
+}
+
+/* Middle truncation: the start ellipsises, the tail never shrinks. */
+.kernel-Attachment-name {
+  display: flex;
+  min-inline-size: 0;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.kernel-Attachment-nameStart {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kernel-Attachment-nameEnd {
+  flex: none;
+}
+
+.kernel-Attachment-meta {
+  overflow: hidden;
+  color: var(--kernel-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* TagInput's remove button, at chip scale: quiet until hovered, pressed
+   with the shared press scale, and concentric with the chip's end. */
+.kernel-Attachment-remove {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--att-button);
+  block-size: var(--att-button);
+  padding: 0;
+  border: none;
+  border-radius: max(0px, var(--att-r) - var(--att-button-inset) - var(--kernel-border-width));
+  background: none;
+  color: var(--kernel-color-text-muted);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition:
+    color var(--kernel-duration-fast) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.kernel-Attachment-remove:active {
+  scale: var(--kernel-scale-press);
+}
+
+.kernel-Attachment-remove:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kernel-Attachment-remove:hover {
+    background-color: var(--kernel-color-fill);
+    color: var(--kernel-color-text);
+  }
+}
+
+/* A hairline along the bottom edge; the chip's overflow clip rounds its
+   ends into the corners. */
+.kernel-Attachment-progress {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  appearance: none;
+  inline-size: 100%;
+  block-size: calc(var(--kernel-border-width) * 2);
+  border: none;
+  background-color: transparent;
+}
+
+.kernel-Attachment-progress::-webkit-progress-bar {
+  background-color: transparent;
+}
+
+.kernel-Attachment-progress::-webkit-progress-value {
+  background-color: var(--kernel-color-accent);
+  transition: inline-size var(--kernel-duration-base) var(--kernel-ease-out);
+}
+
+.kernel-Attachment-progress::-moz-progress-bar {
+  background-color: var(--kernel-color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kernel-Attachment-root {
+    transition:
+      opacity var(--kernel-duration-enter) linear,
+      border-color var(--kernel-duration-fast) linear;
+  }
+
+  @starting-style {
+    .kernel-Attachment-root {
+      scale: 1;
+    }
+  }
+
+  .kernel-Attachment-remove {
+    transition:
+      color var(--kernel-duration-fast) linear,
+      background-color var(--kernel-duration-fast) linear;
+  }
+
+  .kernel-Attachment-remove:active {
+    scale: 1;
+  }
+
+  .kernel-Attachment-progress::-webkit-progress-value {
+    transition: none;
+  }
+}

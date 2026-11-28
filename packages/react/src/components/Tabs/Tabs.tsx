@@ -92,7 +92,9 @@ export function TabsList({ children, className, shape = "default", ...rest }: Ta
       // macOS's Dock magnification, where distance and duration are
       // visibly linked rather than every move reading identically fast.
       const distance = Math.abs(nextX - previousX);
-      duration = Math.min(560, Math.max(220, distance * 1.1));
+      // Clamped to 180–320ms: long enough to read as travel on a short hop,
+      // never sluggish on a long one (UI motion stays near 300ms).
+      duration = Math.min(320, Math.max(180, distance * 0.8));
     }
 
     indicator.style.transitionDuration = `${duration}ms`;

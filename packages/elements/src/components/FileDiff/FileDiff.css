@@ -176,5 +176,5 @@ kernel-file-diff {
    is, inset so the ring isn't clipped by the rounded container. */
 .kernel-FileDiff-content:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: -2px;
+  outline-offset: var(--kernel-focus-offset-inset);
 }

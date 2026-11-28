@@ -88,12 +88,13 @@
   background-color: var(--kernel-color-surface);
   border-radius: var(--kernel-radius-control-inner);
   box-shadow: var(--kernel-shadow-sm);
-  transition-property: transform;
-  /* A slight overshoot-and-settle, not a pure deceleration: paired with
-     the distance-scaled duration in Tabs.tsx, this is what makes the
-     indicator read as magnetically "pulled" toward the newly-selected
-     tab rather than mechanically sliding to a stop at it. */
-  transition-timing-function: var(--kernel-ease-magnetic);
+  /* Width travels with the position, so the indicator morphs from one tab
+     to the next instead of gliding across and then snapping to size (it's a
+     small absolutely positioned box, so animating its width is cheap). The
+     curve is the spring stand-in: the indicator behaves like an object
+     pulled to the selected tab. Duration is distance-scaled in Tabs.tsx. */
+  transition-property: transform, inline-size;
+  transition-timing-function: var(--kernel-ease-spring);
 }
 
 .tab {
@@ -137,7 +138,7 @@
 
 .tab:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .panel {
@@ -147,7 +148,7 @@
 
 .panel:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
   border-radius: var(--kernel-radius-sm);
 }
 

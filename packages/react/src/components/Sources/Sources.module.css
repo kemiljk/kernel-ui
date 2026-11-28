@@ -46,7 +46,7 @@
 
 .link:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .index {
@@ -129,7 +129,8 @@
   /* Same convention as every other clickable control. */
   -webkit-user-select: none;
   user-select: none;
-  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+  transition: background-color var(--kernel-duration-fast) var(--kernel-ease-out),
+    scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -150,5 +151,16 @@
 
 .citation:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
+}
+
+/* Press feedback, the same dip every Kernel control uses. */
+.citation:active:not(:disabled) {
+  scale: var(--kernel-scale-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .citation:active:not(:disabled) {
+    scale: 1;
+  }
 }

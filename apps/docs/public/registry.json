@@ -52,6 +52,26 @@
       "migrationCaveats": []
     },
     {
+      "name": "Attachment",
+      "category": "AI",
+      "slug": "attachment",
+      "element": "<ul> of <li> chips + <progress>",
+      "summary": "File chips for composers and messages, with size, preview, upload progress, and remove.",
+      "status": "available",
+      "reactExports": [
+        "Attachment",
+        "AttachmentList"
+      ],
+      "elementTag": "kernel-attachment",
+      "elementSubTags": [
+        "kernel-attachment-list"
+      ],
+      "docsUrl": "https://www.kernelui.com/components/attachment/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "Avatar",
       "category": "Primitives",
       "slug": "avatar",
@@ -476,6 +496,23 @@
       ]
     },
     {
+      "name": "Empty State",
+      "category": "Feedback",
+      "slug": "empty-state",
+      "element": "<section> + heading",
+      "summary": "A calm zero-data placeholder with icon, heading, description, and actions.",
+      "status": "available",
+      "reactExports": [
+        "EmptyState"
+      ],
+      "elementTag": "kernel-empty-state",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/empty-state/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "File Diff",
       "category": "AI",
       "slug": "file-diff",
@@ -583,6 +620,23 @@
       "radixPackages": [
         "input-otp"
       ],
+      "migrationCaveats": []
+    },
+    {
+      "name": "Kbd",
+      "category": "Primitives",
+      "slug": "kbd",
+      "element": "<kbd> (nested for combinations)",
+      "summary": "Keyboard keys and shortcuts, with a platform-aware mod key.",
+      "status": "available",
+      "reactExports": [
+        "Kbd"
+      ],
+      "elementTag": "kernel-kbd",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/kbd/",
+      "shadcnAliases": [],
+      "radixPackages": [],
       "migrationCaveats": []
     },
     {
@@ -1276,6 +1330,23 @@
       "migrationCaveats": []
     },
     {
+      "name": "Tool Approval",
+      "category": "AI",
+      "slug": "tool-approval",
+      "element": "<section role=\"group\"> + <button>s",
+      "summary": "Ask before an agent runs a tool: approve, deny, or always allow.",
+      "status": "available",
+      "reactExports": [
+        "ToolApproval"
+      ],
+      "elementTag": "kernel-tool-approval",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/tool-approval/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
+    },
+    {
       "name": "Tool Call",
       "category": "AI",
       "slug": "tool-call",
@@ -1314,6 +1385,23 @@
       "migrationCaveats": [
         "Use render prop on the trigger instead of asChild."
       ]
+    },
+    {
+      "name": "Usage Meter",
+      "category": "AI",
+      "slug": "usage-meter",
+      "element": "<meter> + <label>",
+      "summary": "Token, credit, or quota usage on a real meter, with warning and danger bands.",
+      "status": "available",
+      "reactExports": [
+        "UsageMeter"
+      ],
+      "elementTag": "kernel-usage-meter",
+      "elementSubTags": [],
+      "docsUrl": "https://www.kernelui.com/components/usage-meter/",
+      "shadcnAliases": [],
+      "radixPackages": [],
+      "migrationCaveats": []
     }
   ]
 }

@@ -70,7 +70,7 @@
 
 .kernel-InputOTP-cell:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-InputOTP-cell:disabled {
