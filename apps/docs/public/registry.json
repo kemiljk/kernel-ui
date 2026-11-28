@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-18T06:49:57.130Z",
+  "generatedAt": "2026-11-28T15:32:01.571Z",
   "components": [
     {
       "name": "Accordion",
@@ -1318,7 +1318,8 @@
       "status": "available",
       "reactExports": [
         "TodoList",
-        "TodoItem"
+        "TodoItem",
+        "animateTodoListChange"
       ],
       "elementTag": "kernel-todo-list",
       "elementSubTags": [
