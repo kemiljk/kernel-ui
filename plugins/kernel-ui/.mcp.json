@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kernel": {
+      "command": "npx",
+      "args": ["-y", "@kernelui-lib/cli@latest", "mcp"]
+    }
+  }
+}

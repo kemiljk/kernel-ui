@@ -58,6 +58,16 @@ jobs:
       - name: Registry consistency check
         run: bun run --cwd packages/registry check
 
+      # The shadcn registry (apps/docs/public/r/) is generated from the same
+      # catalogue at docs build time; validate it against shadcn's schemas.
+      - name: shadcn registry schema check
+        run: bun run --cwd apps/docs generate:shadcn-registry && bun run test:shadcn
+
+      # plugins/kernel-ui/skills is a copy of packages/*/skills (the plugin
+      # format can't reference files outside the plugin directory).
+      - name: Claude Code plugin in sync with skills
+        run: bun run test:plugin
+
       - name: Typecheck packages
         run: bun run --filter '@kernelui-lib/*' typecheck
 

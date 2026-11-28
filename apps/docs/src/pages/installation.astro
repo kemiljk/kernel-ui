@@ -31,6 +31,25 @@ const elementsImportSnippet = `<script type="module">
 <kernel-button variant="primary">Save changes</kernel-button>`;
 
 const tokensOnlySnippet = `npm install @kernelui-lib/styles`;
+
+const shadcnAddSnippet = `npx shadcn@latest add https://www.kernelui.com/r/dialog.json`;
+
+const shadcnNamespaceSnippet = `// components.json
+{
+  "registries": {
+    "@kernel": "https://www.kernelui.com/r/{name}.json"
+  }
+}`;
+
+const shadcnNamespaceAddSnippet = `npx shadcn@latest add @kernel/dialog @kernel/text-field`;
+
+const shadcnResultSnippet = `/* src/index.css: added once, by the kernel-ui item */
+@import "@kernelui-lib/styles" layer(base);
+@import "@kernelui-lib/react/styles.css";
+
+// src/components/kernel/dialog.tsx
+export { Dialog } from "@kernelui-lib/react";
+export type { DialogProps, DialogState, DialogClassNames, DialogBackdrop, DialogLabels } from "@kernelui-lib/react";`;
 ---
 
 <BaseLayout title="Installation" description="Install @kernelui-lib/react, @kernelui-lib/elements, or @kernelui-lib/styles and import the token and component stylesheets." withSidebar>
@@ -98,6 +117,47 @@ const tokensOnlySnippet = `npm install @kernelui-lib/styles`;
       place of <code>styles.css</code>. It puts every component rule in a
       cascade layer, so any CSS you write outside a layer wins. See{" "}
       <a href="/theming/#overriding-component-styles">theming</a>.
+    </p>
+
+    <h3 id="shadcn">With the shadcn CLI</h3>
+    <p>
+      Kernel publishes a <a href="/r/registry.json">shadcn registry</a>, so a
+      project already set up for shadcn/ui can add Kernel components with the
+      shadcn CLI, and the shadcn MCP server can browse them. Every component
+      page's slug is its item name:
+    </p>
+    <CodeBlock code={shadcnAddSnippet} lang="bash" />
+    <p>Or register Kernel as a namespace once and use short names:</p>
+    <CodeBlock code={shadcnNamespaceSnippet} lang="tsx" />
+    <CodeBlock code={shadcnNamespaceAddSnippet} lang="bash" />
+    <p>
+      Unlike a shadcn/ui component, a Kernel item doesn't copy the component's
+      source into your project. Kernel is an npm package, and its components
+      keep updating with it. Adding an item does three things:
+    </p>
+    <ul>
+      <li>installs <code>@kernelui-lib/react</code> and <code>@kernelui-lib/styles</code>;</li>
+      <li>
+        adds the two stylesheet imports to your CSS file, the first time only.
+        The tokens and reset go into Tailwind's <code>base</code> layer, so
+        Tailwind's preflight, your own base styles and every utility still take
+        precedence;
+      </li>
+      <li>
+        writes <code>components/kernel/&lt;name&gt;.tsx</code>, a re-export of
+        the component and its types, so you can import from
+        <code>@/components/kernel/dialog</code> like any other shadcn
+        component. It won't overwrite your shadcn
+        <code>components/ui/</code> files.
+      </li>
+    </ul>
+    <CodeBlock code={shadcnResultSnippet} lang="tsx" />
+    <p>
+      Don't add <code>@kernelui-lib/styles/tailwind.css</code> to a shadcn
+      project. It maps Tailwind theme names such as <code>border</code> and
+      <code>accent</code> to Kernel's tokens, which would restyle your shadcn
+      components. To theme Kernel, set <code>--kernel-*</code> tokens as
+      described in <a href="/theming/">theming</a>.
     </p>
 
     <h2>Web Components</h2>

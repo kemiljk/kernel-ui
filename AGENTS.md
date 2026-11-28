@@ -62,6 +62,13 @@ new component done, grep both `packages/react/src/index.ts` and
   LLM asset generation. Run `bun run build` there after changing entries.
 - `packages/cli` — `@kernelui-lib/cli`. Published integration CLI (`kernel init`,
   `kernel doctor`, `kernel docs`).
+- `plugins/kernel-ui` + `.claude-plugin/marketplace.json` — the Claude Code
+  plugin (skills + MCP server). Its `skills/` is a generated copy of
+  `packages/*/skills`; edit the originals and run `bun run plugin:sync`
+  (`bun run test:plugin` fails in CI when the copy is stale).
+- `apps/docs/public/r/` — the shadcn registry, generated (and gitignored) by
+  `apps/docs/scripts/generate-shadcn-registry.mjs` during the docs build;
+  `bun run test:shadcn` validates it against shadcn's schemas.
 
 ## Conventions to match, not reinvent
 
