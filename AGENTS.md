@@ -216,6 +216,10 @@ new component done, grep both `packages/react/src/index.ts` and
   the mistakes the Shape and select-none rules above exist to stop, and
   both are invisible until someone switches the theme to Round or
   double-clicks a disclosure.
+- `bun run test:parity` (`scripts/check-parity.mjs`) — fails when a
+  registry entry's React export or custom element tag is missing from
+  either package, or the two packages' component folders differ. CI runs
+  it alongside `test:shape` and `test:svg`.
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every
