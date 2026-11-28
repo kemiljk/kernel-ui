@@ -269,11 +269,13 @@
   --kernel-sheet-bleed-x: 50vw;
 }
 
-.kernel-Sheet-sheet[data-side="left"]:dir(rtl) {
+.kernel-Sheet-sheet[data-side="left"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Sheet-sheet[data-side="left"] {
   --kernel-sheet-bleed-x: 50vw;
 }
 
-.kernel-Sheet-sheet[data-side="right"]:dir(rtl) {
+.kernel-Sheet-sheet[data-side="right"]:dir(rtl),
+:where([dir="rtl"]) .kernel-Sheet-sheet[data-side="right"] {
   --kernel-sheet-bleed-x: -50vw;
 }
 

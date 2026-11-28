@@ -58,6 +58,18 @@ jobs:
       - name: Inline SVG size check
         run: bun run test:svg
 
+      - name: Colour contrast (APCA and WCAG 2)
+        run: bun run test:contrast
+
+      # AGENTS.md lists this as required before calling a component done,
+      # but CI never ran it, so a container radius without its paired
+      # padding (or a pointer cursor without user-select: none) could merge.
+      - name: Shape pairing and select-none check
+        run: bun run test:shape
+
+      - name: Component parity (React and elements)
+        run: bun run test:parity
+
       - name: Test React package
         run: bun run --cwd packages/react test
 
