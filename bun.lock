@@ -17,6 +17,7 @@
         "@astrojs/react": "^7.1.9",
         "@astrojs/sitemap": "^3.7.5",
         "@heroicons/react": "^2.2.0",
+        "@kernelui-lib/agent": "workspace:*",
         "@kernelui-lib/elements": "workspace:*",
         "@kernelui-lib/react": "workspace:*",
         "@kernelui-lib/registry": "workspace:*",
@@ -37,9 +38,28 @@
         "typescript": "^5.7.3",
       },
     },
+    "packages/agent": {
+      "name": "@kernelui-lib/agent",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "jsdom": "^26.1.0",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "typescript": "^5.7.3",
+        "vitest": "^3.2.7",
+      },
+      "peerDependencies": {
+        "react": ">=18.0.0",
+      },
+      "optionalPeers": [
+        "react",
+      ],
+    },
     "packages/cli": {
       "name": "@kernelui-lib/cli",
-      "version": "1.0.5",
+      "version": "1.1.0",
       "bin": {
         "kernel": "./dist/index.js",
       },
@@ -51,9 +71,9 @@
     },
     "packages/elements": {
       "name": "@kernelui-lib/elements",
-      "version": "1.6.2",
+      "version": "1.7.0",
       "dependencies": {
-        "@kernelui-lib/styles": "^1.4.1",
+        "@kernelui-lib/styles": "^1.5.0",
       },
       "devDependencies": {
         "typescript": "^5.7.3",
@@ -63,7 +83,7 @@
     },
     "packages/eslint-plugin": {
       "name": "@kernelui-lib/eslint-plugin",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "eslint": "^10.16.0",
         "vitest": "^3.2.7",
@@ -74,9 +94,9 @@
     },
     "packages/react": {
       "name": "@kernelui-lib/react",
-      "version": "1.6.2",
+      "version": "1.7.0",
       "dependencies": {
-        "@kernelui-lib/styles": "^1.4.1",
+        "@kernelui-lib/styles": "^1.5.0",
       },
       "devDependencies": {
         "@testing-library/jest-dom": "^7.0.1",
@@ -108,7 +128,7 @@
     },
     "packages/styles": {
       "name": "@kernelui-lib/styles",
-      "version": "1.4.1",
+      "version": "1.5.0",
       "devDependencies": {
         "culori": "^4.0.2",
       },
@@ -451,6 +471,8 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.6.0", "", {}, "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@kernelui-lib/agent": ["@kernelui-lib/agent@workspace:packages/agent"],
 
     "@kernelui-lib/cli": ["@kernelui-lib/cli@workspace:packages/cli"],
 
