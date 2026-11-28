@@ -708,6 +708,66 @@ dialog.mobile-nav-panel[data-side="left"] {
   }
 }
 
+.site-nav-desktop {
+  margin-inline: var(--kernel-space-8);
+}
+
+/* Compact desktop header. With every label showing, the desktop row
+   needs about 1060px (measured as header.scrollWidth), so between the
+   mobile collapse and that width the right-hand cluster drops its text
+   and keeps its icons: GitHub and npm become icon links (their
+   aria-labels already name them), Search and Theme become icon buttons
+   whose labels stay in the accessibility tree, and the ⌘K hint goes.
+   The compact row needs about 700px, so it fits from 800px up. Re-measure
+   with header.scrollWidth if the header gains an item. */
+@media (800px <= width < 1120px) {
+  .site-nav-desktop {
+    margin-inline: var(--kernel-space-4);
+  }
+
+  .site-header-toggle-desktop {
+    gap: var(--kernel-space-2);
+  }
+
+  .site-header-registry-link {
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+  }
+
+  .site-header-registry-link > span,
+  .command-palette-kbd {
+    display: none;
+  }
+
+  /* The same shape Button gives an icon-only button: square, or a circle
+     at Round, with the icon centred. The label is hidden visually but
+     still names the button. A fixed inline size, because padding alone
+     let the flex row squeeze the button narrower than it is tall. */
+  .command-palette-trigger,
+  .theme-menu-trigger {
+    flex-shrink: 0;
+    inline-size: var(--pill-height);
+    padding-inline: 0;
+    gap: 0;
+  }
+
+  .command-palette-trigger > .kernel-Button-icon,
+  .theme-menu-trigger > .kernel-Button-icon {
+    margin-inline: 0;
+  }
+
+  .command-palette-trigger > .kernel-Button-label,
+  .theme-menu-trigger > .kernel-Button-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 @media (width < 800px) {
   .site-nav-desktop,
   .site-header-toggle-desktop {
