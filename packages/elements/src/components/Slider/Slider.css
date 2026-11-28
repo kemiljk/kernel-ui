@@ -194,7 +194,12 @@
   inline-size: var(--thumb);
   block-size: var(--track-height);
   border: none;
+  border-radius: 0;
   background: transparent;
+  /* iOS Safari's own stylesheet gives the thumb a drop shadow, and
+     `appearance: none` doesn't remove it. On this invisible, full-height
+     thumb that shadow draws a grey box around the handle. */
+  box-shadow: none;
 }
 
 .kernel-Slider-insetInput::-moz-range-thumb {
@@ -203,6 +208,7 @@
   border: none;
   border-radius: 0;
   background: transparent;
+  box-shadow: none;
 }
 
 .kernel-Slider-bar {
