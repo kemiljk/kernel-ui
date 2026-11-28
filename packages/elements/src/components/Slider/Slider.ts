@@ -32,6 +32,11 @@ let sliderCounter = 0;
  *
  * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
  * forwarded to the inner `<input type="range">`.
+ *
+ * Events: a bubbling, cancelable `valuechange` before each move commits,
+ * `detail: { value, reason }` (`"drag"` or `"keyboard"`);
+ * `preventDefault()` puts the thumb back. Then a bubbling `change` with
+ * the same detail once `value` is committed.
  */
 export class KernelSlider extends KernelElement {
   private readonly generatedId = `kernel-slider-${++sliderCounter}`;
@@ -87,18 +92,21 @@ export class KernelSlider extends KernelElement {
     input.step = "1";
     input.value = "0";
     input.className = kernelClass("Slider", "input");
-    // `change` is dispatched before the value is committed, cancelable, with
-    // `detail: { value, reason }` (`"drag"` or `"keyboard"`); a vetoed move
-    // puts the thumb back.
+    // A cancelable `valuechange` is dispatched before the value is
+    // committed, with `detail: { value, reason }` (`"drag"` or
+    // `"keyboard"`); a vetoed move puts the thumb back. `change` follows
+    // once the value is committed, with the same detail.
     input.addEventListener("input", (event) => {
       const reason = inputModality(event) === "keyboard" ? "keyboard" : "drag";
-      if (!this.emitChange("change", { value: Number(input.value) }, reason, event)) {
+      const value = Number(input.value);
+      if (!this.emitChange("valuechange", { value }, reason, event)) {
         input.value = this.getAttribute("value") ?? input.defaultValue;
         this.updatePercent();
         return;
       }
       this.updatePercent();
       this.setAttribute("value", input.value);
+      this.emitCommitted("change", { value }, reason, event);
     });
 
     const track = document.createElement("div");

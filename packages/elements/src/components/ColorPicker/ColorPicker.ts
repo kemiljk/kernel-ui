@@ -40,6 +40,11 @@ function normalizeHex(raw: string): string | null {
  * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
  * forwarded to the inner `<input type="color">`; an authored
  * `aria-describedby` is added after its own hint and error ids.
+ *
+ * Events: a bubbling, cancelable `valuechange` before the colour commits,
+ * `detail: { value, reason }` (`"picker"` or `"hex-input"`);
+ * `preventDefault()` keeps the current colour. Then a bubbling `change`
+ * with the same detail once `value` is committed.
  */
 export class KernelColorPicker extends KernelElement {
   private readonly generatedId = `kernel-color-picker-${++colorPickerCounter}`;
@@ -99,15 +104,18 @@ export class KernelColorPicker extends KernelElement {
     colorInput.type = "color";
     colorInput.value = "#000000";
     colorInput.className = kernelClass("ColorPicker", "input");
-    // `change` is dispatched before the colour commits, cancelable, with
-    // `detail: { value, reason }` — `"picker"` (the native colour input) or
-    // `"hex-input"`. A vetoed change keeps the current colour.
+    // A cancelable `valuechange` is dispatched before the colour commits,
+    // with `detail: { value, reason }` — `"picker"` (the native colour
+    // input) or `"hex-input"`. A vetoed change keeps the current colour.
+    // `change` follows once committed, with the same detail.
     colorInput.addEventListener("input", (event) => {
-      if (!this.emitChange("change", { value: colorInput.value }, "picker", event)) {
+      const value = colorInput.value;
+      if (!this.emitChange("valuechange", { value }, "picker", event)) {
         colorInput.value = this.getAttribute("value") ?? colorInput.defaultValue;
         return;
       }
-      this.setAttribute("value", colorInput.value);
+      this.setAttribute("value", value);
+      this.emitCommitted("change", { value }, "picker", event);
     });
 
     swatchLabel.append(swatch, colorInput);
@@ -124,8 +132,9 @@ export class KernelColorPicker extends KernelElement {
     hexInput.addEventListener("input", (event) => {
       const normalized = normalizeHex(hexInput.value);
       hexInput.setAttribute("aria-invalid", String(hexInput.value !== "" && !normalized));
-      if (normalized && this.emitChange("change", { value: normalized }, "hex-input", event)) {
+      if (normalized && this.emitChange("valuechange", { value: normalized }, "hex-input", event)) {
         this.setAttribute("value", normalized);
+        this.emitCommitted("change", { value: normalized }, "hex-input", event);
       }
     });
     hexInput.addEventListener("blur", () => {

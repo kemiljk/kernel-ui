@@ -138,7 +138,7 @@ function eventDetailsByClass(elementFiles) {
     if (!sf) continue;
     const visitClass = (cls) => {
       const details = {};
-      /** emitChange calls: event name → { props, reasons }, merged below. */
+      /** emitChange/emitCommitted calls: event name → { props, reasons }, merged below. */
       const changes = {};
       const visit = (n) => {
         if (
@@ -162,13 +162,14 @@ function eventDetailsByClass(elementFiles) {
           // carry the same type (a shared interface) in practice.
           if (!(name in details) || (details[name] === null && detail !== null)) details[name] = detail;
         } else if (
-          // `this.emitChange("change", { tags }, reason, event)` (KernelElement's
-          // cancelable change event) builds the CustomEvent inside the base
-          // class, so read the shape from the call: the detail object's
-          // properties plus the `reason` and optional triggering `event`.
+          // `this.emitChange("valuechange", { tags }, reason, event)` and
+          // `this.emitCommitted("change", …)` (KernelElement's before/after
+          // change events) build the CustomEvent inside the base class, so
+          // read the shape from the call: the detail object's properties
+          // plus the `reason` and optional triggering `event`.
           ts.isCallExpression(n) &&
           ts.isPropertyAccessExpression(n.expression) &&
-          n.expression.name.text === "emitChange" &&
+          (n.expression.name.text === "emitChange" || n.expression.name.text === "emitCommitted") &&
           n.arguments[0] &&
           ts.isStringLiteralLike(n.arguments[0]) &&
           n.arguments[1]

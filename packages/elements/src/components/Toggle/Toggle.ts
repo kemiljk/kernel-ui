@@ -17,8 +17,12 @@ import { inputModality } from "../../utils/changeDetails";
  * Attributes: `pressed`, `disabled` (both boolean), `size`
  * (sm/md/lg, default md). `aria-label` (for an icon-only toggle),
  * `aria-labelledby` and `aria-describedby` are forwarded to the inner
- * `<button>`; on the host they would name nothing. Toggling dispatches a
- * real, bubbling `change` event.
+ * `<button>`; on the host they would name nothing.
+ *
+ * Events: a bubbling, cancelable `valuechange` before the toggle flips,
+ * `detail: { pressed, reason }` (`"press"` or `"keyboard"`);
+ * `preventDefault()` leaves it as it was. Then a bubbling `change` with
+ * the same detail once the new state is committed.
  */
 export class KernelToggle extends KernelElement {
   static get observedAttributes() {
@@ -36,13 +40,15 @@ export class KernelToggle extends KernelElement {
     button.setAttribute("aria-pressed", "false");
     button.dataset.size = "md";
     button.dataset.state = "off";
-    // Dispatched before the flip, cancelable: `detail: { pressed, reason }`
-    // with `reason` `"press"` or `"keyboard"`; `preventDefault()` vetoes it.
+    // A cancelable `valuechange` goes out before the flip,
+    // `detail: { pressed, reason }` with `reason` `"press"` or `"keyboard"`;
+    // `preventDefault()` vetoes it. `change` follows once committed.
     button.addEventListener("click", (event) => {
       const pressed = !this.hasAttribute("pressed");
       const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
-      if (!this.emitChange("change", { pressed }, reason, event)) return;
+      if (!this.emitChange("valuechange", { pressed }, reason, event)) return;
       this.toggleAttribute("pressed", pressed);
+      this.emitCommitted("change", { pressed }, reason, event);
     });
     return button;
   }

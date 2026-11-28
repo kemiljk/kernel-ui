@@ -47,11 +47,20 @@ const dialogSnippet = `<Dialog
 </Dialog>`;
 
 const elementsSnippet = `<kernel-tabs default-value="account">…</kernel-tabs>
+<kernel-switch>Wi-Fi</kernel-switch>
 <script type="module">
   document.querySelector("kernel-tabs").addEventListener("valuechange", (event) => {
     const { value, reason } = event.detail;   // reason: "trigger-press" | "keyboard" | …
     if (value === "billing" && !confirmLeave()) event.preventDefault();
   });
+
+  const wifi = document.querySelector("kernel-switch");
+  // Before the flip: veto it.
+  wifi.addEventListener("valuechange", (event) => {
+    if (!event.detail.checked && !confirmDisconnect()) event.preventDefault();
+  });
+  // After the flip: the element already shows the new state.
+  wifi.addEventListener("change", () => save(wifi.hasAttribute("checked")));
 </script>`;
 
 const fuzzySnippet = `import { fuzzyFilter, fuzzyScore } from "@kernelui-lib/react";
@@ -123,13 +132,15 @@ fuzzyFilter(commands, query, (command) => [command.label, ...command.keywords]);
 
     <h2>Web Components</h2>
     <p>
-      The custom elements carry the same reasons on their existing events'
-      <code>detail.reason</code>. Those events are now dispatched before the
-      change commits and are cancelable: <code>event.preventDefault()</code>
-      vetoes the change. Event names are unchanged; elements whose only
-      change event was the native, uncancelable <code>change</code>
-      (Checkbox, RadioGroup, Select, NumberField) add a cancelable
-      <code>valuechange</code> that fires first. Dialog and CommandPalette
+      The custom elements carry the same reasons in
+      <code>detail.reason</code>. A value control's <code>change</code>
+      still fires after the change commits, as on a native control, so a
+      handler can read the element's own state. To cancel, listen to
+      <code>valuechange</code>: it fires first, with the proposed value, and
+      <code>event.preventDefault()</code> vetoes the change, in which case no
+      <code>change</code> follows. Tabs, Combobox, DatePicker and
+      DateRangePicker report only through <code>valuechange</code>, so read
+      the new value from its <code>detail</code>. Dialog and CommandPalette
       ask with a cancelable <code>cancel</code> (the native dialog's own name
       for "about to close"); Popover, DropdownMenu and Accordion items with
       <code>beforetoggle</code>.

@@ -11,10 +11,12 @@ import { inputModality } from "../../utils/changeDetails";
  *
  * Attributes: `checked`, `disabled` (both boolean). Text content, if
  * any, becomes a real `<label>` wrapping the button — omit it for a
- * bare switch. Toggling dispatches a bubbling `change` event *before*
- * the switch flips, with `detail: { checked, reason }` (`reason` is
- * `"press"` or `"keyboard"`); it's cancelable, and `preventDefault()`
- * leaves the switch as it was.
+ * bare switch. Toggling first dispatches a bubbling, cancelable
+ * `valuechange` with `detail: { checked, reason }` (`reason` is `"press"`
+ * or `"keyboard"`); `preventDefault()` on it leaves the switch as it was.
+ * Then the switch flips and a bubbling `change` follows with the same
+ * detail, after the commit as with any native control, so a `change`
+ * handler reading `checked` sees the new state.
  *
  * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
  * forwarded to the inner `<button role="switch">`. With no text content,
@@ -45,8 +47,9 @@ export class KernelSwitch extends KernelElement {
     button.addEventListener("click", (event) => {
       const checked = !this.hasAttribute("checked");
       const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
-      if (!this.emitChange("change", { checked }, reason, event)) return;
+      if (!this.emitChange("valuechange", { checked }, reason, event)) return;
       this.toggleAttribute("checked", checked);
+      this.emitCommitted("change", { checked }, reason, event);
     });
 
     this.native = button;
