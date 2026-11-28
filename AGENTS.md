@@ -172,8 +172,10 @@ new component done, grep both `packages/react/src/index.ts` and
   `bun run test:contrast` (`scripts/check-contrast.mjs`) checks every accent
   preset in both schemes. Add a rule there when you add a semantic colour
   token that carries meaning. A control whose border is its only outline
-  (Checkbox, Radio, a Switch track) uses `--kernel-color-border-control`,
-  not `-border-interactive`.
+  (Checkbox, Radio) uses `--kernel-color-border-control`, not
+  `-border-interactive`. Switch has no visible outline: its off track is
+  a solid `--kernel-color-track` fill behind the thumb, with a transparent
+  border kept for geometry and forced colours.
 - **Anything you click needs `user-select: none`.** Triggers, summaries,
   menu items, tabs, chips, segment buttons, the lot — a double-click on a
   disclosure otherwise selects its label, which is never what the click
