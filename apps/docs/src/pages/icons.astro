@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import IconSetsDemo from "../components/demos/IconSetsDemo";
+
+const reactSnippet = `import { Badge, Button } from "@kernelui-lib/react";
+import { Check, ArrowRight } from "lucide-react";
+
+<Button variant="primary" iconStart={<Check />}>Done</Button>
+<Button aria-label="Next" iconStart={<ArrowRight />} />   {/* icon-only */}
+<Badge variant="success"><Check /> Shipped</Badge>`;
+
+const elementsSnippet = `<kernel-button variant="primary">
+  <svg viewBox="0 0 24 24" aria-hidden="true">…</svg>
+  Done
+</kernel-button>
+
+<kernel-badge variant="success">
+  <svg viewBox="0 0 24 24" aria-hidden="true">…</svg> Shipped
+</kernel-badge>
+
+<!-- Any other icon element: mark it data-icon -->
+<kernel-badge><my-icon name="check" data-icon></my-icon> Shipped</kernel-badge>`;
+
+const tokensSnippet = `:root {
+  --kernel-icon-size: 1.2em;        /* drawn size inside the 1lh slot */
+  --kernel-icon-stroke-width: 1.75; /* outline sets only, in viewBox units */
+}`;
+---
+
+<BaseLayout title="Icons" description="Use any icon set with Kernel: icons drop into a concentric slot, and two tokens tune a whole set to match Kernel's type." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Icons</h1>
+    <p>
+      Kernel doesn't ship an icon set, and doesn't need an icon prop on
+      most components. Pass any <code>&lt;svg&gt;</code>,
+      <code>&lt;img&gt;</code> or icon component from the set you already
+      use. Badges, buttons, tags and suggestions find an icon at either end
+      and give it a slot that's concentric with the rounded corner. An
+      icon-only button comes out square, or a circle at Round.
+    </p>
+
+    <div class="docs-example docs-example--stack">
+      <IconSetsDemo client:visible />
+    </div>
+
+    <h2>Two tokens per set</h2>
+    <p>
+      Icon sets draw their glyphs at different sizes inside their viewBox,
+      and with different stroke weights, so the same <code>1em</code> icon
+      looks bigger or bolder from one set to the next. Set these once, on
+      <code>:root</code>, for whichever set you use. The demo above shows
+      tuned values for five popular sets.
+    </p>
+    <CodeBlock code={tokensSnippet} lang="css" />
+    <ul>
+      <li>
+        <code>--kernel-icon-size</code> is the size the icon is drawn at
+        inside its slot. The slot itself is one line tall, so this can't
+        make icons push a control taller. The default is
+        <code>1.25em</code>.
+      </li>
+      <li>
+        <code>--kernel-icon-stroke-width</code> overrides an outline set's
+        stroke, in that set's own viewBox units. The default,
+        <code>auto</code>, leaves each icon's stroke alone. It needs
+        container style queries (Chrome 111+, Safari 18+); elsewhere icons
+        keep their own stroke. Filled sets such as Phosphor and Radix Icons
+        have no stroke to change.
+      </li>
+    </ul>
+    <p>
+      To tune your own set, put an icon next to a capital letter in a
+      Badge and a Button, then adjust the size until the glyph is a little
+      taller than the capitals, and the stroke until it matches the
+      weight of the text.
+    </p>
+
+    <h2>React</h2>
+    <CodeBlock code={reactSnippet} lang="tsx" />
+    <p>
+      An <code>&lt;svg&gt;</code>, <code>&lt;img&gt;</code> or any
+      component counts as an icon. A plain element such as
+      <code>&lt;span&gt;</code> counts as text, so wrap a component that
+      renders text in a <code>&lt;span&gt;</code>. Give an icon-only Button
+      an <code>aria-label</code>. For an icon-only Badge, label the icon
+      itself with <code>role="img"</code> and <code>aria-label</code>.
+    </p>
+
+    <h2>Web Components</h2>
+    <CodeBlock code={elementsSnippet} lang="html" />
+    <p>
+      An <code>&lt;svg&gt;</code>, <code>&lt;img&gt;</code> or
+      <code>&lt;picture&gt;</code> first or last among the children is an
+      icon. Mark any other icon element, such as an icon custom element,
+      with <code>data-icon</code>. Badges keep this up to date if their
+      children change later.
+    </p>
+  </div>
+</BaseLayout>
