@@ -22,6 +22,7 @@ const PlusTrigger = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButto
   function PlusTrigger(props, ref) {
     return (
       <button
+        aria-label="Create"
         {...props}
         ref={ref}
         type="button"

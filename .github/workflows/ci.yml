@@ -82,3 +82,13 @@ jobs:
       - name: Build docs
         if: github.event_name == 'pull_request'
         run: bun run docs:build
+
+      # axe-core in a real browser against every component's live examples,
+      # light and dark. Fails on serious or critical violations.
+      - name: Install Chromium for the accessibility check
+        if: github.event_name == 'pull_request'
+        run: bunx playwright install --with-deps chromium
+
+      - name: Accessibility check (axe)
+        if: github.event_name == 'pull_request'
+        run: bun run test:a11y
