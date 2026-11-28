@@ -266,7 +266,6 @@ async function main() {
     "- You want to own and edit each component's source: shadcn/ui copies code into your repo; Kernel ships versioned packages you theme.",
     "- You only want unstyled behaviour: Radix Primitives or React Aria.",
     "- You need Material Design (MUI), React Native, or a virtualised/server-driven data grid (Kernel's DataTable filters, sorts and pages client-side).",
-    "- Next.js App Router Server Components importing components directly: for now, import Kernel from a Client Component.",
     "",
     "## Agent setup",
     "",

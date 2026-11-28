@@ -26,6 +26,34 @@ Importing the module registers every custom element via
 `customElements.define` — there is no per-component import path, and no
 separate "install this one component" step.
 
+### Overriding Kernel's CSS
+
+Load `@kernelui-lib/elements/styles.layer.css` (`dist/kernel.layer.css`)
+instead of `styles.css` and any unlayered CSS you write overrides Kernel
+without specificity fights or `!important`. It is the same CSS inside
+`@layer kernel.components`, ordered after `@kernelui-lib/styles`'
+`kernel.tokens` and `kernel.base` layers. Opt-in, because an unlayered
+reset in your own CSS (`button { background: none }`) would also win; put
+such a reset in a layer declared before Kernel's:
+`@layer reset, kernel.tokens, kernel.base, kernel.components;` above your
+imports.
+
+### Editor and TypeScript support
+
+- `dist/custom-elements.json`: a Custom Elements Manifest (schema 2.1.0),
+  also named by `package.json`'s `customElements` field and exported as
+  `@kernelui-lib/elements/custom-elements.json`. Every tag with its class,
+  description, observed attributes and events.
+- `dist/vscode.html-custom-data.json`: VS Code HTML custom data. Add its
+  path to `html.customData` in `.vscode/settings.json` for completion in
+  `.html` files.
+- `@kernelui-lib/elements/jsx` (`dist/jsx.d.ts`): declares every tag in
+  React 19's `JSX.IntrinsicElements`. Load it with
+  `import type {} from "@kernelui-lib/elements/jsx";` (or list it in
+  `compilerOptions.types`). Attributes take a string, number or boolean;
+  events are `on<eventname>` props with the exact event name, React 19's
+  custom element syntax: `<kernel-tabs onvaluechange={(e) => e.detail.value}>`.
+
 ## Conventions (mirrors @kernelui-lib/react's prop conventions as attributes)
 
 - **Value**: a `value` attribute (or a `values`/`tags`-style JS property
@@ -111,8 +139,9 @@ This package ships agent skills in `skills/` (`kernel-ui-elements`), versioned w
 
 ## Where to look for exact attributes
 
-This file is a map, not the source of truth. Every component class has a
-JSDoc comment listing its exact observed attributes (search
+This file is a map, not the source of truth. `dist/custom-elements.json`
+lists every tag's observed attributes and events in one file. Every
+component class also has a JSDoc comment listing its attributes (search
 `dist/index.d.ts` for the tag's class, e.g. `KernelTextField`, or read
 the source under `src/components/<Name>/<Name>.ts`). If this package was
 installed alongside the project's docs site, `/labs/elements` runs every

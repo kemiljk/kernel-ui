@@ -475,8 +475,24 @@
           "attributes": [],
           "events": []
         },
+        "kernel-card-header": {
+          "attributes": [],
+          "events": []
+        },
         "kernel-card-title": {
           "description": "`<kernel-card-title>` — defaults to `<h3>`: a card usually sits\nbelow a page or section heading, so pick whatever level is correct\nfor the actual heading outline via `level` (2-6). Read once at\nconnect, same reasoning as `<kernel-card>`'s `as`.",
+          "attributes": [],
+          "events": []
+        },
+        "kernel-card-description": {
+          "attributes": [],
+          "events": []
+        },
+        "kernel-card-content": {
+          "attributes": [],
+          "events": []
+        },
+        "kernel-card-footer": {
           "attributes": [],
           "events": []
         }
@@ -3681,11 +3697,31 @@
           "attributes": [],
           "events": []
         },
+        "kernel-table-caption": {
+          "attributes": [],
+          "events": []
+        },
+        "kernel-table-header": {
+          "attributes": [],
+          "events": []
+        },
+        "kernel-table-body": {
+          "attributes": [],
+          "events": []
+        },
+        "kernel-table-row": {
+          "attributes": [],
+          "events": []
+        },
         "kernel-table-head": {
           "description": "`<kernel-table-head>` — a real `<th>`. `scope=\"col\"` by default,\nsince a header cell almost always heads a column; pass\n`scope=\"row\"` explicitly for row headers.",
           "attributes": [
             "scope"
           ],
+          "events": []
+        },
+        "kernel-table-cell": {
+          "attributes": [],
           "events": []
         }
       }

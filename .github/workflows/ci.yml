@@ -43,6 +43,9 @@ jobs:
       - name: Build packages
         run: bun run --filter '@kernelui-lib/*' build
 
+      - name: Check published package contents
+        run: bun run test:package
+
       - name: Build registry
         run: bun run --cwd packages/registry build
 
