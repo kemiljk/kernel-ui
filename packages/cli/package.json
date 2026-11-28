@@ -43,7 +43,7 @@
   "devDependencies": {
     "@types/node": "^26.6.6",
     "typescript": "^5.7.3",
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.12"
   },
   "scripts": {
     "build": "bun run --cwd ../registry build && bun scripts/bundle-registry.mjs && tsc",

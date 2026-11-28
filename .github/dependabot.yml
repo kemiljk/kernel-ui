@@ -22,11 +22,15 @@ updates:
           - "vitest"
           - "vite*"
           - "jsdom"
+          - "happy-dom"
     ignore:
-      # Major dev-tool bumps need a deliberate upgrade pass.
+      # Major bumps for these need a deliberate upgrade pass. vitest is
+      # intentionally *not* ignored: GitHub's npm security updater targets
+      # workspace package.json files without a local lockfile and fails with
+      # dependency_file_not_supported, so the bun ecosystem here is the path
+      # that can actually ship patched majors (e.g. 3.x → 4.1.11+).
+      # happy-dom is grouped with vitest below so security patches land together.
       - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "vitest"
         update-types: ["version-update:semver-major"]
       - dependency-name: "jsdom"
         update-types: ["version-update:semver-major"]
