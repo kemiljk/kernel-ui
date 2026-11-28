@@ -126,6 +126,20 @@ const PREVIEW_GRID_CAP = 4;
  * `type: "directory"` for a dropped folder, which the platform hands over
  * as an unreadable 0-byte `File` rather than refusing outright.
  *
+ * Events: `change` (bubbling) fires on the host only when the selection
+ * changes, after a pick or drop passes validation or a file is removed;
+ * read the files from the inner `input[type=file]`'s `.files`. The inner
+ * input's own native `change` is stopped at the input, so a rejected pick
+ * never reaches a host `change` listener. `kernel-file-upload-error`
+ * (not bubbling) carries `detail: { type, files }`, where `type` is
+ * `"accept"`, `"max-size"`, `"max-files"` or `"directory"` and `files`
+ * is the rejected `File[]`. The element doesn't show the message itself:
+ * set `invalid` and `error-message` from the handler, and clear them on
+ * the next `change`.
+ *
+ * `id` stays on the host (so `getElementById()` finds the element whose
+ * events you listen to); the inner input gets `<id>-control`.
+ *
  * Attributes: `label` (required, still contributes to the dropzone's
  * accessible name even when `hide-label` is set), `hide-label`
  * (boolean — hides the label heading only, the hint text underneath
@@ -214,7 +228,7 @@ export class KernelFileUpload extends KernelElement {
     root.className = kernelClass("FileUpload");
     root.setAttribute("data-slot", "file-upload");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const dropzone = document.createElement("label");
     dropzone.className = kernelClass("FileUpload", "dropzone");
@@ -238,7 +252,13 @@ export class KernelFileUpload extends KernelElement {
     input.id = id;
     input.type = "file";
     input.className = kernelClass("FileUpload", "input");
-    input.addEventListener("change", () => {
+    input.addEventListener("change", (event) => {
+      // The host dispatches its own `change` once a selection passes
+      // validation. Letting the input's native one bubble out as well
+      // fired a host `change` for rejected picks too, after
+      // `kernel-file-upload-error`, so a listener that clears the error
+      // on `change` wiped the message the error handler had just set.
+      event.stopPropagation();
       const incoming = Array.from(input.files ?? []);
       input.value = "";
       if (incoming.length === 0) return;

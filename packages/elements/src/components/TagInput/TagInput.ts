@@ -69,7 +69,7 @@ export class KernelTagInput extends KernelElement {
     const root = document.createElement("div");
     root.className = kernelClass("TagInput");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
     const labelId = `${id}-label`;
 
     const label = document.createElement("label");

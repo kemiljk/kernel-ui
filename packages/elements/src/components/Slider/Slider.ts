@@ -60,7 +60,7 @@ export class KernelSlider extends KernelElement {
     const root = document.createElement("div");
     root.className = kernelClass("Slider");
 
-    const id = this.getAttribute("id") || this.generatedId;
+    const id = this.controlId(this.generatedId);
 
     const labelRow = document.createElement("div");
     labelRow.className = kernelClass("Slider", "labelRow");

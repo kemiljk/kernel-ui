@@ -56,7 +56,7 @@ export class KernelComposer extends KernelElement {
     root.className = kernelClass("Composer");
 
     const textarea = document.createElement("textarea");
-    textarea.id = this.getAttribute("id") || this.generatedId;
+    textarea.id = this.controlId(this.generatedId);
     textarea.className = kernelClass("Composer", "input");
     textarea.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
@@ -137,7 +137,7 @@ export class KernelComposer extends KernelElement {
         else root.removeAttribute("data-thinking");
         break;
       case "id":
-        textarea.id = value || this.generatedId;
+        textarea.id = this.controlId(this.generatedId);
         break;
     }
   }
