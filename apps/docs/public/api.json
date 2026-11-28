@@ -170,6 +170,164 @@
         }
       }
     },
+    "artifact-panel": {
+      "name": "Artifact Panel",
+      "react": {
+        "ArtifactPanel": {
+          "description": "The side panel an AI app opens beside the chat to show what it made —\na page preview, a document, the code behind it.\n\nIt's two native elements, chosen by `presentation`. Docked, it's an\n`<aside>` named by its title heading (a complementary landmark): it sits\nin the page flow, so it drops straight into a `Resizable` pane, and\nfocus moves in and out of it like any other region. As an overlay it's\na `<dialog>` opened with `showModal()`, the same way `Dialog` and `Sheet`\ndo it, so the focus trap, Escape, `::backdrop`, inert page and focus\nrestoration are the browser's. `\"auto\"` picks overlay below\n`overlayBelow` (a viewport media query, because the choice changes the\nelement and its focus model, which no container query can). Crossing the\nbreakpoint swaps the element, which remounts the body: an iframe preview\nreloads once on a resize across it, never during normal use.\n\nViews are Kernel's `Tabs` (the ARIA tablist pattern, inactive panels\ntruly `hidden`). The status line is a polite live region that's mounted\nfrom the start, so \"Generating…\" and \"Generation failed\" are announced\nwhen they change rather than when they appear.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLElement>, \"title\" | \"className\" | \"children\">"
+          ],
+          "props": [
+            {
+              "name": "title",
+              "type": "ReactNode",
+              "optional": false,
+              "description": "The artifact's name. Rendered as a real heading and used as the\npanel's accessible name in both presentations."
+            },
+            {
+              "name": "headingLevel",
+              "type": "2 | 3 | 4",
+              "optional": true,
+              "default": "2",
+              "description": "Level of the title heading in docked mode. Defaults to `2`. A modal\noverlay is its own document context, so it always uses `h2`."
+            },
+            {
+              "name": "open",
+              "type": "boolean",
+              "optional": true,
+              "default": "true",
+              "description": "Whether the panel is showing. Defaults to `true`, the usual case for a\ndocked panel the host mounts and unmounts itself."
+            },
+            {
+              "name": "onOpenChange",
+              "type": "(open: boolean) => void",
+              "optional": true,
+              "description": "Close button, Escape and backdrop clicks (overlay) ask for `false`."
+            },
+            {
+              "name": "presentation",
+              "type": "\"auto\" | \"docked\" | \"overlay\"",
+              "optional": true,
+              "default": "\"auto\"",
+              "description": "`\"docked\"`: an `<aside>` in the page flow — put it in a `Resizable`\npane or a grid column. `\"overlay\"`: a modal `<dialog>` sliding in from\nthe inline end. `\"auto\"` (default) is docked, and overlay when the\nviewport is narrower than `overlayBelow`."
+            },
+            {
+              "name": "overlayBelow",
+              "type": "number",
+              "optional": true,
+              "default": "768",
+              "description": "Viewport width in px below which `\"auto\"` becomes an overlay.\nDefaults to `768`."
+            },
+            {
+              "name": "status",
+              "type": "\"ready\" | \"streaming\" | \"error\"",
+              "optional": true,
+              "default": "\"ready\"",
+              "description": "`\"streaming\"` while the model is still writing the artifact,\n`\"error\"` when it failed. Shown as a small dot and a short line of\ntext by the title, announced politely."
+            },
+            {
+              "name": "version",
+              "type": "number",
+              "optional": true,
+              "description": "The version on show, 1-based. With `versionCount` above 1 the\nheader gets previous/next buttons and a \"v3 of 5\" readout."
+            },
+            {
+              "name": "versionCount",
+              "type": "number",
+              "optional": true
+            },
+            {
+              "name": "onVersionChange",
+              "type": "(version: number) => void",
+              "optional": true
+            },
+            {
+              "name": "actions",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "Your own header controls — copy, download, open in a new window.\nRendered before the built-in close button."
+            },
+            {
+              "name": "views",
+              "type": "ArtifactPanelView[]",
+              "optional": true,
+              "description": "Views of the artifact (\"Preview\", \"Code\"), switched with Kernel's\n`Tabs`. Without `views`, `children` is the body."
+            },
+            {
+              "name": "view",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "name": "defaultView",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "name": "onViewChange",
+              "type": "(view: string) => void",
+              "optional": true
+            },
+            {
+              "name": "children",
+              "type": "ReactNode",
+              "optional": true
+            },
+            {
+              "name": "showCloseButton",
+              "type": "boolean",
+              "optional": true,
+              "default": "true",
+              "description": "Hide the built-in close button. Escape still closes an overlay."
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ArtifactPanelLabels>",
+              "optional": true
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<ArtifactPanelState>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-artifact-panel": {
+          "description": "`<kernel-artifact-panel>` — the side panel an AI app opens beside the\nchat to show what it made: a page preview, a document, the code behind\nit. Mirrors `@kernelui-lib/react`'s `<ArtifactPanel>`.\n\nTwo native elements, chosen by `presentation`. Docked, it's an\n`<aside>` named by its title heading (a complementary landmark) that\nsits in the page flow — put it in a `<kernel-resizable>` pane. As an\noverlay it's a `<dialog>` opened with `showModal()`, like\n`<kernel-dialog>`, so the focus trap, Escape, `::backdrop`, inert page\nand focus restoration are the browser's. `auto` (the default) is\noverlay below `overlay-below` px of viewport — a media query, because\nthe switch changes the element and its focus model, which a container\nquery can't. Crossing it moves the panel's content into the other\nelement, so an iframe preview reloads once.\n\nAttributes: `title` (required), `heading-level` (2–4, docked only;\ndefault 2), `open` (boolean — add it to show the panel), `presentation`\n(auto/docked/overlay), `overlay-below` (default 768), `status`\n(ready/streaming/error), `version` + `version-count` (the switcher\nappears above one version), `view` (the selected view's value),\n`show-close-button` (`\"false\"` to omit).\n\nChildren: `<kernel-artifact-view value=\"preview\" label=\"Preview\">`\nelements become tabs (Kernel's `<kernel-tabs>`); a child with\n`slot=\"actions\"` goes in the header before the close button; anything\nelse is the body. Read once at connect.\n\nBuilt-in strings (`label-*` attributes or the `labels` property, same\nkeys and defaults as React's `ArtifactPanelLabels`): `close`,\n`previous-version`, `next-version`, `version` (`\"v{current} of\n{total}\"`), `versions`, `views`, `streaming`, `error`.\n\nEvents (bubbling): `close` once the panel has closed by any path;\n`versionchange` (`detail.version`, cancelable — the element updates its\nown `version` unless prevented); `viewchange` (`detail.value`).",
+          "attributes": [
+            "title",
+            "heading-level",
+            "open",
+            "presentation",
+            "overlay-below",
+            "status",
+            "version",
+            "version-count",
+            "view",
+            "label-close",
+            "label-previous-version",
+            "label-next-version",
+            "label-version",
+            "label-versions",
+            "label-views",
+            "label-streaming",
+            "label-error"
+          ],
+          "events": [
+            "viewchange",
+            "versionchange"
+          ]
+        },
+        "kernel-artifact-view": {
+          "description": "`<kernel-artifact-view value label>` — one view of an\n`<kernel-artifact-panel>`. A marker: its children become the view's tab\npanel when the panel connects.",
+          "attributes": [],
+          "events": []
+        }
+      }
+    },
     "attachment": {
       "name": "Attachment",
       "react": {
@@ -3301,6 +3459,69 @@
             "max"
           ],
           "events": []
+        }
+      }
+    },
+    "schema-renderer": {
+      "name": "Schema Renderer",
+      "react": {
+        "SchemaRenderer": {
+          "description": "Renders a model's JSON with real Kernel components. The input is\nuntrusted by definition, so it goes through `sanitizeSchema` first: an\nallow-list of node types and, per type, of props and their values.\nUnknown types and props are dropped and reported, URLs pass only as\nhttp(s), mailto: (links) or relative, and there is no path to raw HTML —\nevery string lands in the DOM as a text node.\n\nNothing the model writes can run. A Button or Form doesn't call\nanything: it hands the host `{ action, payload, values }` through\n`onAction`, and the host decides. A Form is a real `<form>`, so native\nconstraint validation (`required`, `type=\"email\"`) runs before the\naction fires and Enter submits it, but it has no `action` attribute and\nthe submission never leaves the page.\n\nStreaming works by re-rendering: parse the accumulated text with\n`parsePartialJson` on every chunk and pass the result. Nodes are keyed\nby their `id` (or type and position), so React keeps the DOM — and\nanything typed into a field — as the tree grows.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLDivElement>, \"className\" | \"children\" | \"onChange\">"
+          ],
+          "props": [
+            {
+              "name": "value",
+              "type": "unknown",
+              "optional": false,
+              "description": "The model's output: a `SchemaDocument` (`{ version, root }`), a bare\nnode, or an array of nodes — usually straight from `JSON.parse`, or\nfrom `parsePartialJson` while it streams. Anything unknown or unsafe\nis dropped, never rendered and never thrown on."
+            },
+            {
+              "name": "streaming",
+              "type": "boolean",
+              "optional": true,
+              "default": "false",
+              "description": "The value is still arriving. Half-typed node types are skipped\nquietly instead of reported, issues are held back until streaming\nends, and the root is marked `aria-busy`."
+            },
+            {
+              "name": "onAction",
+              "type": "(action: SchemaAction) => void",
+              "optional": true,
+              "description": "A Button was pressed or a Form submitted. Nothing else happens: the\nrenderer never navigates, fetches or runs code on the model's behalf."
+            },
+            {
+              "name": "onIssue",
+              "type": "(issue: SchemaIssue) => void",
+              "optional": true,
+              "description": "Every dropped node, prop or URL, once per settled value. Without a\nhandler they go to `console.warn` instead."
+            },
+            {
+              "name": "onValuesChange",
+              "type": "(values: SchemaValues) => void",
+              "optional": true,
+              "description": "A named form control changed."
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<SchemaRendererState>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-schema-renderer": {
+          "description": "`<kernel-schema-renderer>` — renders a model's JSON with real Kernel\nelements. Mirrors `@kernelui-lib/react`'s `<SchemaRenderer>`: the same\nschema (`schema.ts` is shared byte for byte), the same allow-list, the\nsame DOM and class names.\n\nThe input is untrusted, so it goes through `sanitizeSchema` first:\nunknown node types and props are dropped and reported, URLs pass only\nas http(s), mailto: (links) or relative, and every string is set as a\ntext node — there is no path to raw HTML. Nothing the model writes can\nrun: a Button or Form fires an `action` event with\n`{ action, payload, values }` and the page decides what to do.\n\nSet the tree with the `value` property (an object) or the `value`\nattribute (a JSON string). Add `streaming` while it's still arriving:\nhalf-typed node types are skipped quietly, issues wait until it's\nremoved, and the root is `aria-busy`. For a stream, parse the\naccumulated text with `parsePartialJson` on every chunk and assign the\nresult; updates in the same tick are coalesced, and form values and\nfocus are kept across rebuilds by control `name`.\n\nEvents (all bubbling `CustomEvent`s): `action` (`detail`:\n`SchemaAction`), `valueschange` (`detail`: `{ values }`), `issue`\n(`detail`: `SchemaIssue`, once per settled value — call\n`preventDefault()` to stop the `console.warn` it otherwise logs).",
+          "attributes": [
+            "value",
+            "streaming"
+          ],
+          "events": [
+            "issue",
+            "action",
+            "valueschange"
+          ]
         }
       }
     },
