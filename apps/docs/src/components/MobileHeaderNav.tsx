@@ -79,9 +79,8 @@ export default function MobileHeaderNav({ items, currentPath, starCount }: Mobil
           size="sm"
           className="mobile-header-nav-trigger"
           aria-label="Menu"
-        >
-          <HamburgerMenuIcon width="16" height="16" />
-        </Button>
+          iconStart={<HamburgerMenuIcon width="16" height="16" />}
+        />
       }
     >
       <a

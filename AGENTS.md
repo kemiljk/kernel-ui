@@ -129,6 +129,34 @@ new component done, grep both `packages/react/src/index.ts` and
   and a large corner on many, the height is not knowable in CSS — use
   `utils/lineFit.ts`, which marks the element
   `data-lines="single" | "multi"` (see `MessageBubble`).
+- **Pills are optical, not just rounded.** A pill's end caps eat into the
+  space beside its text and leave an edge icon off-centre. Lopsided font
+  metrics also make text sit low. `Badge.module.css` holds the full recipe;
+  `Suggestion`, `TagInput`'s tags and `Button` reuse it. In short:
+  - The radius is `min(--kernel-radius-control, half the box height)`,
+    never `--kernel-radius-full`, because 999px breaks the maths.
+  - Inline padding adds the r² × (1 − π/4) / pill the corners cut away.
+  - An edge icon is a `1lh` slot pulled in to `--pill-py` from the side,
+    found via `pillIconAttrs()` / `syncPillIcons()`.
+  - Capitals are centred by a `::before` baseline strut, not by the line
+    box.
+
+  A new pill-shaped component copies that block instead of picking
+  padding by eye. Don't change its DOM to make the selectors work: CSS
+  can't see text nodes, which is why the icon detection is JS.
+- **Contrast is measured with APCA, with WCAG 2 as a floor.** APCA is
+  the perceptual method proposed for WCAG 3. It catches dark-mode colours
+  that WCAG 2's ratio overrates. Targets on the canvas and surface:
+  - body text: Lc 75 and 4.5:1;
+  - muted text: Lc 60 and 4.5:1;
+  - focus rings and control borders: Lc 45 and 3:1. These are 1–2px lines,
+    which APCA treats as fine detail.
+
+  `bun run test:contrast` (`scripts/check-contrast.mjs`) checks every accent
+  preset in both schemes. Add a rule there when you add a semantic colour
+  token that carries meaning. A control whose border is its only outline
+  (Checkbox, Radio, a Switch track) uses `--kernel-color-border-control`,
+  not `-border-interactive`.
 - **Anything you click needs `user-select: none`.** Triggers, summaries,
   menu items, tabs, chips, segment buttons, the lot — a double-click on a
   disclosure otherwise selects its label, which is never what the click
@@ -205,6 +233,15 @@ new component done, grep both `packages/react/src/index.ts` and
   property descriptor's setter (`Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, x)`)
   before dispatching a synthetic `input`/`change` event.
 
+- **`:dir(rtl)` doesn't survive the build on its own.** Vite 8 minifies
+  CSS with Lightning CSS, targeting Chrome 111. `:dir()` arrived in Chrome
+  120, so it gets compiled into a list of `:lang(ar)`, `:lang(he)`…
+  selectors. That only matches pages that declare an RTL language, not ones
+  that set `dir="rtl"`. Prefer logical properties, which need no
+  direction selector: Switch moves its thumb with `inset-inline-start`, not
+  `translate`, for this reason. When a value really must flip, pair the
+  selector: `.x:dir(rtl), :where([dir="rtl"]) .x`.
+
 ## Before calling a component done
 
 - `bun run typecheck` in both `packages/react` and `packages/elements`.
@@ -216,6 +253,13 @@ new component done, grep both `packages/react/src/index.ts` and
   the mistakes the Shape and select-none rules above exist to stop, and
   both are invisible until someone switches the theme to Round or
   double-clicks a disclosure.
+- `bun run test:contrast` (`scripts/check-contrast.mjs`) — APCA and WCAG 2
+  targets for the semantic colour tokens, every preset, light and dark.
+
+- `bun run test:parity` (`scripts/check-parity.mjs`) — fails when a
+  registry entry's React export or custom element tag is missing from
+  either package, or the two packages' component folders differ. CI runs
+  it alongside `test:shape` and `test:svg`.
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every
