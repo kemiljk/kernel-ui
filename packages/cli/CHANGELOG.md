@@ -1,5 +1,26 @@
 # @kernelui-lib/cli
 
+## 1.1.0
+
+### Minor Changes
+
+- 1208682: Add `kernel mcp` and `kernel check`.
+  
+  - `kernel mcp` runs a Model Context Protocol server over stdio. Its tools are `list_components`, `search_components`, `get_component`, `get_tokens`, `get_conventions` and `check_code`. `get_component` returns exact props, attributes and events generated from source. Everything is bundled into the CLI, so answers work offline and match the installed version. The server has no runtime dependencies.
+  - `kernel mcp init --client claude|cursor|vscode` registers the server in a project's MCP config, merging with any servers already there.
+  - `kernel check <files…>` reviews code for common Kernel mistakes and exits non-zero on errors: foreign props, invalid values, missing labels, unlabelled icon-only buttons, clickable divs, raw colours, hand-picked radii, and replaceable shadcn/Radix imports.
+- 2547241: Ship agent skills with the packages, and add `kernel agents`.
+  
+  - `@kernelui-lib/react` now includes `skills/kernel-ui`, `skills/kernel-ui-theming` and `skills/kernel-ui-migrate`. `@kernelui-lib/elements` includes `skills/kernel-ui-elements`. They use the Agent Skills format (`SKILL.md`), are versioned with the code, and carry the `tanstack-intent` keyword.
+  - `kernel agents` installs those skills into `.claude/skills` (or `--dir`), preferring the installed packages' copies. It registers the MCP server (`--client`), and adds a Kernel UI section to `AGENTS.md`, and to `CLAUDE.md` if present. Running it again replaces that section rather than duplicating it.
+  - Fix: `kernel mcp init` no longer reads an unrelated flag as the client name.
+
+### Patch Changes
+
+- 1451d39: Prepare the CLI's MCP server for the official MCP Registry. This adds `mcpName` (`io.github.kemiljk/kernel-ui`) and a `server.json`, whose version the build keeps in sync with `package.json`. The package description and keywords now mention the MCP server.
+  
+  `kernel mcp init --client codex` (and `kernel agents --client codex`) writes the server to `.codex/config.toml`, replacing only its own `[mcp_servers.kernel]` table.
+
 ## 1.0.5
 
 ### Patch Changes

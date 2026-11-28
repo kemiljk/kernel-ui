@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/react",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Accessible React components built on real semantic HTML, not div soup.",
   "license": "MIT",
   "author": "Karl Koch",
@@ -49,7 +49,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@kernelui-lib/styles": "^1.4.1"
+    "@kernelui-lib/styles": "^1.5.0"
   },
   "publishConfig": {
     "access": "public"
