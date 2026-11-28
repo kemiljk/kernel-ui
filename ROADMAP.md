@@ -38,12 +38,14 @@ Checks that stop regressions before review, so the rest of the roadmap can move 
 
 | Item | Status | PR | Notes |
 | --- | --- | --- | --- |
-| Skills shipped in the packages (build, migrate, theme, review) | next | | Agent Skills format |
-| `kernel init --agents`: install skills, add AGENTS.md/CLAUDE.md section | next | | |
+| Skills shipped in the packages (build, migrate, theme, elements) | in review | [#115](https://github.com/kemiljk/kernel-ui/pull/115) | Agent Skills format, `tanstack-intent` keyword |
+| `kernel agents`: install skills, register MCP, add AGENTS.md/CLAUDE.md section | in review | [#115](https://github.com/kemiljk/kernel-ui/pull/115) | |
 | Claude Code plugin with the same skills | later | | |
-| Generated prop schemas in the registry | next | | Feeds docs tables, `llms.txt`, MCP, CLI |
-| `kernel mcp` server: search, docs, props, tokens, check | later | | After prop schemas |
-| Lint pack for agent output (tokens, labels, `<div onClick>`, shape pairing) | later | | |
+| Generated prop schemas in the registry (`api.json`) | in review | [#113](https://github.com/kemiljk/kernel-ui/pull/113) | 477 React props, 256 element attributes, from source |
+| `kernel mcp` server: search, docs, props, tokens, conventions, check | in review | [#114](https://github.com/kemiljk/kernel-ui/pull/114) | Dependency-free stdio; `kernel mcp init --client` |
+| Lint pack for agent output | in progress | [#114](https://github.com/kemiljk/kernel-ui/pull/114) | `kernel check` / `check_code` shipped; ESLint plugin later |
+| Generate docs props tables from `api.json` | next | | Replaces hand-written tables |
+| Make `registry.json` a valid shadcn registry | later | | `npx shadcn add` and the shadcn MCP for free |
 | Agent eval suite: fixed prompts scored by lint, axe and screenshots | later | | |
 
 ## 4. Agent UI components
