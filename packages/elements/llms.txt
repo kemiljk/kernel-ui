@@ -73,10 +73,29 @@ imports.
 - **Real elements, real events**: every component wraps a genuine native
   element or ARIA pattern internally and re-dispatches its real DOM
   events (`input`, `change`, `click`) — listen for those directly, no
-  proprietary event system. `<kernel-file-upload>` additionally
-  dispatches `kernel-file-upload-error` with
-  `detail: { type: "accept" | "max-size" | "max-files" | "directory", files }`
-  when a pick or drop is rejected.
+  proprietary event system. The kernel MCP server's `get_component`
+  lists each tag's events with the exact `detail` shape.
+- **File upload validation**: `<kernel-file-upload>` checks `accept`,
+  `max-size` (bytes) and `max-files`, and on a rejected pick or drop
+  dispatches `kernel-file-upload-error` (not bubbling) with
+  `detail: { type: "accept" | "max-size" | "max-files" | "directory", files: File[] }`.
+  It doesn't show a message itself: set `invalid` and `error-message`
+  from that handler. The host's `change` fires only when the selection
+  changes (an accepted pick or drop, or a removal), never for a rejected
+  pick, so clear `invalid`/`error-message` there; read the files from the
+  inner `input[type=file]`'s `.files`.
+- **Accessible names go on the tag**: `aria-label`, `aria-labelledby` and
+  `aria-describedby` on a `<kernel-*>` tag are forwarded to the real
+  control, group or landmark inside it (the host itself is a generic
+  wrapper that names nothing). An authored `aria-describedby` is added
+  after a field's own hint and error ids. `<kernel-switch>` is named by
+  its text content; with no visible text, use
+  `<kernel-switch aria-label="Bill yearly">`.
+- **`id` stays on the tag**: `getElementById()` returns the element whose
+  events you listen to; a form field's inner control gets `<id>-control`,
+  which its own `<label for>` points at.
+- **One `<h1>` per page**: no tag renders the page heading; add it
+  yourself.
 - **Contrast**: Kernel's colour tokens are checked with APCA (the
   perceptual method proposed for WCAG 3), with WCAG 2's ratio as a floor:
   - `--kernel-color-text`: Lc 75 and 4.5:1;

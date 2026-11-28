@@ -18,7 +18,19 @@ export interface PropInfo {
 export interface ComponentApi {
   name: string;
   react: Record<string, { description?: string; extends: string[]; props: PropInfo[] }>;
-  elements: Record<string, { description?: string; attributes: string[]; events: string[] }>;
+  elements: Record<string, ElementApi>;
+}
+
+export interface ElementApi {
+  description?: string;
+  attributes: string[];
+  /** The ARIA attributes the host hands to its native control. */
+  forwardedAttributes?: string[];
+  /** CustomEvent names, as dispatched. */
+  events: string[];
+  /** Every dispatched event (CustomEvent or plain Event) and its `detail`
+   * type, or `null` for none. */
+  eventDetails?: Record<string, string | null>;
 }
 
 export interface TokenInfo {
@@ -121,7 +133,20 @@ export function describeComponent(entry: RegistryEntry, platform: Platform = "bo
       lines.push(`### \`<${tag}>\``, "");
       if (info.description) lines.push(info.description, "");
       lines.push(`- Attributes: ${info.attributes.length ? info.attributes.map((a) => `\`${a}\``).join(", ") : "none"}`);
-      if (info.events.length) lines.push(`- Events: ${info.events.map((e) => `\`${e}\``).join(", ")}`);
+      if (info.forwardedAttributes?.length) {
+        lines.push(
+          `- Forwarded to the native control: ${info.forwardedAttributes.map((a) => `\`${a}\``).join(", ")} (set them on the tag; they name or describe the real control inside it)`,
+        );
+      }
+      const details = Object.entries(info.eventDetails ?? {});
+      if (details.length) {
+        lines.push("- Events:");
+        for (const [name, detail] of details) {
+          lines.push(`  - \`${name}\`: ${detail ? `\`event.detail\` is \`${detail}\`` : "plain event, no `detail`"}`);
+        }
+      } else if (info.events.length) {
+        lines.push(`- Events: ${info.events.map((e) => `\`${e}\``).join(", ")}`);
+      }
       lines.push("");
     }
   }

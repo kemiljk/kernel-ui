@@ -51,6 +51,14 @@ describe("MCP tools", () => {
     expect(text).toContain("Attributes:");
   });
 
+  it("get_component spells out each element event's detail shape", () => {
+    const upload = call("get_component", { name: "file upload", platform: "elements" }).result.content[0]!.text;
+    expect(upload).toMatch(/`kernel-file-upload-error`: `event.detail` is `\{ type: "max-files" \| "max-size" \| "accept" \| "directory"; files: File\[\] \}`/);
+    expect(upload).toContain("`change`: plain event, no `detail`");
+    const tags = call("get_component", { name: "tag input", platform: "elements" }).result.content[0]!.text;
+    expect(tags).toContain("`change`: `event.detail` is `{ tags: string[] }`");
+  });
+
   it("search_components ranks by meaning words", () => {
     const text = call("search_components", { query: "date range" }).result.content[0]!.text;
     expect(text.split("\n")[0]).toContain("Date Range Picker");

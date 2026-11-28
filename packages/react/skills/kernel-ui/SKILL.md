@@ -43,6 +43,7 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
   - Icon-only Buttons need `aria-label`.
   - `--kernel-icon-size` and `--kernel-icon-stroke-width` tune a whole icon set.
 - **ARIA.** Don't add ARIA that the native element already provides, such as `role="button"` on `<Button>`.
+- **One `<h1>` per page.** No Kernel component renders the page heading (`Header` is a landmark, not a heading), so add it yourself; axe flags a page without one.
 - **Global setup.** Nothing needs a provider except `<ToastViewport>` (mount once, then call `toast()`) and `<CommandPalette>`.
 
 ## Choosing components for common jobs

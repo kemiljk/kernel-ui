@@ -6,12 +6,12 @@
     "url": "https://github.com/kemiljk/kernel-ui",
     "source": "github"
   },
-  "version": "1.0.5",
+  "version": "1.1.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@kernelui-lib/cli",
-      "version": "1.0.5",
+      "version": "1.1.0",
       "runtimeHint": "npx",
       "packageArguments": [
         {
