@@ -9,7 +9,7 @@
  *   node evals/run.mjs --tasks confirm-dialog  # one task
  *   node evals/run.mjs --reference             # score evals/reference/* (no model calls)
  *   node evals/run.mjs --dry-run               # score the untouched template (baseline)
- *   node evals/run.mjs --agent "codex exec --full-auto --skip-git-repo-check -"
+ *   node evals/run.mjs --agent codex             # Codex CLI (see lib/agent.mjs)
  *
  * Every agent run costs money. See evals/README.md before running the suite.
  */
@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
-import { buildPrompt, defaultClaudeCommand, runAgent } from "./lib/agent.mjs";
+import { buildPrompt, defaultClaudeCommand, defaultCodexCommand, runAgent } from "./lib/agent.mjs";
 import { summaryTable, writeReport } from "./lib/report.mjs";
 import { build, computeScore, inspect, lint, typecheck } from "./lib/score.mjs";
 import { run } from "./lib/util.mjs";
@@ -33,7 +33,7 @@ const { values: args } = parseArgs({
     budget: { type: "string", default: "3" },
     timeout: { type: "string", default: "15" },
     setup: { type: "string", default: "full" },
-    client: { type: "string", default: "claude" },
+    client: { type: "string" },
     reference: { type: "boolean", default: false },
     "dry-run": { type: "boolean", default: false },
     build: { type: "boolean", default: false },
@@ -50,13 +50,14 @@ if (args.help) {
   --tasks a,b        Only these task ids (default: all; with --reference, those with a reference)
   --agent "<cmd>"    Agent command, run in the task's project dir. {prompt}, {prompt_file} and
                      {dir} are substituted; otherwise the prompt is piped to stdin.
-                     Default: claude -p (stream-json, acceptEdits, project settings only)
-  --model <name>     Model for the default claude command (e.g. sonnet)
+                     Default: claude -p (stream-json, acceptEdits, project settings only).
+                     "codex": codex exec (workspace-write, kernel MCP pre-approved; implies --client codex)
+  --model <name>     Model for the default claude or codex command (e.g. sonnet)
   --budget <usd>     --max-budget-usd per task for the default claude command (default 3)
   --timeout <min>    Agent time limit per task (default 15)
   --setup full|none  full: run \`kernel agents\` in the project (skills, MCP, AGENTS.md) from this
                      checkout; none: only the installed packages (default full)
-  --client <name>    Client for \`kernel agents --client\` (claude, codex, cursor, vscode)
+  --client <name>    Client for \`kernel agents --client\` (claude, codex, cursor, vscode; default claude)
   --reference        Score evals/reference/<task>/ instead of running an agent
   --dry-run          Score the untouched template (a baseline; checks the pipeline)
   --build            Rebuild the workspace packages first (otherwise only if dist is missing)
@@ -66,6 +67,8 @@ if (args.help) {
   process.exit(0);
 }
 
+const codex = args.agent === "codex";
+args.client ??= codex ? "codex" : "claude";
 const mode = args.reference ? "reference" : args["dry-run"] ? "dry-run" : "agent";
 if (!["full", "none"].includes(args.setup)) throw new Error(`--setup must be "full" or "none"`);
 
@@ -96,7 +99,8 @@ const results = {
   runId,
   mode,
   setup: mode === "agent" ? args.setup : "n/a",
-  agentCommand: mode === "agent" ? (args.agent ?? "default claude") : null,
+  agentCommand: mode === "agent" ? (args.agent ?? "claude") : null,
+  model: mode === "agent" ? (args.model ?? null) : null,
   git: { sha: git.stdout.trim(), dirty: dirty.stdout.trim().length > 0 },
   startedAt: new Date().toISOString(),
   tasks: [],
@@ -121,9 +125,16 @@ for (const task of tasks) {
     const dir = await prepareProject(task, { workRoot, setup: mode === "agent" ? args.setup : "none", client: args.client });
     if (mode === "reference") applyReference(task, dir);
     if (mode === "agent") {
-      const command = args.agent ?? defaultClaudeCommand({ model: args.model, budget: args.budget, dir });
+      const command = codex
+        ? defaultCodexCommand({ model: args.model })
+        : (args.agent ?? defaultClaudeCommand({ model: args.model, budget: args.budget, dir }));
       entry.agent = await runAgent({ command, prompt: buildPrompt(task), dir, timeoutMs: Number(args.timeout) * 60_000, logDir: taskOut });
       process.stdout.write(`agent ${Math.round(entry.agent.durationMs / 1000)}s${entry.agent.timedOut ? " (timed out)" : ""} … `);
+      // An agent that exits non-zero without doing anything didn't run (a bad
+      // flag, no auth): report it as an error instead of scoring the template.
+      if (entry.agent.exitCode !== 0 && !entry.agent.timedOut && entry.agent.tools.total === 0) {
+        throw new Error(`agent exited ${entry.agent.exitCode} without running a tool: ${entry.agent.stderrTail || "(no stderr)"}`);
+      }
     }
     entry.typecheck = await typecheck(dir);
     entry.lint = await lint(dir);

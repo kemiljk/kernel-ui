@@ -2,7 +2,7 @@
   "id": "pricing-page",
   "title": "Pricing page with a billing toggle (elements)",
   "package": "elements",
-  "prompt": "Build a pricing page in plain HTML and TypeScript with @kernelui-lib/elements (no React). Show three plans, Starter ($9/month), Pro ($29/month) and Team ($79/month), each in a card with its name as a heading, its price, a list of at least three features and a call-to-action button. Pro is highlighted with a \"Most popular\" badge. A Monthly/Yearly billing switch above the plans updates every price; yearly billing is 20% off and shows the price per month.",
+  "prompt": "Build a pricing page in plain HTML and TypeScript with @kernelui-lib/elements (no React). Show three plans, Starter ($9/month), Pro ($29/month) and Team ($79/month), each in a card with its name as a heading, its price, a list of at least three features and a call-to-action button. Pro is highlighted with a \"Most popular\" badge. An on/off switch above the plans changes billing between monthly and yearly and updates every price; yearly billing is 20% off and shows the price per month.",
   "screenshots": [
     {
       "name": "Yearly billing",

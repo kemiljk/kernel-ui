@@ -49,6 +49,28 @@ export function defaultClaudeCommand({ model, budget, dir }) {
 }
 
 /**
+ * Codex CLI's equivalent (`--agent codex`): workspace-write sandbox, no
+ * session files, and not the user's own config.toml (auth still works), so
+ * their MCP servers stay out. The project's `.codex/config.toml` only loads
+ * for a trusted project, so the kernel MCP server is passed with `-c`
+ * instead, pointed at the workspace CLI build (the MCP server's cwd is the
+ * project) and pre-approved: `codex exec` never asks, so without
+ * `default_tools_approval_mode` every MCP call fails.
+ */
+export function defaultCodexCommand({ model }) {
+  return [
+    "codex exec --sandbox workspace-write --skip-git-repo-check --ephemeral --ignore-user-config",
+    model ? `--model ${shellQuote(model)}` : "",
+    shellQuote("-c") + " " + shellQuote('mcp_servers.kernel.command="node"'),
+    shellQuote("-c") + " " + shellQuote('mcp_servers.kernel.args=["node_modules/@kernelui-lib/cli/dist/index.js","mcp"]'),
+    shellQuote("-c") + " " + shellQuote('mcp_servers.kernel.default_tools_approval_mode="approve"'),
+    "--json -",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/**
  * Runs the agent command in the project directory. `{dir}`, `{prompt}` and
  * `{prompt_file}` in the command are replaced (shell-quoted); with no
  * `{prompt}`/`{prompt_file}` the prompt is piped to stdin, which both
@@ -70,6 +92,7 @@ export async function runAgent({ command, prompt, dir, timeoutMs, logDir }) {
     exitCode: result.code,
     timedOut: result.timedOut,
     durationMs: result.durationMs,
+    stderrTail: result.stderr.trim().split("\n").slice(-5).join("\n").slice(0, 600),
     ...analyseTranscript(result.stdout),
   };
 }
@@ -85,6 +108,10 @@ export function analyseTranscript(stdout) {
   const tools = [];
   let result = null;
   let init = null;
+  const codexItems = new Map();
+  const usage = {};
+  let codexTurns = 0;
+  let lastMessage = null;
   for (const line of stdout.split("\n")) {
     if (!line.startsWith("{")) continue;
     let event;
@@ -100,13 +127,29 @@ export function analyseTranscript(stdout) {
         if (block.type === "tool_use") tools.push({ name: block.name, input: block.input ?? {} });
       }
     }
-    // Codex `exec --json` items.
+    // Codex `exec --json`: each item arrives as item.started and again as
+    // item.completed (same id); count it once, from the latest event, so a
+    // failed call (e.g. an MCP tool blocked by the approval policy) shows.
     const item = event.item ?? event.msg;
-    if (item?.type === "mcp_tool_call") tools.push({ name: `mcp__${item.server}__${item.tool}`, input: item.arguments ?? {} });
-    if (item?.type === "command_execution") tools.push({ name: "Bash", input: { command: item.command } });
+    if (item?.type === "mcp_tool_call" || item?.type === "command_execution") {
+      const entry =
+        item.type === "mcp_tool_call"
+          ? { name: `mcp__${item.server}__${item.tool}`, input: item.arguments ?? {}, failed: Boolean(item.error) || item.status === "failed" }
+          : { name: "Bash", input: { command: item.command } };
+      const index = item.id != null ? codexItems.get(item.id) : undefined;
+      if (index === undefined) {
+        if (item.id != null) codexItems.set(item.id, tools.length);
+        tools.push(entry);
+      } else tools[index] = entry;
+    }
+    if (item?.type === "agent_message" && typeof item.text === "string") lastMessage = item.text;
+    if (event.type === "turn.completed" && event.usage) {
+      for (const [key, value] of Object.entries(event.usage)) if (typeof value === "number") usage[key] = (usage[key] ?? 0) + value;
+      codexTurns += 1;
+    }
   }
   const text = (t) => JSON.stringify(t.input);
-  const kernelMcp = tools.filter((t) => t.name.startsWith("mcp__kernel__")).map((t) => t.name.replace("mcp__kernel__", ""));
+  const kernelMcp = tools.filter((t) => t.name.startsWith("mcp__kernel__") && !t.failed).map((t) => t.name.replace("mcp__kernel__", ""));
   const counts = (list) => Object.fromEntries([...new Set(list)].map((n) => [n, list.filter((x) => x === n).length]));
   const fallback = tools.length === 0 ? stdout : "";
   return {
@@ -114,6 +157,7 @@ export function analyseTranscript(stdout) {
       total: tools.length,
       byName: counts(tools.map((t) => t.name)),
       kernelMcp: counts(kernelMcp),
+      failed: tools.filter((t) => t.failed).length,
       usedKernelMcp: kernelMcp.length > 0 || /mcp__kernel__|kernel\.(get_component|search_components)/.test(fallback),
       usedSkill: tools.some((t) => (t.name === "Skill" && /kernel/.test(text(t))) || /skills[/\\]kernel-ui/.test(text(t))),
       readLlmsTxt: tools.some((t) => /llms(-full)?\.txt/.test(text(t))) || /llms(-full)?\.txt/.test(fallback),
@@ -126,8 +170,10 @@ export function analyseTranscript(stdout) {
       ? { model: init.model, mcpServers: init.mcp_servers, skills: init.skills ?? null, plugins: init.plugins ?? null }
       : null,
     costUsd: result?.total_cost_usd ?? null,
-    turns: result?.num_turns ?? null,
-    resultText: typeof result?.result === "string" ? result.result.slice(0, 2000) : null,
+    turns: result?.num_turns ?? (codexTurns || null),
+    // Token usage: Claude Code's result event, or summed Codex turn.completed events.
+    usage: result?.usage ?? (Object.keys(usage).length ? usage : null),
+    resultText: (typeof result?.result === "string" ? result.result : lastMessage)?.slice(0, 2000) ?? null,
     isError: result?.is_error ?? null,
   };
 }

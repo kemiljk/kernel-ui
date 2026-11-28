@@ -41,7 +41,8 @@ function taskCard(t) {
     ? `<dl class="agent">
         <dt>Time</dt><dd>${Math.round(a.durationMs / 1000)}s${a.timedOut ? " (timed out)" : ""}, exit ${a.exitCode}</dd>
         ${a.costUsd != null ? `<dt>Cost</dt><dd>$${a.costUsd.toFixed(3)}, ${a.turns} turns</dd>` : ""}
-        <dt>Kernel MCP</dt><dd>${a.tools.usedKernelMcp ? e(JSON.stringify(a.tools.kernelMcp)) : "not used"}</dd>
+        ${a.costUsd == null && a.usage ? `<dt>Tokens</dt><dd>${e(Object.entries(a.usage).map(([k, v]) => `${k} ${v}`).join(", "))}</dd>` : ""}
+        <dt>Kernel MCP</dt><dd>${a.tools.usedKernelMcp ? e(JSON.stringify(a.tools.kernelMcp)) : "not used"}${a.tools.failed ? ` (${a.tools.failed} failed call${a.tools.failed === 1 ? "" : "s"})` : ""}</dd>
         <dt>Signals</dt><dd>${["usedSkill", "readLlmsTxt", "readTypes", "ranKernelCheck", "ranLint", "ranTypecheck"].map((k) => pill(a.tools[k], k)).join(" ")}</dd>
         <dt>Tools</dt><dd><code>${e(JSON.stringify(a.tools.byName))}</code></dd>
       </dl>`

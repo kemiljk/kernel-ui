@@ -165,7 +165,10 @@ async function assert(assertion, { sources, context, url, initial }) {
   }
   if (type === "source") {
     const patterns = assertion.allOf ?? [assertion.pattern];
-    const hits = patterns.map((p) => sources.filter((s) => new RegExp(p, assertion.flags ?? "").test(s.text)).map((s) => s.file));
+    // Markup patterns (`<button`, `role="tab"`) also match CSS selectors that
+    // style Kernel's output, so stylesheets are skipped unless asked for.
+    const scanned = assertion.css ? sources : sources.filter((s) => !s.file.endsWith(".css"));
+    const hits = patterns.map((p) => scanned.filter((s) => new RegExp(p, assertion.flags ?? "").test(s.text)).map((s) => s.file));
     if (assertion.absent) {
       const files = [...new Set(hits.flat())];
       return { pass: files.length === 0, detail: files.length ? `found in ${files.join(", ")}` : "absent" };
