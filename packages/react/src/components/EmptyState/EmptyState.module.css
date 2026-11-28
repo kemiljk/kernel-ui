@@ -8,7 +8,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--kernel-space-2);
+  /* Title and description sit tight together as one message; the icon
+     above and the actions below take their own, larger margins, so the
+     state reads as three groups (mark, message, next step) rather than
+     four evenly spaced lines. */
+  gap: var(--kernel-space-1);
   padding-block: calc(var(--kernel-padding-container-curve) + var(--kernel-space-6));
   padding-inline: var(--kernel-padding-container-curve);
   border: var(--kernel-border-width) dashed var(--kernel-color-border-strong);
@@ -31,9 +35,13 @@
   justify-content: center;
   inline-size: 2.5rem;
   block-size: 2.5rem;
-  margin-block-end: var(--kernel-space-2);
+  margin-block-end: var(--kernel-space-3);
   border-radius: min(var(--kernel-radius-lg), 1.25rem);
   background-color: var(--kernel-color-fill);
+  /* A hairline ring gives the tile an edge on a surface the same tone
+     as its fill, where it otherwise dissolves (most visibly in dark
+     mode and on the plain variant). */
+  box-shadow: inset 0 0 0 var(--kernel-border-width) var(--kernel-color-border);
   color: var(--kernel-color-text-muted);
 }
 
@@ -56,7 +64,9 @@
   font-size: var(--kernel-font-size-sm);
   line-height: var(--kernel-line-height);
   color: var(--kernel-color-text-muted);
-  text-wrap: pretty;
+  /* Balanced, not just pretty: a centred two-line description with a
+     two-word last line reads as a ragged afterthought. */
+  text-wrap: balance;
 }
 
 .actions {
@@ -64,5 +74,5 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--kernel-space-2);
-  margin-block-start: var(--kernel-space-3);
+  margin-block-start: var(--kernel-space-4);
 }

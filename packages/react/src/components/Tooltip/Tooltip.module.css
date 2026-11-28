@@ -9,10 +9,18 @@
   color: var(--kernel-color-canvas);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
+  box-shadow: var(--kernel-shadow-sm);
+  /* Sized to its text, one line when it fits and balanced lines when it
+     doesn't. `max-content` stops the box from shrinking against a
+     viewport edge and breaking a short label onto several lines (what
+     `nowrap` was guarding against); unlike `nowrap`, a label longer than
+     the 16rem cap now wraps inside the bubble instead of running out of
+     it. */
+  inline-size: max-content;
   max-inline-size: 16rem;
   word-break: normal;
   overflow-wrap: normal;
-  white-space: nowrap;
+  text-wrap: balance;
 
   /* Stay opaque on the closed/exit end-state. Fading `opacity` on close
      lets page content paint through a half-transparent panel — a flash

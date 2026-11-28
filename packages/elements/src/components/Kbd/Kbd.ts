@@ -111,6 +111,7 @@ export class KernelKbd extends KernelElement {
       if (index > 0) {
         const sep = document.createElement("span");
         sep.className = kernelClass("Kbd", "separator");
+        sep.setAttribute("data-slot", "kbd-separator");
         sep.textContent = separator;
         kbd.append(sep);
       }

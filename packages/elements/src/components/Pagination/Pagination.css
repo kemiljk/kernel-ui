@@ -76,6 +76,7 @@ kernel-pagination-ellipsis {
 .kernel-Pagination-item[aria-current="page"] {
   background-color: var(--kernel-color-accent);
   color: var(--kernel-color-on-accent);
+  font-weight: 500;
 }
 
 .kernel-Pagination-item:focus-visible,
@@ -87,6 +88,35 @@ kernel-pagination-ellipsis {
 .kernel-Pagination-control:disabled {
   cursor: not-allowed;
   color: var(--kernel-color-text-muted);
+}
+
+/* Drawn chevrons rather than the "‹"/"›" glyphs: a text guillemet takes
+   the font's x-height and side bearings, so it sat small and low beside
+   the label and shifted with every font. A 1rem stroke icon is centred
+   on the row and matches the library's other chevrons. Logical
+   direction is kept by mirroring it in RTL (the glyphs got that from the
+   bidi algorithm for free). */
+.kernel-Pagination-chevron {
+  flex-shrink: 0;
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.kernel-Pagination-chevron:dir(rtl),
+:where([dir="rtl"]) .kernel-Pagination-chevron {
+  scale: -1 1;
+}
+
+/* The previous/next controls are ghost buttons, so their chevron's own
+   side bearing reads as extra space before "Previous". Trimming the
+   padding on the icon side keeps the icon-and-word pair visually
+   centred in its hover fill. */
+.kernel-Pagination-control:has(> .kernel-Pagination-chevron:first-child) {
+  padding-inline-start: var(--kernel-space-1);
+}
+
+.kernel-Pagination-control:has(> .kernel-Pagination-chevron:last-child) {
+  padding-inline-end: var(--kernel-space-1);
 }
 
 .kernel-Pagination-ellipsis {
@@ -120,6 +150,12 @@ kernel-pagination-ellipsis {
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+
+  /* Icon-only here, so the chevron goes back to the centre of its square. */
+  .kernel-Pagination-control:has(> .kernel-Pagination-chevron:first-child),
+  .kernel-Pagination-control:has(> .kernel-Pagination-chevron:last-child) {
+    padding-inline: var(--kernel-space-2);
   }
 }
 
