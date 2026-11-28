@@ -166,9 +166,11 @@ relying on a new task.
 
 ## Costs
 
-Every agent run is a real model session. With the default Claude Code
-command, a task usually takes 2 to 10 minutes and a few dollars at most;
-`--budget` caps each task, and the report shows what each one cost. The
+Every agent run is a real model session. The first real run of
+`confirm-dialog` with `--model sonnet` took 19 seconds and cost $0.12;
+larger tasks, slower models or an agent that loops on failing checks cost
+more. `--budget` caps each task (default $3), `--timeout` caps its time,
+and the report shows what each one cost. The
 full suite is ten sessions. Run one task while working on the evals
 themselves, use `--reference` to test the scoring without a model, and
 choose a smaller model with `--model` for routine checks. Scores vary run
