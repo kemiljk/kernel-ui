@@ -83,7 +83,10 @@
     --kernel-gray-8: light-dark(oklch(73% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)), oklch(50% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)));
     --kernel-gray-9: light-dark(oklch(59% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)), oklch(58% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)));
     --kernel-gray-10: light-dark(oklch(54% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)), oklch(64% calc(var(--kernel-chroma-neutral) * 1.6) var(--kernel-hue-neutral)));
-    --kernel-gray-11: light-dark(oklch(46% calc(var(--kernel-chroma-neutral) * 2) var(--kernel-hue-neutral)), oklch(72% calc(var(--kernel-chroma-neutral) * 1.8) var(--kernel-hue-neutral)));
+    /* Gray-11 is the muted-text step. Dark mode sits at 78% rather than a
+       smoother 72% so muted text clears APCA Lc 60 on the canvas for every
+       accent hue (72% measured Lc 52-53). See scripts/check-contrast.mjs. */
+    --kernel-gray-11: light-dark(oklch(46% calc(var(--kernel-chroma-neutral) * 2) var(--kernel-hue-neutral)), oklch(78% calc(var(--kernel-chroma-neutral) * 1.8) var(--kernel-hue-neutral)));
     --kernel-gray-12: light-dark(oklch(22% calc(var(--kernel-chroma-neutral) * 2.4) var(--kernel-hue-neutral)), oklch(94% calc(var(--kernel-chroma-neutral) * 1.4) var(--kernel-hue-neutral)));
 
     /* Accent scale. Chroma peaks at step 9, "the purest step", per the
@@ -151,6 +154,15 @@
     --kernel-color-border: var(--kernel-gray-6);
     --kernel-color-border-interactive: var(--kernel-gray-7);
     --kernel-color-border-hover: var(--kernel-gray-8);
+    /* The boundary of a control whose border is the only thing that shows
+       it's there: an unchecked Checkbox or Radio, a Switch track's edge.
+       Kernel measures contrast with APCA (the method proposed for WCAG 3) and
+       keeps WCAG 2's ratio as a floor. A 1px line is fine detail, so the
+       target is Lc 45 and 3:1. Gray-7 measured Lc 28 / 1.66:1 in light and
+       Lc 12 in dark; gray-9 (light) and gray-11 (dark) clear both targets
+       for every preset. Fields keep the softer border-interactive, because
+       their fill, label and placeholder identify them as well. */
+    --kernel-color-border-control: light-dark(var(--kernel-gray-9), var(--kernel-gray-11));
     /* Kept as an alias so nothing else has to change: "strong" always
        meant "the more prominent of the two borders in use". */
     --kernel-color-border-strong: var(--kernel-color-border-hover);
@@ -239,7 +251,13 @@
       --kernel-color-on-warning: contrast-color(var(--kernel-color-warning));
     }
 
-    --kernel-color-focus-ring: var(--kernel-color-accent);
+    /* A 2px focus outline is fine detail, so it targets APCA Lc 45, with
+       WCAG 2.4.13's 3:1 as a floor. Accent-9 missed in two ways: the amber
+       preset is too light on the light canvas (Lc 35, 1.95:1), and every
+       preset falls to about Lc 30 in dark mode, which WCAG 2's ratio
+       (about 4.2:1) overrates. Accent-11 clears Lc 57 in dark and Lc 77 in
+       light for every preset. */
+    --kernel-color-focus-ring: var(--kernel-accent-11);
 
     /* Shared by Switch's and Slider's thumbs: a fixed light colour
        regardless of theme or the track's own colour underneath, the same
@@ -356,6 +374,40 @@
       0px,
       calc(var(--kernel-radius-control) - var(--kernel-control-inset))
     );
+
+    /* Optical pills (Diego Haz's technique). A round end cap cuts into
+       the space beside a label, so a pill's padding reads smaller than
+       it is. Averaged over the cap's height, the curve removes
+       r × (1 − π/4) of width; pill components add that back. Only the
+       constant lives here: the rest of the maths uses `lh`, `cap` and
+       the component's own padding, so it has to resolve on the
+       component's own element (a token declared at :root would
+       substitute :root's values). See Badge.module.css for the full
+       recipe and AGENTS.md's "Optical pills" rule. */
+    --kernel-pill-cut: 0.2146;
+    @supports (scale: calc(1 - pi / 4)) {
+      --kernel-pill-cut: calc(1 - pi / 4);
+    }
+
+    /* Icons. Kernel ships no icon set: any <svg>, <img> or icon component
+       (Lucide, Phosphor, Heroicons, Tabler…) dropped into a pill or
+       button lands in a 1lh slot that the optical-pill maths keeps
+       concentric with the end cap. These two tokens are how a product
+       makes whichever set it picked look native:
+
+       --kernel-icon-size is the size the icon is drawn at inside that
+       slot. 1.25em suits 24px-grid sets whose glyphs fill about 85% of
+       their viewBox. Lower it for sets drawn edge to edge, raise it for
+       sets with generous built-in padding.
+
+       --kernel-icon-stroke-width overrides an outline set's stroke, in
+       the icon's own viewBox units (Lucide and Tabler default to 2,
+       Heroicons to 1.5). `auto` leaves each icon's stroke alone. The
+       override needs container style queries (Chrome 111+, Safari 18+);
+       elsewhere icons keep their own stroke. It only reaches strokes
+       set on the <svg> itself, which is where those sets put them. */
+    --kernel-icon-size: 1.25em;
+    --kernel-icon-stroke-width: auto;
 
     --kernel-border-width: 1px;
 

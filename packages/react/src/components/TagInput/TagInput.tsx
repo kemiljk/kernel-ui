@@ -269,6 +269,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
             <button
               type="button"
               className={styles.tagRemove}
+              data-icon
               tabIndex={-1}
               aria-label={`Remove ${tag}`}
               onClick={(event) => {

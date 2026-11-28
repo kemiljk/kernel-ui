@@ -49,10 +49,29 @@ separate "install this one component" step.
   dispatches `kernel-file-upload-error` with
   `detail: { type: "accept" | "max-size" | "max-files" | "directory", files }`
   when a pick or drop is rejected.
+- **Contrast**: Kernel's colour tokens are checked with APCA (the
+  perceptual method proposed for WCAG 3), with WCAG 2's ratio as a floor:
+  - `--kernel-color-text`: Lc 75 and 4.5:1;
+  - `--kernel-color-text-muted`: Lc 60 and 4.5:1;
+  - `--kernel-color-focus-ring` and `--kernel-color-border-control`: Lc 45
+    and 3:1.
+
+  Keep to those tokens for text and outlines. If you set your own colours,
+  check them against the same APCA levels, not just WCAG 2. Dark mode is
+  where the two methods disagree most.
 - **Compose with real children**: components that take structured content
   use real child elements or attributes on real children, not a JSON
   prop — e.g. `<kernel-select>` takes real `<option>`/`<optgroup>`
   children, `<kernel-tabs>` takes `<kernel-tab>`/`<kernel-tab-panel>`.
+- **Icons in pills** (`<kernel-badge>`, `<kernel-tag-input>`'s tags,
+  `<kernel-suggestion-item>`, `<kernel-button>`): put any `<svg>` or `<img>` child before the
+  text, after it, or on its own. Mark any other icon element (an icon
+  custom element, say) with `data-icon`. Whichever end holds an icon
+  becomes a `1lh` slot, concentric with the rounded end, and stays correct
+  if the children change later. Tune the whole set with
+  `--kernel-icon-size` and `--kernel-icon-stroke-width`. Label an
+  icon-only pill on the icon itself (`role="img" aria-label="…"`), or an
+  icon-only `<kernel-button>` with `aria-label` on the tag.
 
 <!-- GENERATED:COMPONENTS:START -->
 ## Tags (grouped to match @kernelui-lib/react's component groups; composite

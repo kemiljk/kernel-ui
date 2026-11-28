@@ -18,18 +18,42 @@
   padding: 0;
 }
 
+/* An optical pill: the same recipe as Badge.module.css, which explains
+   the maths. Suggestion is always a full pill, so --pill-r is the
+   true half-height radius rather than following --kernel-radius-control.
+   That replaces the old hand-tuned "roomier" padding: at the default
+   size the label edge works out to about 4px, which lands the inline
+   padding back on the old space-4 by construction. --pill-py is derived
+   from the md control height, so a one-line suggestion lines up with a
+   Button beside it.
+
+   Unlike Badge it can wrap, so the height is a minimum, not fixed. The
+   baseline strut still pins the first line's capitals to the middle of
+   a one-line pill, and the icon stays on that first line, concentric
+   with the top corner. The end caps keep their one-line radius rather
+   than swelling into a stadium. */
 .button {
+  --pill-bw: var(--kernel-border-width);
+  --pill-lh: 1.3em;
+  --pill-cap: 0.7em;
+  --pill-py: calc((var(--kernel-control-height-md) - var(--pill-lh)) / 2 - var(--pill-bw));
+  --pill-px: var(--kernel-space-3);
+  --pill-h: calc(2 * (var(--pill-bw) + var(--pill-py)) + var(--pill-lh));
+  --pill-max: calc(var(--pill-h) / 2);
+  --pill-r: var(--pill-max);
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+  --pill-icon-edge: calc(var(--pill-py) - var(--pill-px) - var(--pill-label-edge));
+  --pill-gap: max(var(--pill-py), var(--pill-px) - (var(--pill-lh) - var(--pill-cap)) / 2);
+
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
+  gap: var(--pill-gap);
   max-inline-size: 100%;
-  /* Roomier than a space-2/3 rectangular control: the pill's fully
-     round corners (--kernel-radius-full) eat into the visual padding on
-     each end, so a tight pad reads as cramped next to other fully-rounded
-     controls (Round theme's --kernel-radius-control: full buttons/inputs). */
-  padding-block: var(--kernel-space-3);
-  padding-inline: var(--kernel-space-4);
-  border: var(--kernel-border-width) solid var(--kernel-color-border);
-  border-radius: var(--kernel-radius-full);
+  min-block-size: var(--pill-h);
+  padding-block: 0 var(--pill-py);
+  padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
+  border: var(--pill-bw) solid var(--kernel-color-border);
+  border-radius: var(--pill-r);
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
   font: inherit;
@@ -68,4 +92,61 @@
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+/* Baseline strut: see Badge.module.css, part 4. */
+.button::before {
+  content: "";
+  block-size: calc(var(--pill-h) / 2 + var(--pill-cap) / 2 - var(--pill-bw));
+  margin-inline-end: calc(var(--pill-gap) * -1);
+}
+
+@supports (width: 1lh) and (width: 1cap) {
+  .button {
+    --pill-lh: 1lh;
+    --pill-cap: 1cap;
+  }
+}
+
+.button[data-icon-start] > :first-child,
+.button[data-icon-end] > :last-child {
+  flex: none;
+  align-self: flex-start;
+  margin-block-start: var(--pill-py);
+  inline-size: var(--pill-lh);
+  block-size: var(--pill-lh);
+  /* The reset caps replaced elements at max-inline-size: 100%, and an
+     icon-only pill's content box is narrower than its icon on purpose
+     (the negative margins), so the cap would crush the icon. */
+  max-inline-size: none;
+  /* The slot stays 1lh for the maths; the icon draws at
+     --kernel-icon-size inside it. */
+  box-sizing: border-box;
+  padding: max(0px, (var(--pill-lh) - var(--kernel-icon-size)) / 2);
+}
+
+@container not style(--kernel-icon-stroke-width: auto) {
+  .button[data-icon-start] > :first-child,
+  .button[data-icon-end] > :last-child {
+    stroke-width: var(--kernel-icon-stroke-width);
+  }
+}
+
+.button[data-icon-start] > :first-child {
+  margin-inline-start: var(--pill-icon-edge);
+}
+
+.button[data-icon-end] > :last-child {
+  margin-inline-end: var(--pill-icon-edge);
+}
+
+/* Icon-only (both ends flagged and a single element child, which can
+   only be the icon): pad to --pill-py directly, because the two edge
+   pulls together can outrun a content box that can't go below zero. */
+.button[data-icon-start][data-icon-end]:has(> :only-child) {
+  padding-inline: var(--pill-py);
+}
+
+.button[data-icon-start][data-icon-end] > :only-child {
+  margin-inline: 0;
 }

@@ -250,11 +250,13 @@
   --kernel-sheet-bleed-x: 50vw;
 }
 
-.sheet[data-side="left"]:dir(rtl) {
+.sheet[data-side="left"]:dir(rtl),
+:where([dir="rtl"]) .sheet[data-side="left"] {
   --kernel-sheet-bleed-x: 50vw;
 }
 
-.sheet[data-side="right"]:dir(rtl) {
+.sheet[data-side="right"]:dir(rtl),
+:where([dir="rtl"]) .sheet[data-side="right"] {
   --kernel-sheet-bleed-x: -50vw;
 }
 

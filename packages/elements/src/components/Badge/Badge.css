@@ -1,14 +1,69 @@
+/* Optical pill (after Diego Haz). A round end cap does two things to
+   a pill's contents: a leading icon looks off-centre, because it sits
+   --pill-px from the side but only --pill-py from the top; and the
+   curve eats into the space next to text, so the padding reads smaller
+   than it is. Fonts add a third: line boxes centre on ascent + descent,
+   not on the capitals, so a font with lopsided metrics sits low (or
+   high) in the pill. The fix has four parts:
+
+   1. Radius. --pill-max is the true full-pill radius, half the box
+      height, so the maths below works. 999px would break it. --pill-r
+      follows --kernel-radius-control but never goes past --pill-max.
+   2. Text. Averaged over the box height, the two corners on one side
+      cut away r² × (1 − π/4) / pill of width. That's --pill-label-edge,
+      folded into padding-inline so text-only pills need no wrapper. It
+      is 0 at Sharp, about 1px at Soft, and r × (1 − π/4) at a full pill.
+   3. Icons. An icon at either end is a 1lh slot, pulled in with a
+      negative margin until it sits --pill-py from the edge on every
+      side, which makes it concentric with the cap. syncPillIcons() sets
+      data-icon-start/-end because CSS can't see text nodes. The real
+      padding stays on the element, so the hit area doesn't shrink.
+   4. Vertical centring. text-box-trim would do this, but it can't reach
+      a bare text node inside a flex container. Instead an empty ::before
+      strut, aligned by baseline, puts the first baseline exactly half a
+      cap height below the middle of the box. The capitals are centred
+      using the font's own cap-height metric, whatever its ascent and
+      descent claim. Icons sit --pill-py from the top, which centres
+      them on the same line. The strut only wins while it reaches higher
+      than the text's own line box, so Badge (which never wraps) sets its
+      line-height to cap height and sizes itself from --pill-lh instead.
+      That keeps even a font whose ascent is far too tall centred.
+
+   The gap is the padding minus the space around the icon's glyph inside
+   its 1lh slot, assuming the glyph is drawn about cap height. That way
+   the visible distance from icon to text matches text to edge. It never
+   goes below --pill-py.
+
+   cap, pi and length ÷ length need recent browsers, and an
+   unsupported unit inside a custom property invalidates every property
+   that reads it. So each one starts from a plain value here and is
+   upgraded under @supports below. */
 .kernel-Badge-root {
+  --pill-py: 0.15em;
+  --pill-px: var(--kernel-space-2);
+  --pill-bw: 0px;
+  /* The line box the pill is sized around. An explicit length rather
+     than 1lh, because line-height below is cap height (part 4). */
+  --pill-lh: 1.4em;
+  --pill-cap: 0.7em;
+  --pill-h: calc(2 * (var(--pill-bw) + var(--pill-py)) + var(--pill-lh));
+  --pill-max: calc(var(--pill-h) / 2);
+  --pill-r: min(var(--kernel-radius-control), var(--pill-max));
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+  --pill-icon-edge: calc(var(--pill-py) - var(--pill-px) - var(--pill-label-edge));
+  --pill-gap: max(var(--pill-py), var(--pill-px) - (var(--pill-lh) - var(--pill-cap)) / 2);
+
   display: inline-flex;
-  align-items: center;
-  gap: var(--kernel-space-1);
-  padding-block: 0.15em;
-  padding-inline: var(--kernel-space-2);
-  border-radius: var(--kernel-radius-full);
+  align-items: baseline;
+  gap: var(--pill-gap);
+  block-size: var(--pill-h);
+  padding-block: 0;
+  padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
+  border-radius: var(--pill-r);
   font-family: var(--kernel-font-sans);
   font-size: var(--kernel-font-size-sm);
   font-weight: 500;
-  line-height: 1.4;
+  line-height: var(--pill-cap);
   white-space: nowrap;
   /* Badges commonly carry a count (unread, notifications) that
      increments in place — equal-width digits keep the badge from
@@ -17,6 +72,15 @@
   transition:
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+/* The baseline strut (part 4). Its bottom edge is its baseline, so the
+   text baseline lands at middle + cap / 2. The negative margin cancels
+   the gap it would otherwise open before the first real child. */
+.kernel-Badge-root::before {
+  content: "";
+  block-size: calc(var(--pill-h) / 2 + var(--pill-cap) / 2 - var(--pill-bw));
+  margin-inline-end: calc(var(--pill-gap) * -1);
 }
 
 .kernel-Badge-root[data-variant="neutral"] {
@@ -42,4 +106,62 @@
 .kernel-Badge-root[data-variant="danger"] {
   background-color: var(--kernel-color-danger-subtle);
   color: var(--kernel-color-danger-text);
+}
+
+@supports (width: 1cap) {
+  .kernel-Badge-root {
+    --pill-cap: 1cap;
+  }
+}
+
+/* Typed division (Chrome 140+). Without it the label edge uses the
+   full-pill value r × (1 − π/4), which overshoots by under a pixel at
+   radii smaller than a pill. */
+@supports (width: calc(1px * 1px / 1px)) {
+  .kernel-Badge-root {
+    --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut) * var(--pill-r) / var(--pill-max));
+  }
+}
+
+.kernel-Badge-root[data-icon-start] > :first-child,
+.kernel-Badge-root[data-icon-end] > :last-child {
+  flex: none;
+  align-self: flex-start;
+  margin-block-start: var(--pill-py);
+  inline-size: var(--pill-lh);
+  block-size: var(--pill-lh);
+  /* The reset caps replaced elements at max-inline-size: 100%, and an
+     icon-only pill's content box is narrower than its icon on purpose
+     (the negative margins), so the cap would crush the icon. */
+  max-inline-size: none;
+  /* The slot stays 1lh for the maths; the icon draws at
+     --kernel-icon-size inside it. */
+  box-sizing: border-box;
+  padding: max(0px, (var(--pill-lh) - var(--kernel-icon-size)) / 2);
+}
+
+@container not style(--kernel-icon-stroke-width: auto) {
+  .kernel-Badge-root[data-icon-start] > :first-child,
+  .kernel-Badge-root[data-icon-end] > :last-child {
+    stroke-width: var(--kernel-icon-stroke-width);
+  }
+}
+
+.kernel-Badge-root[data-icon-start] > :first-child {
+  margin-inline-start: var(--pill-icon-edge);
+}
+
+.kernel-Badge-root[data-icon-end] > :last-child {
+  margin-inline-end: var(--pill-icon-edge);
+}
+
+/* Icon-only (both ends flagged and a single element child, which can
+   only be the icon): pad to --pill-py directly, because the two edge
+   pulls together can outrun a content box that can't go below zero. */
+.kernel-Badge-root[data-icon-start][data-icon-end]:has(> :only-child) {
+  padding-inline: var(--pill-py);
+}
+
+.kernel-Badge-root[data-icon-start][data-icon-end] > :only-child {
+  margin-inline: 0;
 }
