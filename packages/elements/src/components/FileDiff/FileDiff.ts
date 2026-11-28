@@ -22,6 +22,8 @@ const MARKERS: Record<DiffRowKind, string> = {
   hunk: "@",
 };
 
+let fileDiffCounter = 0;
+
 /**
  * `<kernel-file-diff>` — a file's changes as a real `<table>` inside a
  * `<details>`. A diff *is* tabular data (old line, new line, marker, content);
@@ -37,8 +39,6 @@ const MARKERS: Record<DiffRowKind, string> = {
  * Attributes: `path`, `streaming`, `no-line-numbers`, `collapse-on-complete`,
  * `additions` / `deletions` (override the derived counts), `default-open="false"`.
  */
-let fileDiffCounter = 0;
-
 export class KernelFileDiff extends KernelElement {
   private readonly idBase = `kernel-file-diff-${++fileDiffCounter}`;
   private summaryEl: HTMLElement | null = null;
