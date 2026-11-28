@@ -1,6 +1,6 @@
 {
   "name": "@kernelui-lib/testing",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "WAI-ARIA pattern and Kernel UI component checks for your own test suite: roles, accessible names, state consistency and keyboard behaviour, in jsdom, happy-dom or a real browser.",
   "license": "MIT",
   "author": "Karl Koch",
