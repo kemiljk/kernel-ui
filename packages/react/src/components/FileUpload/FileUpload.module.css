@@ -118,7 +118,7 @@
 
 .dropzone:has(.input:focus-visible) {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .icon {
@@ -284,7 +284,7 @@
 
 .remove:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .dropzone[data-has-preview] {

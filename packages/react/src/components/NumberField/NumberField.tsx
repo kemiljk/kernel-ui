@@ -41,7 +41,7 @@ export interface NumberFieldProps
  * `<input type="number">` instead of `type="text"` — numeric keypad on
  * mobile, native min/max/step constraint validation, and native
  * ArrowUp/ArrowDown stepping while focused, all for free. The custom
- * up/down buttons alongside it don't reimplement stepping logic: they
+ * − / + buttons alongside it don't reimplement stepping logic: they
  * call the input's own native `stepUp()`/`stepDown()` methods and read
  * `.value` back afterward (those methods change the DOM value directly
  * without dispatching an `input`/`change` event, so this is the one
@@ -50,7 +50,11 @@ export interface NumberFieldProps
  * already does the identical thing natively — a fully keyboard-only
  * flow never needs to reach them, so they don't need their own stop.
  * The native spinner arrows are hidden in CSS since these buttons
- * replace them; not a case of two competing steppers.
+ * replace them; not a case of two competing steppers. The buttons sit
+ * side by side rather than stacked: two stacked buttons share one
+ * control height, so neither reaches a 24×24 target, and a stacked
+ * column can't nest inside a pill's end cap at a round theme. Side by
+ * side, each is a square concentric with the field's corner.
  *
  * `value`/`defaultValue` are numbers, not strings, but typing "-",
  * "1.", or "" are all valid intermediate states of a number a browser
@@ -179,17 +183,18 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
               .join(" ")}
           />
           <div className={styles.stepper}>
+            {/* − then +, reading in the direction the value moves. */}
             <button
               type="button"
               tabIndex={-1}
-              aria-label="Increment"
-              disabled={disabled || atMax}
-              onClick={() => stepBy(1)}
+              aria-label="Decrement"
+              disabled={disabled || atMin}
+              onClick={() => stepBy(-1)}
               className={styles.stepperButton}
             >
-              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
                 <path
-                  d="M4 10L8 6L12 10"
+                  d="M4 8H12"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
@@ -200,14 +205,14 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
             <button
               type="button"
               tabIndex={-1}
-              aria-label="Decrement"
-              disabled={disabled || atMin}
-              onClick={() => stepBy(-1)}
+              aria-label="Increment"
+              disabled={disabled || atMax}
+              onClick={() => stepBy(1)}
               className={styles.stepperButton}
             >
-              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
                 <path
-                  d="M4 6L8 10L12 6"
+                  d="M4 8H12M8 4V12"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"

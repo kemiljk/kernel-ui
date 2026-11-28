@@ -205,7 +205,7 @@
      element in the library. Never removed, only ever restyled. */
   :focus-visible {
     outline: 2px solid var(--kernel-color-focus-ring);
-    outline-offset: 2px;
+    outline-offset: var(--kernel-focus-offset);
   }
 
   /* Shared "visually hidden, still in the accessibility tree" utility —

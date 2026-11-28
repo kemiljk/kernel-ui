@@ -4,11 +4,40 @@
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
   max-inline-size: 100%;
-  /* Lines up with the input's own text by default — see
+  /* Optical field. A field on --kernel-radius-control is a pill when
+     that token is (the Round theme), and its round end cap eats into the
+     space beside the text exactly as it does on a Button. So the text
+     inset grows by the same label edge Button adds (see
+     Badge.module.css for the maths): r² × (1 − π/4) / half-height, which
+     is 0 at Sharp, about 0.7px at the default radius and about 4px on a
+     40px pill. The label, description and error grow by the same amount,
+     so they keep lining up with the text. The radius stops at half the
+     height (never 999px), which the maths needs.
+
+     The capitals need no strut here. An <input> draws its text in the
+     browser's own inner editor, which takes no pseudo-elements and
+     ignores text-box-trim, and measured in Chrome the caps already sit
+     within half a pixel of centre for both the system stack and the
+     docs font. */
+  --field-height: var(--kernel-control-height-md);
+  --field-px: var(--kernel-space-3);
+  --field-max: calc(var(--field-height) / 2);
+  --field-r: min(var(--kernel-radius-control), var(--field-max));
+  --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut));
+  /* The label lines up with the input's own text by default — see
      --kernel-label-inset in packages/styles/tokens.css. Set to 0 by
      data-label-offset="false" (the labelOffset={false} prop) for
      consumers who want the label hard-aligned to the field's edge. */
-  --label-offset: var(--kernel-label-inset);
+  --label-offset: calc(var(--kernel-label-inset) + var(--field-label-edge));
+}
+
+/* Typed division (Chrome 140+). Without it the label edge uses the
+   full-pill value r × (1 − π/4), about a pixel more at the default
+   radius. */
+@supports (width: calc(1px * 1px / 1px)) {
+  .root {
+    --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut) * var(--field-r) / var(--field-max));
+  }
 }
 
 .root[data-label-offset="false"] {
@@ -28,28 +57,38 @@
 }
 
 .input {
-  border-radius: var(--kernel-radius-control);
+  block-size: var(--field-height);
+  border-radius: var(--field-r);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
-  padding-inline: var(--kernel-space-3);
+  padding-inline: calc(var(--field-px) + var(--field-label-edge));
   transition:
     border-color var(--kernel-duration-fast) var(--kernel-ease-out),
     box-shadow var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
+.root[data-size="sm"] {
+  --field-height: var(--kernel-control-height-sm);
+}
+
 .root[data-size="sm"] .input {
-  block-size: var(--kernel-control-height-sm);
   font-size: var(--kernel-font-size-sm);
 }
 
+.root[data-size="md"] {
+  --field-height: var(--kernel-control-height-md);
+}
+
 .root[data-size="md"] .input {
-  block-size: var(--kernel-control-height-md);
   font-size: var(--kernel-font-size-base);
 }
 
+.root[data-size="lg"] {
+  --field-height: var(--kernel-control-height-lg);
+}
+
 .root[data-size="lg"] .input {
-  block-size: var(--kernel-control-height-lg);
   font-size: var(--kernel-font-size-lg);
 }
 
@@ -61,7 +100,7 @@
 
 .input:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 /* Native, live validation styling: no blur-tracking JS required. */

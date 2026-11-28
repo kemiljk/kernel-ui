@@ -79,7 +79,7 @@
 
 .root:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .root:disabled,
@@ -157,7 +157,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .root[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) {
-    background-color: color-mix(in oklch, var(--kernel-color-danger) 88%, black);
+    background-color: var(--kernel-color-danger-hover);
   }
 }
 

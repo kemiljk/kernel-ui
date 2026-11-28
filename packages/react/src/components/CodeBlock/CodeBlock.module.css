@@ -35,13 +35,26 @@
 }
 
 .copy {
+  /* Exactly --kernel-control-height-sm rather than padding around a
+     line box (31.3px). The leading icon is 14px in a 32px box, so it is
+     9px from the top and, with --kernel-space-2 of padding plus the
+     border, 9px from the start: already concentric with the corner at
+     Round. The label end gets the optical-pill label edge (see
+     Badge.module.css) so the text clears the end cap. */
+  --pill-height: var(--kernel-control-height-sm);
+  --pill-max: calc(var(--pill-height) / 2);
+  --pill-r: min(var(--kernel-radius-control), var(--pill-max));
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+
   display: inline-flex;
   align-items: center;
   gap: var(--kernel-space-1);
   margin-inline-start: auto;
-  padding: var(--kernel-space-1) var(--kernel-space-2);
+  block-size: var(--pill-height);
+  padding-block: 0;
+  padding-inline: var(--kernel-space-2) calc(var(--kernel-space-2) + var(--pill-label-edge));
   border: var(--kernel-border-width) solid transparent;
-  border-radius: var(--kernel-radius-control);
+  border-radius: var(--pill-r);
   background: none;
   color: var(--kernel-color-text-muted);
   font: inherit;
@@ -55,6 +68,12 @@
     color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
+@supports (width: calc(1px * 1px / 1px)) {
+  .copy {
+    --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut) * var(--pill-r) / var(--pill-max));
+  }
+}
+
 .copy:hover {
   border-color: var(--kernel-color-border);
   color: var(--kernel-color-text);
@@ -62,7 +81,7 @@
 
 .copy:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 /* Icon and label stacks: both states render at once (see CodeBlock.tsx's

@@ -44,7 +44,7 @@
 
 .kernel-Textarea-input:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .kernel-Textarea-input:user-invalid {

@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
-import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { pillIconAttrs, usePillIconRef } from "../../utils/pillIcons";
+import { dataAttr, mergeRefs, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { useControllableState } from "../../utils/useControllableState";
 import styles from "./Toggle.module.css";
 
@@ -23,6 +24,13 @@ export interface ToggleProps
  * toggle that looks and behaves like a button (a toolbar "bold" button,
  * say), as distinct from `Switch`, which is the pattern for an on/off
  * setting.
+ *
+ * Shaped like `Button`: an optical pill at a round theme (see `Badge`),
+ * so a text label's padding includes the width the end caps cut away
+ * and its capitals are centred by cap height. An icon child at either
+ * end is found the same way `Badge` finds one (`pillIconAttrs`, then the
+ * real DOM) and sits in a 1lh slot concentric with the corner, so an
+ * icon-only toggle stays square, or a circle at Round.
  */
 export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle(
   {
@@ -33,6 +41,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
     disabled = false,
     className,
     onClick,
+    children,
     ...rest
   },
   ref,
@@ -44,11 +53,13 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
   });
 
   const state: ToggleState = { pressed: isPressed, disabled };
+  const pillRef = usePillIconRef<HTMLButtonElement>();
 
   return (
     <button
       {...rest}
-      ref={ref}
+      {...pillIconAttrs(children)}
+      ref={mergeRefs(ref, pillRef)}
       type="button"
       aria-pressed={isPressed}
       disabled={disabled}
@@ -62,6 +73,8 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle
         onClick?.(event);
         if (!event.defaultPrevented) setPressed(!isPressed);
       }}
-    />
+    >
+      {children}
+    </button>
   );
 });
