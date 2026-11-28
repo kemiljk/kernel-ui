@@ -118,7 +118,7 @@
     },
     {
       "id": "runs",
-      "description": "Enter runs the command and closes the palette",
+      "description": "ArrowDown then Enter runs the filtered command and closes the palette",
       "type": "eval",
       "expression": "/ran:\\s*go to billing/i.test(document.body.innerText) && !document.querySelector('dialog[open]')",
       "steps": [
@@ -131,6 +131,10 @@
           "action": "fill",
           "role": "combobox",
           "value": "billing"
+        },
+        {
+          "action": "press",
+          "key": "ArrowDown"
         },
         {
           "action": "press",

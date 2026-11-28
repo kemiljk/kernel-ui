@@ -115,10 +115,32 @@
       ]
     },
     {
+      "id": "thinking",
+      "description": "While the reply is pending, the page shows the assistant is thinking",
+      "type": "eval",
+      "expression": "/thinking|typing|writing/i.test(document.body.innerText) || document.querySelector('[data-thinking], [aria-busy=true]') !== null",
+      "steps": [
+        {
+          "action": "fill",
+          "selector": "textarea",
+          "value": "Hello from the eval"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "/send/i"
+        },
+        {
+          "action": "wait",
+          "ms": 200
+        }
+      ]
+    },
+    {
       "id": "replies",
       "description": "An assistant reply follows within ~2.5s",
       "type": "eval",
-      "expression": "(() => { const items = [...document.querySelectorAll('ol > li, ul > li')]; const i = items.findIndex((li) => li.textContent?.includes('Hello from the eval')); return i !== -1 && i < items.length - 1; })()",
+      "expression": "(() => { const items = [...document.querySelectorAll('ol > li, ul > li')]; const i = items.findIndex((li) => li.textContent?.includes('Hello from the eval')); const last = items[items.length - 1]; return i !== -1 && i < items.length - 1 && !/thinking|typing/i.test(last?.textContent ?? ''); })()",
       "steps": [
         {
           "action": "fill",
