@@ -2365,3 +2365,50 @@ dialog.mobile-nav-panel[data-side="left"] {
   color: var(--kernel-color-text-muted);
   font-size: var(--kernel-font-size-sm);
 }
+
+/* Icons guide: one tabbed demo whose panels each show the same scene
+   with a different icon set, then that set's tuned tokens. Stacked
+   rather than wrapped, since the scene and its code read top to bottom. */
+.docs-example--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.icon-sets {
+  display: grid;
+  gap: var(--kernel-space-4);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.icon-sets > [role="tablist"] {
+  justify-self: center;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+/* :not([hidden]) so this doesn't override the hidden attribute the
+   inactive TabPanels rely on. */
+.icon-sets-panel:not([hidden]) {
+  display: grid;
+  gap: var(--kernel-space-6);
+  min-inline-size: 0;
+}
+
+.icon-sets-scene {
+  display: grid;
+  justify-items: center;
+  gap: var(--kernel-space-4);
+}
+
+.icon-sets-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kernel-space-3);
+}
+
+.icon-sets-scene > [role="list"] {
+  justify-content: center;
+}
