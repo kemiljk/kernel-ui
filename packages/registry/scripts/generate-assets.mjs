@@ -86,6 +86,18 @@ async function replaceGeneratedSection(filePath, generated) {
   await rename(temporary, filePath);
 }
 
+/**
+ * Write via a temp file + rename. `bun run --filter` builds cli and elements
+ * at the same time, and both run this script first; elements then reads
+ * dist/api.json. A direct write truncates the file, so a concurrent reader
+ * could see half a JSON document.
+ */
+async function writeAtomic(filePath, contents) {
+  const temporary = `${filePath}.${process.pid}.tmp`;
+  await writeFile(temporary, contents, "utf-8");
+  await rename(temporary, filePath);
+}
+
 async function main() {
   await mkdir(path.dirname(registryJsonPath), { recursive: true });
 
@@ -110,16 +122,16 @@ async function main() {
   };
 
   const json = `${JSON.stringify(registry, null, 2)}\n`;
-  await writeFile(registryJsonPath, json, "utf-8");
+  await writeAtomic(registryJsonPath, json);
   await mkdir(path.dirname(docsPublicPath), { recursive: true });
-  await writeFile(docsPublicPath, json, "utf-8");
+  await writeAtomic(docsPublicPath, json);
 
   // Exact props/attributes/events per component, read from source. Kept out
   // of registry.json (which stays a small catalogue) and written beside it.
   const api = { version: 1, components: extractApi(components, path.join(root, "..", "..")) };
   const apiJson = `${JSON.stringify(api, null, 2)}\n`;
-  await writeFile(apiJsonPath, apiJson, "utf-8");
-  await writeFile(docsApiPath, apiJson, "utf-8");
+  await writeAtomic(apiJsonPath, apiJson);
+  await writeAtomic(docsApiPath, apiJson);
 
   await replaceGeneratedSection(reactLlmsPath, generateReactComponentsSection());
   await replaceGeneratedSection(elementsLlmsPath, generateElementsTagsSection());

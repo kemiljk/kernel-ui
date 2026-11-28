@@ -25,6 +25,29 @@ Both CSS imports are required for the library's actual visual design.
 Skip `@kernelui-lib/react/styles.css` and every component still renders as its
 real underlying element, fully functional, just unstyled — never broken.
 
+### Next.js App Router / React Server Components
+
+The bundle (`dist/index.js` and `dist/index.cjs`) starts with
+`"use client"`, so a Server Component file (`app/**/page.tsx`,
+`layout.tsx`, no directive of its own) can import and render Kernel
+components directly with serialisable props; no wrapper Client Component
+is needed. The components still render and run on the client. Event
+handler props (`onValueChange`, `onClick`) and calls to the package's plain
+functions (`toast()`, `linesFromCode()`, `mergeRefs()`…) belong in a file
+you mark `"use client"` yourself.
+
+### Overriding Kernel's CSS
+
+Import `@kernelui-lib/react/styles.layer.css` instead of `styles.css` and
+any unlayered CSS you write overrides Kernel without specificity fights or
+`!important`. It is the same CSS inside `@layer kernel.components`, ordered
+after `@kernelui-lib/styles`' `kernel.tokens` and `kernel.base` layers.
+Opt-in, because an unlayered reset in your own CSS
+(`button { background: none }`) would also win; put such a reset in a layer
+declared before Kernel's:
+`@layer reset, kernel.tokens, kernel.base, kernel.components;` above your
+imports.
+
 ## Conventions (true across nearly every component — learn these once)
 
 - **Controlled/uncontrolled value**: `value`/`defaultValue`/`onValueChange`

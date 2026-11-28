@@ -10,6 +10,18 @@ import "@kernelui-lib/react/styles.css";
 
 import { Button } from "@kernelui-lib/react";`;
 
+const nextServerSnippet = `// app/settings/page.tsx: a Server Component, no "use client" needed
+import { Button, TextField } from "@kernelui-lib/react";
+
+export default function SettingsPage() {
+  return (
+    <form action="/api/settings" method="post">
+      <TextField label="Display name" name="displayName" />
+      <Button type="submit" variant="primary">Save</Button>
+    </form>
+  );
+}`;
+
 const elementsInstallSnippet = `npm install @kernelui-lib/elements @kernelui-lib/styles`;
 
 const elementsImportSnippet = `<script type="module">
@@ -60,6 +72,32 @@ const tokensOnlySnippet = `npm install @kernelui-lib/styles`;
       component still renders as its real underlying element, fully
       functional, just with no Kernel-specific look — see{" "}
       <a href="/platforms/">platforms</a> for more on headless usage.
+    </p>
+
+    <h3>Next.js App Router and Server Components</h3>
+    <p>
+      The package's bundle starts with a <code>"use client"</code>
+      directive, so you can import Kernel straight into a Server Component
+      file (a <code>page.tsx</code> or <code>layout.tsx</code> with no
+      directive of its own) and pass it props. You don't need a wrapper
+      Client Component. The components themselves still render and run on
+      the client: Kernel is interactive, so every component is a Client
+      Component, and its props must be serialisable, the same rule as any
+      Client Component. Event handlers like <code>onValueChange</code> belong
+      in a component you mark <code>"use client"</code> yourself, and so do
+      calls to the package's plain functions (<code>toast()</code>,{" "}
+      <code>linesFromCode()</code>, <code>mergeRefs()</code> and the other
+      helpers), because the whole bundle is client code.
+    </p>
+    <CodeBlock code={nextServerSnippet} lang="tsx" />
+
+    <h3>Letting your CSS win</h3>
+    <p>
+      To override Kernel from your own stylesheet without specificity
+      fights, import <code>@kernelui-lib/react/styles.layer.css</code> in
+      place of <code>styles.css</code>. It puts every component rule in a
+      cascade layer, so any CSS you write outside a layer wins. See{" "}
+      <a href="/theming/#overriding-component-styles">theming</a>.
     </p>
 
     <h2>Web Components</h2>

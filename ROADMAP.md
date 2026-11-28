@@ -94,9 +94,9 @@ From the full audit. P0 = broken or inaccessible, P1 = visibly unpolished, P2 = 
 
 | Item | Status | PR | Notes |
 | --- | --- | --- | --- |
-| `"use client"` in the React build | next | | Server Components can't import Kernel directly today |
-| CSS cascade layers for tokens, reset and components | next | | Clean override story for consumers |
-| `custom-elements.json` manifest and framework JSX types | next | | |
+| `"use client"` in the React build | in progress | | Rolldown `output.banner`; `test:package` checks it's the first statement |
+| CSS cascade layers for tokens, reset and components | in progress | | Opt-in `styles.layer.css` in both packages; `styles.css` stays unlayered |
+| `custom-elements.json` manifest and framework JSX types | in progress | | Generated from `api.json`: manifest, VS Code custom data, React 19 `jsx.d.ts` |
 | Translatable built-in strings (`labels`) | next | | 7 hard-coded English strings in React |
 | Density token (compact / comfortable) | later | | |
 | `forced-colors` and reduced-transparency support | later | | |
