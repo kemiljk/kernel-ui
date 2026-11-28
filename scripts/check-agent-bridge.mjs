@@ -22,6 +22,8 @@
  *   5. axe on the demo, light and dark.
  *
  * Usage: `bun run docs:build`, then `node scripts/check-agent-bridge.mjs`.
+ * `--cpu-throttle=4` (or KERNEL_CPU_THROTTLE=4) slows the main page's CPU
+ * through CDP, the way a slow CI runner does, to shake out timing races.
  */
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
@@ -91,6 +93,14 @@ const json = (value) => JSON.stringify(value);
 
 const context = await browser.newContext();
 const page = await context.newPage();
+const cpuThrottle = Number(
+  process.argv.find((arg) => arg.startsWith("--cpu-throttle="))?.split("=")[1] ?? process.env.KERNEL_CPU_THROTTLE ?? 1,
+);
+if (cpuThrottle > 1) {
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottle });
+  console.log(`(CPU throttled ${cpuThrottle}x)`);
+}
 const errors = [];
 page.on("pageerror", (error) => errors.push(`${page.url()}: ${error.message}`));
 
