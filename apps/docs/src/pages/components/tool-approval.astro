@@ -1,0 +1,103 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import ToolApprovalDemo from "../../components/demos/ToolApprovalDemo";
+import ToolApprovalPlayground from "../../components/demos/ToolApprovalPlayground";
+import { ToolApproval } from "@kernelui-lib/react";
+
+const approvedSnippet = `<ToolApproval tool="read_file" status="approved">
+  <p>Read src/auth.ts</p>
+</ToolApproval>`;
+
+const deniedSnippet = `<ToolApproval
+  tool="bash"
+  status="denied"
+  labels={{ denied: "Skipped by you" }}
+>
+  <p>rm -rf node_modules</p>
+</ToolApproval>`;
+---
+
+<BaseLayout title="Tool Approval" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Tool Approval</h1>
+    <p>
+      The prompt an agent shows before it runs a tool: which tool, what it
+      will do, and Approve / Deny, with an optional "Always allow". It's a
+      <code>&lt;section role="group"&gt;</code> named by its own real
+      heading, rather than a landmark region, because a long transcript can
+      hold dozens of these and a region each would flood the landmark list.
+      Once it's approved, follow it with a{" "}
+      <a href="/components/tool-call/">Tool Call</a> for the run itself.
+    </p>
+
+    <div class="docs-example">
+      <ToolApprovalDemo client:visible />
+    </div>
+
+    <h2>After a decision</h2>
+    <p>
+      The buttons are replaced by a status line inside a
+      <code>role="status"</code> live region. The region is in the page
+      from the start, empty while pending, because a live region only
+      announces changes made after it exists. If focus was on the button
+      that just disappeared, it moves to the status line instead of falling
+      back to the page. The footer keeps the same height either way, so the
+      decision doesn't shift the transcript below it.
+    </p>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="Approved" description="A decided prompt, as it stays in the transcript." code={approvedSnippet}>
+        <ToolApproval tool="read_file" status="approved">
+          <p style="margin: 0;">Read src/auth.ts</p>
+        </ToolApproval>
+      </Example>
+      <Example title="Denied" description="Status text is overridable through labels." code={deniedSnippet}>
+        <ToolApproval tool="bash" status="denied" labels={{ denied: "Skipped by you" }}>
+          <p style="margin: 0;">rm -rf node_modules</p>
+        </ToolApproval>
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <ToolApprovalPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Tool Approval.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>tool</code></td><td>ReactNode (required)</td><td>—</td></tr>
+        <tr><td><code>title</code></td><td>ReactNode</td><td>"Allow <code>tool</code> to run?"</td></tr>
+        <tr><td><code>headingLevel</code></td><td>1 | 2 | 3 | 4 | 5 | 6</td><td>3</td></tr>
+        <tr><td><code>status</code> / <code>defaultStatus</code></td><td>"pending" | "approved" | "denied"</td><td>"pending"</td></tr>
+        <tr><td><code>onStatusChange</code></td><td>(status) =&gt; void</td><td>—</td></tr>
+        <tr><td><code>onApprove</code> / <code>onDeny</code></td><td>() =&gt; void</td><td>—</td></tr>
+        <tr><td><code>onAlwaysAllow</code></td><td>() =&gt; void (adds the button)</td><td>—</td></tr>
+        <tr><td><code>labels</code></td><td>Partial&lt;{`{ approve, deny, alwaysAllow, approved, alwaysAllowed, denied }`}&gt;</td><td>English defaults</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode (summary, arguments)</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      The custom element fires bubbling, cancelable <code>approve</code>,
+      <code>deny</code> and <code>always-allow</code> events, then sets its
+      own <code>status</code> attribute unless a listener calls
+      <code>preventDefault()</code>. Text overrides are attributes:
+      <code>approve-label</code>, <code>deny-label</code>,
+      <code>always-allow-label</code>, <code>approved-label</code>,
+      <code>always-allowed-label</code>, <code>denied-label</code>.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The group's name is its heading, so "Allow bash to run?" is announced when focus enters the buttons.</li>
+      <li>Actions are real <code>&lt;button&gt;</code>s; the decision is announced politely through <code>role="status"</code>.</li>
+      <li>Focus is never dropped to <code>&lt;body&gt;</code> when the buttons are removed.</li>
+    </ul>
+  </div>
+</BaseLayout>

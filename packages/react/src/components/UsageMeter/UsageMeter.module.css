@@ -1,0 +1,106 @@
+.root {
+  --meter-fill: var(--kernel-color-accent);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  min-inline-size: 0;
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  color: var(--kernel-color-text);
+}
+
+.root[data-level="warning"] {
+  --meter-fill: var(--kernel-color-warning);
+}
+
+.root[data-level="danger"] {
+  --meter-fill: var(--kernel-color-danger);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kernel-space-1) var(--kernel-space-3);
+}
+
+.label {
+  font-weight: 500;
+}
+
+/* Tabular figures: the count ticks up in place while a response streams,
+   and proportional digits would make the whole line jitter. */
+.value {
+  color: var(--kernel-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.root[data-level="warning"] .value {
+  color: var(--kernel-color-warning-text);
+}
+
+.root[data-level="danger"] .value {
+  color: var(--kernel-color-danger-text);
+}
+
+/* The native <meter>, restyled. appearance: none hands WebKit/Blink's
+   bar to the ::-webkit-meter-* pseudo-elements and Gecko's to
+   ::-moz-meter-bar. The engines' prefixed selectors can't share a rule
+   (one unknown selector drops the whole list), so each gets its own.
+   All three WebKit value pseudo-elements read the same --meter-fill: the
+   colour comes from our data-level, which runs the same region
+   algorithm the browser does, so they always agree. */
+.meter {
+  --meter-h: var(--kernel-space-2);
+
+  display: block;
+  appearance: none;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: var(--meter-h);
+  margin: 0;
+  border: none;
+  border-radius: var(--kernel-radius-full);
+  overflow: hidden;
+  background: var(--kernel-color-fill-strong);
+}
+
+.meter::-webkit-meter-bar {
+  block-size: var(--meter-h);
+  border: none;
+  border-radius: var(--kernel-radius-full);
+  background: transparent;
+}
+
+.meter::-webkit-meter-optimum-value,
+.meter::-webkit-meter-suboptimum-value,
+.meter::-webkit-meter-even-less-good-value {
+  block-size: var(--meter-h);
+  border-radius: var(--kernel-radius-full);
+  background: var(--meter-fill);
+  transition:
+    inline-size var(--kernel-duration-base) var(--kernel-ease-out),
+    background-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.meter::-moz-meter-bar {
+  border-radius: var(--kernel-radius-full);
+  background: var(--meter-fill);
+}
+
+.description {
+  margin: 0;
+  color: var(--kernel-color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter::-webkit-meter-optimum-value,
+  .meter::-webkit-meter-suboptimum-value,
+  .meter::-webkit-meter-even-less-good-value {
+    transition: none;
+  }
+}

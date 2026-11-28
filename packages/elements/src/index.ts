@@ -147,6 +147,16 @@ export type { DiffRow, DiffRowKind } from "./components/FileDiff/FileDiff";
 export { linesFromCode, lineText, linesText } from "./utils/codeTokens";
 export type { CodeToken, CodeLine } from "./utils/codeTokens";
 
+export { KernelKbd } from "./components/Kbd/Kbd";
+export { KernelEmptyState } from "./components/EmptyState/EmptyState";
+export { KernelToolApproval } from "./components/ToolApproval/ToolApproval";
+export {
+  KernelAttachment,
+  KernelAttachmentList,
+  formatFileSize,
+} from "./components/Attachment/Attachment";
+export { KernelUsageMeter, usageMeterLevel } from "./components/UsageMeter/UsageMeter";
+
 export { attachSheetDrag } from "./utils/sheetDrag";
 export type {
   SheetDragOptions,

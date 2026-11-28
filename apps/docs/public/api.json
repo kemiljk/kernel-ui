@@ -170,6 +170,108 @@
         }
       }
     },
+    "attachment": {
+      "name": "Attachment",
+      "react": {
+        "Attachment": {
+          "description": "A file chip for composers and messages: type icon (or image\nthumbnail), name, size, an optional remove button and optional upload\nprogress. Inside an `AttachmentList` it renders as that list's `<li>`;\non its own it's a `<div>`.\n\nThe name truncates in the middle, not at the end: the start ellipsises\nwhile the last few characters and the extension stay put, because\n`quarterly-report-final-v3.pdf` and `quarterly-report-final-v4.pdf` are\nonly told apart by their tail. The full name is still one run of text\nfor assistive tech and in the `title` tooltip.\n\nUpload progress is a real `<progress>` (implicit `progressbar` role and\nvalue, no ARIA bookkeeping), labelled \"Uploading {name}\". The remove\nbutton follows `TagInput`'s chip: a real `<button>` named\n\"Remove {name}\", but it stays in the tab order here, since an\nattachment has no Backspace-to-remove path.\n\nThe chip has a fixed height so its radius can stop at a true\nhalf-height pill (`min(--kernel-radius-lg, height / 2)`), and the\nthumbnail tile inside is concentric with it: its radius is the outer\nradius minus the inset.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLElement>, \"className\" | \"onRemove\">"
+          ],
+          "props": [
+            {
+              "name": "name",
+              "type": "string",
+              "optional": false,
+              "description": "The file name. The start truncates first, so the extension (and the\nlast few characters before it) stay visible."
+            },
+            {
+              "name": "size",
+              "type": "number",
+              "optional": true,
+              "description": "Size in bytes, shown formatted (`2.4 MB`) in the reader's locale."
+            },
+            {
+              "name": "type",
+              "type": "string",
+              "optional": true,
+              "description": "MIME type, e.g. `\"application/pdf\"`. Used for the type label when\nthe name has no extension."
+            },
+            {
+              "name": "previewSrc",
+              "type": "string",
+              "optional": true,
+              "description": "An image URL (often an object URL for a just-picked file) shown as a\nthumbnail in place of the generic file icon."
+            },
+            {
+              "name": "progress",
+              "type": "number",
+              "optional": true,
+              "description": "Upload progress from 0 to 1. While below 1, a thin native\n`<progress>` runs along the bottom edge and the percentage replaces\nthe type label. Omit once the upload is done."
+            },
+            {
+              "name": "onRemove",
+              "type": "() => void",
+              "optional": true,
+              "description": "Shows a remove button. Called when it's pressed."
+            },
+            {
+              "name": "removeLabel",
+              "type": "string",
+              "optional": true,
+              "description": "Accessible name of the remove button. Defaults to `Remove {name}`."
+            },
+            {
+              "name": "locale",
+              "type": "string",
+              "optional": true,
+              "description": "BCP 47 locale for the size and percentage. Defaults to the reader's."
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<AttachmentState>",
+              "optional": true
+            }
+          ]
+        },
+        "AttachmentList": {
+          "description": "A row of attachments: a real `<ul>`, with `role=\"list\"` restated because\nSafari drops list semantics from a list whose markers are removed with\n`list-style: none`. Each `Attachment` inside renders as its `<li>`, so a\nscreen reader announces \"list, 3 items\" before the files.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLUListElement>, \"className\">"
+          ],
+          "props": [
+            {
+              "name": "className",
+              "type": "ClassNameValue<Record<string, never>>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-attachment": {
+          "description": "`<kernel-attachment>` — a file chip for composers and messages: type\nicon (or image thumbnail), name, size, optional remove button and\nupload progress. Inside `<kernel-attachment-list>` it owns a real\n`<li>` (the host is `display: contents`, since custom elements can't be\nlist items); elsewhere a `<div>`. Mirrors `@kernelui-lib/react`'s\n`<Attachment>`: the name truncates in the middle so the extension stays\nvisible, upload progress is a real `<progress>` labelled\n\"Uploading {name}\", and the remove button is a real `<button>` named\n\"Remove {name}\".\n\nAttributes: `name`, `size` (bytes), `type` (MIME), `preview-src` (image\nthumbnail URL), `progress` (0–1; the bar shows while below 1),\n`removable` (boolean: show the remove button), `remove-label`,\n`locale`.\n\nEvents: `remove` (bubbling CustomEvent, `detail.name`) when the remove\nbutton is pressed. The element doesn't remove itself — the same as\nReact's `onRemove`, the owner of the file list decides.",
+          "attributes": [
+            "name",
+            "size",
+            "type",
+            "preview-src",
+            "progress",
+            "removable",
+            "remove-label",
+            "locale"
+          ],
+          "events": [
+            "remove"
+          ]
+        },
+        "kernel-attachment-list": {
+          "description": "`<kernel-attachment-list>` — a row of attachments on a real `<ul>`, with\n`role=\"list\"` restated because Safari drops list semantics once markers\nare removed. Each `<kernel-attachment>` inside renders as its `<li>`.\nMirrors `@kernelui-lib/react`'s `<AttachmentList>`.",
+          "attributes": [],
+          "events": []
+        }
+      }
+    },
     "avatar": {
       "name": "Avatar",
       "react": {
@@ -1523,6 +1625,74 @@
         }
       }
     },
+    "empty-state": {
+      "name": "Empty State",
+      "react": {
+        "EmptyState": {
+          "description": "A zero-data placeholder: the \"nothing here yet\" panel for an empty\nlist, inbox, search or project. It's a real `<section>` labelled by its\nown heading (`aria-labelledby`), and the heading is a real `<h1>`–`<h6>`\nchosen by `headingLevel`, so a screen-reader user navigating by heading\nor landmark lands on it and hears what's missing, rather than meeting\na block of unlabelled centred text.\n\nThe icon is decorative (`aria-hidden`): the heading carries the\nmeaning. Extra content passed as `children` sits between the\ndescription and the actions.\n\nShaped as a container: `--kernel-radius-container` with\n`--kernel-padding-container-curve`, plus extra block padding so the\ncontent sits calmly in the middle at every rounding.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLElement>, \"className\" | \"title\">"
+          ],
+          "props": [
+            {
+              "name": "title",
+              "type": "ReactNode",
+              "optional": false,
+              "description": "The heading. Rendered as a real `<h1>`–`<h6>` (see `headingLevel`)\nand used as the section's accessible name."
+            },
+            {
+              "name": "headingLevel",
+              "type": "1 | 2 | 3 | 4 | 5 | 6",
+              "optional": true,
+              "default": "3",
+              "description": "Which heading element `title` renders as, so the empty state slots\ninto the page's outline. Defaults to `3`."
+            },
+            {
+              "name": "description",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "One or two sentences under the heading: why it's empty, and what\nhappens next."
+            },
+            {
+              "name": "icon",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "A decorative illustration or icon above the heading. It's hidden\nfrom assistive tech, because the heading already says what it means."
+            },
+            {
+              "name": "actions",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "Buttons or links for the next step, e.g. \"Upload a file\"."
+            },
+            {
+              "name": "variant",
+              "type": "\"dashed\" | \"plain\"",
+              "optional": true,
+              "default": "\"dashed\"",
+              "description": "`dashed` (default) draws a dashed outline, the convention for \"a\nspace waiting for content\"; `plain` drops it for use inside a surface\nthat already has its own edge."
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<EmptyStateState>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-empty-state": {
+          "description": "`<kernel-empty-state>` — a zero-data placeholder on a real `<section>`\nlabelled by its own real heading (`aria-labelledby`), so a screen-reader\nuser navigating by heading or landmark lands on it and hears what's\nmissing. Mirrors `@kernelui-lib/react`'s `<EmptyState>`.\n\nAttributes: `heading` (the heading text; not `title`, which every\nelement already has as its native hover tooltip), `heading-level`\n(1–6, default 3), `description`, `variant` (`dashed` | `plain`, default\n`dashed`).\n\nSlots: a child with `slot=\"icon\"` becomes the decorative icon\n(`aria-hidden`); `slot=\"heading\"` and `slot=\"description\"` replace the\nattributes with rich content; `slot=\"actions\"` holds the next-step\nbuttons. Any other children sit between the description and actions.",
+          "attributes": [
+            "heading",
+            "heading-level",
+            "description",
+            "variant"
+          ],
+          "events": []
+        }
+      }
+    },
     "file-diff": {
       "name": "File Diff",
       "react": {
@@ -1947,6 +2117,55 @@
           "events": [
             "complete"
           ]
+        }
+      }
+    },
+    "kbd": {
+      "name": "Kbd",
+      "react": {
+        "Kbd": {
+          "description": "A keyboard key or shortcut, on the real `<kbd>` element, the one HTML\nelement that means \"user input from a keyboard\". A combination follows\nthe HTML spec's own pattern: an outer `<kbd>` holding one nested `<kbd>`\nper key, with the separator as real text between them, so the shortcut\nreads as one unit (\"Command plus K\") instead of a row of unrelated\nglyphs.\n\nModifier symbols (⌘ ⌥ ⇧ ⌃, arrows, Enter) get a visually hidden spoken\nname, because screen readers announce those glyphs inconsistently. The\n`mod` alias renders ⌘ on Apple platforms and Ctrl elsewhere, as text\nrather than icons, so it inherits the font and scales with it.\n\nEach key is sized like `Badge`: the same height, a radius that follows\n`--kernel-radius-control` but stops at a true half-height pill, and\ninline padding that grows by the width the rounded corners cut away.\nTabular figures keep a row of shortcuts aligned.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLElement>, \"className\">"
+          ],
+          "props": [
+            {
+              "name": "keys",
+              "type": "string[]",
+              "optional": true,
+              "description": "A key combination, one entry per key, e.g. `[\"mod\", \"K\"]`. Each key\nrenders as its own nested `<kbd>`. The lowercase aliases `mod`, `alt`,\n`shift` and `ctrl` are resolved per platform (`mod` is ⌘ on Apple\nplatforms and Ctrl elsewhere); anything else renders as written. When\nomitted, `children` render as a single key."
+            },
+            {
+              "name": "separator",
+              "type": "ReactNode",
+              "optional": true,
+              "default": "\"+\"",
+              "description": "Text between keys in a combination. It's real text, so a screen reader\nreads \"Command plus K\" rather than two unrelated keys. Defaults to `+`."
+            },
+            {
+              "name": "platform",
+              "type": "\"auto\" | \"apple\" | \"other\"",
+              "optional": true,
+              "default": "\"auto\"",
+              "description": "Which platform's key names to use for the aliases. `auto` (default)\nreads it from the browser after hydration; server rendering and the\nfirst client render use the non-Apple names so the markup matches."
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<KbdState>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-kbd": {
+          "description": "`<kernel-kbd>` — a keyboard key or shortcut on the real `<kbd>` element.\nA combination follows the HTML spec's own pattern: an outer `<kbd>`\nholding one nested `<kbd>` per key, with the separator as real text\nbetween them, so it reads as one unit (\"Command plus K\"). Mirrors\n`@kernelui-lib/react`'s `<Kbd>`.\n\nModifier symbols (⌘ ⌥ ⇧ ⌃, arrows, Enter) get a visually hidden\nspoken name, because screen readers announce those glyphs\ninconsistently. Each key is sized like `<kernel-badge>`'s optical pill.\n\nAttributes: `keys` (space-separated, e.g. `keys=\"mod shift P\"`; the\nlowercase aliases `mod`, `alt`, `shift`, `ctrl` resolve per platform,\n`mod` being ⌘ on Apple platforms and Ctrl elsewhere), `separator`\n(default `+`), `platform` (`auto` | `apple` | `other`, default `auto`).\nWithout `keys`, the element's own text is the single key.",
+          "attributes": [
+            "keys",
+            "separator",
+            "platform"
+          ],
+          "events": []
         }
       }
     },
@@ -4379,6 +4598,103 @@
         }
       }
     },
+    "tool-approval": {
+      "name": "Tool Approval",
+      "react": {
+        "ToolApproval": {
+          "description": "The prompt an agent shows before it runs a tool: which tool, what it\nwill do, and Approve / Deny (optionally \"Always allow\"). It's a\n`<section role=\"group\">` named by its own real heading rather than a\nlandmark region, because a long agent transcript can hold dozens of\nthese and a region each would flood the landmark list. Not a `<form>`:\nnothing is submitted to a URL, and each choice is a single press.\n\nThe actions are real Kernel `Button`s. Once a decision is made they're\nreplaced by a status line inside a `role=\"status\"` live region that is\nrendered from the start (a live region only announces changes made\nafter it exists), so the outcome is announced politely. If focus was\non a button that just disappeared, it moves to the status line rather\nthan falling back to the document body.\n\nShaped as a container: `--kernel-radius-container` with\n`--kernel-padding-container-curve` wherever content meets a corner,\nwhich also gives the buttons in the bottom corners their clearance.",
+          "extends": [
+            "Omit<HTMLAttributes<HTMLElement>, \"className\" | \"title\">"
+          ],
+          "props": [
+            {
+              "name": "tool",
+              "type": "ReactNode",
+              "optional": false,
+              "description": "The tool's name, e.g. `\"bash\"` or `\"github.create_issue\"`. Shown in\nmonospace in the heading."
+            },
+            {
+              "name": "title",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "Replaces the whole heading. Defaults to \"Allow `{tool}` to run?\"."
+            },
+            {
+              "name": "headingLevel",
+              "type": "1 | 2 | 3 | 4 | 5 | 6",
+              "optional": true,
+              "default": "3",
+              "description": "Which heading element the title renders as. Defaults to `3`."
+            },
+            {
+              "name": "status",
+              "type": "\"pending\" | \"approved\" | \"denied\"",
+              "optional": true,
+              "description": "Controlled decision. `pending` shows the actions; `approved` and\n`denied` replace them with a status line."
+            },
+            {
+              "name": "defaultStatus",
+              "type": "\"pending\" | \"approved\" | \"denied\"",
+              "optional": true,
+              "default": "\"pending\"",
+              "description": "Initial decision when uncontrolled. Defaults to `pending`."
+            },
+            {
+              "name": "onStatusChange",
+              "type": "(status: ToolApprovalStatus) => void",
+              "optional": true,
+              "description": "Fires with the new status whenever a button is pressed."
+            },
+            {
+              "name": "onApprove",
+              "type": "() => void",
+              "optional": true
+            },
+            {
+              "name": "onDeny",
+              "type": "() => void",
+              "optional": true
+            },
+            {
+              "name": "onAlwaysAllow",
+              "type": "() => void",
+              "optional": true,
+              "description": "When provided, adds an \"Always allow\" button. Pressing it approves\n(status becomes `approved`) and calls this instead of `onApprove`."
+            },
+            {
+              "name": "labels",
+              "type": "Partial<ToolApprovalLabels>",
+              "optional": true,
+              "description": "Override any button or status text, e.g. for localisation."
+            },
+            {
+              "name": "children",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "What the tool will do: a summary sentence, its arguments, a\n`CodeBlock` of the command."
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<ToolApprovalState>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-tool-approval": {
+          "description": "`<kernel-tool-approval>` — the prompt an agent shows before it runs a\ntool. A `<section role=\"group\">` named by its own real heading (a\ngroup, not a landmark region, so a long transcript of them doesn't\nflood the landmark list). Mirrors `@kernelui-lib/react`'s\n`<ToolApproval>`.\n\nThe actions are real `<button>`s with `<kernel-button>`'s classes.\nPressing one dispatches a bubbling, cancelable `approve`, `deny` or\n`always-allow` CustomEvent. Unless a listener calls `preventDefault()`,\nthe element then sets its own `status` attribute, which replaces the\nbuttons with a status line in a `role=\"status\"` live region that has\nbeen in the page from the start, so the outcome is announced politely.\nIf focus was on a button that disappeared, it moves to the status line.\n\nAttributes: `tool` (the tool's name), `heading` (replaces the default\n\"Allow {tool} to run?\"), `heading-level` (1–6, default 3), `status`\n(`pending` | `approved` | `denied`, default `pending`), `always-allow`\n(boolean: show the \"Always allow\" button), and text overrides\n`approve-label`, `deny-label`, `always-allow-label`, `approved-label`,\n`always-allowed-label`, `denied-label`. Children are the body: a\nsummary, arguments, a `<kernel-code-block>`.",
+          "attributes": [
+            "tool",
+            "heading",
+            "heading-level",
+            "status",
+            "always-allow"
+          ],
+          "events": []
+        }
+      }
+    },
     "tool-call": {
       "name": "Tool Call",
       "react": {
@@ -4523,6 +4839,122 @@
         "kernel-tooltip": {
           "description": "`<kernel-tooltip>` — `popover=\"manual\"` (driven from hover/focus, not\na click toggle) for top-layer stacking + `showPopover()`/\n`hidePopover()`, positioned with the same `FloatingPositioner` as\n`<kernel-popover>`. `interestfor` is set on the trigger as a\nforward-looking, currently-inert stand-in for the emerging native\nhover-intent attribute — today the hover/focus listeners below are\nwhat actually show and hide it.\n\nChildren: one element tagged `slot=\"trigger\"`, everything else\nbecomes the tooltip's content.\n\nAttributes: `placement` (top/bottom/left/right, default top),\n`align` (start/center/end, default center), `offset` (px, default 8),\n`open-delay` / `close-delay` (ms, default 0), `arrow` (boolean).",
           "attributes": [],
+          "events": []
+        }
+      }
+    },
+    "usage-meter": {
+      "name": "Usage Meter",
+      "react": {
+        "UsageMeter": {
+          "description": "Token, credit or quota usage on a real `<meter>`, the HTML element for\n\"a scalar measurement within a known range\". Not a `<progress>`: usage\nisn't a task heading for completion, and `<meter>`'s `low`/`high`/\n`optimum` attributes already express \"this much is fine, this much is a\nwarning\". The browser exposes the value to assistive tech itself; the\nformatted text (\"12,340 / 200,000 tokens\") is set as `aria-valuetext`\nso it's read with its unit rather than as a bare percentage, and the\nvisible copy of it is `aria-hidden` so it isn't read twice.\n\nThe label is a real `<label for>`, since `<meter>` is a labelable\nelement. Numbers are formatted with `Intl.NumberFormat`.\n\nColour follows the same region algorithm the browser uses, so above\n`high` the bar turns to warning (or danger past both `low` and `high`),\nand a full meter is always danger. The native bar is restyled with\n`::-webkit-meter-*` and `::-moz-meter-bar` (there's no standard,\nunprefixed way yet), reading tokens only.",
+          "extends": [
+            "Omit< MeterHTMLAttributes<HTMLMeterElement>, \"className\" | \"children\" | \"value\" | \"min\" | \"max\" | \"low\" | \"high\" | \"optimum\" >"
+          ],
+          "props": [
+            {
+              "name": "label",
+              "type": "ReactNode",
+              "optional": false,
+              "description": "What's being measured, e.g. \"Context window\" or \"Monthly credits\".\nRendered as a real `<label>` for the meter."
+            },
+            {
+              "name": "hideLabel",
+              "type": "boolean",
+              "optional": true,
+              "default": "false",
+              "description": "Visually hides the label while keeping it as the meter's name."
+            },
+            {
+              "name": "value",
+              "type": "number",
+              "optional": false,
+              "description": "Amount used so far."
+            },
+            {
+              "name": "min",
+              "type": "number",
+              "optional": true,
+              "default": "0",
+              "description": "Defaults to `0`."
+            },
+            {
+              "name": "max",
+              "type": "number",
+              "optional": false,
+              "description": "The limit."
+            },
+            {
+              "name": "low",
+              "type": "number",
+              "optional": true,
+              "description": "Start of the warning band, passed to the native `<meter>`."
+            },
+            {
+              "name": "high",
+              "type": "number",
+              "optional": true,
+              "description": "End of the comfortable range: above it the meter turns to warning\n(or danger, when `low` is also set)."
+            },
+            {
+              "name": "optimum",
+              "type": "number",
+              "optional": true,
+              "description": "The best value. Defaults to `min`, because for usage less is\nbetter; set it to `max` for a meter where more is better."
+            },
+            {
+              "name": "unit",
+              "type": "string",
+              "optional": true,
+              "description": "Unit after the numbers, e.g. `\"tokens\"` or `\"credits\"`."
+            },
+            {
+              "name": "locale",
+              "type": "string",
+              "optional": true,
+              "description": "BCP 47 locale for number formatting. Defaults to the reader's."
+            },
+            {
+              "name": "formatValue",
+              "type": "(value: number, max: number) => string",
+              "optional": true,
+              "description": "Replaces the default `\"12,340 / 200,000 tokens\"` text, which is also\nthe meter's `aria-valuetext`."
+            },
+            {
+              "name": "description",
+              "type": "ReactNode",
+              "optional": true,
+              "description": "Helper text under the bar."
+            },
+            {
+              "name": "className",
+              "type": "ClassNameValue<UsageMeterState>",
+              "optional": true
+            },
+            {
+              "name": "wrapperClassName",
+              "type": "ClassNameValue<UsageMeterState>",
+              "optional": true
+            }
+          ]
+        }
+      },
+      "elements": {
+        "kernel-usage-meter": {
+          "description": "`<kernel-usage-meter>` — token, credit or quota usage on a real\n`<meter>` with a real `<label for>`. The formatted text\n(\"12,340 / 200,000 tokens\", via `Intl.NumberFormat`) is the meter's\n`aria-valuetext`, so it's read with its unit, and the visible copy is\n`aria-hidden` so it isn't read twice. Colour follows the browser's own\nmeter region algorithm (warning above `high`, danger past `low` and\n`high`, and always danger when full). Mirrors `@kernelui-lib/react`'s\n`<UsageMeter>`.\n\nAttributes: `label`, `value`, `min` (default 0), `max`, `low`, `high`,\n`optimum` (default `min`: less is better), `unit`, `locale`,\n`hide-label` (boolean), `description`.",
+          "attributes": [
+            "label",
+            "value",
+            "min",
+            "max",
+            "low",
+            "high",
+            "optimum",
+            "unit",
+            "locale",
+            "hide-label",
+            "description"
+          ],
           "events": []
         }
       }

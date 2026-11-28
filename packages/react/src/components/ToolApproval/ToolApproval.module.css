@@ -1,0 +1,159 @@
+/* A container that holds controls, so it's on --kernel-radius-container
+   and every edge that meets a corner pads with
+   --kernel-padding-container-curve: the header's top and sides, the
+   body's sides, and the footer's sides and bottom. The buttons sit in
+   the bottom corners, and the curve padding is what gives a pill button
+   its clearance at Round. Interior edges (header to body, body to
+   footer) stay tight. */
+.root {
+  display: flex;
+  flex-direction: column;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  border-radius: var(--kernel-radius-container);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+  font-family: var(--kernel-font-sans);
+  font-size: var(--kernel-font-size-sm);
+  transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kernel-space-2);
+  padding: var(--kernel-padding-container-curve) var(--kernel-padding-container-curve) 0;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  /* One line box tall, so the icon centres on the heading's first line. */
+  block-size: calc(1em * var(--kernel-line-height-tight));
+  color: var(--kernel-color-warning-text);
+}
+
+.icon > svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.root:not([data-status="pending"]) .icon {
+  color: var(--kernel-color-text-muted);
+}
+
+.title {
+  margin: 0;
+  min-inline-size: 0;
+  font-size: inherit;
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.tool {
+  padding: 0.1em 0.35em;
+  border-radius: var(--kernel-radius-sm);
+  background-color: var(--kernel-color-fill);
+  font-family: var(--kernel-font-mono);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  min-inline-size: 0;
+  padding: var(--kernel-space-2) var(--kernel-padding-container-curve) 0;
+  /* Indented under the heading text, past the icon and its gap. */
+  padding-inline-start: calc(var(--kernel-padding-container-curve) + 1rem + var(--kernel-space-2));
+  color: var(--kernel-color-text-muted);
+  line-height: var(--kernel-line-height);
+}
+
+/* The footer is a fixed control height whether it holds the buttons or
+   the status line, so a decision never shifts the content below it. */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-block-size: var(--kernel-control-height-sm);
+  padding: var(--kernel-space-3) var(--kernel-padding-container-curve)
+    var(--kernel-padding-container-curve);
+}
+
+.actions {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--kernel-space-2);
+}
+
+/* The least-reversible choice sits apart from the one-off pair, which
+   wraps as a unit and stays at the end. */
+.alwaysAllow {
+  margin-inline-end: auto;
+}
+
+.decision {
+  display: flex;
+  gap: var(--kernel-space-2);
+  margin-inline-start: auto;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  margin: 0;
+  font-weight: 500;
+  color: var(--kernel-color-text-muted);
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-out),
+    translate var(--kernel-duration-enter) var(--kernel-ease-out);
+}
+
+/* Never display: none, even while empty: a live region has to stay in the
+   accessibility tree to announce what's written into it. It's mounted
+   from the start, so the decision is an attribute change the
+   transition can run from. */
+.root[data-status="pending"] .status {
+  opacity: 0;
+  translate: 0 var(--kernel-translate-enter);
+}
+
+.root[data-status="approved"] .status {
+  color: var(--kernel-color-success-text);
+}
+
+.status:focus {
+  outline: none;
+}
+
+.status:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--kernel-radius-sm);
+}
+
+.statusIcon {
+  display: inline-flex;
+  flex: none;
+}
+
+.statusIcon > svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status {
+    translate: none;
+    transition: opacity var(--kernel-duration-enter) linear;
+  }
+}

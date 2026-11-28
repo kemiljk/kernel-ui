@@ -1,0 +1,103 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ExampleGrid from "../../components/ExampleGrid.astro";
+import Example from "../../components/Example.astro";
+import AttachmentDemo from "../../components/demos/AttachmentDemo";
+import AttachmentPlayground from "../../components/demos/AttachmentPlayground";
+import { Attachment } from "@kernelui-lib/react";
+
+const messageSnippet = `<Attachment name="contract-signed-2026.pdf" size={482_000} />`;
+const uploadSnippet = `<Attachment name="dataset.csv" size={12_800_000} progress={0.6} />`;
+---
+
+<BaseLayout title="Attachment" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Attachment</h1>
+    <p>
+      A file chip for composers and messages: a type icon or image
+      thumbnail, the name, the size, an optional remove button and optional
+      upload progress. Inside an <code>AttachmentList</code>, a real
+      <code>&lt;ul role="list"&gt;</code>, each one renders as an
+      <code>&lt;li&gt;</code>; on its own it's a <code>&lt;div&gt;</code>.
+      Pair it with <a href="/components/composer/">Composer</a> for files
+      waiting to be sent.
+    </p>
+
+    <div class="docs-example">
+      <AttachmentDemo client:visible />
+    </div>
+
+    <h2>Details</h2>
+    <ul>
+      <li>
+        The name truncates in the middle: the start ellipsises while the last
+        few characters and the extension stay put, because
+        <code>report-v3.pdf</code> and <code>report-v4.pdf</code> are only
+        told apart by their tail. The full name is one run of text for
+        assistive tech and in the hover tooltip.
+      </li>
+      <li>
+        Sizes use <code>Intl.NumberFormat</code>'s unit style in decimal
+        steps (<code>2.4 MB</code>), in the reader's locale or the one in
+        <code>locale</code>. <code>formatFileSize</code> is exported.
+      </li>
+      <li>
+        Upload progress is a real <code>&lt;progress&gt;</code>, a hairline
+        along the bottom edge, labelled "Uploading {"{name}"}".
+      </li>
+      <li>
+        The chip has a fixed height, so its radius stops at a true
+        half-height pill, and the thumbnail tile and remove button are
+        concentric with its corners.
+      </li>
+    </ul>
+
+    <h2>Examples</h2>
+    <ExampleGrid>
+      <Example title="In a message" description="No remove button once it's sent." code={messageSnippet}>
+        <Attachment name="contract-signed-2026.pdf" size={482_000} />
+      </Example>
+      <Example title="Uploading" description="The percentage replaces the type until progress reaches 1." code={uploadSnippet}>
+        <Attachment name="dataset.csv" size={12_800_000} progress={0.6} />
+      </Example>
+    </ExampleGrid>
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
+    <AttachmentPlayground client:visible />
+
+    <h2>Props</h2>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Props for Attachment.</caption>
+      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>string (required)</td><td>—</td></tr>
+        <tr><td><code>size</code></td><td>number (bytes)</td><td>—</td></tr>
+        <tr><td><code>type</code></td><td>string (MIME)</td><td>—</td></tr>
+        <tr><td><code>previewSrc</code></td><td>string (image URL)</td><td>—</td></tr>
+        <tr><td><code>progress</code></td><td>number (0–1)</td><td>—</td></tr>
+        <tr><td><code>onRemove</code></td><td>() =&gt; void</td><td>—</td></tr>
+        <tr><td><code>removeLabel</code></td><td>string</td><td>"Remove {"{name}"}"</td></tr>
+        <tr><td><code>locale</code></td><td>string</td><td>the reader's</td></tr>
+      </tbody>
+    </table></div>
+    <p>
+      The custom elements are <code>&lt;kernel-attachment-list&gt;</code>
+      and <code>&lt;kernel-attachment&gt;</code>, with
+      <code>preview-src</code>, <code>removable</code> and
+      <code>remove-label</code> attributes. Pressing remove fires a
+      bubbling <code>remove</code> event; the element doesn't remove
+      itself, the owner of the file list does.
+    </p>
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The list restates <code>role="list"</code>, which Safari drops from unstyled lists.</li>
+      <li>The remove button is a real <code>&lt;button&gt;</code> named "Remove {"{name}"}", and stays in the tab order.</li>
+      <li>The icon and thumbnail are decorative; the name is the label.</li>
+      <li>New chips grow in with <code>@starting-style</code>; under reduced motion they only fade.</li>
+    </ul>
+  </div>
+</BaseLayout>
