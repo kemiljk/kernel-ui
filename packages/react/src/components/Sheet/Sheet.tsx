@@ -153,9 +153,9 @@ export const Sheet = forwardRef<HTMLDialogElement, SheetProps>(function Sheet(
     ...dialogClassNames
   } = classNames ?? {};
 
-  const handleDismiss = useCallback(() => {
-    emitChange(onOpenChange, false, "drag-dismiss");
-  }, [onOpenChange]);
+  // Returning the veto lets the drag engine settle the sheet back instead of
+  // leaving it translated off-screen.
+  const handleDismiss = useCallback(() => emitChange(onOpenChange, false, "drag-dismiss"), [onOpenChange]);
 
   const snaps = useMemo(() => parseSnapPoints(snapPoints), [snapPoints]);
 

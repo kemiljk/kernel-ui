@@ -79,9 +79,18 @@ export class KernelSelect extends KernelElement {
       '<path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />';
 
     let lastKey: string | null = null;
+    // The committed value a veto restores. Refreshed on every way in — focus,
+    // a press (Safari doesn't always focus a select on click) and a key —
+    // all of which run before the browser changes the value.
     let previousValue = select.value;
-    select.addEventListener("keydown", (event) => (lastKey = event.key));
-    select.addEventListener("pointerdown", () => (lastKey = null));
+    select.addEventListener("keydown", (event) => {
+      lastKey = event.key;
+      previousValue = select.value;
+    });
+    select.addEventListener("pointerdown", () => {
+      lastKey = null;
+      previousValue = select.value;
+    });
     select.addEventListener("focus", () => (previousValue = select.value));
     wrapper.addEventListener("change", (event) => {
       if (event.target !== select) return;

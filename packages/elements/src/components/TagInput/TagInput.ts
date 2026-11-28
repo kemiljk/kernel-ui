@@ -25,7 +25,9 @@ function escapeRegExp(value: string): string {
  * `detail: { tags, reason }` — `"enter"`, `"separator"`, `"paste"`,
  * `"remove-button"` or `"backspace"`. `preventDefault()` keeps the tags as
  * they were: an added tag stays in the draft, and a removal (reported once
- * the chip's exit transition has played) brings the chip back.
+ * the chip's exit transition has played) brings the chip back. A paste or
+ * typed separator that adds several tags is a single `change` with all of
+ * them, as in React.
  *
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value` (comma-joined),
@@ -91,9 +93,11 @@ export class KernelTagInput extends KernelElement {
       if (delimiterRegex.test(next)) {
         const parts = next.split(delimiterRegex);
         const trailing = parts.pop() ?? "";
-        const vetoed = parts.filter((part) => !this.commitDraft(part, "separator", event));
-        // A vetoed tag stays in the draft (minus its delimiter).
-        input.value = vetoed.join("") + trailing;
+        // One change for the whole batch, as in React; a veto keeps the
+        // typed text (minus the delimiter) as the draft.
+        input.value = this.commitParts(parts, "separator", event)
+          ? trailing
+          : next.replace(delimiterRegex, "");
       }
     });
     input.addEventListener("keydown", (event) => {
@@ -109,7 +113,8 @@ export class KernelTagInput extends KernelElement {
       if (!text) return;
       event.preventDefault();
       const splitRegex = new RegExp(`${this.delimiterPattern}|\\r?\\n`);
-      for (const part of text.split(splitRegex)) this.commitDraft(part, "paste", event);
+      // One change for every pasted part; a vetoed paste leaves the draft be.
+      if (this.commitParts(text.split(splitRegex), "paste", event)) input.value = "";
     });
 
     field.append(input);
@@ -156,7 +161,7 @@ export class KernelTagInput extends KernelElement {
    * caller can keep it in the draft; rejected input (empty, duplicate,
    * over `max`) reports through the error event and returns `true`, as
    * before. */
-  private commitDraft(raw: string, reason: "enter" | "separator" | "paste", event?: Event): boolean {
+  private commitDraft(raw: string, reason: "enter", event?: Event): boolean {
     const trimmed = raw.trim();
     if (trimmed === "") {
       if (raw !== "") this.emitError({ type: "empty", value: raw });
@@ -174,6 +179,41 @@ export class KernelTagInput extends KernelElement {
     }
     const next = [...this.currentTags, trimmed];
     if (!this.emitChange("change", { tags: next }, reason, event)) return false;
+    this.currentTags = next;
+    this.renderTags();
+    this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
+    return true;
+  }
+
+  /**
+   * Several parts at once (a paste, or a typed delimiter splitting the
+   * draft): each part is validated against the tags accumulated so far,
+   * but the result goes out as *one* cancelable `change`, the way React's
+   * `TagInput` batches it. Returns `false` only when a listener vetoed it.
+   */
+  private commitParts(parts: string[], reason: "separator" | "paste", event?: Event): boolean {
+    const allowDuplicates = this.hasAttribute("allow-duplicates");
+    const maxAttr = this.getAttribute("max");
+    const max = maxAttr != null ? Number(maxAttr) : null;
+    let next = this.currentTags;
+    for (const raw of parts) {
+      const trimmed = raw.trim();
+      if (trimmed === "") {
+        if (raw !== "") this.emitError({ type: "empty", value: raw });
+        continue;
+      }
+      if (!allowDuplicates && next.includes(trimmed)) {
+        this.emitError({ type: "duplicate", value: trimmed });
+        continue;
+      }
+      if (max != null && next.length >= max) {
+        this.emitError({ type: "max", value: trimmed });
+        continue;
+      }
+      next = [...next, trimmed];
+    }
+    if (next === this.currentTags) return true;
+    if (!this.emitChange("change", { tags: [...next] }, reason, event)) return false;
     this.currentTags = next;
     this.renderTags();
     this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));

@@ -192,6 +192,14 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
       if (!open || closing) return;
       emitChange(onOpenChange, false, reason, event);
     }
+
+    // `closedby="any"` makes supporting browsers light-dismiss on a backdrop
+    // press by firing `cancel` — the same event Escape fires. Remembering a
+    // press on the backdrop tells the two apart (and honours
+    // `closeOnBackdropClick`), and lets the `click` that follows know it has
+    // already been handled.
+    const backdropPressAtRef = useRef(0);
+    const lightDismissHandledRef = useRef(false);
     const closeFromButton = (event: ChangeEventSource) => requestClose("close-button", event);
 
     const closeControl =
@@ -258,7 +266,18 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
         ]
           .filter(Boolean)
           .join(" ")}
+        onPointerDown={(event) => {
+          lightDismissHandledRef.current = false;
+          backdropPressAtRef.current = event.target === internalRef.current ? performance.now() : 0;
+        }}
+        onKeyDown={() => {
+          backdropPressAtRef.current = 0;
+        }}
         onClick={(event) => {
+          if (lightDismissHandledRef.current) {
+            lightDismissHandledRef.current = false;
+            return;
+          }
           if (closeOnBackdropClick && event.target === internalRef.current) {
             requestClose("outside-press", event);
           }
@@ -268,6 +287,13 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
           // otherwise consumer exit animations never get a frame.
           event.preventDefault();
           event.stopPropagation();
+          const pressedAt = backdropPressAtRef.current;
+          if (pressedAt && performance.now() - pressedAt < 1000) {
+            backdropPressAtRef.current = 0;
+            lightDismissHandledRef.current = true;
+            if (closeOnBackdropClick) requestClose("outside-press", event);
+            return;
+          }
           requestClose("escape-key", event);
         }}
       >

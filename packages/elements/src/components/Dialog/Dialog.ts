@@ -115,13 +115,35 @@ export class KernelDialog extends KernelElement {
 
     dialog.append(header, description, body);
 
+    // `closedby="any"` makes supporting browsers light-dismiss on a backdrop
+    // press by firing `cancel` — the same event Escape fires. Remembering a
+    // press on the backdrop tells the two apart, and lets the `click` that
+    // follows know it has already been handled.
+    let backdropPressAt = 0;
+    let lightDismissHandled = false;
+    dialog.addEventListener("pointerdown", (event) => {
+      lightDismissHandled = false;
+      backdropPressAt = event.target === dialog ? performance.now() : 0;
+    });
+    dialog.addEventListener("keydown", () => (backdropPressAt = 0));
     dialog.addEventListener("click", (event) => {
+      if (lightDismissHandled) {
+        lightDismissHandled = false;
+        return;
+      }
       if (this.getAttribute("close-on-backdrop-click") === "false") return;
       if (event.target === dialog) this.requestClose("outside-press", event);
     });
     dialog.addEventListener("cancel", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      if (backdropPressAt && performance.now() - backdropPressAt < 1000) {
+        backdropPressAt = 0;
+        lightDismissHandled = true;
+        if (!this.backdropDismissible()) return;
+        this.requestClose("outside-press", event);
+        return;
+      }
       this.requestClose("escape-key", event);
     });
     dialog.addEventListener("close", (event) => {
@@ -148,12 +170,19 @@ export class KernelDialog extends KernelElement {
     this.native?.querySelector('[data-slot="dialog-close"]')?.setAttribute("aria-label", this.builtInLabel("close", "Close"));
   }
 
-  /** Asks (a cancelable `cancel` event) and, unless vetoed, closes. */
-  protected requestClose(reason: string, event?: Event) {
-    if (!this.hasAttribute("open") || this.closing) return;
-    if (!this.emitChange("cancel", {}, reason, event)) return;
+  /** Whether a press on the backdrop may close the dialog. */
+  protected backdropDismissible(): boolean {
+    return this.getAttribute("close-on-backdrop-click") !== "false";
+  }
+
+  /** Asks (a cancelable `cancel` event) and, unless vetoed, closes. Returns
+   * `false` when the close was vetoed or there was nothing to close. */
+  protected requestClose(reason: string, event?: Event): boolean {
+    if (!this.hasAttribute("open") || this.closing) return false;
+    if (!this.emitChange("cancel", {}, reason, event)) return false;
     this.closeReason = reason;
     this.removeAttribute("open");
+    return true;
   }
 
   private dispatchCloseEvent(reason: string) {

@@ -154,6 +154,12 @@ export class KernelSheet extends KernelDialog {
     return this.getAttribute("dismissible") !== "false";
   }
 
+  /** A non-dismissible sheet ignores backdrop presses, including the
+   * browser's own `closedby="any"` light dismiss. */
+  protected backdropDismissible(): boolean {
+    return this.dismissible && super.backdropDismissible();
+  }
+
   /** Present-and-not-`"false"`, the shape every boolean-ish Kernel attribute
    * uses so both `handle-only` and `handle-only="true"` work. */
   private flag(name: string) {

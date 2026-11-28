@@ -12,8 +12,13 @@
  *
  * Cancelling: an *opening* `beforetoggle` is cancelable, so a veto stops it
  * outright. A closing one isn't (light dismiss can't be refused), so a vetoed
- * close re-shows the popover as soon as it has hidden; with the CSS
- * transitions reversible, that reads as the panel staying put.
+ * close re-shows the popover in the next animation frame — after the hide
+ * has finished but before the browser has styled or painted it — or from the
+ * `toggle` event, whichever comes first, with transitions held off so the
+ * entrance doesn't replay. Measured before paint in Chromium and WebKit, no
+ * hidden or faded frame reaches the screen; waiting for `toggle` alone
+ * painted one hidden frame in Chromium (it delivers `toggle` after the next
+ * frame), and WebKit replayed the whole fade-in.
  *
  * Browsers that fire `toggle` without `beforetoggle` still get notified,
  * from `toggle`, just too late to veto.
@@ -36,8 +41,34 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
 ): PopoverReasonController<Reason> {
   let last: { event: Event; time: number } | null = null;
   let notifiedState: "open" | "closed" | null = null;
-  let reopenAfterHide = false;
+  let reshowPending = false;
+  /** After a re-show, the platform still delivers the `toggle` events for
+   * the hide and the show (Chromium coalesces them into one `open`); none of
+   * them is news, so they're swallowed up to and including the `open`. */
+  let swallowUntilOpen = false;
   let reverting = false;
+
+  function reshow() {
+    if (!reshowPending) return;
+    reshowPending = false;
+    swallowUntilOpen = true;
+    notifiedState = null;
+    reverting = true;
+    // WebKit resolves the hidden style during the hide, so showing again
+    // would replay the `@starting-style` entrance from transparent. With
+    // transitions off across one forced style resolve, the panel lands
+    // straight back on its open style instead.
+    const inlineTransition = popover.style.transition;
+    popover.style.transition = "none";
+    try {
+      popover.showPopover();
+    } catch {
+      /* already showing, or disconnected */
+    }
+    void getComputedStyle(popover).opacity;
+    popover.style.transition = inlineTransition;
+    reverting = false;
+  }
 
   const remember = (event: Event) => {
     last = { event, time: performance.now() };
@@ -75,23 +106,24 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
     notifiedState = open ? "open" : "closed";
     if (notify(open)) return;
     if (open && event.cancelable) event.preventDefault();
-    else if (!open) reopenAfterHide = true;
+    else if (!open) {
+      // The hide can't be stopped from in here (showing the popover again
+      // mid-hide throws), so put it back before the next paint.
+      reshowPending = true;
+      requestAnimationFrame(reshow);
+    }
   };
 
   const handleToggle = (event: Event) => {
     const toggle = event as ToggleEvent;
     if (reverting) return;
-    if (reopenAfterHide) {
-      reopenAfterHide = false;
-      // The re-show queues its own `toggle`; it isn't news to anyone.
-      notifiedState = "open";
-      reverting = true;
-      try {
-        popover.showPopover();
-      } catch {
-        /* already showing */
-      }
-      reverting = false;
+    if (reshowPending) {
+      // The hide's `toggle` beat the animation frame.
+      reshow();
+      return;
+    }
+    if (swallowUntilOpen) {
+      if (toggle.newState === "open") swallowUntilOpen = false;
       return;
     }
     if (notifiedState !== toggle.newState) notify(toggle.newState === "open");
@@ -118,6 +150,7 @@ export function attachPopoverReasons<Reason extends string = PopoverOpenChangeRe
       reverting = false;
     },
     dispose() {
+      reshowPending = false;
       document.removeEventListener("pointerdown", remember, true);
       document.removeEventListener("keydown", remember, true);
       popover.removeEventListener("beforetoggle", handleBeforeToggle);

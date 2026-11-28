@@ -113,9 +113,12 @@ fuzzyFilter(commands, query, (command) => [command.label, ...command.keywords]);
     <p>
       Where the platform owns the change, cancelling does the closest honest
       thing. A native <code>popover</code>'s light-dismiss can't be refused,
-      so a cancelled Popover or DropdownMenu close re-shows the panel at once.
-      A TagInput removal is reported once the chip's exit transition has
-      played, so cancelling it brings the chip back.
+      so a cancelled Popover or DropdownMenu close re-shows the panel before
+      the next paint, without replaying its entrance. A cancelled Sheet
+      drag-dismiss springs back to where it rested. A TagInput removal is
+      reported once the chip's exit transition has played, so cancelling it
+      brings the chip back; a paste or typed separator that adds several tags
+      is one change, in both packages.
     </p>
 
     <h2>Web Components</h2>

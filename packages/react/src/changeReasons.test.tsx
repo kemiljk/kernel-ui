@@ -5,6 +5,12 @@ import { describe, expect, it, vi } from "vitest";
 import "../../elements/src/components/Switch/Switch";
 import "../../elements/src/components/Tabs/Tabs";
 import "../../elements/src/components/Dialog/Dialog";
+import "../../elements/src/components/Checkbox/Checkbox";
+import "../../elements/src/components/RadioGroup/RadioGroup";
+import "../../elements/src/components/Select/Select";
+import "../../elements/src/components/NumberField/NumberField";
+import "../../elements/src/components/TagInput/TagInput";
+import { TagInput } from "./components/TagInput/TagInput";
 import { Checkbox } from "./components/Checkbox/Checkbox";
 import { Dialog } from "./components/Dialog/Dialog";
 import { Select, SelectOption } from "./components/Select/Select";
@@ -171,6 +177,19 @@ describe("change reasons: Dialog", () => {
     expect(reasonOf(onOpenChange)).toBe("close-button");
     expect(screen.getByRole("dialog", { hidden: true })).toHaveAttribute("data-closing");
   });
+
+  it("reports a closedby light dismiss (backdrop press → cancel) as outside-press, once", () => {
+    const onOpenChange = vi.fn((_: boolean, details: ChangeDetails) => details.cancel());
+    render(<DialogFixture onOpenChange={onOpenChange} />);
+    const dialog = screen.getByRole("dialog", { hidden: true });
+    fireEvent.pointerDown(dialog);
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    fireEvent.click(dialog);
+    // A later Escape is still an Escape.
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    expect(onOpenChange.mock.calls.map(([, details]) => details.reason)).toEqual(["outside-press", "escape-key"]);
+  });
 });
 
 describe("change reasons: custom elements", () => {
@@ -239,5 +258,207 @@ describe("change reasons: custom elements", () => {
     fireEvent.click(host.querySelector('[data-slot="dialog-close"]')!);
     expect(reasons).toEqual(["escape-key", "close-button"]);
     expect(host).toHaveAttribute("open");
+  });
+
+  it("kernel-dialog reports a closedby light dismiss as outside-press, once", () => {
+    document.body.innerHTML = '<kernel-dialog title="Settings" open>Body</kernel-dialog>';
+    const host = document.querySelector("kernel-dialog")!;
+    const reasons: string[] = [];
+    host.addEventListener("cancel", (event) => {
+      reasons.push((event as CustomEvent).detail.reason);
+      event.preventDefault();
+    });
+    const dialog = host.querySelector("dialog")!;
+    // What a closedby="any" browser does for a backdrop press: pointerdown on
+    // the dialog (the backdrop), a `cancel`, then the click.
+    fireEvent.pointerDown(dialog);
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    fireEvent.click(dialog);
+    expect(reasons).toEqual(["outside-press"]);
+    // close-on-backdrop-click="false" also holds against the light dismiss.
+    host.setAttribute("close-on-backdrop-click", "false");
+    fireEvent.pointerDown(dialog);
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    fireEvent.click(dialog);
+    expect(reasons).toEqual(["outside-press"]);
+    expect(host).toHaveAttribute("open");
+  });
+});
+
+/*
+ * Native-backed elements can't cancel the browser's own `change`, so they
+ * dispatch a cancelable `valuechange` first; vetoing it must restore the
+ * previous state *and* keep the native `change` from reaching the host.
+ */
+describe("change reasons: custom element valuechange interception", () => {
+  function track(host: Element, veto: boolean) {
+    const seen: Array<{ reason: string; [key: string]: unknown }> = [];
+    const hostChanges: Event[] = [];
+    host.addEventListener("valuechange", (event) => {
+      seen.push((event as CustomEvent).detail);
+      if (veto) event.preventDefault();
+    });
+    host.addEventListener("change", (event) => hostChanges.push(event));
+    return { seen, hostChanges };
+  }
+
+  it("kernel-checkbox: veto unticks the box and stops the host change", () => {
+    document.body.innerHTML = "<kernel-checkbox>Accept</kernel-checkbox>";
+    const host = document.querySelector("kernel-checkbox")!;
+    const { seen, hostChanges } = track(host, true);
+    const input = host.querySelector("input")!;
+    fireEvent.pointerDown(input);
+    fireEvent.click(input);
+    expect(seen).toEqual([expect.objectContaining({ checked: true, reason: "press" })]);
+    expect(input.checked).toBe(false);
+    expect(hostChanges).toHaveLength(0);
+  });
+
+  it("kernel-checkbox: without a veto the change goes through", () => {
+    document.body.innerHTML = "<kernel-checkbox>Accept</kernel-checkbox>";
+    const host = document.querySelector("kernel-checkbox")!;
+    const { seen, hostChanges } = track(host, false);
+    const input = host.querySelector("input")!;
+    fireEvent.keyDown(input, { key: " " });
+    fireEvent.click(input);
+    expect(seen).toEqual([expect.objectContaining({ checked: true, reason: "keyboard" })]);
+    expect(input.checked).toBe(true);
+    expect(hostChanges).toHaveLength(1);
+  });
+
+  it("kernel-radio-group: veto re-checks the previous option and stops the host change", () => {
+    document.body.innerHTML = `
+      <kernel-radio-group label="Size" value="s">
+        <kernel-radio-group-item value="s">Small</kernel-radio-group-item>
+        <kernel-radio-group-item value="m">Medium</kernel-radio-group-item>
+      </kernel-radio-group>`;
+    const host = document.querySelector("kernel-radio-group")!;
+    const { seen, hostChanges } = track(host, true);
+    const medium = screen.getByRole("radio", { name: "Medium" }) as HTMLInputElement;
+    fireEvent.pointerDown(medium);
+    fireEvent.click(medium);
+    expect(seen).toEqual([expect.objectContaining({ value: "m", reason: "press" })]);
+    expect((screen.getByRole("radio", { name: "Small" }) as HTMLInputElement).checked).toBe(true);
+    expect(medium.checked).toBe(false);
+    expect(host.getAttribute("value")).toBe("s");
+    expect(hostChanges).toHaveLength(0);
+  });
+
+  it("kernel-select: veto restores the previous option and stops the host change", () => {
+    document.body.innerHTML = `
+      <kernel-select label="Fruit" value="apple">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+      </kernel-select>`;
+    const host = document.querySelector("kernel-select")!;
+    const { seen, hostChanges } = track(host, true);
+    const select = host.querySelector("select")!;
+    fireEvent.focus(select);
+    fireEvent.keyDown(select, { key: "b" });
+    select.value = "banana";
+    fireEvent.change(select);
+    expect(seen).toEqual([expect.objectContaining({ value: "banana", reason: "typeahead" })]);
+    expect(select.value).toBe("apple");
+    expect(hostChanges).toHaveLength(0);
+  });
+
+  it("kernel-select: a vetoed change after an accepted one restores the accepted value", () => {
+    document.body.innerHTML = `
+      <kernel-select label="Fruit" value="apple">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+        <option value="cherry">Cherry</option>
+      </kernel-select>`;
+    const host = document.querySelector("kernel-select")!;
+    let veto = false;
+    const reasons: string[] = [];
+    host.addEventListener("valuechange", (event) => {
+      reasons.push((event as CustomEvent).detail.reason);
+      if (veto) event.preventDefault();
+    });
+    const select = host.querySelector("select")!;
+    fireEvent.focus(select);
+    fireEvent.pointerDown(select);
+    select.value = "banana";
+    fireEvent.change(select);
+    veto = true;
+    fireEvent.keyDown(select, { key: "ArrowDown" });
+    select.value = "cherry";
+    fireEvent.change(select);
+    expect(reasons).toEqual(["item-press", "keyboard"]);
+    expect(select.value).toBe("banana");
+  });
+
+  it("kernel-number-field: veto restores a typed value and a stepped one", () => {
+    document.body.innerHTML = '<kernel-number-field label="Qty" value="1"></kernel-number-field>';
+    const host = document.querySelector("kernel-number-field")!;
+    const { seen, hostChanges } = track(host, true);
+    const input = host.querySelector("input")!;
+    fireEvent.keyDown(input, { key: "7" });
+    input.value = "7";
+    fireEvent.change(input);
+    expect(input.value).toBe("1");
+    expect(host.getAttribute("value")).toBe("1");
+    fireEvent.click(host.querySelector('[data-step="up"]')!);
+    expect(input.value).toBe("1");
+    expect(seen.map((detail) => detail.reason)).toEqual(["input", "step-button"]);
+    expect(hostChanges).toHaveLength(0);
+  });
+
+  it("kernel-number-field: without a veto, a step commits and fires the host change", () => {
+    document.body.innerHTML = '<kernel-number-field label="Qty" value="1"></kernel-number-field>';
+    const host = document.querySelector("kernel-number-field")!;
+    const { seen, hostChanges } = track(host, false);
+    fireEvent.click(host.querySelector('[data-step="up"]')!);
+    expect(seen).toEqual([expect.objectContaining({ value: 2, reason: "step-button" })]);
+    expect(host.getAttribute("value")).toBe("2");
+    expect(hostChanges).toHaveLength(1);
+  });
+});
+
+describe("change reasons: TagInput batching parity", () => {
+  function paste(target: Element, text: string) {
+    const event = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(event, "clipboardData", { value: { getData: () => text } });
+    target.dispatchEvent(event);
+  }
+
+  it("React and kernel-tag-input each report a multi-part paste as one change", () => {
+    const onValueChange = vi.fn();
+    const { container: reactRoot } = render(<TagInput label="React tags" onValueChange={onValueChange} />);
+    paste(reactRoot.querySelector("input")!, "one,two\nthree");
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+    expect(onValueChange).toHaveBeenCalledWith(["one", "two", "three"], expect.objectContaining({ reason: "paste" }));
+
+    const container = document.createElement("div");
+    container.innerHTML = '<kernel-tag-input label="Element tags"></kernel-tag-input>';
+    document.body.append(container);
+    const host = container.querySelector("kernel-tag-input")!;
+    const changes: Array<{ tags: string[]; reason: string }> = [];
+    host.addEventListener("change", (event) => changes.push((event as CustomEvent).detail));
+    paste(host.querySelector("input")!, "one,two\nthree");
+    expect(changes).toEqual([expect.objectContaining({ tags: ["one", "two", "three"], reason: "paste" })]);
+    container.remove();
+  });
+
+  it("kernel-tag-input: a vetoed batch commits nothing and keeps the draft", () => {
+    document.body.innerHTML = '<kernel-tag-input label="Tags" value="keep"></kernel-tag-input>';
+    const host = document.querySelector("kernel-tag-input") as HTMLElement & { tags: string[] };
+    const changes: Array<{ tags: string[]; reason: string }> = [];
+    host.addEventListener("change", (event) => {
+      changes.push((event as CustomEvent).detail);
+      event.preventDefault();
+    });
+    const input = host.querySelector("input")!;
+    paste(input, "a,b");
+    expect(changes).toEqual([expect.objectContaining({ tags: ["keep", "a", "b"], reason: "paste" })]);
+    expect(host.tags).toEqual(["keep"]);
+    // A typed delimiter: one change for the split draft, reason "separator";
+    // vetoed, the text stays in the draft without its delimiter.
+    input.value = "c,";
+    fireEvent.input(input);
+    expect(changes[1]).toMatchObject({ tags: ["keep", "c"], reason: "separator" });
+    expect(host.tags).toEqual(["keep"]);
+    expect(input.value).toBe("c");
   });
 });

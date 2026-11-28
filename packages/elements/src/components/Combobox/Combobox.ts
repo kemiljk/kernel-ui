@@ -336,6 +336,10 @@ export class KernelCombobox extends KernelElement {
 
         div.addEventListener("pointerdown", (event) => event.preventDefault());
         div.addEventListener("pointermove", () => {
+          // Only on a change: re-rendering replaces every option node, and
+          // doing it for each move within one option swapped the node out
+          // between pointerdown and pointerup, so the click never landed.
+          if (this.activeIndex === currentIndex) return;
           this.activeIndex = currentIndex;
           this.renderOptions();
         });
