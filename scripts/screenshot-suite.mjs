@@ -26,6 +26,8 @@
  *   --threshold=0.1             pixelmatch per-pixel colour threshold (0–1)
  *   --max-diff-ratio=0.001      fail a shot when more than this fraction of pixels differ
  *   --strict                    also fail on shots that have no baseline
+ *   --cpu-throttle=4            slow each page's CPU by this factor (Chromium only), to
+ *                               check the capture stays deterministic on a slow machine
  *
  * Output (all gitignored): screenshots/current/<slug>/<variant>-<n>.png,
  * screenshots/baseline/... in --update mode, and screenshots/report/
@@ -104,15 +106,82 @@ const VARIANTS = {
 };
 const DEFAULT_VARIANTS = ["light-sharp", "light-round", "dark-round", "rtl-light", "lowfont-light"];
 
+/**
+ * Time. Several demos move on their own: StreamingMarkdown and SchemaRenderer
+ * stream on an interval, ToolCall and Reasoning step through states on
+ * timeouts, CodeBlock, FileDiff, Progress and TodoList loop, DatePicker marks
+ * today and Footer prints the year. Captured on the real clock, each shot is
+ * whatever frame happened to be on screen when the screenshot fired, which
+ * moves with machine load and hydration order.
+ *
+ * So every page runs on Playwright's fake clock, paused at FIXED_TIME before
+ * the document loads: `Date`, `performance.now`, `setTimeout`,
+ * `setInterval` and `requestAnimationFrame` only move when the suite moves
+ * them. Once every island has hydrated (at fake time zero for all of them),
+ * the clock runs forward SETTLE_MS in SETTLE_STEP_MS steps. Between steps the
+ * suite lets network work (FileUpload's fixture files) finish and the browser
+ * render real frames (see renderFrames), so every run sees the same order of
+ * timers, scroll events and resize callbacks. SETTLE_MS is long
+ * enough for every one-shot demo to finish (the longest, Reasoning, needs
+ * 3.2s); looping demos land on the same frame every run because the elapsed
+ * time is identical. The shots therefore show settled UI: finished streams,
+ * completed tool calls, the loops at a fixed point in their cycle.
+ *
+ * Each page gets a fresh browser context, so every page starts at the same
+ * FIXED_TIME (the clock's log replays into each new document, and runs would
+ * otherwise accumulate across pages) and no state leaks between components.
+ */
+const FIXED_TIME = new Date("2025-06-16T10:00:00Z");
+const SETTLE_MS = 10_000;
+const SETTLE_STEP_MS = 250;
+/** One extra short run after settling, for rAF-driven measurement queued by the last tick. */
+const SETTLE_TAIL_MS = 100;
+
+// Seeded Math.random (mulberry32), installed before any page script runs, so
+// shuffles and generated ids are the same every run.
+const SEED_RANDOM = `(() => {
+  let a = 0x6b65726e;
+  Math.random = () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+})();`;
+
 // Determinism: no motion, no blinking caret, no scrollbars changing width.
+// `::-webkit-progress-value` isn't matched by `*`, so Progress's fill would
+// still slide to its new width.
 const FREEZE_CSS = `
-*, *::before, *::after {
+*, *::before, *::after, ::-webkit-progress-value {
   transition: none !important;
   animation: none !important;
   caret-color: transparent !important;
 }
+* { scroll-behavior: auto !important; }
 html { scrollbar-width: none; }
 `;
+
+// Smooth scrolling is motion too, and the compositor runs it on the real
+// clock: MessageScroller's stick-to-bottom calls scrollTo({ behavior:
+// "smooth" }) and would be captured part-way down. Make every scroll instant.
+const INSTANT_SCROLL = `(() => {
+  const instant = (options) =>
+    options && typeof options === "object" && options.behavior === "smooth" ? { ...options, behavior: "instant" } : options;
+  for (const target of [Element.prototype, window]) {
+    for (const method of ["scroll", "scrollTo", "scrollBy"]) {
+      const original = target[method];
+      if (typeof original !== "function") continue;
+      target[method] = function (options, ...rest) {
+        return original.call(this, instant(options), ...rest);
+      };
+    }
+  }
+  const scrollIntoView = Element.prototype.scrollIntoView;
+  Element.prototype.scrollIntoView = function (options) {
+    return scrollIntoView.call(this, instant(options));
+  };
+})();`;
 
 // ---------------------------------------------------------------------------
 // CLI
@@ -136,6 +205,7 @@ if (flags.has("list-variants")) {
 const update = flags.has("update");
 const compareOnly = flags.has("compare-only");
 const strict = flags.has("strict");
+const cpuThrottle = Number(flags.get("cpu-throttle") ?? 1);
 const threshold = Number(flags.get("threshold") ?? 0.1);
 const maxDiffRatio = Number(flags.get("max-diff-ratio") ?? 0.001);
 const variantNames = (() => {
@@ -153,6 +223,128 @@ const variantNames = (() => {
 
 // ---------------------------------------------------------------------------
 // Capture
+
+/** Real (Node) time; the page's timers are fake and never fire on their own. */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Lets the page drain the tasks already queued: React schedules renders and
+ * effects on a MessageChannel, which the fake clock doesn't touch, so a
+ * message posted now arrives after them.
+ */
+async function flushTasks(page, rounds = 3) {
+  for (let i = 0; i < rounds; i++) {
+    await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const channel = new MessageChannel();
+          channel.port1.onmessage = () => resolve();
+          channel.port2.postMessage(0);
+        }),
+    );
+  }
+}
+
+/** Counts in-flight requests so the suite can wait for fetches a demo starts on its own. */
+function trackNetwork(page) {
+  const inflight = new Set();
+  page.on("request", (request) => inflight.add(request));
+  page.on("requestfinished", (request) => inflight.delete(request));
+  page.on("requestfailed", (request) => inflight.delete(request));
+  return {
+    async quiet(timeout = 15_000) {
+      const deadline = Date.now() + timeout;
+      for (;;) {
+        await flushTasks(page);
+        if (inflight.size === 0) return;
+        if (Date.now() > deadline) throw new Error(`requests never finished: ${[...inflight].map((r) => r.url()).join(", ")}`);
+        await sleep(20);
+      }
+    },
+  };
+}
+
+/**
+ * Waits for the examples' islands to hydrate instead of guessing a delay
+ * (the same approach as scripts/check-patterns.mjs): Astro removes an
+ * <astro-island>'s `ssr` attribute once its component has hydrated, and
+ * `client:visible` islands only hydrate once scrolled into view. Hydrating
+ * every island up front, before any fake time passes, means each demo's
+ * timers start from the same instant whatever order the islands woke in.
+ * Polled from Node, because the page's own timers are paused.
+ */
+async function waitForHydration(page, slug, timeout = 15_000) {
+  const deadline = Date.now() + timeout;
+  const pendingIslands = () =>
+    page.evaluate(() => {
+      const regions = Array.from(document.querySelectorAll(".docs-example, .prop-playground-stage"));
+      const islands = Array.from(document.querySelectorAll("astro-island[ssr]")).filter((island) =>
+        regions.some((region) => region.contains(island) || island.contains(region)),
+      );
+      // An island is display: contents, so it has no box to scroll to;
+      // client:visible observes its children, so bring the first into view.
+      const next = islands[0];
+      if (next) (next.firstElementChild ?? next).scrollIntoView({ block: "center" });
+      return islands.map((island) => island.getAttribute("component-url"));
+    });
+  let pending = await pendingIslands();
+  while (pending.length && Date.now() < deadline) {
+    await sleep(20);
+    pending = await pendingIslands();
+  }
+  if (pending.length) throw new Error(`screenshot-suite: ${slug}: islands never hydrated: ${pending.join(", ")}`);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  // Effects (and the fetches they start) run after the attribute drops.
+  await flushTasks(page);
+}
+
+/**
+ * Waits for the browser to render real frames. Scroll events and
+ * ResizeObserver callbacks are delivered by the rendering loop, not by
+ * timers, so without a frame between clock steps they'd land at whatever
+ * point in the fake timeline the compositor happened to reach: that's how
+ * MessageScroller's stick-to-bottom read its own scroll as the reader's and
+ * unpinned on some runs. Two frames: scroll events and rAF run in the first,
+ * ResizeObserver callbacks after its layout; then drain what they queued.
+ * Uses the native rAF the fake clock keeps aside, or a real-time sleep if
+ * Playwright ever stops exposing it.
+ */
+async function renderFrames(page) {
+  await page.evaluate(async () => {
+    const raf = globalThis.__pwClock?.builtins?.requestAnimationFrame;
+    const frame = raf ? () => new Promise((resolve) => raf(() => resolve())) : null;
+    if (frame) {
+      await frame();
+      await frame();
+    }
+    return Boolean(frame);
+  }).then((rendered) => (rendered ? undefined : sleep(40)));
+  await flushTasks(page);
+}
+
+/** Runs the fake clock forward to the settled point, then waits for images. */
+async function settle(page, network) {
+  const step = async (ms) => {
+    await network.quiet();
+    await page.clock.runFor(ms);
+    await network.quiet();
+    await renderFrames(page);
+  };
+  for (let elapsed = 0; elapsed < SETTLE_MS; elapsed += SETTLE_STEP_MS) await step(SETTLE_STEP_MS);
+  await step(SETTLE_TAIL_MS);
+  // Lazy images below the fold would otherwise start loading when the
+  // screenshot scrolls to them. Decode everything first.
+  await Promise.race([
+    page.evaluate(async () => {
+      const images = Array.from(document.querySelectorAll(".docs-example img, .prop-playground-stage img"));
+      for (const img of images) if (img.loading === "lazy") img.loading = "eager";
+      await Promise.all(images.map((img) => img.decode().catch(() => {})));
+      await document.fonts.ready;
+    }),
+    sleep(10_000),
+  ]);
+  await network.quiet();
+}
 
 async function capture(targetDir) {
   if (!existsSync(dist)) {
@@ -197,15 +389,23 @@ async function capture(targetDir) {
 
   let shots = 0;
   const started = Date.now();
-  // Variants run concurrently, one browser context each: the time per page
-  // is mostly waiting (network idle, fonts, settle), not CPU.
-  const runVariant = async (name) => {
-    const variant = VARIANTS[name];
+  // Variants run concurrently, each working through the slugs in order with
+  // a fresh context per page: the time per page is mostly waiting (network,
+  // fonts, hydration), not CPU.
+  const newContext = async (variant) => {
     const context = await browser.newContext({
       colorScheme: variant.scheme,
       viewport: { width: 1280, height: 900 },
       deviceScaleFactor: 1,
+      locale: "en-US",
+      timezoneId: "UTC",
     });
+    // Paused before the first document exists, so no page timer ever runs
+    // on the real clock.
+    await context.clock.install({ time: FIXED_TIME });
+    await context.clock.pauseAt(FIXED_TIME);
+    await context.addInitScript(SEED_RANDOM);
+    await context.addInitScript(INSTANT_SCROLL);
     await context.addInitScript(
       ({ storage, dir }) => {
         try {
@@ -229,34 +429,45 @@ async function capture(targetDir) {
       },
       { storage: { ...RADII[variant.radius], "kernel:color-scheme": variant.scheme }, dir: variant.dir ?? null },
     );
-    const page = await context.newPage();
+    return context;
+  };
+
+  const runVariant = async (name) => {
+    const variant = VARIANTS[name];
     for (const slug of slugs) {
-      await page.goto(`${base}/components/${slug}/`, { waitUntil: "networkidle" });
-      await page.addStyleTag({ content: FREEZE_CSS + (variant.lowFont ? LOW_FONT_CSS : "") });
-      if (variant.dir) await page.evaluate((dir) => document.documentElement.setAttribute("dir", dir), variant.dir);
-      // Fonts (including the low-sitting override) and hydration.
-      await page.evaluate(async () => {
-        await document.fonts.ready;
-        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      });
-      await page.waitForTimeout(300);
-      const regions = page.locator(".docs-example, .prop-playground-stage");
-      const count = await regions.count();
-      if (count === 0) continue;
-      mkdirSync(join(targetDir, slug), { recursive: true });
-      for (let i = 0; i < count; i++) {
-        const region = regions.nth(i);
-        if (!(await region.isVisible())) continue;
-        await region.scrollIntoViewIfNeeded();
-        await region.screenshot({
-          path: join(targetDir, slug, `${name}-${i + 1}.png`),
-          animations: "disabled",
-          caret: "hide",
-        });
-        shots++;
+      const context = await newContext(variant);
+      try {
+        const page = await context.newPage();
+        const network = trackNetwork(page);
+        if (cpuThrottle > 1) {
+          const cdp = await context.newCDPSession(page);
+          await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottle });
+        }
+        await page.goto(`${base}/components/${slug}/`, { waitUntil: "load" });
+        await page.addStyleTag({ content: FREEZE_CSS + (variant.lowFont ? LOW_FONT_CSS : "") });
+        if (variant.dir) await page.evaluate((dir) => document.documentElement.setAttribute("dir", dir), variant.dir);
+        await network.quiet();
+        await page.evaluate(async () => { await document.fonts.ready; });
+        await waitForHydration(page, slug);
+        await settle(page, network);
+        const regions = page.locator(".docs-example, .prop-playground-stage");
+        const count = await regions.count();
+        if (count === 0) continue;
+        mkdirSync(join(targetDir, slug), { recursive: true });
+        for (let i = 0; i < count; i++) {
+          const region = regions.nth(i);
+          if (!(await region.isVisible())) continue;
+          await region.screenshot({
+            path: join(targetDir, slug, `${name}-${i + 1}.png`),
+            animations: "disabled",
+            caret: "hide",
+          });
+          shots++;
+        }
+      } finally {
+        await context.close();
       }
     }
-    await context.close();
     console.log(`  ${name}: done`);
   };
   await Promise.all(variantNames.map(runVariant));
