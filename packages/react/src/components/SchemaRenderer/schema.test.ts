@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   SCHEMA_NODE_SPECS,
@@ -13,11 +14,13 @@ import {
   validateSchemaNode,
 } from "./schema";
 
+const here = dirname(fileURLToPath(import.meta.url));
+
 describe("schema.ts", () => {
   it("is byte-identical in @kernelui-lib/react and @kernelui-lib/elements", () => {
-    const react = readFileSync(resolve(__dirname, "schema.ts"), "utf8");
+    const react = readFileSync(resolve(here, "schema.ts"), "utf8");
     const elements = readFileSync(
-      resolve(__dirname, "../../../../elements/src/components/SchemaRenderer/schema.ts"),
+      resolve(here, "../../../../elements/src/components/SchemaRenderer/schema.ts"),
       "utf8",
     );
     expect(elements).toBe(react);
