@@ -54,7 +54,7 @@
   },
   "scripts": {
     "generate": "node scripts/generate.mjs",
-    "build": "bun run --cwd ../registry build && node scripts/generate.mjs && node scripts/build.mjs",
+    "build": "node ../registry/scripts/build-once.mjs && node scripts/generate.mjs && node scripts/build.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:browser": "node scripts/smoke-playwright.mjs"

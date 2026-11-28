@@ -46,7 +46,7 @@
     "vitest": "^3.2.7"
   },
   "scripts": {
-    "build": "bun run --cwd ../registry build && bun scripts/bundle-registry.mjs && tsc",
+    "build": "node ../registry/scripts/build-once.mjs && bun scripts/bundle-registry.mjs && tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
