@@ -4,7 +4,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { checkCode } from "../dist/lib/check.js";
 import { handleMessage, tools } from "../dist/lib/mcp-server.js";
-import { runMcp } from "../dist/commands/mcp.js";
+import { mergeCodexToml, runMcp } from "../dist/commands/mcp.js";
 
 const call = (name: string, args: Record<string, unknown> = {}) =>
   handleMessage({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } }, "test") as {
@@ -119,5 +119,38 @@ describe("kernel mcp init", () => {
     await runMcp({ cwd: dir, dryRun: false, yes: true }, ["init", "--client=vscode"]);
     const config = JSON.parse(readFileSync(path.join(dir, ".vscode/mcp.json"), "utf8"));
     expect(config.servers.kernel.type).toBe("stdio");
+  });
+});
+
+describe("kernel mcp init --client codex", () => {
+  it("writes a [mcp_servers.kernel] table to .codex/config.toml", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "kernel-mcp-"));
+    await runMcp({ cwd: dir, dryRun: false, yes: true }, ["init", "--client", "codex"]);
+    const toml = readFileSync(path.join(dir, ".codex/config.toml"), "utf8");
+    expect(toml).toContain("[mcp_servers.kernel]");
+    expect(toml).toContain('args = ["-y", "@kernelui-lib/cli", "mcp"]');
+  });
+
+  it("replaces only its own table and keeps other config", () => {
+    const before = [
+      'model = "gpt-5"',
+      "",
+      "[mcp_servers.kernel]",
+      'command = "old"',
+      "",
+      "[mcp_servers.kernel.env]",
+      'X = "1"',
+      "",
+      "[mcp_servers.other]",
+      'command = "x"',
+      "",
+    ].join("\n");
+    const after = mergeCodexToml(before);
+    expect(after).toContain('model = "gpt-5"');
+    expect(after).toContain("[mcp_servers.other]");
+    expect(after).not.toContain('command = "old"');
+    expect(after).not.toContain("[mcp_servers.kernel.env]");
+    expect(after.match(/\[mcp_servers\.kernel\]/g)).toHaveLength(1);
+    expect(mergeCodexToml(after)).toBe(after);
   });
 });

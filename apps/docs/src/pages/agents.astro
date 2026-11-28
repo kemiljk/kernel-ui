@@ -1,0 +1,120 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const oneStepSnippet = `npx @kernelui-lib/cli agents`;
+
+const clientsSnippet = `npx @kernelui-lib/cli agents                   # Claude Code: .claude/skills + .mcp.json
+npx @kernelui-lib/cli agents --client cursor   # Cursor: .cursor/mcp.json
+npx @kernelui-lib/cli agents --client vscode   # VS Code: .vscode/mcp.json
+npx @kernelui-lib/cli agents --client codex    # Codex: .codex/config.toml
+npx @kernelui-lib/cli agents --dir .agents/skills --no-mcp   # skills only, anywhere`;
+
+const manualMcpSnippet = `{
+  "mcpServers": {
+    "kernel": { "command": "npx", "args": ["-y", "@kernelui-lib/cli", "mcp"] }
+  }
+}`;
+
+const codexSnippet = `# .codex/config.toml (or ~/.codex/config.toml)
+[mcp_servers.kernel]
+command = "npx"
+args = ["-y", "@kernelui-lib/cli", "mcp"]`;
+
+const promptSnippet = `Build this UI with Kernel UI (@kernelui-lib/react). Before writing markup,
+look up components and their exact props with the kernel MCP server (or
+npx @kernelui-lib/cli docs <name> --markdown). Style only with --kernel-*
+tokens. When you're done, run npx @kernelui-lib/cli check on the files you
+changed and fix what it reports.`;
+
+const checkSnippet = `npx @kernelui-lib/cli check src/**/*.tsx`;
+---
+
+<BaseLayout title="AI agents" description="Set up Claude Code, Cursor, VS Code or any coding agent to build with Kernel: one command installs skills, an MCP server with exact props, and a code check." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>AI agents</h1>
+    <p>
+      Kernel is built to be used by coding agents as well as people. Every
+      component's exact API is generated from its source, the conventions
+      are the same across all of them, and there's a checker that tells an
+      agent what it got wrong and how to fix it. You don't need to paste
+      docs into a prompt.
+    </p>
+
+    <h2>Set up a project in one step</h2>
+    <CodeBlock code={oneStepSnippet} lang="bash" />
+    <p>This does three things, each of which you can also do on its own:</p>
+    <ul>
+      <li>
+        <strong>Installs Kernel's skills</strong> into
+        <code>.claude/skills</code>. They ship inside
+        <code>@kernelui-lib/react</code> and <code>@kernelui-lib/elements</code>,
+        so they always match the version you installed:
+        <code>kernel-ui</code> (building), <code>kernel-ui-theming</code>,
+        <code>kernel-ui-migrate</code> (from shadcn/ui or Radix) and
+        <code>kernel-ui-elements</code>.
+      </li>
+      <li>
+        <strong>Registers the Kernel MCP server</strong>, so the agent can
+        look components up instead of guessing.
+      </li>
+      <li>
+        <strong>Adds a short Kernel section to <code>AGENTS.md</code></strong>
+        (and <code>CLAUDE.md</code> if you have one). Codex, Cursor, Copilot
+        and most other agents read <code>AGENTS.md</code>.
+      </li>
+    </ul>
+    <CodeBlock code={clientsSnippet} lang="bash" />
+
+    <h2>The MCP server</h2>
+    <p>
+      <code>npx @kernelui-lib/cli mcp</code> runs a Model Context Protocol
+      server over stdio. It answers from data bundled into the CLI, so it
+      works offline and matches the version you installed. To add it to any
+      MCP client by hand:
+    </p>
+    <CodeBlock code={manualMcpSnippet} lang="tsx" />
+    <p>Codex reads TOML instead:</p>
+    <CodeBlock code={codexSnippet} lang="bash" />
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Tools the Kernel MCP server provides.</caption>
+      <thead><tr><th scope="col">Tool</th><th scope="col">What it gives the agent</th></tr></thead>
+      <tbody>
+        <tr><td><code>list_components</code></td><td>Every component, with its category and summary</td></tr>
+        <tr><td><code>search_components</code></td><td>The right component for a need in plain words, like "date range" or "tool approval"</td></tr>
+        <tr><td><code>get_component</code></td><td>Exact React props (types, defaults, notes), custom element attributes and events, why the component uses its native element, and migration notes</td></tr>
+        <tr><td><code>get_tokens</code></td><td>Design tokens with their values and what each is for</td></tr>
+        <tr><td><code>get_conventions</code></td><td>Install steps and the conventions every component shares</td></tr>
+        <tr><td><code>check_code</code></td><td>A review of code the agent just wrote, with each fix spelled out</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Let the agent check its own work</h2>
+    <p>
+      <code>kernel check</code> (and the MCP <code>check_code</code> tool)
+      catches the mistakes agents make most often, and says how to fix each
+      one: props from other libraries (<code>asChild</code>,
+      <code>leftIcon</code>), invalid values, fields without a label,
+      icon-only buttons without a name, clickable <code>&lt;div&gt;</code>s,
+      raw colours and hand-picked radii. It exits with an error when it finds
+      one, so it also works in CI.
+    </p>
+    <CodeBlock code={checkSnippet} lang="bash" />
+
+    <h2>A prompt that works</h2>
+    <p>If your agent doesn't have the skills or MCP server yet, start with this:</p>
+    <CodeBlock code={promptSnippet} lang="bash" />
+
+    <h2>Machine-readable docs</h2>
+    <ul>
+      <li><a href="/llms.txt">/llms.txt</a>: what Kernel is, when it fits, and an index of every page</li>
+      <li><a href="/llms-full.txt">/llms-full.txt</a>: every guide and component page in one file</li>
+      <li>Any page as markdown: add <code>.md</code> to its URL, for example <a href="/components/button.md">/components/button.md</a></li>
+      <li><a href="/api.json">/api.json</a>: every component's exact props, attributes and events, generated from source</li>
+      <li><a href="/registry.json">/registry.json</a>: the component catalogue, with shadcn aliases and migration notes</li>
+      <li><code>llms.txt</code> and <code>skills/</code> inside each npm package, versioned with the code</li>
+    </ul>
+  </div>
+</BaseLayout>

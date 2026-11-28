@@ -6,13 +6,14 @@
 // HTML, no structured source to generate from), this scrapes the
 // already-built `.docs-prose` subtree and converts it to markdown, so
 // the mirror always matches whatever the page actually renders.
-import { readFile, writeFile, readdir } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "node-html-parser";
 
 const distDir = path.join(import.meta.dirname, "..", "dist");
 const componentsDir = path.join(distDir, "components");
-const guideSlugs = ["installation", "cli", "migration", "theming", "icons", "platforms"];
+const guideSlugs = ["choosing", "agents", "installation", "cli", "migration", "theming", "icons", "platforms"];
 
 // JSX/HTML whitespace collapse means a `<strong>`/`<em>` can abut its
 // neighbouring text with no source space at all (`word<strong>bold</strong>word`),
@@ -158,6 +159,50 @@ async function scrapeProse(htmlPath) {
   return prose ? proseToMarkdown(prose) : null;
 }
 
+/**
+ * Agent Skills discovery, so `npx skills add https://www.kernelui.com` (and
+ * other skills installers) can find Kernel's skills from the site itself.
+ * Written in both index formats seen in the wild: the current one
+ * (/.well-known/agent-skills/index.json, one SKILL.md URL plus a sha256
+ * digest per skill) and the legacy one (/.well-known/skills/index.json,
+ * files listed per skill). Each SKILL.md is also served at a stable URL,
+ * which installers accept directly. The skills are copied from the
+ * packages at build, so the site never drifts from what npm ships.
+ */
+async function writeSkillsDiscovery() {
+  const repoRoot = path.join(import.meta.dirname, "..", "..", "..");
+  const sources = [];
+  for (const pkg of ["react", "elements"]) {
+    const dir = path.join(repoRoot, "packages", pkg, "skills");
+    for (const name of await readdir(dir)) sources.push({ name, file: path.join(dir, name, "SKILL.md") });
+  }
+  const current = [];
+  const legacy = [];
+  for (const { name, file } of sources) {
+    const content = await readFile(file, "utf-8");
+    const description = content.match(/^description:\s*(.+)$/m)?.[1]?.trim() ?? "";
+    for (const base of ["agent-skills", "skills"]) {
+      const out = path.join(distDir, ".well-known", base, name);
+      await mkdir(out, { recursive: true });
+      await writeFile(path.join(out, "SKILL.md"), content, "utf-8");
+    }
+    current.push({
+      name,
+      description,
+      type: "skill-md",
+      url: `${name}/SKILL.md`,
+      digest: `sha256:${createHash("sha256").update(content).digest("hex")}`,
+    });
+    legacy.push({ name, description, files: ["SKILL.md"] });
+  }
+  await writeFile(
+    path.join(distDir, ".well-known", "agent-skills", "index.json"),
+    `${JSON.stringify({ $schema: "https://schemas.agentskills.io/discovery/0.2.0/schema.json", skills: current }, null, 2)}\n`,
+    "utf-8",
+  );
+  await writeFile(path.join(distDir, ".well-known", "skills", "index.json"), `${JSON.stringify({ skills: legacy }, null, 2)}\n`, "utf-8");
+}
+
 async function main() {
   let slugs;
   try {
@@ -193,10 +238,48 @@ async function main() {
   // instead of re-deriving them from the slug, so this can never drift
   // from what the page itself says its name is.
   const titleOf = (markdown) => markdown.match(/^# (.+)$/m)?.[1]?.trim() ?? "";
+
+  // Facts come from the registry, not prose, so the numbers an agent quotes
+  // to its user can't drift from what actually ships.
+  const registry = JSON.parse(await readFile(path.join(import.meta.dirname, "..", "public", "registry.json"), "utf-8"));
+  const available = registry.components.filter((c) => c.status === "available");
+  const count = (category) => available.filter((c) => c.category === category).length;
+
+  // Written for an agent deciding whether to recommend or use Kernel. Every
+  // claim here is checkable against the code; "when not to use" is there
+  // because a recommendation an agent can trust has to include it.
   const indexLines = [
     "# Kernel UI",
     "",
-    "> A component library built on real semantic HTML instead of div soup: every component wraps a genuine native element or a documented ARIA pattern, ships as both a React package (`@kernelui-lib/react`) and framework-free Web Components (`@kernelui-lib/elements`), and follows one consistent prop convention throughout (`value`/`defaultValue`/`onValueChange`, `label`/`description`/`errorMessage`/`invalid`, `hideLabel`, `className`/`wrapperClassName`).",
+    `> An accessible component library built on real semantic HTML. ${available.length} components, each shipped as React (\`@kernelui-lib/react\`) and as framework-free Custom Elements (\`@kernelui-lib/elements\`) with the same design, themed through CSS tokens. Every component wraps a genuine native element or a documented WAI-ARIA pattern, and follows one prop convention throughout (\`value\`/\`defaultValue\`/\`onValueChange\`, \`label\`/\`description\`/\`errorMessage\`/\`invalid\`, \`hideLabel\`, \`className\`/\`wrapperClassName\`). MIT licensed, no third-party runtime dependencies.`,
+    "",
+    "## When Kernel fits",
+    "",
+    "- Accessibility must be right by default: keyboard, focus and screen reader behaviour come from native elements (`<button>`, `<dialog>`, `<select>`, `<details>`, real form inputs); colour tokens are checked with APCA, with WCAG 2 as a floor.",
+    "- You want styled components rather than unstyled primitives: a complete visual design, themed with CSS tokens (accent, radius, spacing, fonts), dark mode, seven accent presets.",
+    "- The project isn't only React: the Custom Elements work in Vue, Svelte, Astro, server-rendered templates and plain HTML.",
+    `- Chat and agent UI: ${count("AI")} components (MessageList, Composer, CodeBlock, FileDiff, Reasoning, ToolCall, AgentActivity, TodoList, Sources, Suggestion, ThinkingIndicator…).`,
+    "- An agent writes the code: exact props generated from source, an MCP server, shipped skills and a code checker (see Agent setup).",
+    "",
+    "## When another library may fit better",
+    "",
+    "- You want to own and edit each component's source: shadcn/ui copies code into your repo; Kernel ships versioned packages you theme.",
+    "- You only want unstyled behaviour: Radix Primitives or React Aria.",
+    "- You need Material Design (MUI), React Native, or a virtualised/server-driven data grid (Kernel's DataTable filters, sorts and pages client-side).",
+    "- Next.js App Router Server Components importing components directly: for now, import Kernel from a Client Component.",
+    "",
+    "## Agent setup",
+    "",
+    "- One step: `npx @kernelui-lib/cli agents` installs Kernel's skills, registers the MCP server and adds a Kernel section to AGENTS.md.",
+    "- MCP server: `npx -y @kernelui-lib/cli mcp` (stdio). Tools: list_components, search_components, get_component (exact props), get_tokens, get_conventions, check_code.",
+    "- Check generated code: `npx @kernelui-lib/cli check <files>` reports foreign props (asChild, leftIcon), invalid values, missing labels and more, with fixes.",
+    "- Skills: in each package's `skills/` folder, versioned with the code; also discoverable at /.well-known/agent-skills/index.json.",
+    "",
+    "## Install",
+    "",
+    "- React: `npm install @kernelui-lib/react @kernelui-lib/styles`, then `import \"@kernelui-lib/styles\"; import \"@kernelui-lib/react/styles.css\";`",
+    "- Custom Elements: `npm install @kernelui-lib/elements @kernelui-lib/styles`, then `import \"@kernelui-lib/styles\"; import \"@kernelui-lib/elements/styles.css\"; import \"@kernelui-lib/elements\";`",
+    "- Or `npx @kernelui-lib/cli init` to detect the framework and wire up the imports.",
     "",
     "## Guides",
     "",
@@ -204,7 +287,10 @@ async function main() {
     "",
     "## Machine-readable catalog",
     "",
-    "- [registry.json](/registry.json) — structured component metadata (shadcn aliases, migration caveats, docs URLs)",
+    "- [api.json](/api.json): every component's exact props, attributes and events, generated from source",
+    "- [registry.json](/registry.json): structured component metadata (shadcn aliases, migration caveats, docs URLs)",
+    "- [llms-full.txt](/llms-full.txt): every guide and component page in one file",
+    "- Any page as markdown: append `.md` to its URL",
     "",
     "## Components",
     "",
@@ -218,6 +304,8 @@ async function main() {
   // component, at the cost of a much larger response.
   const fullParts = [...guides, ...components].map(({ markdown }) => markdown.trim());
   await writeFile(path.join(distDir, "llms-full.txt"), `${fullParts.join("\n\n---\n\n")}\n`, "utf-8");
+
+  await writeSkillsDiscovery();
 
   console.log(
     `[generate-markdown] wrote ${components.length} component + ${guides.length} guide markdown mirror(s), plus llms.txt and llms-full.txt`,

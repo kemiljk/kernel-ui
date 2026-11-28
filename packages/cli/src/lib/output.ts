@@ -50,7 +50,7 @@ agents options:
   --no-skills / --no-mcp / --no-agents-md   Skip a step
 
 mcp init options:
-  --client <name>           claude (.mcp.json) | cursor | vscode
+  --client <name>           claude (.mcp.json) | cursor | vscode | codex (.codex/config.toml)
 
 Examples:
   npx @kernelui-lib/cli init

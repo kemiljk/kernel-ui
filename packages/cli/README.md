@@ -60,6 +60,7 @@ Runs a Model Context Protocol server over stdio so coding agents can look Kernel
 kernel mcp init                  # Claude Code (.mcp.json)
 kernel mcp init --client cursor  # .cursor/mcp.json
 kernel mcp init --client vscode  # .vscode/mcp.json
+kernel mcp init --client codex   # .codex/config.toml
 ```
 
 ### `kernel check`

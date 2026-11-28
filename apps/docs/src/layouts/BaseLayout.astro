@@ -34,6 +34,41 @@ const description =
     : SITE_DEFAULT_DESCRIPTION);
 
 const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
+
+// The markdown version of this page, for agents: every component and guide
+// page has one (scripts/generate-markdown.mjs), and the home page's is the
+// llms.txt index. Advertised with rel="alternate" so a crawler that lands
+// on the HTML can find the clean text without guessing the URL scheme.
+const GUIDE_SLUGS = ["choosing", "agents", "installation", "cli", "migration", "theming", "icons", "platforms"];
+const guideMatch = Astro.url.pathname.match(/^\/([^/]+)\/$/);
+const markdownUrl =
+  Astro.url.pathname === "/"
+    ? "/llms.txt"
+    : componentEntry
+      ? `/components/${componentEntry.slug}.md`
+      : guideMatch && GUIDE_SLUGS.includes(guideMatch[1]!)
+        ? `/${guideMatch[1]}.md`
+        : undefined;
+
+// schema.org description of the library itself, on the home page only. It
+// restates facts the page already shows; structured data must never claim
+// more than the visible content does.
+const structuredData =
+  Astro.url.pathname === "/"
+    ? JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareSourceCode",
+        name: "Kernel UI",
+        description: SITE_DEFAULT_DESCRIPTION,
+        url: SITE_URL,
+        codeRepository: "https://github.com/kemiljk/kernel-ui",
+        programmingLanguage: ["TypeScript", "CSS", "HTML"],
+        runtimePlatform: ["React", "Web Components"],
+        license: "https://opensource.org/licenses/MIT",
+        author: { "@type": "Person", name: "Karl Koch" },
+        keywords: "accessible component library, semantic HTML, React, Web Components, Custom Elements, design tokens, AI agent UI, MCP",
+      })
+    : undefined;
 const ogImage = new URL("/og.png", SITE_URL).href;
 const pageTitle =
   Astro.url.pathname === "/" ? SITE_DEFAULT_TITLE : `${title} — ${SITE_NAME}`;
@@ -147,6 +182,8 @@ const pageTitle =
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <link rel="canonical" href={canonicalUrl} />
+    {markdownUrl && <link rel="alternate" type="text/markdown" href={markdownUrl} />}
+    {structuredData && <script type="application/ld+json" set:html={structuredData} />}
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={pageTitle} />

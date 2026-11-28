@@ -133,6 +133,19 @@ writeFileSync(
   `"use strict";\n// Bundled at build time from @kernelui-lib/registry and @kernelui-lib/styles\nmodule.exports = ${JSON.stringify(agentData)};\n`,
 );
 
+// ── 5b. MCP Registry metadata: server.json's versions must equal the npm
+// version, or the registry rejects the publish. Changesets only bumps
+// package.json, so every build copies the version across.
+{
+  const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf8"));
+  const serverPath = join(__dirname, "..", "server.json");
+  const server = JSON.parse(readFileSync(serverPath, "utf8"));
+  server.version = pkg.version;
+  for (const entry of server.packages) entry.version = pkg.version;
+  if (server.name !== pkg.mcpName) throw new Error("server.json name must equal package.json mcpName");
+  writeFileSync(serverPath, `${JSON.stringify(server, null, 2)}\n`);
+}
+
 // ── 6. Skills: a fallback copy for projects that haven't installed the
 // packages yet. `kernel agents` prefers the copy in node_modules, which
 // always matches the installed version.

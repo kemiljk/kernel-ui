@@ -209,7 +209,7 @@
       "name": "Badge",
       "react": {
         "Badge": {
-          "description": "A small status chip. There's no HTML element for \"badge\", `<span>` is\nthe correct choice for an inline, semantically neutral run of text\nthat only needs presentational styling.",
+          "description": "A small status chip. There's no HTML element for \"badge\", `<span>` is\nthe correct choice for an inline, semantically neutral run of text\nthat only needs presentational styling.\n\nShaped as an optical pill: its radius follows `--kernel-radius-control`\nbut stops at a true half-height pill, its inline padding grows by the\nwidth the end caps cut away, and an icon at either end (an `svg`,\n`img`, an icon component that renders one, or a `data-icon` element)\nbecomes a `1lh` box\nthat sits concentric with the cap. Put icons and text straight inside;\nno wrapper needed. See `Badge.module.css` for the maths.",
           "extends": [
             "Omit<HTMLAttributes<HTMLSpanElement>, \"className\">"
           ],
@@ -230,7 +230,7 @@
       },
       "elements": {
         "kernel-badge": {
-          "description": "`<kernel-badge>` — a small status chip. There's no HTML element for\n\"badge\"; `<span>` is correct for an inline, semantically neutral run\nof text that only needs presentational styling.\n\nAttributes: `variant` (neutral/accent/success/warning/danger,\ndefault neutral).",
+          "description": "`<kernel-badge>` — a small status chip. There's no HTML element for\n\"badge\"; `<span>` is correct for an inline, semantically neutral run\nof text that only needs presentational styling.\n\nShaped as an optical pill, the same as React's `<Badge>`: the radius\nstops at a true half-height pill, inline padding grows by the width the\nend caps cut away, and an icon at either end (an `svg` or `img`, or any\n`data-icon` element) becomes a `1lh` box concentric with the cap.\n\nAttributes: `variant` (neutral/accent/success/warning/danger,\ndefault neutral).",
           "attributes": [
             "variant"
           ],
@@ -309,7 +309,7 @@
       "name": "Button",
       "react": {
         "Button": {
-          "description": "A real `<button>`. Renders as one by default because that's the only\nelement that gets click, keyboard (Space/Enter), focus, and form\nassociation for free from the browser. Use `render` when the action\nnavigates, so it should be an `<a>` instead.",
+          "description": "A real `<button>`. Renders as one by default because that's the only\nelement that gets click, keyboard (Space/Enter), focus, and form\nassociation for free from the browser. Use `render` when the action\nnavigates, so it should be an `<a>` instead.\n\nOptically padded like `Badge`: the radius stops at half the control\nheight (a true pill at Round), inline padding grows by the width the\ncorners cut away, icons sit concentric with the corner, and the\ncapitals are centred by cap height rather than by the font's line box.",
           "extends": [
             "Omit<ButtonHTMLAttributes<HTMLButtonElement>, \"className\">"
           ],
@@ -339,13 +339,13 @@
               "name": "iconStart",
               "type": "ReactNode",
               "optional": true,
-              "description": "Icon (or any node) placed before the label."
+              "description": "Icon placed before the label: any `svg`, `img` or icon component.\nIt's drawn at `--kernel-icon-size` in a slot concentric with the\nbutton's corner. With no label (or a lone icon as `children`) the\nbutton is icon-only: square, or a circle at Round. Pass icon components\nhere rather than as children: a lone `svg`/`img` child is also treated\nas icon-only, but a component child is always treated as the label."
             },
             {
               "name": "iconEnd",
               "type": "ReactNode",
               "optional": true,
-              "description": "Icon (or any node) placed after the label."
+              "description": "Icon placed after the label. Same sizing as `iconStart`."
             },
             {
               "name": "className",
@@ -370,13 +370,14 @@
       },
       "elements": {
         "kernel-button": {
-          "description": "`<kernel-button>` — a real `<button>`. Renders as one by default\nbecause that's the only element that gets click, keyboard\n(Space/Enter), focus, and form association for free from the\nbrowser. Mirrors `@kernelui-lib/react`'s `<Button>`.\n\nAttributes: `variant` (primary/secondary/ghost/danger, default\nsecondary), `size` (sm/md/lg, default md), `disabled`, `loading`\n(boolean attributes), `type` (button/submit/reset, default button).\n\nIcon slots aren't ported yet in this first pass — plain text/inline\ncontent only. Fast-follow, not a structural limitation.",
+          "description": "`<kernel-button>` — a real `<button>`. Renders as one by default\nbecause that's the only element that gets click, keyboard\n(Space/Enter), focus, and form association for free from the\nbrowser. Mirrors `@kernelui-lib/react`'s `<Button>`.\n\nAttributes: `variant` (primary/secondary/ghost/danger, default\nsecondary), `size` (sm/md/lg, default md), `disabled`, `loading`\n(boolean attributes), `type` (button/submit/reset, default button).\n\nIcons: put an `svg` or `img` (or any `data-icon` element) first or\nlast among the children and it moves into an icon slot, the same as\nReact's `iconStart`/`iconEnd`. A lone icon makes an icon-only button,\nsquare or (at Round) circular, with the icon concentric. Label an\nicon-only button with `aria-label` on `<kernel-button>`; it's\nforwarded to the real `<button>`.",
           "attributes": [
             "variant",
             "size",
             "disabled",
             "loading",
-            "type"
+            "type",
+            "aria-label"
           ],
           "events": []
         }
@@ -3557,7 +3558,7 @@
       "name": "Suggestion",
       "react": {
         "Suggestion": {
-          "description": "A horizontal row of prompt suggestions — the chips that sit above or\nbelow a chat composer and seed the next message. A real `<ul>` of\n`<button>`s (via `SuggestionItem`), not a div of clickable spans: the\nlist announces as a group, each chip is a genuine button, and keyboard\nfocus works without inventing a roving-tabindex pattern for a small\nset of peer actions.",
+          "description": "A horizontal row of prompt suggestions — the chips that sit above or\nbelow a chat composer and seed the next message. A real `<ul>` of\n`<button>`s (via `SuggestionItem`), not a div of clickable spans: the\nlist announces as a group, each chip is a genuine button, and keyboard\nfocus works without inventing a roving-tabindex pattern for a small\nset of peer actions.\n\nEach item is an optical pill (see `Badge`): the inline padding includes\nthe width the round ends cut away, and an icon at either end of an\nitem's children becomes a `1lh` box concentric with the cap.",
           "extends": [
             "Omit<HTMLAttributes<HTMLUListElement>, \"className\">"
           ],

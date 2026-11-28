@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.kemiljk/kernel-ui",
+  "description": "Exact component APIs, design tokens and a code checker for the Kernel UI component library.",
+  "repository": {
+    "url": "https://github.com/kemiljk/kernel-ui",
+    "source": "github"
+  },
+  "version": "1.0.5",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@kernelui-lib/cli",
+      "version": "1.0.5",
+      "runtimeHint": "npx",
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

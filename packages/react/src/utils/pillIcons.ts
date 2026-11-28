@@ -18,7 +18,7 @@ import type { ReactNode, RefCallback } from "react";
  *    This is what server rendering sees, and it never guesses.
  * 2. After render (`usePillIconRef`), the real DOM decides, exactly as the
  *    elements package does. An icon component (Lucide, Phosphor…) renders an
- *    `<svg>` and is picked up; a component that renders text (`<Trans>`, an
+ *    `svg` element and is picked up; a component that renders text (`<Trans>`, an
  *    Astro slot, any wrapper) is not.
  *
  * An earlier version treated every component element as an icon at render.
