@@ -211,9 +211,14 @@ async function checkSlug(slug) {
     const area = page.locator(".docs-example").first().locator("div").first();
     await area.click({ button: "right" });
     await page.waitForTimeout(300);
-    const focusInMenu = await page.evaluate(() => Boolean(document.querySelector('[role="menu"]:popover-open')?.contains(document.activeElement)));
+    // A pointer open focuses the menu container itself, with no item
+    // highlighted (utils/menuFocus.ts); the first ArrowDown lands on item 0.
+    const focusInMenu = await page.evaluate(() => {
+      const menu = document.querySelector('[role="menu"]:popover-open');
+      return Boolean(menu?.contains(document.activeElement)) && document.activeElement?.getAttribute("role") !== "menuitem";
+    });
     await page.keyboard.press("ArrowDown");
-    const second = await page.evaluate(() => {
+    const first = await page.evaluate(() => {
       const items = [...document.querySelectorAll('[role="menu"]:popover-open [role="menuitem"]')];
       return items.indexOf(document.activeElement);
     });
@@ -221,8 +226,8 @@ async function checkSlug(slug) {
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
     const closed = await page.evaluate(() => !document.querySelector('[role="menu"]:popover-open'));
-    if (focusInMenu && second === 1 && closed) pass(slug, "right-click focuses the menu, arrows move, Escape closes (real keys)");
-    else fail(slug, "right-click focuses the menu, arrows move, Escape closes (real keys)", JSON.stringify({ focusInMenu, focusedIndexAfterArrowDown: second, closed }));
+    if (focusInMenu && first === 0 && closed) pass(slug, "right-click focuses the menu, arrows move, Escape closes (real keys)");
+    else fail(slug, "right-click focuses the menu, arrows move, Escape closes (real keys)", JSON.stringify({ focusInMenu, focusedIndexAfterArrowDown: first, closed }));
   }
 
   if (slug === "tooltip") {
