@@ -32,6 +32,7 @@
     "test:screenshots": "node scripts/screenshot-suite.mjs",
     "test:patterns": "node scripts/check-patterns.mjs",
     "test:agent-bridge": "node scripts/check-agent-bridge.mjs",
+    "test:cross-browser": "node scripts/check-cross-browser.mjs",
     "test:glass-scope": "node scripts/check-glass-scope.mjs",
     "test:motion:docs": "node scripts/disclosure-docs-check.mjs",
     "test:motion:filmstrip": "node scripts/disclosure-filmstrip.mjs",

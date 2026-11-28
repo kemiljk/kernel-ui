@@ -107,6 +107,13 @@ export function HoverCard({
   /** Set while Escape hands focus back to the trigger, so that focus
    * doesn't immediately reopen the card it just dismissed. */
   const suppressFocusOpenRef = useRef(false);
+  /** Set by Escape until the pointer really leaves (or the trigger is
+   * focused again). A card appearing or animating under a pointer that
+   * hasn't moved gets boundary events the user never made — Firefox
+   * delivers them from its refresh driver, a frame or more late, so one can
+   * land mid-exit — and without this a `pointerenter` on the closing card
+   * would rescue it, undoing the dismissal WCAG 1.4.13 asks for. */
+  const escapeDismissedRef = useRef(false);
   const { anchorRef, floatingRef } = useFloatingPosition<HTMLElement, HTMLDivElement>({
     open,
     placement,
@@ -145,7 +152,7 @@ export function HoverCard({
    * mouse-tuned open-delay affordance for an input that has no hover
    * concept at all; `onFocus` (below) already covers tap-to-reveal. */
   function showOnHover(event: { pointerType: string }, delay: number) {
-    if (event.pointerType === "touch") return;
+    if (event.pointerType === "touch" || escapeDismissedRef.current) return;
     show(delay);
   }
 
@@ -197,6 +204,7 @@ export function HoverCard({
     function handleKeyDown(event: globalThis.KeyboardEvent) {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       event.preventDefault();
+      escapeDismissedRef.current = true;
       clearTimeout(openTimeoutRef.current);
       clearTimeout(closeTimeoutRef.current);
       if (popoverRef.current?.contains(document.activeElement)) {
@@ -210,6 +218,17 @@ export function HoverCard({
     return () => document.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, closing]);
+
+  /** The pointer left for real: hover may open the card again. */
+  function leave() {
+    escapeDismissedRef.current = false;
+    scheduleHide();
+  }
+
+  function cancelHideOnHover() {
+    if (escapeDismissedRef.current) return;
+    cancelHide();
+  }
 
   function cancelHide() {
     clearTimeout(closeTimeoutRef.current);
@@ -229,9 +248,11 @@ export function HoverCard({
       "aria-describedby": id,
       interestfor: id,
       onPointerEnter: (event: ReactPointerEvent) => showOnHover(event, openDelay),
-      onPointerLeave: scheduleHide,
+      onPointerLeave: leave,
       onFocus: () => {
-        if (!suppressFocusOpenRef.current) show(0);
+        if (suppressFocusOpenRef.current) return;
+        escapeDismissedRef.current = false;
+        show(0);
       },
       onBlur: hideOnBlur,
     },
@@ -252,8 +273,8 @@ export function HoverCard({
       "data-open": dataAttr(open && !closing),
       "data-closing": dataAttr(closing),
       className: [styles.content, resolveClassName(className, state)].filter(Boolean).join(" "),
-      onPointerEnter: cancelHide,
-      onPointerLeave: scheduleHide,
+      onPointerEnter: cancelHideOnHover,
+      onPointerLeave: leave,
       onFocus: cancelHide,
       onBlur: hideOnBlur,
       children: content,

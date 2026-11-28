@@ -4,6 +4,7 @@ import { inputModality, trackInputModality, type ChangeDetails, type ChangeEvent
 import { fuzzyFilter, fuzzyScore, fuzzySegments } from "../../utils/fuzzy";
 import { dataAttr } from "../../utils/polymorphic";
 import { emitChange } from "../../utils/useControllableState";
+import { showModalReturningFocus, trackPressedControl } from "../../utils/focusReturn";
 import { ScrollArea } from "../ScrollArea/ScrollArea";
 import styles from "./CommandPalette.module.css";
 
@@ -403,11 +404,14 @@ function CommandPaletteRoot({
     setInputElement,
   }), [activeId, isVisible, listboxId, onOpenChange, query, registerItem, selectableItems, setActiveId, setInputElement]);
 
+  // WebKit never focuses a clicked button; remember it for the restore.
+  useEffect(trackPressedControl, []);
+
   useEffect(() => {
     const node = dialogRef.current;
     if (!node) return;
     if (open) {
-      if (!node.open) node.showModal();
+      if (!node.open) showModalReturningFocus(node);
       return;
     }
     if (node.open) {

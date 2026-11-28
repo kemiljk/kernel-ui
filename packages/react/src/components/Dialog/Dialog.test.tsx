@@ -103,4 +103,35 @@ describe("Dialog", () => {
       expect(dialog.open).toBe(false);
     });
   });
+
+  it("returns focus to the button that opened it when the browser left focus on <body> (WebKit)", async () => {
+    function Opener() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open
+          </button>
+          <Dialog open={open} onOpenChange={setOpen} title="Settings">
+            <button type="button" onClick={() => setOpen(false)}>
+              Done
+            </button>
+          </Dialog>
+        </>
+      );
+    }
+    render(<Opener />);
+    const opener = screen.getByRole("button", { name: "Open" });
+    // Safari's click: pointerdown and click, but the button never takes focus.
+    fireEvent.pointerDown(opener);
+    fireEvent.click(opener);
+    expect(document.activeElement).toBe(document.body);
+    const dialog = document.querySelector("dialog") as HTMLDialogElement;
+    await waitFor(() => expect(dialog.open).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Done", hidden: true }));
+    await waitFor(() => expect(dialog.open).toBe(false));
+    // The close event is what triggers the restore (jsdom may not fire it).
+    dialog.dispatchEvent(new Event("close"));
+    expect(document.activeElement).toBe(opener);
+  });
 });

@@ -70,6 +70,20 @@ const AXES: Record<SheetSide, SheetAxis> = {
   left: { axis: "x", sign: -1, scrollEdge: "end", sizeProp: "width", sizeUnit: "dvw" },
 };
 
+/**
+ * The physical axis a side drags along. `left` and `right` are logical —
+ * Dialog anchors them with `inset-inline-start`/`-end` — so under RTL a
+ * `left` sheet sits on the right-hand edge and has to be dragged off to the
+ * right (and its snap scroll edge flips with it). Read from the sheet's own
+ * computed `direction`, so a `dir` set anywhere above it counts.
+ */
+export function sheetAxisFor(node: Element, side: SheetSide): SheetAxis {
+  if ((side === "left" || side === "right") && getComputedStyle(node).direction === "rtl") {
+    return AXES[side === "left" ? "right" : "left"];
+  }
+  return AXES[side];
+}
+
 /** The viewport extent a snap percentage is a percentage *of*. */
 function viewportAlong(axis: "x" | "y") {
   return axis === "y" ? window.innerHeight : window.innerWidth;
@@ -222,7 +236,7 @@ export function attachSheetDrag(
     // rather than clearing the property outright — a binary sheet has no size of
     // its own and gets the stylesheet's back.
     const opts = readOptions();
-    const { sizeProp, sizeUnit } = AXES[opts.side];
+    const { sizeProp, sizeUnit } = sheetAxisFor(node, opts.side);
     // Both axes, not just this side's. `side` can change on a live sheet, and a
     // snap left behind on the axis it *used* to grow along keeps applying — a
     // sheet switched from bottom to left would still be wearing the old
@@ -253,7 +267,7 @@ export function attachSheetDrag(
    * cached: snaps are stored as viewport percentages, so a resize needs no
    * invalidation — the next read is simply correct. */
   function snapsPxNow(opts: SheetDragOptions) {
-    return snapsToPx(parseSnapPoints(opts.snapPoints), viewportAlong(AXES[opts.side].axis));
+    return snapsToPx(parseSnapPoints(opts.snapPoints), viewportAlong(sheetAxisFor(node, opts.side).axis));
   }
 
   /** Resistance past the tallest snap: the same asymptotic curve the binary
@@ -269,7 +283,7 @@ export function attachSheetDrag(
   }
 
   function applySnapSize(travel: number, opts: SheetDragOptions, snapsPx: number[]) {
-    const { axis, sign, sizeProp } = AXES[opts.side];
+    const { axis, sign, sizeProp } = sheetAxisFor(node, opts.side);
     const minPx = snapsPx[0]!;
     const maxPx = snapsPx[snapsPx.length - 1]!;
     // `travel` is positive toward dismissal on every side, and dismissal always
@@ -314,7 +328,7 @@ export function attachSheetDrag(
     cancelSettle?.();
     cancelSettle = null;
 
-    const { axis, sizeProp, sizeUnit } = AXES[opts.side];
+    const { axis, sizeProp, sizeUnit } = sheetAxisFor(node, opts.side);
     const targetPx = (snap / 100) * viewportAlong(axis);
     const box = node.getBoundingClientRect();
     const fromPx = axis === "y" ? box.height : box.width;
@@ -447,7 +461,7 @@ export function attachSheetDrag(
         (!!opts.footer && opts.footer.contains(target)));
     if (opts.handleOnly && !fromChrome) return;
 
-    const { axis } = AXES[opts.side];
+    const { axis } = sheetAxisFor(node, opts.side);
     // Chrome is never in competition with scrolling: the handle is positioned
     // outside the scroll container and the footer is its sibling.
     scroller = fromChrome ? null : findScrollable(target, node, axis);
@@ -470,7 +484,7 @@ export function attachSheetDrag(
     if (pointerId !== event.pointerId) return;
     const opts = readOptions();
 
-    const { axis, sign, scrollEdge } = AXES[opts.side];
+    const { axis, sign, scrollEdge } = sheetAxisFor(node, opts.side);
     const current = axis === "y" ? event.clientY : event.clientX;
     // Positive delta always means "toward dismissal", whichever side we're on.
     const delta = (current - startCoord) * sign;
@@ -628,7 +642,7 @@ export function attachSheetDrag(
 
     suppressClick = true;
 
-    const { axis, sign } = AXES[opts.side];
+    const { axis, sign } = sheetAxisFor(node, opts.side);
     const current = axis === "y" ? event.clientY : event.clientX;
     const extent = extentOf(axis);
     // The release is itself a sample. A finger that stops and rests fires no

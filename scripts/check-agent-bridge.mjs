@@ -22,12 +22,37 @@
  *   5. axe on the demo, light and dark.
  *
  * Usage: `bun run docs:build`, then `node scripts/check-agent-bridge.mjs`.
+ *   --browser=webkit|firefox|chromium|all   (default chromium). Several
+ *   engines run one after another, each in its own process. The real
+ *   WebMCP check is Chromium-only (it needs installed Chrome with a flag)
+ *   and is skipped elsewhere; the WebMCP mock runs everywhere. The Select
+ *   check expects a base-select only where the engine supports
+ *   `appearance: base-select`, and checks the native fallback otherwise.
  */
+import { spawnSync } from "node:child_process";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join } from "node:path";
 import { chromium } from "playwright";
 import { AxeBuilder } from "@axe-core/playwright";
+import { launchBrowser, parseBrowsers } from "./lib/browsers.mjs";
+
+const engines = parseBrowsers(process.argv.slice(2), { script: "check-agent-bridge" });
+if (engines.length > 1) {
+  // One process per engine keeps each run's module-level state separate.
+  const self = new URL(import.meta.url).pathname;
+  const failed = engines.filter((engine) => {
+    console.log(`\n── ${engine} ──`);
+    return spawnSync(process.execPath, [self, `--browser=${engine}`], { stdio: "inherit" }).status !== 0;
+  });
+  if (failed.length) {
+    console.error(`\ncheck-agent-bridge: failed in ${failed.join(", ")}.`);
+    process.exit(1);
+  }
+  console.log(`\ncheck-agent-bridge: passed in ${engines.join(", ")}.`);
+  process.exit(0);
+}
+const engine = engines[0];
 
 const root = new URL("..", import.meta.url).pathname;
 const dist = join(root, "apps/docs/dist");
@@ -56,14 +81,8 @@ const server = createServer((req, res) => {
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 
-async function launch(args = []) {
-  try {
-    return await chromium.launch({ args });
-  } catch {
-    return chromium.launch({ channel: "chrome", args });
-  }
-}
-const browser = await launch();
+const browser = await launchBrowser(engine);
+console.log(`check-agent-bridge in ${engine} ${browser.version()}`);
 
 const failures = [];
 const skipped = [];
@@ -333,7 +352,9 @@ await check("Popover: open shows its content, close hides it", async () => {
 await check("Select (base-select): select by label fires change; open explains itself; works with the picker open", async () => {
   await bridgeOn("/components/select/");
   const select = page.locator(".docs-example select").first();
-  assert((await select.evaluate((el) => getComputedStyle(el).appearance)) === "base-select", "not a base-select in this browser");
+  const baseSelect = await select.evaluate(() => CSS.supports("appearance", "base-select"));
+  // Chromium has customizable <select>; elsewhere the native picker is the fallback.
+  assert(!baseSelect || (await select.evaluate((el) => getComputedStyle(el).appearance)) === "base-select", "not a base-select in this browser");
   await select.evaluate((el) => {
     window.__changes = [];
     el.addEventListener("change", () => window.__changes.push(el.value));
@@ -344,7 +365,10 @@ await check("Select (base-select): select by label fires change; open explains i
   result = await act([{ role: "combobox", name: "Country", action: "open" }], "__agent");
   assert(/choose an option with "select"/.test(result.results[0].error ?? ""), `open on a select: ${json(result.results)}`);
 
-  // A person opened the picker; the agent then chooses.
+  // A person opened the picker; the agent then chooses. A native picker
+  // outside Chromium is OS chrome Playwright can't see (no :open), so this
+  // half only runs where the picker is in-page.
+  if (!baseSelect) return;
   await select.click();
   await page.waitForFunction(() => document.querySelector(".docs-example select").matches(":open"), null, { timeout: 2000 });
   result = await act([{ role: "combobox", name: "Country", action: "select", args: { value: "Germany" } }], "__agent");
@@ -741,6 +765,7 @@ await check("mock WebMCP: tools register, execute with realistic input, and unre
 });
 
 await check("real WebMCP (installed Chrome, --enable-features=WebMCP)", async () => {
+  if (engine !== "chromium") return skip("real WebMCP", `Chromium-only, not ${engine}`);
   let real;
   try {
     real = await chromium.launch({ channel: "chrome", args: ["--enable-features=WebMCP"] });

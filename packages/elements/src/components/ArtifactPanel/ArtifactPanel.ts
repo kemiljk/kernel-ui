@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import { showModalReturningFocus, trackPressedControl } from "../../utils/focusReturn";
 import "../Button/Button";
 import "../Tabs/Tabs";
 import "./ArtifactPanel.css";
@@ -96,6 +97,8 @@ export class KernelArtifactPanel extends KernelElement {
   }
 
   connectedCallback() {
+    // WebKit never focuses a clicked button; remember it for the restore.
+    trackPressedControl();
     this.watchMedia();
     if (this.native) return;
 
@@ -392,7 +395,7 @@ export class KernelArtifactPanel extends KernelElement {
         this.closing = false;
         root.removeAttribute("data-closing");
         root.setAttribute("data-opening", "true");
-        root.showModal();
+        showModalReturningFocus(root);
         root.setAttribute("data-state", "open");
         requestAnimationFrame(() => root.removeAttribute("data-opening"));
       } else if (!open && root.open) {

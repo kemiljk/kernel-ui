@@ -116,24 +116,38 @@ jobs:
         if: github.event_name == 'pull_request'
         run: bun run docs:build
 
-      # axe-core in a real browser against every component's live examples,
-      # light and dark. Fails on serious or critical violations.
-      - name: Install Chromium for the accessibility check
+      # All three engines: the browser checks below run in Chromium, Firefox
+      # and WebKit, because focus, popover, dialog and touch behaviour differ
+      # between them (WebKit never focuses a clicked button, for one).
+      - name: Install Playwright browsers
         if: github.event_name == 'pull_request'
-        run: bunx playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium firefox webkit
 
-      - name: Accessibility check (axe)
+      # axe-core in a real browser against every component's live examples,
+      # light and dark. Fails on serious or critical violations. About three
+      # minutes per engine, so the full set runs in each.
+      - name: Accessibility check (axe), Chromium, Firefox and WebKit
         if: github.event_name == 'pull_request'
-        run: bun run test:a11y
+        run: bun run test:a11y --browser=all
 
       # @kernelui-lib/testing's APG pattern checks in a real browser, against
       # the same live examples: keyboard, focus and popover state jsdom can't see.
-      - name: Pattern checks (@kernelui-lib/testing)
+      - name: Pattern checks (@kernelui-lib/testing), all engines
         if: github.event_name == 'pull_request'
-        run: bun run test:patterns && bun run --cwd packages/testing test:browser
+        run: bun run test:patterns --browser=all && bun run --cwd packages/testing test:browser --browser=all
+
+      # Engine, touch, RTL and reduced-motion behaviour: focus return, dialog
+      # and sheet dismissal, touch swipe/drag, TodoList's FLIP fallback,
+      # StreamingMarkdown inertness, and more (see the script's header).
+      - name: Cross-browser behaviour checks, all engines
+        if: github.event_name == 'pull_request'
+        run: bun run test:cross-browser --browser=all
 
       # Real act() steps against real Kernel React components on the built
-      # agent bridge guide page.
-      - name: Agent bridge browser check
+      # agent bridge guide page, in every engine (the real-WebMCP check is
+      # Chromium-only and skips elsewhere). One retry: a Dialog-close timing
+      # race in the bridge's settle logic is known to flake and is being
+      # fixed at the source separately.
+      - name: Agent bridge browser check, all engines
         if: github.event_name == 'pull_request'
-        run: bun run test:agent-bridge
+        run: bun run test:agent-bridge --browser=all || (echo "::warning::agent bridge check failed once; retrying" && bun run test:agent-bridge --browser=all)

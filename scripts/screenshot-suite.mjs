@@ -26,6 +26,11 @@
  *   --threshold=0.1             pixelmatch per-pixel colour threshold (0–1)
  *   --max-diff-ratio=0.001      fail a shot when more than this fraction of pixels differ
  *   --strict                    also fail on shots that have no baseline
+ *   --browser=webkit            chromium (default), firefox or webkit; any engine
+ *                               but Chromium keeps its own set under
+ *                               screenshots/<engine>/, since engines render
+ *                               differently and never share a baseline
+ *   --reduced-motion            emulate prefers-reduced-motion: reduce
  *
  * Output (all gitignored): screenshots/current/<slug>/<variant>-<n>.png,
  * screenshots/baseline/... in --update mode, and screenshots/report/
@@ -44,13 +49,18 @@
 import { createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, extname, join, relative } from "node:path";
-import { chromium } from "playwright";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
+import { launchBrowser, parseBrowsers } from "./lib/browsers.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const dist = join(root, "apps/docs/dist");
-const outRoot = join(root, "screenshots");
+const [engine, ...extraEngines] = parseBrowsers(process.argv.slice(2), { script: "screenshot-suite" });
+if (extraEngines.length) {
+  console.error("screenshot-suite: --browser takes one engine per run (each keeps its own baseline).");
+  process.exit(1);
+}
+const outRoot = engine === "chromium" ? join(root, "screenshots") : join(root, "screenshots", engine);
 const dirs = {
   current: join(outRoot, "current"),
   baseline: join(outRoot, "baseline"),
@@ -134,6 +144,7 @@ if (flags.has("list-variants")) {
   process.exit(0);
 }
 const update = flags.has("update");
+const reducedMotion = flags.has("reduced-motion") ? "reduce" : "no-preference";
 const compareOnly = flags.has("compare-only");
 const strict = flags.has("strict");
 const threshold = Number(flags.get("threshold") ?? 0.1);
@@ -184,12 +195,7 @@ async function capture(targetDir) {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
 
-  let browser;
-  try {
-    browser = await chromium.launch();
-  } catch {
-    browser = await chromium.launch({ channel: "chrome" });
-  }
+  const browser = await launchBrowser(engine);
 
   // Clear only the slugs being re-captured, so a filtered run doesn't wipe
   // the rest of the set.
@@ -205,6 +211,7 @@ async function capture(targetDir) {
       colorScheme: variant.scheme,
       viewport: { width: 1280, height: 900 },
       deviceScaleFactor: 1,
+      reducedMotion,
     });
     await context.addInitScript(
       ({ storage, dir }) => {
@@ -262,7 +269,7 @@ async function capture(targetDir) {
   await Promise.all(variantNames.map(runVariant));
   await browser.close();
   server.close();
-  console.log(`screenshot-suite: ${shots} screenshot(s) of ${slugs.length} component(s) × ${variantNames.length} variant(s) in ${((Date.now() - started) / 1000).toFixed(1)}s → ${relative(root, targetDir)}/`);
+  console.log(`screenshot-suite: ${shots} screenshot(s) of ${slugs.length} component(s) × ${variantNames.length} variant(s) in ${engine}${reducedMotion === "reduce" ? " (reduced motion)" : ""}, ${((Date.now() - started) / 1000).toFixed(1)}s → ${relative(root, targetDir)}/`);
 }
 
 // ---------------------------------------------------------------------------
