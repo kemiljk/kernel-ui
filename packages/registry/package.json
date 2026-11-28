@@ -10,7 +10,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./registry.json": "./dist/registry.json"
+    "./registry.json": "./dist/registry.json",
+    "./api.json": "./dist/api.json"
   },
   "files": [
     "dist"
