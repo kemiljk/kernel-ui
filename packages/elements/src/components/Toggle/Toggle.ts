@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { observePillIcons } from "../../utils/pillIcons";
 import "./Toggle.css";
 
 /**
@@ -7,6 +8,10 @@ import "./Toggle.css";
  * toolbar "bold" button, say), distinct from `<kernel-switch>`, which is
  * the pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s
  * `<Toggle>`.
+ *
+ * Shaped like `<kernel-button>`: an optical pill at a round theme, with
+ * an icon child at either end flagged by `observePillIcons()` so it sits
+ * concentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).
  *
  * Attributes: `pressed`, `disabled` (both boolean), `size`
  * (sm/md/lg, default md), `aria-label` (forwarded to the inner
@@ -31,6 +36,12 @@ export class KernelToggle extends KernelElement {
       this.dispatchEvent(new Event("change", { bubbles: true }));
     });
     return button;
+  }
+
+  connectedCallback() {
+    const firstConnect = !this.native;
+    super.connectedCallback();
+    if (firstConnect && this.native) observePillIcons(this.native);
   }
 
   protected syncAttr(name: string, value: string | null) {

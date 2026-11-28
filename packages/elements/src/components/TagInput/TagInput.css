@@ -4,7 +4,24 @@
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
   max-inline-size: 100%;
-  --label-offset: var(--kernel-label-inset);
+  /* Optical field: the same label edge as TextField (see its comment
+     and Badge.module.css for the maths), so text clears a pill's end
+     cap at Round and the label keeps lining up with it. The field wraps,
+     so its height is a minimum and the radius is taken from the one-row
+     height: a field that wraps to three rows keeps 20px corners at Round
+     instead of swelling into a stadium. */
+  --field-height: var(--kernel-control-height-md);
+  --field-px: var(--kernel-space-3);
+  --field-max: calc(var(--field-height) / 2);
+  --field-r: min(var(--kernel-radius-control), var(--field-max));
+  --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut));
+  --label-offset: calc(var(--kernel-label-inset) + var(--field-label-edge));
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .kernel-TagInput-root {
+    --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut) * var(--field-r) / var(--field-max));
+  }
 }
 
 .kernel-TagInput-root[data-label-offset="false"] {
@@ -23,8 +40,16 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--kernel-space-2);
-  padding: var(--kernel-space-2) var(--kernel-space-3);
-  border-radius: var(--kernel-radius-control);
+  /* One row is exactly --field-height, the same as a TextField beside
+     it. A tag (a Badge, about 24px) then sits centred, (40 − 24) / 2 =
+     8px from the outer edge, which at Round is exactly outer radius −
+     tag radius (20 − 12): the clearance AGENTS.md's nested-control rule
+     asks for. Inline it sits further in, at the text inset, so the tags
+     and the typed text start where the label does. */
+  min-block-size: var(--field-height);
+  padding-block: var(--kernel-space-1);
+  padding-inline: calc(var(--field-px) + var(--field-label-edge));
+  border-radius: var(--field-r);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
   cursor: text;
@@ -39,7 +64,7 @@
 
 .kernel-TagInput-field:has(.kernel-TagInput-input:focus-visible) {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .kernel-TagInput-root[data-invalid] .kernel-TagInput-field {

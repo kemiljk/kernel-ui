@@ -107,7 +107,7 @@ a.item {
      panel edge. Same inset convention Accordion/Reasoning's disclosure
      triggers already use for the same reason. */
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: -2px;
+  outline-offset: var(--kernel-focus-offset-inset);
 }
 
 .item:disabled {

@@ -66,7 +66,7 @@
 
 .kernel-Checkbox-input:focus-visible + .kernel-Checkbox-control {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Checkbox-input:disabled + .kernel-Checkbox-control {

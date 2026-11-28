@@ -145,7 +145,11 @@ new component done, grep both `packages/react/src/index.ts` and
 - **Pills are optical, not just rounded.** A pill's end caps eat into the
   space beside its text and leave an edge icon off-centre. Lopsided font
   metrics also make text sit low. `Badge.module.css` holds the full recipe;
-  `Suggestion`, `TagInput`'s tags and `Button` reuse it. In short:
+  `Suggestion`, `TagInput`'s tags, `Button`, `Toggle` and `NavigationMenu`
+  reuse it. Text fields on `--kernel-radius-control` (TextField, Select,
+  Combobox, NumberField, TagInput's field, ColorPicker's hex field) add the
+  same label edge to their text inset and their label offset; see
+  `TextField.module.css`. In short:
   - The radius is `min(--kernel-radius-control, half the box height)`,
     never `--kernel-radius-full`, because 999px breaks the maths.
   - Inline padding adds the r² × (1 − π/4) / pill the corners cut away.
@@ -183,6 +187,11 @@ new component done, grep both `packages/react/src/index.ts` and
   roles, and `-webkit-touch-callout: none` on the clickable-chrome subset
   (not links — long-press to open in a new tab stays). Omitting `label`
   from that list is how a checkbox tap still flashes grey on iOS.
+- **Focus rings read offset tokens.** `outline-offset` is
+  `--kernel-focus-offset` (2px, the default),
+  `--kernel-focus-offset-inset` (−2px, for rings that would be clipped or
+  collide with a flush neighbour) or `--kernel-focus-offset-tight` (1px,
+  for a ring that traces a text field's own border). Never a literal.
 - **Motion baseline** (tokens in `packages/styles/src/tokens.css`, craft
   bar from [transitions.dev](https://transitions.dev/) + Emil): enter with
   `--kernel-ease-overlay` / `--kernel-ease-out`, never `ease-in` on

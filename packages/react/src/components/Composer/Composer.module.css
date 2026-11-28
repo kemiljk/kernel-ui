@@ -56,7 +56,7 @@
    static border or the data-thinking sweep. */
 .root:has(.input:focus-visible) {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .input {

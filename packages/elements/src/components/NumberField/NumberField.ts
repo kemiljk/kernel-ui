@@ -3,14 +3,14 @@ import "./NumberField.css";
 
 let numberFieldCounter = 0;
 
-const CHEVRON_UP = "M4 10L8 6L12 10";
-const CHEVRON_DOWN = "M4 6L8 10L12 6";
+const MINUS = "M4 8H12";
+const PLUS = "M4 8H12M8 4V12";
 
-function chevron(path: string): SVGSVGElement {
+function glyph(path: string): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 16 16");
-  svg.setAttribute("width", "10");
-  svg.setAttribute("height", "10");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -26,7 +26,7 @@ function chevron(path: string): SVGSVGElement {
 /**
  * `<kernel-number-field>` — `<kernel-text-field>`'s exact label/
  * description/error scaffold around a real `<input type="number">`.
- * The up/down buttons call the input's own native `stepUp()`/
+ * The − / + buttons call the input's own native `stepUp()`/
  * `stepDown()` rather than reimplementing increment logic; since those
  * methods change `.value` without dispatching an event, this reads it
  * back and fires `change` by hand afterward. See
@@ -96,21 +96,24 @@ export class KernelNumberField extends KernelElement {
     const stepper = document.createElement("div");
     stepper.className = kernelClass("NumberField", "stepper");
 
-    const up = document.createElement("button");
-    up.type = "button";
-    up.tabIndex = -1;
-    up.className = kernelClass("NumberField", "stepperButton");
-    up.append(chevron(CHEVRON_UP));
-    up.addEventListener("click", () => this.stepBy(1));
-
     const down = document.createElement("button");
     down.type = "button";
     down.tabIndex = -1;
     down.className = kernelClass("NumberField", "stepperButton");
-    down.append(chevron(CHEVRON_DOWN));
+    down.dataset.step = "down";
+    down.append(glyph(MINUS));
     down.addEventListener("click", () => this.stepBy(-1));
 
-    stepper.append(up, down);
+    const up = document.createElement("button");
+    up.type = "button";
+    up.tabIndex = -1;
+    up.className = kernelClass("NumberField", "stepperButton");
+    up.dataset.step = "up";
+    up.append(glyph(PLUS));
+    up.addEventListener("click", () => this.stepBy(1));
+
+    // − then +, reading in the direction the value moves.
+    stepper.append(down, up);
     controlRow.append(input, stepper);
     root.append(label, controlRow);
     this.native = root;
@@ -179,7 +182,7 @@ export class KernelNumberField extends KernelElement {
     const input = this.input;
     const stepper = this.native?.querySelector(`.${kernelClass("NumberField", "stepper")}`);
     if (!input || !stepper) return;
-    const [up, down] = stepper.querySelectorAll("button");
+    const [down, up] = stepper.querySelectorAll("button");
     const disabled = this.hasAttribute("disabled");
     const value = input.value === "" ? null : Number(input.value);
     const max = this.getAttribute("max");
@@ -189,7 +192,9 @@ export class KernelNumberField extends KernelElement {
   }
 
   protected applyLabels() {
-    const [up, down] = Array.from(this.native?.querySelectorAll(`.${kernelClass("NumberField", "stepperButton")}`) ?? []);
+    // By role, not position: the buttons render − then +.
+    const up = this.native?.querySelector<HTMLButtonElement>('[data-step="up"]');
+    const down = this.native?.querySelector<HTMLButtonElement>('[data-step="down"]');
     up?.setAttribute("aria-label", this.builtInLabel("increment", "Increment"));
     down?.setAttribute("aria-label", this.builtInLabel("decrement", "Decrement"));
   }

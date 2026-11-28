@@ -102,7 +102,7 @@
 
 .input:focus-visible + .control {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .input:disabled + .control {
