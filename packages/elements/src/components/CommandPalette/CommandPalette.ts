@@ -23,7 +23,9 @@ export interface KernelCommandPaletteGroup {
  * input follows the same WAI-ARIA combobox pattern as
  * `<kernel-combobox>`: a `role="listbox"` of `role="option"` items, an
  * `aria-activedescendant` pointing at whichever is highlighted, focus
- * staying on the input throughout.
+ * staying on the input throughout. Opening the palette and every change
+ * to the query highlight the first match, so typing and pressing Enter
+ * runs the top result.
  *
  * Opening and closing are immediate because this keyboard-driven surface
  * should respond in the same frame as its shortcut.
@@ -205,6 +207,12 @@ export class KernelCommandPalette extends KernelElement {
 
   private renderOptions() {
     const filteredGroups = this.filteredGroups;
+    // Opening and typing reset the highlight to the first match. New
+    // `items`/`groups` set while open (async results) keep it by index,
+    // but an index past the end of a shorter list highlighted nothing, so
+    // Enter did nothing; fall back to the first match instead.
+    const matchCount = filteredGroups.reduce((count, group) => count + group.items.length, 0);
+    if (this.activeIndex >= matchCount) this.activeIndex = 0;
     this.listboxEl.replaceChildren();
 
     if (filteredGroups.length === 0) {
