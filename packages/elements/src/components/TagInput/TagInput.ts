@@ -1,5 +1,6 @@
 import { KernelElement, kernelClass } from "../../base";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import "../Badge/Badge.css";
 import "./TagInput.css";
 
 let tagInputCounter = 0;
@@ -256,7 +257,9 @@ export class KernelTagInput extends KernelElement {
 
     this.currentTags.forEach((tag) => {
       const chip = document.createElement("span");
-      chip.className = kernelClass("TagInput", "tag");
+      chip.className = `${kernelClass("Badge")} ${kernelClass("TagInput", "tag")}`;
+      chip.dataset.variant = "neutral";
+      chip.dataset.iconEnd = "true";
       chip.setAttribute("role", "listitem");
       // Lets removeTag() find this exact chip by value later, the same
       // stable identity React's version keys its chips on.
@@ -268,6 +271,7 @@ export class KernelTagInput extends KernelElement {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = kernelClass("TagInput", "tagRemove");
+      remove.dataset.icon = "";
       remove.tabIndex = -1;
       remove.setAttribute("aria-label", `Remove ${tag}`);
       remove.innerHTML =

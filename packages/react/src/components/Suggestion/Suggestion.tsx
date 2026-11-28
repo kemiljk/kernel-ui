@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
+import { pillIconAttrs } from "../../utils/pillIcons";
 import styles from "./Suggestion.module.css";
 
 export interface SuggestionState {
@@ -22,6 +23,10 @@ export interface SuggestionProps extends Omit<HTMLAttributes<HTMLUListElement>, 
  * list announces as a group, each chip is a genuine button, and keyboard
  * focus works without inventing a roving-tabindex pattern for a small
  * set of peer actions.
+ *
+ * Each item is an optical pill (see `Badge`): the inline padding includes
+ * the width the round ends cut away, and an icon at either end of an
+ * item's children becomes a `1lh` box concentric with the cap.
  */
 export function Suggestion({
   label = "Suggestions",
@@ -66,6 +71,7 @@ export const SuggestionItem = forwardRef<HTMLButtonElement, SuggestionItemProps>
     return (
       <li className={styles.item}>
         <button
+          {...pillIconAttrs(children)}
           {...rest}
           ref={ref}
           type="button"

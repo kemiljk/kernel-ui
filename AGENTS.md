@@ -129,6 +129,21 @@ new component done, grep both `packages/react/src/index.ts` and
   and a large corner on many, the height is not knowable in CSS — use
   `utils/lineFit.ts`, which marks the element
   `data-lines="single" | "multi"` (see `MessageBubble`).
+- **Pills are optical, not just rounded.** A pill's end caps eat into the
+  space beside its text and leave an edge icon off-centre. Lopsided font
+  metrics also make text sit low. `Badge.module.css` holds the full recipe;
+  `Suggestion` and `TagInput`'s tags reuse it. In short:
+  - The radius is `min(--kernel-radius-control, half the box height)`,
+    never `--kernel-radius-full`, because 999px breaks the maths.
+  - Inline padding adds the r² × (1 − π/4) / pill the corners cut away.
+  - An edge icon is a `1lh` slot pulled in to `--pill-py` from the side,
+    found via `pillIconAttrs()` / `syncPillIcons()`.
+  - Capitals are centred by a `::before` baseline strut, not by the line
+    box.
+
+  A new pill-shaped component copies that block instead of picking
+  padding by eye. Don't change its DOM to make the selectors work: CSS
+  can't see text nodes, which is why the icon detection is JS.
 - **Anything you click needs `user-select: none`.** Triggers, summaries,
   menu items, tabs, chips, segment buttons, the lot — a double-click on a
   disclosure otherwise selects its label, which is never what the click

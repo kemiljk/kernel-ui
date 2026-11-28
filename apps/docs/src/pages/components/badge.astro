@@ -22,6 +22,26 @@ import BadgePlayground from "../../components/demos/BadgePlayground";
       <BadgeDemo client:visible />
     </div>
 
+    <h2>Icons</h2>
+    <p>
+      Put an icon straight inside, before or after the text, or on its own.
+      Any <code>&lt;svg&gt;</code>, <code>&lt;img&gt;</code> or icon
+      component from your own set works; Kernel doesn't ship one. Whichever
+      end holds an icon turns it into a <code>1lh</code> slot, pulled in
+      until it sits the same distance from the side as from the top and
+      bottom, so it's concentric with the rounded end. The icon is drawn
+      at <code>--kernel-icon-size</code> inside that slot, and
+      <code>--kernel-icon-stroke-width</code> can even out an outline
+      set's stroke, so one pair of tokens makes any icon set look at home.
+    </p>
+    <p>
+      The rest is optical too. Padding grows by the width the rounded ends
+      cut away. The radius follows <code>--kernel-radius-control</code>
+      but never goes past a true half-height pill. Capitals are centred
+      using the font's cap height, so a font with lopsided ascent and
+      descent metrics doesn't sit low.
+    </p>
+
     <h2>Playground</h2>
     <p>Toggle every adjustable prop and watch the component — and the code — update live.</p>
     <BadgePlayground client:visible />

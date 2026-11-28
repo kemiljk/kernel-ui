@@ -54,6 +54,19 @@ real underlying element, fully functional, just unstyled — never broken.
   not a Provider you have to wrap the app in — the exceptions are
   `<ToastViewport>` (mount once, then call the imported `toast()`
   function from anywhere) and `<CommandPalette>` (same idea).
+- **Icons in pills** (`Badge`, `TagInput`'s tags, `SuggestionItem`): no
+  icon prop and no bundled icon set. Pass any `<svg>`, `<img>` or icon
+  component (Lucide, Phosphor, Heroicons, Radix…) as a child, before the
+  text, after it, or on its own: `<Badge variant="success"><Check /> Shipped</Badge>`.
+  Whichever end holds an icon becomes a `1lh` slot, concentric with the
+  rounded end. A host element counts as an icon only if it's an `svg`,
+  `img` or `picture`, or carries `data-icon`; wrap a component that renders
+  text in a `<span>`. Tune the whole set once with `--kernel-icon-size`
+  (drawn size inside the slot, default `1.25em`) and
+  `--kernel-icon-stroke-width` (stroke override in viewBox units,
+  default `auto`). Give an icon-only pill an accessible name on the icon
+  itself (`role="img" aria-label="…"`), since a `<span>`'s own
+  `aria-label` isn't reliably announced.
 - **React and Web Components share one design**: `@kernelui-lib/elements`
   ships every component below as a framework-free Custom Element
   (`<kernel-button>`, `<kernel-text-field>`, ...) with the same visual

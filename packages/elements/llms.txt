@@ -53,6 +53,14 @@ separate "install this one component" step.
   use real child elements or attributes on real children, not a JSON
   prop — e.g. `<kernel-select>` takes real `<option>`/`<optgroup>`
   children, `<kernel-tabs>` takes `<kernel-tab>`/`<kernel-tab-panel>`.
+- **Icons in pills** (`<kernel-badge>`, `<kernel-tag-input>`'s tags,
+  `<kernel-suggestion-item>`): put any `<svg>` or `<img>` child before the
+  text, after it, or on its own. Mark any other icon element (an icon
+  custom element, say) with `data-icon`. Whichever end holds an icon
+  becomes a `1lh` slot, concentric with the rounded end, and stays correct
+  if the children change later. Tune the whole set with
+  `--kernel-icon-size` and `--kernel-icon-stroke-width`. Label an
+  icon-only pill on the icon itself (`role="img" aria-label="…"`).
 
 <!-- GENERATED:COMPONENTS:START -->
 ## Tags (grouped to match @kernelui-lib/react's component groups; composite

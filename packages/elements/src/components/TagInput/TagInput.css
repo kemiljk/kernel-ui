@@ -83,20 +83,11 @@
   padding-inline-start: var(--label-offset);
 }
 
+/* Each chip also carries kernel-Badge-root, the same as React's tags
+   (which render through <Badge>), so it's an optical pill: the remove
+   button is marked data-icon and sits as Badge's trailing 1lh icon
+   box, concentric with the end cap. */
 .kernel-TagInput-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--kernel-space-1);
-  padding-block: 0.15em;
-  padding-inline: var(--kernel-space-2);
-  padding-inline-end: var(--kernel-space-1);
-  border-radius: var(--kernel-radius-control);
-  background-color: var(--kernel-gray-3);
-  color: var(--kernel-gray-11);
-  font-size: var(--kernel-font-size-sm);
-  font-weight: 500;
-  line-height: 1.4;
-  white-space: nowrap;
   opacity: 1;
   scale: 1;
   filter: blur(0);
@@ -124,11 +115,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1rem;
-  block-size: 1rem;
   border: none;
   padding: 0;
-  border-radius: var(--kernel-radius-full);
+  /* Concentric with the tag's own corner: the tag's radius minus the
+     inset the button sits at (--pill-r/--pill-py come from Badge). */
+  border-radius: max(0px, var(--pill-r) - var(--pill-py));
   background: none;
   color: currentColor;
   opacity: 0.7;
@@ -141,6 +132,14 @@
     opacity var(--kernel-duration-fast) var(--kernel-ease-out),
     background-color var(--kernel-duration-fast) var(--kernel-ease-out),
     scale var(--kernel-duration-fast) var(--kernel-ease-out);
+}
+
+/* The button is Badge's 1lh icon slot, padded down to
+   --kernel-icon-size. The × is a secondary action, so it draws a
+   little under full icon size to keep it quieter than the label. */
+.kernel-TagInput-tagRemove svg {
+  inline-size: 80%;
+  block-size: 80%;
 }
 
 .kernel-TagInput-tagRemove:active {
