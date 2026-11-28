@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Checks what @kernelui-lib/react and @kernelui-lib/elements would publish,
+ * Checks what @kernelui-lib/react, @kernelui-lib/elements and
+ * @kernelui-lib/agent would publish,
  * against their built dist/. Builds nothing: run it after the package
  * builds. Fails when
  *
@@ -42,6 +43,7 @@ function checkTargets(pkgDir) {
 
 // ── exports targets ──
 checkTargets("packages/react");
+checkTargets("packages/agent");
 const elementsPkg = checkTargets("packages/elements");
 if (!elementsPkg.customElements) fail(`${elementsPkg.name}: package.json has no "customElements" field`);
 

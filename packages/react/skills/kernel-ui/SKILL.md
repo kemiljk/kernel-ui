@@ -58,6 +58,10 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 - **Clickable elements are controls.** Never put `onClick` on a `<div>` or `<span>`: use `Button`.
 - **Colours you add meet APCA.** Text needs Lc 75 (Lc 60 for secondary text), and thin outlines need Lc 45, with WCAG 2's 4.5:1 and 3:1 as floors. Kernel's own tokens already meet these, so prefer them.
 
+## Letting an agent use the UI
+
+If the app should be usable by an in-page agent (an assistant panel, or a browser agent through WebMCP), use `@kernelui-lib/agent`: `useAgentBridge({ root, registerTools: true })` from `@kernelui-lib/agent/react`. It reads the real roles and labels, so correctly labelled Kernel components need no extra wiring. Mark risky controls with `data-kernel-agent-confirm`, pass a `confirm` that renders `ToolApproval` outside `root`, and put private regions in `data-kernel-agent-ignore`. Guide: https://www.kernelui.com/agent-bridge/
+
 ## When you're unsure
 
 Every component's JSDoc explains which native element it uses and why. Read it with MCP `get_component`, or in `dist/index.d.ts`, before you work around a component's behaviour.

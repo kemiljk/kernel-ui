@@ -17,6 +17,7 @@ const pages = [
   { name: "Installation", href: "/installation/", summary: "Install the packages and import the tokens." },
   { name: "Choosing Kernel", href: "/choosing/", summary: "When Kernel fits a project, and when another library fits better." },
   { name: "AI agents", href: "/agents/", summary: "Skills, MCP server and code check for coding agents." },
+  { name: "Agent bridge", href: "/agent-bridge/", summary: "Let an in-page agent read and operate your UI, with WebMCP tools." },
   { name: "Theming", href: "/theming/", summary: "Every token that drives a component's appearance." },
   { name: "Icons", href: "/icons/", summary: "Use any icon set, tuned with two tokens." },
   { name: "CLI", href: "/cli/", summary: "Install and diagnose Kernel in a project." },

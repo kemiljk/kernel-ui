@@ -1,0 +1,387 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import AgentBridgeDemo from "../components/demos/AgentBridgeDemo";
+
+const installSnippet = `npm install @kernelui-lib/agent`;
+
+const vanillaSnippet = `import { createAgentBridge, formatSnapshot } from "@kernelui-lib/agent";
+
+const agent = createAgentBridge({ root: document.querySelector("main") });
+
+// What the agent sees: roles, names, values, states, and a ref per control.
+console.log(formatSnapshot(agent.snapshot()));
+
+// What the agent does: real events, so your framework's handlers run.
+const result = await agent.act({
+  steps: [
+    { ref: "e2", action: "type", args: { text: "Ada Lovelace" } },
+    { ref: "e4", action: "check" },
+    { ref: "e3", action: "select", args: { value: "Team" } },
+  ],
+});
+result.diff; // { added, removed, changed }: what changed on screen
+
+// Expose snapshot / act / query to the browser's agent (WebMCP).
+const unregister = agent.registerTools();`;
+
+const reactSnippet = `import { useRef } from "react";
+import { useAgentBridge } from "@kernelui-lib/agent/react";
+
+function Settings() {
+  const root = useRef<HTMLElement>(null);
+  // Created on mount, tools unregistered and observers stopped on unmount.
+  const agent = useAgentBridge({ root, registerTools: true });
+  return <main ref={root}>{/* Kernel components */}</main>;
+}`;
+
+const snapshotSnippet = `- form "Account settings" [ref=e1]
+  - textbox "Name" [ref=e2] value="" (TextField)
+  - combobox "Plan" [ref=e3] value="Free" options=["Free", "Pro", "Team"] (Select)
+  - switch "Email me product updates" [ref=e4] checked=false (Switch)
+  - button "Invite a teammate" [ref=e5] (Button)
+  - button "Save settings" [ref=e6] (Button)`;
+
+const snapshotJsonSnippet = `{
+  "role": "switch",
+  "name": "Email me product updates",
+  "ref": "e4",
+  "component": "Switch",
+  "checked": false
+}`;
+
+const markerSnippet = `<Button variant="danger" data-kernel-agent-confirm="Delete this project and its history">
+  Delete project
+</Button>
+
+<form data-kernel-agent-confirm="false">{/* a search form: no prompt to submit */}</form>
+
+<section data-kernel-agent-ignore>{/* never visible to the agent */}</section>
+<input data-kernel-agent-redact name="note" />  {/* value withheld */}`;
+
+const allowSnippet = `const agent = createAgentBridge({
+  root: document.querySelector("#editor"),
+  allow(step, target, { confirmReason }) {
+    if (target.closest("[data-billing]")) return false;     // never
+    if (step.action === "type") return true;                // always fine
+    return confirmReason ? "confirm" : true;                // the default
+  },
+  confirm: (request) => showMyApprovalUi(request),          // Promise<boolean>
+});`;
+
+const toolApprovalSnippet = `import { useRef, useState, type ReactNode } from "react";
+import { ToolApproval } from "@kernelui-lib/react";
+import type { ConfirmRequest } from "@kernelui-lib/agent";
+import { useAgentBridge } from "@kernelui-lib/agent/react";
+
+let promptId = 0;
+
+/** A confirm callback that shows Kernel's ToolApproval and resolves with
+ * the person's decision. */
+export function confirmWithToolApproval(show: (prompt: ReactNode) => void) {
+  return (request: ConfirmRequest) =>
+    new Promise<boolean>((resolve) => {
+      show(
+        <ToolApproval
+          key={++promptId}
+          tool={\`agent.\${request.step.action}\`}
+          onApprove={() => resolve(true)}
+          onDeny={() => resolve(false)}
+        >
+          {request.message}
+        </ToolApproval>,
+      );
+    });
+}
+
+export function App() {
+  const root = useRef<HTMLElement>(null);
+  const [prompt, setPrompt] = useState<ReactNode>(null);
+  useAgentBridge({ root, confirm: confirmWithToolApproval(setPrompt), registerTools: true });
+  return (
+    <>
+      <main ref={root}>{/* the UI the agent may use */}</main>
+      {/* Outside the root, and ignored: the agent can't approve itself. */}
+      <aside data-kernel-agent-ignore>{prompt}</aside>
+    </>
+  );
+}`;
+
+const webMcpSnippet = `// What registerTools() does, per the WebMCP draft:
+const controller = new AbortController();
+await document.modelContext.registerTool(
+  {
+    name: "kernel_act",
+    description: "Performs steps on the page the way a person would…",
+    inputSchema: { type: "object", properties: { steps: { type: "array" } }, required: ["steps"] },
+    annotations: { readOnlyHint: false, untrustedContentHint: true },
+    async execute({ steps }) {
+      const result = await agent.act({ steps });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  },
+  { signal: controller.signal },
+);
+controller.abort(); // unregisters`;
+
+const ownLoopSnippet = `import { createAgentBridge, createTools } from "@kernelui-lib/agent";
+
+const agent = createAgentBridge({ root: document.querySelector("main") });
+// The same three tools, as plain objects with JSON Schema inputs, for any
+// tool-calling model API or in-page agent loop.
+const tools = createTools(agent, "page");
+const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
+// …when the model calls a tool:
+const output = await byName[call.name].execute(call.input);`;
+
+const settleSnippet = `await agent.act({ steps: [{ ref: "e9", action: "press" }] }); // waits for the DOM to settle
+await agent.settle({ quiet: 200, timeout: 5000 });           // or wait longer yourself
+
+const stop = agent.observe((diff, snapshot) => {
+  // Debounced: fires once the UI has stopped changing.
+  if (diff.added.some((node) => node.role === "alert")) notifyAgent(snapshot);
+});`;
+---
+
+<BaseLayout title="Agent bridge" description="Let an in-page AI agent read and operate your UI through its real semantics: an accessibility snapshot, act() steps that fire real events, confirmation gates and WebMCP tools." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Agent bridge</h1>
+    <p>
+      <code>@kernelui-lib/agent</code> lets an AI agent running in the page
+      read your UI and use it. It reads the page the way a screen reader
+      does, through roles, accessible names and states, so there's no
+      separate store of "agent state" to keep in sync. Kernel's components
+      are real <code>&lt;button&gt;</code>s, <code>&lt;select&gt;</code>s and
+      <code>&lt;dialog&gt;</code>s, so the agent sees what a person sees. It
+      also works with any other well-built HTML.
+    </p>
+    <p>
+      It has no runtime dependencies and doesn't depend on Kernel's
+      component packages. A small React hook is included. The
+      <a href="https://github.com/webmachinelearning/webmcp">WebMCP</a>
+      integration is <strong>experimental</strong>: the API is a W3C
+      Community Group draft, only available behind flags or in preview
+      builds, and may still change. Everything else works without it.
+    </p>
+    <CodeBlock code={installSnippet} lang="bash" />
+
+    <h2>Try it</h2>
+    <p>
+      Run the sample steps, or change the form yourself: the snapshot
+      updates either way. Saving needs your approval, because submitting a
+      form is one of the steps the bridge always asks about.
+    </p>
+    <div class="docs-example">
+      <AgentBridgeDemo client:visible />
+    </div>
+
+    <h2>Quick start</h2>
+    <CodeBlock code={vanillaSnippet} lang="tsx" />
+    <p>In React, the hook creates the bridge on mount and cleans up on unmount:</p>
+    <CodeBlock code={reactSnippet} lang="tsx" />
+
+    <h2>The snapshot</h2>
+    <p>
+      <code>snapshot()</code> returns a tree of the controls an agent can use,
+      plus the landmarks, headings, groups and live regions that give them
+      context. Layout wrappers are left out and their contents move up a
+      level. <code>formatSnapshot()</code> prints the tree as an outline that
+      uses about a third of the tokens the JSON does:
+    </p>
+    <CodeBlock code={snapshotSnippet} lang="bash" />
+    <p>Each node in the JSON only has the fields that apply to it:</p>
+    <CodeBlock code={snapshotJsonSnippet} lang="json" />
+    <ul>
+      <li>
+        <strong>Names</strong> follow the accessible name computation:
+        <code>aria-labelledby</code>, <code>aria-label</code>,
+        <code>&lt;label for&gt;</code> or a wrapping label, <code>alt</code>,
+        <code>&lt;legend&gt;</code>, content for buttons and links, then
+        <code>title</code> and <code>placeholder</code>. Descriptions come
+        from <code>aria-describedby</code>, so hints and error messages are
+        included.
+      </li>
+      <li>
+        <strong>State</strong>: value, checked, selected, expanded, pressed,
+        disabled, invalid, required, read-only and focus. Each
+        <code>&lt;select&gt;</code> lists its options.
+      </li>
+      <li>
+        <strong>Refs</strong> like <code>e4</code> belong to an element for as
+        long as it exists, so they stay the same from one snapshot to the
+        next. They're kept in a <code>WeakMap</code>, not written into the
+        DOM.
+      </li>
+      <li>
+        <strong>Hidden content is skipped</strong>: <code>hidden</code>,
+        <code>inert</code>, <code>aria-hidden</code>, closed
+        <code>&lt;details&gt;</code>, closed dialogs and popovers,
+        <code>display: none</code> and <code>visibility: hidden</code>.
+      </li>
+      <li>
+        <strong><code>component</code></strong> names the Kernel component
+        behind a node. It comes from the <code>kernel-&lt;Name&gt;-*</code>
+        class names both packages emit and the <code>kernel-*</code> custom
+        element tags, using the list of components in the version you
+        installed.
+      </li>
+    </ul>
+    <p>
+      <code>query(&#123; role, name, component, text &#125;)</code> returns
+      the matching nodes as a flat list, so you don't have to search the
+      tree yourself.
+    </p>
+
+    <h2>Actions</h2>
+    <p>
+      <code>act(&#123; steps &#125;)</code> runs each step the way a person
+      would. Pointer and click events go through the element's own default
+      action. Text uses the native value setter followed by
+      <code>input</code> and <code>change</code> events, so
+      React-controlled inputs update. Forms are submitted with
+      <code>requestSubmit()</code>, and anything that opens or closes uses
+      its own trigger. The bridge refuses a step on a hidden or disabled
+      target, and the error says why. Steps stop at the first failure
+      unless you pass <code>continueOnError</code>. When the DOM has
+      settled, the result lists each step's outcome and what changed.
+    </p>
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Step actions.</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">What happens</th></tr></thead>
+      <tbody>
+        <tr><td><code>press</code></td><td>Pointer and mouse down/up, focus, then <code>click()</code></td></tr>
+        <tr><td><code>type</code> / <code>clear</code></td><td>Replaces the value (or appends it with <code>args.append</code>), then fires <code>input</code> and <code>change</code></td></tr>
+        <tr><td><code>select</code></td><td><code>args.value</code> is an option's value or label. A <code>&lt;select&gt;</code> is set directly; for a listbox or combobox, the bridge opens it and presses the option</td></tr>
+        <tr><td><code>check</code> / <code>uncheck</code> / <code>toggle</code></td><td>Presses a checkbox, radio, switch or toggle button, and does nothing if it's already in that state</td></tr>
+        <tr><td><code>open</code> / <code>close</code></td><td><code>&lt;details&gt;</code>, popover and <code>aria-expanded</code> triggers are pressed. A dialog closes with its close button, or with the <code>cancel</code> event that Escape fires</td></tr>
+        <tr><td><code>focus</code>, <code>submit</code>, <code>scroll</code></td><td>Focuses the element, calls <code>requestSubmit()</code> on its form, or scrolls instantly (<code>args.to</code>: top, bottom, into-view)</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="security">Security model</h2>
+    <p>
+      The bridge runs with your page's own privileges, so it isn't a
+      sandbox. What it does is limit an agent to what a person could do,
+      in the part of the page you choose, and ask a person before anything
+      that matters:
+    </p>
+    <ul>
+      <li>
+        <strong>Scope it to a root.</strong> Only content inside
+        <code>root</code> is visible or usable. <code>include</code> limits
+        refs further, and <code>exclude</code> or
+        <code>data-kernel-agent-ignore</code> removes a subtree entirely.
+        Refs from outside the scope are rejected.
+      </li>
+      <li>
+        <strong>Ask before anything that matters.</strong> By default the
+        bridge asks a person before it submits a form (including by pressing
+        a submit button), presses a danger-variant button, or acts on
+        anything inside <code>data-kernel-agent-confirm</code>. Your
+        <code>allow</code> policy can refuse a step, run it, or ask first.
+        It can skip the built-in checks, but it can't skip an explicit
+        <code>data-kernel-agent-confirm</code> marker. If no
+        <code>confirm</code> is given, <code>window.confirm</code> is used;
+        apps should render <code>ToolApproval</code> instead.
+      </li>
+      <li>
+        <strong>Keep the approval outside the root.</strong> The person's
+        Approve button must never be something the agent can press. Render it
+        outside <code>root</code>, or inside
+        <code>data-kernel-agent-ignore</code>.
+      </li>
+      <li>
+        <strong>Secrets are redacted.</strong> The values of password
+        fields, <code>autocomplete="one-time-code"</code>, card fields
+        (<code>cc-number</code>, <code>cc-csc</code>, <code>cc-exp</code>…),
+        and anything marked <code>data-kernel-agent-redact</code> are
+        replaced by <code>"[redacted]"</code>, and <code>query</code> won't
+        match on them either. The agent can still type into these fields
+        when it's allowed to.
+      </li>
+      <li>
+        <strong>Page text is data, not instructions.</strong> A snapshot
+        includes whatever text the page shows, which may include text other
+        users wrote. The WebMCP tools are marked
+        <code>untrustedContentHint</code> so the browser's agent knows.
+      </li>
+    </ul>
+    <CodeBlock code={markerSnippet} lang="tsx" />
+    <CodeBlock code={allowSnippet} lang="tsx" />
+
+    <h2 id="tool-approval">Confirm with ToolApproval</h2>
+    <p>
+      The demo above uses this helper: each step that needs a person
+      becomes a Kernel <code>ToolApproval</code>, and the step waits for
+      their decision.
+    </p>
+    <CodeBlock code={toolApprovalSnippet} lang="tsx" />
+
+    <h2 id="webmcp">WebMCP (experimental)</h2>
+    <p>
+      <code>registerTools(&#123; prefix &#125;)</code> registers
+      <code>kernel_snapshot</code>, <code>kernel_query</code> and
+      <code>kernel_act</code> with
+      <code>document.modelContext.registerTool()</code>, the API in the
+      <a href="https://webmachinelearning.github.io/webmcp/">WebMCP draft</a>.
+      If a browser only has the older <code>navigator.modelContext</code>,
+      the bridge uses that instead. Each tool comes with a JSON Schema for
+      its input, plus <code>readOnlyHint</code> and
+      <code>untrustedContentHint</code> annotations. Calling the function
+      it returns aborts the registration signal, which unregisters the
+      tools. In a browser without WebMCP, it does nothing.
+      <code>isWebMcpAvailable()</code> tells you which case you're in.
+    </p>
+    <CodeBlock code={webMcpSnippet} lang="tsx" />
+
+    <h2>Without WebMCP</h2>
+    <p>
+      Nothing depends on WebMCP. An assistant panel in your app can call
+      <code>snapshot()</code> and <code>act()</code> directly, or give
+      its model the same tool definitions:
+    </p>
+    <CodeBlock code={ownLoopSnippet} lang="tsx" />
+
+    <h2>Waiting for the UI</h2>
+    <p>
+      <code>act()</code> waits for the DOM to stop changing before it
+      returns. <code>settle()</code> waits on its own terms, and
+      <code>observe()</code> reports changes once they stop, so an agent
+      can react to a toast or an error without polling:
+    </p>
+    <CodeBlock code={settleSnippet} lang="tsx" />
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .agent-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--kernel-space-6);
+    inline-size: 100%;
+    align-items: start;
+  }
+  .agent-demo-form,
+  .agent-demo-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kernel-space-4);
+    min-inline-size: 0;
+  }
+  .agent-demo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--kernel-space-2);
+  }
+  .agent-demo-panel > button {
+    align-self: flex-start;
+  }
+  .agent-demo-status {
+    margin: 0;
+    min-block-size: 1lh;
+    color: var(--kernel-color-text-muted);
+    font-size: var(--kernel-font-size-sm);
+  }
+</style>

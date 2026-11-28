@@ -82,6 +82,9 @@ jobs:
       - name: Test ESLint plugin
         run: bun run --cwd packages/eslint-plugin test
 
+      - name: Test agent bridge package
+        run: bun run --cwd packages/agent test
+
       - name: Typecheck docs
         run: bun run --cwd apps/docs typecheck
 
@@ -98,3 +101,9 @@ jobs:
       - name: Accessibility check (axe)
         if: github.event_name == 'pull_request'
         run: bun run test:a11y
+
+      # Real act() steps against real Kernel React components on the built
+      # agent bridge guide page.
+      - name: Agent bridge browser check
+        if: github.event_name == 'pull_request'
+        run: bun run test:agent-bridge

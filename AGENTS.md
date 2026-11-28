@@ -7,7 +7,8 @@ guidance for anyone (human or agent) making changes here.
 ## Release checklist for pull requests
 
 Any PR that changes a publishable package under `packages/react`,
-`packages/elements`, `packages/styles`, or `packages/cli` must include a
+`packages/elements`, `packages/styles`, `packages/cli`, or `packages/agent`
+must include a
 `.changeset/<descriptive-name>.md` file describing the affected package(s) and
 the release level (`patch`, `minor`, or `major`). Run `bunx changeset` to create
 it. Docs-only changes do not need a Changeset. A bump that only edits
@@ -62,6 +63,12 @@ new component done, grep both `packages/react/src/index.ts` and
   LLM asset generation. Run `bun run build` there after changing entries.
 - `packages/cli` — `@kernelui-lib/cli`. Published integration CLI (`kernel init`,
   `kernel doctor`, `kernel docs`).
+- `packages/agent` — `@kernelui-lib/agent`. Framework-free agent bridge
+  (snapshot from roles/names/states, `act()` through real DOM events,
+  confirmation gates, WebMCP tools) plus a `./react` hook. Zero runtime
+  deps; its component list is generated from `packages/registry` at build
+  time. Guide: `apps/docs/src/pages/agent-bridge.astro`; browser check:
+  `bun run test:agent-bridge` (after `bun run docs:build`).
 
 ## Conventions to match, not reinvent
 

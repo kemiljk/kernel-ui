@@ -130,6 +130,16 @@ export default [kernel.configs.recommended];`;
       </tbody>
     </table></div>
 
+    <h2>Agents that use your UI</h2>
+    <p>
+      Everything above helps an agent <em>build</em> with Kernel. To let an
+      agent <em>use</em> the UI you built, from inside the page, add the
+      <a href="/agent-bridge/">agent bridge</a>. It gives the agent a snapshot
+      built from roles, names and states, <code>act()</code> steps that fire
+      real events, prompts a person must approve before risky steps, and
+      experimental WebMCP tools.
+    </p>
+
     <h2>A prompt that works</h2>
     <p>If your agent doesn't have the skills or MCP server yet, start with this:</p>
     <CodeBlock code={promptSnippet} lang="bash" />
