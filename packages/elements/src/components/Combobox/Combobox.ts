@@ -39,10 +39,11 @@ interface ComboboxGroup {
  * `placeholder`, `value`, `empty-message` (default "No results"),
  * `placement` (default bottom), `align` (start/center/end, default
  * center), `offset` (px, default 8).
- * Events: `valuechange` (`event.detail.value`), dispatched before the
- * selection changes with `detail.reason` — `"item-press"`, `"keyboard"`
- * (Enter on the highlighted option) or `"clear"` (the text field emptied).
- * It's cancelable: `preventDefault()` keeps the current selection.
+ * Events: `beforevaluechange` (`event.detail.value`), dispatched before
+ * the selection changes with `detail.reason` — `"item-press"`,
+ * `"keyboard"` (Enter on the highlighted option) or `"clear"` (the text
+ * field emptied). It's cancelable: `preventDefault()` keeps the current
+ * selection. Then `valuechange`, with the same detail, once it has changed.
  *
  * Filtering is a ranked fuzzy match (`fuzzyScore`): best matches first
  * within each group, matched characters wrapped in `<mark>`. Set the
@@ -137,7 +138,10 @@ export class KernelCombobox extends KernelElement {
       // Emptying the field clears the selection rather than leaving a value
       // selected behind a blank input.
       if (input.value === "" && this.selectedValue !== "") {
-        if (this.emitChange("valuechange", { value: "" }, "clear", event)) this.selectedValue = "";
+        if (this.emitChange("beforevaluechange", { value: "" }, "clear", event)) {
+          this.selectedValue = "";
+          this.emitCommitted("valuechange", { value: "" }, "clear", event);
+        }
       }
       this.renderOptions();
     });
@@ -198,11 +202,12 @@ export class KernelCombobox extends KernelElement {
 
   private selectOption(option: ComboboxOption, event?: Event) {
     const reason = inputModality(event) === "keyboard" ? "keyboard" : "item-press";
-    if (!this.emitChange("valuechange", { value: option.value }, reason, event)) return;
+    if (!this.emitChange("beforevaluechange", { value: option.value }, reason, event)) return;
     this.selectedValue = option.value;
     this.inputText = option.label;
     this.inputEl.value = option.label;
     this.closeList();
+    this.emitCommitted("valuechange", { value: option.value }, reason, event);
   }
 
   private handleKeyDown(event: KeyboardEvent) {

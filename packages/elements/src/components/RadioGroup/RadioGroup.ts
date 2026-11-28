@@ -21,10 +21,11 @@ let radioGroupCounter = 0;
  * option, alongside the native bubbling `change` event from the radio).
  *
  * Change reasons: a native `change` can't be cancelled, so a bubbling,
- * cancelable `valuechange` is dispatched from the group first, with
+ * cancelable `beforevaluechange` is dispatched from the group first, with
  * `detail: { value, reason }` (`reason` is `"press"` or `"keyboard"`).
  * `preventDefault()` on it re-checks the previous option and stops the
- * native `change` at the group.
+ * native `change` at the group. Once committed, a `valuechange` with the
+ * same detail.
  *
  * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
  * forwarded to the `<fieldset>`.
@@ -61,7 +62,7 @@ export class KernelRadioGroup extends KernelElement {
       const target = event.target as HTMLInputElement;
       if (target.type !== "radio" || !target.checked) return;
       const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
-      if (!this.emitChange("valuechange", { value: target.value }, reason, event)) {
+      if (!this.emitChange("beforevaluechange", { value: target.value }, reason, event)) {
         const previous = this.getAttribute("value");
         for (const input of fieldset.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
           input.checked = previous !== null && input.value === previous;
@@ -70,6 +71,7 @@ export class KernelRadioGroup extends KernelElement {
         return;
       }
       this.setAttribute("value", target.value);
+      this.emitCommitted("valuechange", { value: target.value }, reason, event);
     });
     this.native = fieldset;
     this.append(fieldset);

@@ -58,10 +58,11 @@ let datePickerCounter = 0;
  * Sunday first; default "Su,Mo,Tu,We,Th,Fr,Sa"), or the `labels` property.
  *
  * Attributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.
- * Events: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string),
- * dispatched before the selection moves with `detail.reason` (`"day-press"`
- * or `"keyboard"`); it's cancelable, and `preventDefault()` keeps the
- * current day.
+ * Events: `beforevaluechange` (`event.detail.value`, a `YYYY-MM-DD`
+ * string, with `detail.reason`: `"day-press"` or `"keyboard"`), dispatched
+ * before the selection moves; it's cancelable, and `preventDefault()`
+ * keeps the current day. Then `valuechange`, with the same detail, once
+ * the selection has moved.
  */
 export class KernelDatePicker extends KernelElement {
   private readonly baseId = `kernel-date-picker-${++datePickerCounter}`;
@@ -156,9 +157,10 @@ export class KernelDatePicker extends KernelElement {
   private selectDay(day: Date, event?: Event) {
     if (!isWithinRange(day, this.minDate, this.maxDate)) return;
     const reason = inputModality(event) === "keyboard" ? "keyboard" : "day-press";
-    if (!this.emitChange("valuechange", { value: formatDateAttr(day) }, reason, event)) return;
+    if (!this.emitChange("beforevaluechange", { value: formatDateAttr(day) }, reason, event)) return;
     this.selected = day;
     this.renderGrid();
+    this.emitCommitted("valuechange", { value: formatDateAttr(day) }, reason, event);
   }
 
   private handleGridKeyDown(event: KeyboardEvent) {

@@ -47,17 +47,18 @@ let rangePickerCounter = 0;
  * instead of one. A click either starts a fresh range or completes the
  * open one; once both ends are set, the next click starts over. The
  * in-progress second half of a range (before it's clicked) is a hover
- * preview only — it never reaches the `valuechange` event.
+ * preview only — it never reaches the change events.
  *
  * Built-in strings: `label-previous-month` ("Previous month"),
  * `label-next-month` ("Next month"), `label-weekdays` (comma-separated,
  * Sunday first; default "Su,Mo,Tu,We,Th,Fr,Sa"), or the `labels` property.
  *
  * Attributes: `value-from`, `value-to`, `min-date`, `max-date` — all
- * `YYYY-MM-DD`. Events: `valuechange`
+ * `YYYY-MM-DD`. Events: `beforevaluechange`
  * (`event.detail` = `{ from?, to?, reason }`, each date a `YYYY-MM-DD`
  * string), dispatched before the range changes; `reason` is `"day-press"`
- * or `"keyboard"`, and `preventDefault()` keeps the current range.
+ * or `"keyboard"`, and `preventDefault()` keeps the current range. Then
+ * `valuechange`, with the same detail, once the range has changed.
  */
 export class KernelDateRangePicker extends KernelElement {
   private readonly baseId = `kernel-date-range-picker-${++rangePickerCounter}`;
@@ -163,13 +164,14 @@ export class KernelDateRangePicker extends KernelElement {
       to = day;
     }
 
-    // Asked first: a cancelled `valuechange` keeps the current range.
+    // Asked first: a cancelled `beforevaluechange` keeps the current range.
     const reason = inputModality(event) === "keyboard" ? "keyboard" : "day-press";
     const detail = { from: from ? formatDateAttr(from) : undefined, to: to ? formatDateAttr(to) : undefined };
-    if (!this.emitChange("valuechange", detail, reason, event)) return;
+    if (!this.emitChange("beforevaluechange", detail, reason, event)) return;
     this.from = from;
     this.to = to;
     this.renderGrid();
+    this.emitCommitted("valuechange", detail, reason, event);
   }
 
   private handleGridKeyDown(event: KeyboardEvent) {

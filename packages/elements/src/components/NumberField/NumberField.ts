@@ -103,7 +103,7 @@ export class KernelNumberField extends KernelElement {
     input.step = "1";
     input.className = kernelClass("NumberField", "input");
     // Change reasons: every change dispatches a cancelable, bubbling
-    // `valuechange` first, `detail: { value, reason }` with `reason`
+    // `beforevaluechange` first (then `valuechange` once committed), `detail: { value, reason }` with `reason`
     // `"input"`, `"keyboard"` (ArrowUp/Down), `"wheel"` or `"step-button"`.
     // `preventDefault()` restores the previous value; for typed changes it
     // also stops the native `change` at this element.
@@ -116,12 +116,13 @@ export class KernelNumberField extends KernelElement {
       const reason = pendingReason;
       pendingReason = "input";
       const value = input.value === "" ? undefined : Number(input.value);
-      if (!this.emitChange("valuechange", { value }, reason, event)) {
+      if (!this.emitChange("beforevaluechange", { value }, reason, event)) {
         input.value = this.getAttribute("value") ?? "";
         event.stopPropagation();
         return;
       }
       this.setAttribute("value", input.value);
+      this.emitCommitted("valuechange", { value }, reason, event);
     });
 
     const stepper = document.createElement("div");
@@ -164,12 +165,13 @@ export class KernelNumberField extends KernelElement {
     if (direction === 1) input.stepUp();
     else input.stepDown();
     const value = input.value === "" ? undefined : Number(input.value);
-    if (!this.emitChange("valuechange", { value }, "step-button", event)) {
+    if (!this.emitChange("beforevaluechange", { value }, "step-button", event)) {
       input.value = previous;
       input.focus();
       return;
     }
     this.setAttribute("value", input.value);
+    this.emitCommitted("valuechange", { value }, "step-button", event);
     this.dispatchEvent(new Event("change", { bubbles: true }));
     input.focus();
   }

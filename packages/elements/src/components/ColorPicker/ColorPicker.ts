@@ -41,10 +41,11 @@ function normalizeHex(raw: string): string | null {
  * forwarded to the inner `<input type="color">`; an authored
  * `aria-describedby` is added after its own hint and error ids.
  *
- * Events: a bubbling, cancelable `valuechange` before the colour commits,
+ * Events: a bubbling, cancelable `beforevaluechange` before the colour commits,
  * `detail: { value, reason }` (`"picker"` or `"hex-input"`);
- * `preventDefault()` keeps the current colour. Then a bubbling `change`
- * with the same detail once `value` is committed.
+ * `preventDefault()` keeps the current colour. Then a bubbling
+ * `valuechange` and `change` with the same detail once `value` is
+ * committed.
  */
 export class KernelColorPicker extends KernelElement {
   private readonly generatedId = `kernel-color-picker-${++colorPickerCounter}`;
@@ -104,17 +105,18 @@ export class KernelColorPicker extends KernelElement {
     colorInput.type = "color";
     colorInput.value = "#000000";
     colorInput.className = kernelClass("ColorPicker", "input");
-    // A cancelable `valuechange` is dispatched before the colour commits,
+    // A cancelable `beforevaluechange` is dispatched before the colour commits,
     // with `detail: { value, reason }` — `"picker"` (the native colour
     // input) or `"hex-input"`. A vetoed change keeps the current colour.
-    // `change` follows once committed, with the same detail.
+    // `valuechange` and `change` follow once committed, with the same detail.
     colorInput.addEventListener("input", (event) => {
       const value = colorInput.value;
-      if (!this.emitChange("valuechange", { value }, "picker", event)) {
+      if (!this.emitChange("beforevaluechange", { value }, "picker", event)) {
         colorInput.value = this.getAttribute("value") ?? colorInput.defaultValue;
         return;
       }
       this.setAttribute("value", value);
+      this.emitCommitted("valuechange", { value }, "picker", event);
       this.emitCommitted("change", { value }, "picker", event);
     });
 
@@ -132,8 +134,9 @@ export class KernelColorPicker extends KernelElement {
     hexInput.addEventListener("input", (event) => {
       const normalized = normalizeHex(hexInput.value);
       hexInput.setAttribute("aria-invalid", String(hexInput.value !== "" && !normalized));
-      if (normalized && this.emitChange("valuechange", { value: normalized }, "hex-input", event)) {
+      if (normalized && this.emitChange("beforevaluechange", { value: normalized }, "hex-input", event)) {
         this.setAttribute("value", normalized);
+        this.emitCommitted("valuechange", { value: normalized }, "hex-input", event);
         this.emitCommitted("change", { value: normalized }, "hex-input", event);
       }
     });

@@ -24,12 +24,13 @@ let selectCounter = 0;
  * `required`, `disabled`, `value`, `name`.
  *
  * Change reasons: a native `change` can't be cancelled, so a bubbling,
- * cancelable `valuechange` is dispatched from this element first, with
+ * cancelable `beforevaluechange` is dispatched from this element first, with
  * `detail: { value, reason }` — `"item-press"`, `"keyboard"` or
  * `"typeahead"`, worked out from the last pointer/key on the control (a
  * platform picker that's a separate OS menu may swallow those keys, so
  * it's best-effort there). `preventDefault()` restores the previous option
- * and stops the native `change` at this element.
+ * and stops the native `change` at this element. Once committed, a
+ * `valuechange` with the same detail.
  *
  * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
  * forwarded to the inner `<select>`; an authored `aria-describedby` is
@@ -113,12 +114,13 @@ export class KernelSelect extends KernelElement {
           : lastKey && lastKey.length === 1 && lastKey !== " "
             ? "typeahead"
             : "keyboard";
-      if (!this.emitChange("valuechange", { value: select.value }, reason, event)) {
+      if (!this.emitChange("beforevaluechange", { value: select.value }, reason, event)) {
         select.value = previousValue;
         event.stopPropagation();
         return;
       }
       previousValue = select.value;
+      this.emitCommitted("valuechange", { value: select.value }, reason, event);
     });
 
     wrapper.append(select, chevron);

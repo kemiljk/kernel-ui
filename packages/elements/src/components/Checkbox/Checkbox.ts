@@ -15,11 +15,12 @@ import { inputModality } from "../../utils/changeDetails";
  * no synthetic event needed.
  *
  * Change reasons: a native `change` can't be cancelled, so a bubbling,
- * cancelable `valuechange` is dispatched from this element first, with
- * `detail: { checked, reason }` (`reason` is `"press"` or `"keyboard"`).
- * `preventDefault()` on it puts the box back and stops the native `change`
- * at this element (a listener on the inner `<input>` itself has already
- * seen it).
+ * cancelable `beforevaluechange` is dispatched from this element first,
+ * with `detail: { checked, reason }` (`reason` is `"press"` or
+ * `"keyboard"`). `preventDefault()` on it puts the box back and stops the
+ * native `change` at this element (a listener on the inner `<input>`
+ * itself has already seen it). Otherwise a `valuechange` with the same
+ * detail follows, then the native `change`.
  *
  * `aria-label`, `aria-labelledby` and `aria-describedby` on the host are
  * forwarded to the inner `<input type="checkbox">`.
@@ -60,7 +61,10 @@ export class KernelCheckbox extends KernelElement {
     label.addEventListener("change", (event) => {
       if (event.target !== input) return;
       const reason = inputModality(event) === "keyboard" ? "keyboard" : "press";
-      if (this.emitChange("valuechange", { checked: input.checked }, reason, event)) return;
+      if (this.emitChange("beforevaluechange", { checked: input.checked }, reason, event)) {
+        this.emitCommitted("valuechange", { checked: input.checked }, reason, event);
+        return;
+      }
       input.checked = !input.checked;
       event.stopPropagation();
     });

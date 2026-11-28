@@ -13,6 +13,8 @@ import "../../elements/src/components/TagInput/TagInput";
 import "../../elements/src/components/Toggle/Toggle";
 import "../../elements/src/components/Slider/Slider";
 import "../../elements/src/components/ColorPicker/ColorPicker";
+import "../../elements/src/components/DatePicker/DatePicker";
+import "../../elements/src/components/DateRangePicker/DateRangePicker";
 import { TagInput } from "./components/TagInput/TagInput";
 import { Checkbox } from "./components/Checkbox/Checkbox";
 import { Dialog } from "./components/Dialog/Dialog";
@@ -198,18 +200,19 @@ describe("change reasons: Dialog", () => {
 describe("change reasons: custom elements", () => {
   const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-  it("kernel-switch dispatches a cancelable valuechange before flipping", async () => {
+  it("kernel-switch dispatches a cancelable beforevaluechange before flipping", async () => {
     document.body.innerHTML = "<kernel-switch>Wi-Fi</kernel-switch>";
     const host = document.querySelector("kernel-switch")!;
     const reasons: string[] = [];
     const changes = vi.fn();
-    host.addEventListener("valuechange", (event) => {
+    host.addEventListener("beforevaluechange", (event) => {
       const detail = (event as CustomEvent).detail;
       reasons.push(detail.reason);
       // State hasn't moved yet when the event fires.
       expect(host.hasAttribute("checked")).toBe(false);
       event.preventDefault();
     });
+    host.addEventListener("valuechange", changes);
     host.addEventListener("change", changes);
     const button = host.querySelector("button")!;
     fireEvent.pointerDown(button);
@@ -217,31 +220,43 @@ describe("change reasons: custom elements", () => {
     expect(reasons).toEqual(["press"]);
     expect(host.hasAttribute("checked")).toBe(false);
     expect(button.getAttribute("aria-checked")).toBe("false");
-    // A vetoed change never commits, so no `change`.
+    // A vetoed change never commits, so no `valuechange` or `change`.
     expect(changes).not.toHaveBeenCalled();
   });
 
-  // `change` keeps native timing: it fires after the commit, so a handler
-  // reading the element's own state sees the new value.
+  // One rule for every value control, like beforeinput/input: a cancelable
+  // `beforevaluechange` sees the old state; `valuechange` (and `change`,
+  // where the element has one) fire after the commit and see the new one,
+  // all with the same detail.
+  const afterCommit = ["beforevaluechange", "valuechange", "change"];
+  // A pointer press: the reason comes from the last input modality.
+  const press = (target: Element) => {
+    fireEvent.pointerDown(target);
+    fireEvent.click(target);
+  };
+  const afterCommitNoChange = ["beforevaluechange", "valuechange"];
   it.each([
     {
       tag: "kernel-switch",
+      events: afterCommit,
       html: "<kernel-switch>Wi-Fi</kernel-switch>",
-      act: (host: HTMLElement) => fireEvent.click(host.querySelector("button")!),
+      act: (host: HTMLElement) => press(host.querySelector("button")!),
       read: (host: HTMLElement) => host.hasAttribute("checked"),
       detail: { checked: true, reason: "press" },
       after: true,
     },
     {
       tag: "kernel-toggle",
+      events: afterCommit,
       html: "<kernel-toggle>Bold</kernel-toggle>",
-      act: (host: HTMLElement) => fireEvent.click(host.querySelector("button")!),
+      act: (host: HTMLElement) => press(host.querySelector("button")!),
       read: (host: HTMLElement) => host.hasAttribute("pressed"),
       detail: { pressed: true, reason: "press" },
       after: true,
     },
     {
       tag: "kernel-slider",
+      events: afterCommit,
       html: '<kernel-slider label="Volume" value="10"></kernel-slider>',
       act: (host: HTMLElement) => {
         const input = host.querySelector("input")!;
@@ -254,6 +269,7 @@ describe("change reasons: custom elements", () => {
     },
     {
       tag: "kernel-color-picker",
+      events: afterCommit,
       html: '<kernel-color-picker label="Accent" value="#000000"></kernel-color-picker>',
       act: (host: HTMLElement) => {
         const input = host.querySelector<HTMLInputElement>('input[type="color"]')!;
@@ -266,6 +282,7 @@ describe("change reasons: custom elements", () => {
     },
     {
       tag: "kernel-tag-input",
+      events: afterCommit,
       html: '<kernel-tag-input label="Tags" value="a"></kernel-tag-input>',
       act: (host: HTMLElement) => {
         const input = host.querySelector("input")!;
@@ -276,11 +293,61 @@ describe("change reasons: custom elements", () => {
       detail: { tags: ["a", "b"], reason: "enter" },
       after: ["a", "b"],
     },
-  ])("$tag: valuechange before the commit, change after it", ({ html, act, read, detail, after }) => {
+    {
+      tag: "kernel-checkbox",
+      events: afterCommitNoChange,
+      html: "<kernel-checkbox>Accept</kernel-checkbox>",
+      act: (host: HTMLElement) => press(host.querySelector("input")!),
+      read: (host: HTMLElement) => host.querySelector("input")!.checked,
+      detail: { checked: true, reason: "press" },
+      // The native input has already flipped when its `change` is
+      // intercepted; a veto flips it back.
+      before: true,
+      after: true,
+    },
+    {
+      tag: "kernel-radio-group",
+      events: afterCommitNoChange,
+      html: `<kernel-radio-group label="Size" value="s">
+        <kernel-radio-group-item value="s">Small</kernel-radio-group-item>
+        <kernel-radio-group-item value="m">Medium</kernel-radio-group-item>
+      </kernel-radio-group>`,
+      act: () => press(screen.getByRole("radio", { name: "Medium" })),
+      read: (host: HTMLElement) => host.getAttribute("value"),
+      detail: { value: "m", reason: "press" },
+      after: "m",
+    },
+    {
+      tag: "kernel-number-field",
+      events: afterCommitNoChange,
+      html: '<kernel-number-field label="Qty" value="1"></kernel-number-field>',
+      act: (host: HTMLElement) => fireEvent.click(host.querySelector('[data-step="up"]')!),
+      read: (host: HTMLElement) => host.getAttribute("value"),
+      detail: { value: 2, reason: "step-button" },
+      after: "2",
+    },
+    {
+      tag: "kernel-tabs",
+      events: afterCommitNoChange,
+      html: `<kernel-tabs default-value="a">
+        <kernel-tabs-list aria-label="Sections">
+          <kernel-tab value="a">A</kernel-tab>
+          <kernel-tab value="b">B</kernel-tab>
+        </kernel-tabs-list>
+        <kernel-tab-panel value="a">Panel A</kernel-tab-panel>
+        <kernel-tab-panel value="b">Panel B</kernel-tab-panel>
+      </kernel-tabs>`,
+      act: () => press(screen.getByRole("tab", { name: "B" })),
+      read: () => screen.getByRole("tab", { name: "B" }).getAttribute("aria-selected"),
+      detail: { value: "b", reason: "trigger-press" },
+      after: "true",
+    },
+  ])("$tag: beforevaluechange before the commit, valuechange after it", async ({ html, act, read, detail, after, events, ...rest }) => {
     document.body.innerHTML = html;
+    await flush();
     const host = document.body.firstElementChild as HTMLElement;
     const seen: Array<{ type: string; state: unknown; detail: unknown }> = [];
-    for (const type of ["valuechange", "change"]) {
+    for (const type of afterCommit) {
       host.addEventListener(type, (event) => {
         // The inner native control's own `change` bubbles too; only the
         // host's CustomEvent carries a detail.
@@ -288,12 +355,48 @@ describe("change reasons: custom elements", () => {
         seen.push({ type, state: structuredClone(read(host)), detail: event.detail });
       });
     }
-    const before = structuredClone(read(host));
+    const before = "before" in rest ? rest.before : structuredClone(read(host));
     act(host);
-    expect(seen.map((entry) => entry.type)).toEqual(["valuechange", "change"]);
+    expect(seen.map((entry) => entry.type)).toEqual(events);
     expect(seen[0]!.state).toEqual(before);
-    expect(seen[1]!.state).toEqual(after);
+    for (const entry of seen.slice(1)) expect(entry.state).toEqual(after);
     for (const entry of seen) expect(entry.detail).toMatchObject(detail);
+  });
+
+  it.each([
+    {
+      tag: "kernel-date-picker",
+      html: '<kernel-date-picker value="2026-03-10"></kernel-date-picker>',
+      day: "12",
+      detail: { value: "2026-03-12", reason: "day-press" },
+    },
+    {
+      tag: "kernel-date-range-picker",
+      html: '<kernel-date-range-picker value-from="2026-03-10"></kernel-date-range-picker>',
+      day: "14",
+      detail: { from: "2026-03-10", to: "2026-03-14", reason: "day-press" },
+    },
+  ])("$tag: a vetoed beforevaluechange keeps the selection; otherwise valuechange follows", ({ html, day, detail }) => {
+    document.body.innerHTML = html;
+    const host = document.body.firstElementChild as HTMLElement;
+    const order: string[] = [];
+    let veto = true;
+    host.addEventListener("beforevaluechange", (event) => {
+      order.push("before");
+      expect((event as CustomEvent).detail).toMatchObject(detail);
+      if (veto) event.preventDefault();
+    });
+    host.addEventListener("valuechange", (event) => {
+      order.push("after");
+      expect((event as CustomEvent).detail).toMatchObject(detail);
+    });
+    const dayButton = () =>
+      [...host.querySelectorAll<HTMLButtonElement>("button[data-day]")].find((b) => b.textContent === day)!;
+    press(dayButton());
+    expect(order).toEqual(["before"]);
+    veto = false;
+    press(dayButton());
+    expect(order).toEqual(["before", "before", "after"]);
   });
 
   it("kernel-tabs valuechange carries the reason and can be vetoed", async () => {
@@ -310,7 +413,7 @@ describe("change reasons: custom elements", () => {
     const tabs = document.querySelector("kernel-tabs")!;
     const details: Array<{ value: string; reason: string }> = [];
     let veto = true;
-    tabs.addEventListener("valuechange", (event) => {
+    tabs.addEventListener("beforevaluechange", (event) => {
       details.push((event as CustomEvent).detail);
       if (veto) event.preventDefault();
     });
@@ -369,14 +472,14 @@ describe("change reasons: custom elements", () => {
 
 /*
  * Native-backed elements can't cancel the browser's own `change`, so they
- * dispatch a cancelable `valuechange` first; vetoing it must restore the
+ * dispatch a cancelable `beforevaluechange` first; vetoing it must restore the
  * previous state *and* keep the native `change` from reaching the host.
  */
-describe("change reasons: custom element valuechange interception", () => {
+describe("change reasons: custom element beforevaluechange interception", () => {
   function track(host: Element, veto: boolean) {
     const seen: Array<{ reason: string; [key: string]: unknown }> = [];
     const hostChanges: Event[] = [];
-    host.addEventListener("valuechange", (event) => {
+    host.addEventListener("beforevaluechange", (event) => {
       seen.push((event as CustomEvent).detail);
       if (veto) event.preventDefault();
     });
@@ -454,7 +557,7 @@ describe("change reasons: custom element valuechange interception", () => {
     const host = document.querySelector("kernel-select")!;
     let veto = false;
     const reasons: string[] = [];
-    host.addEventListener("valuechange", (event) => {
+    host.addEventListener("beforevaluechange", (event) => {
       reasons.push((event as CustomEvent).detail.reason);
       if (veto) event.preventDefault();
     });
@@ -518,10 +621,13 @@ describe("change reasons: TagInput batching parity", () => {
     const host = container.querySelector("kernel-tag-input")!;
     const changes: Array<{ tags: string[]; reason: string }> = [];
     const vetoable: Array<{ tags: string[]; reason: string }> = [];
-    host.addEventListener("valuechange", (event) => vetoable.push((event as CustomEvent).detail));
+    const committed: Array<{ tags: string[]; reason: string }> = [];
+    host.addEventListener("beforevaluechange", (event) => vetoable.push((event as CustomEvent).detail));
+    host.addEventListener("valuechange", (event) => committed.push((event as CustomEvent).detail));
     host.addEventListener("change", (event) => changes.push((event as CustomEvent).detail));
     paste(host.querySelector("input")!, "one,two\nthree");
     expect(vetoable).toEqual([expect.objectContaining({ tags: ["one", "two", "three"], reason: "paste" })]);
+    expect(committed).toEqual([expect.objectContaining({ tags: ["one", "two", "three"], reason: "paste" })]);
     expect(changes).toEqual([expect.objectContaining({ tags: ["one", "two", "three"], reason: "paste" })]);
     container.remove();
   });
@@ -531,10 +637,11 @@ describe("change reasons: TagInput batching parity", () => {
     const host = document.querySelector("kernel-tag-input") as HTMLElement & { tags: string[] };
     const changes: Array<{ tags: string[]; reason: string }> = [];
     const committed = vi.fn();
-    host.addEventListener("valuechange", (event) => {
+    host.addEventListener("beforevaluechange", (event) => {
       changes.push((event as CustomEvent).detail);
       event.preventDefault();
     });
+    host.addEventListener("valuechange", committed);
     host.addEventListener("change", committed);
     const input = host.querySelector("input")!;
     paste(input, "a,b");

@@ -14,10 +14,11 @@ let tabsCounter = 0;
  *
  * Attributes: `value` (controlled — set it to change tabs
  * externally), `default-value` (required if `value` is never set).
- * Fires a `valuechange` `CustomEvent` (`event.detail.value`) when the
- * active tab changes — before it changes, with `detail.reason`
- * (`"trigger-press"`, `"keyboard"`, or `"programmatic"` for a `setValue()`
- * call); it's cancelable, and `preventDefault()` keeps the current tab. A tablist wider than its container scrolls
+ * Before the active tab changes, a cancelable `beforevaluechange`
+ * `CustomEvent` (`event.detail.value`, `detail.reason`: `"trigger-press"`,
+ * `"keyboard"`, or `"programmatic"` for a `setValue()` call);
+ * `preventDefault()` keeps the current tab. Once it has changed, a
+ * `valuechange` with the same detail. A tablist wider than its container scrolls
  * sideways (scrollbar hidden, an edge fade where tabs are cut off) rather
  * than widening the page, and selecting a tab scrolls it into view.
  */
@@ -62,13 +63,14 @@ export class KernelTabs extends KernelElement {
     event?: Event,
   ) {
     if (this.currentValue === value) return;
-    if (!this.emitChange("valuechange", { value }, reason, event)) return;
+    if (!this.emitChange("beforevaluechange", { value }, reason, event)) return;
     this.currentValue = value;
     if (!this.hasAttribute("value")) {
       this.render();
     } else {
       this.setAttribute("value", value);
     }
+    this.emitCommitted("valuechange", { value }, reason, event);
   }
 
   protected syncAttr(name: string, value: string | null) {

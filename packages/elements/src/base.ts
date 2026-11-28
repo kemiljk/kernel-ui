@@ -118,8 +118,9 @@ export class KernelElement extends HTMLElement {
    * cancelable, with `reason` (and the triggering `event`) added to
    * `detail`. Returns `false` when a listener called `preventDefault()` —
    * the caller then keeps its current state and skips side effects. Value
-   * controls use `valuechange` for this and keep `change` for after the
-   * commit (`emitCommitted`); see `utils/changeDetails.ts`.
+   * controls use `beforevaluechange` for this, then announce the commit
+   * with `valuechange` (and `change` where they have one) through
+   * `emitCommitted`; see `utils/changeDetails.ts`.
    */
   protected emitChange(type: string, detail: object, reason: string, event?: Event): boolean {
     return this.dispatchEvent(
@@ -134,9 +135,10 @@ export class KernelElement extends HTMLElement {
   /**
    * The after-the-fact half of a change: a bubbling, non-cancelable event
    * dispatched once the change is committed, with the same `detail` shape
-   * (`reason` and the triggering `event` included). Elements whose
-   * `change` was always post-commit pair a cancelable `valuechange` (via
-   * `emitChange`) with this, so a `change` handler reading `el.checked`,
+   * (`reason` and the triggering `event` included): `valuechange`, and
+   * `change` on elements that have one. Paired with a cancelable
+   * `beforevaluechange` (via `emitChange`), the way `beforeinput`/`input`
+   * and `beforetoggle`/`toggle` pair, so a handler reading `el.checked`,
    * `el.tags` or an attribute sees the new value, as with a native control.
    */
   protected emitCommitted(type: string, detail: object, reason: string, event?: Event): void {

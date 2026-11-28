@@ -49,14 +49,17 @@ const dialogSnippet = `<Dialog
 const elementsSnippet = `<kernel-tabs default-value="account">…</kernel-tabs>
 <kernel-switch>Wi-Fi</kernel-switch>
 <script type="module">
-  document.querySelector("kernel-tabs").addEventListener("valuechange", (event) => {
+  const tabs = document.querySelector("kernel-tabs");
+  // Before the tab changes: veto it.
+  tabs.addEventListener("beforevaluechange", (event) => {
     const { value, reason } = event.detail;   // reason: "trigger-press" | "keyboard" | …
     if (value === "billing" && !confirmLeave()) event.preventDefault();
   });
+  // After it changed (same detail, not cancelable).
+  tabs.addEventListener("valuechange", (event) => track(event.detail.value));
 
   const wifi = document.querySelector("kernel-switch");
-  // Before the flip: veto it.
-  wifi.addEventListener("valuechange", (event) => {
+  wifi.addEventListener("beforevaluechange", (event) => {
     if (!event.detail.checked && !confirmDisconnect()) event.preventDefault();
   });
   // After the flip: the element already shows the new state.
@@ -133,14 +136,14 @@ fuzzyFilter(commands, query, (command) => [command.label, ...command.keywords]);
     <h2>Web Components</h2>
     <p>
       The custom elements carry the same reasons in
-      <code>detail.reason</code>. A value control's <code>change</code>
-      still fires after the change commits, as on a native control, so a
-      handler can read the element's own state. To cancel, listen to
-      <code>valuechange</code>: it fires first, with the proposed value, and
-      <code>event.preventDefault()</code> vetoes the change, in which case no
-      <code>change</code> follows. Tabs, Combobox, DatePicker and
-      DateRangePicker report only through <code>valuechange</code>, so read
-      the new value from its <code>detail</code>. Dialog and CommandPalette
+      <code>detail.reason</code>, with one rule for every value control,
+      the platform's <code>beforeinput</code>/<code>input</code> pairing: a
+      cancelable <code>beforevaluechange</code> fires first, with the
+      proposed value, and <code>event.preventDefault()</code> on it vetoes
+      the change. Otherwise the element commits, then fires
+      <code>valuechange</code> with the same detail, and <code>change</code>
+      too where it has one, so a handler can read the element's own state.
+      Dialog and CommandPalette
       ask with a cancelable <code>cancel</code> (the native dialog's own name
       for "about to close"); Popover, DropdownMenu and Accordion items with
       <code>beforetoggle</code>.

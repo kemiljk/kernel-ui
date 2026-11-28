@@ -25,15 +25,15 @@ function escapeRegExp(value: string): string {
  * that encoding, so use the `tags` property (or the `change` event's
  * `detail.tags`) instead when that matters.
  *
- * A cancelable `valuechange` is dispatched before the tags change, with
+ * A cancelable `beforevaluechange` is dispatched before the tags change, with
  * `detail: { tags, reason }` — `"enter"`, `"separator"`, `"paste"`,
  * `"remove-button"` or `"backspace"`. `preventDefault()` keeps the tags as
  * they were: an added tag stays in the draft, and a removal (reported once
  * the chip's exit transition has played) brings the chip back. Once the
- * tags are committed a bubbling `change` follows with the same detail, so
- * a `change` handler reading `tags` sees the new list. A paste or typed
- * separator that adds several tags is a single `valuechange` and a single
- * `change` with all of them, as in React.
+ * tags are committed a bubbling `valuechange` and `change` follow with the
+ * same detail, so a handler reading `tags` sees the new list. A paste or
+ * typed separator that adds several tags is a single event of each kind
+ * with all of them, as in React.
  *
  * Attributes: `label` (required, still the accessible name even when
  * `hide-label` is set), `hide-label` (boolean), `value` (comma-joined),
@@ -194,10 +194,11 @@ export class KernelTagInput extends KernelElement {
       return true;
     }
     const next = [...this.currentTags, trimmed];
-    if (!this.emitChange("valuechange", { tags: next }, reason, event)) return false;
+    if (!this.emitChange("beforevaluechange", { tags: next }, reason, event)) return false;
     this.currentTags = next;
     this.renderTags();
     this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
+    this.emitCommitted("valuechange", { tags: [...next] }, reason, event);
     this.emitCommitted("change", { tags: [...next] }, reason, event);
     return true;
   }
@@ -230,10 +231,11 @@ export class KernelTagInput extends KernelElement {
       next = [...next, trimmed];
     }
     if (next === this.currentTags) return true;
-    if (!this.emitChange("valuechange", { tags: [...next] }, reason, event)) return false;
+    if (!this.emitChange("beforevaluechange", { tags: [...next] }, reason, event)) return false;
     this.currentTags = next;
     this.renderTags();
     this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
+    this.emitCommitted("valuechange", { tags: [...next] }, reason, event);
     this.emitCommitted("change", { tags: [...next] }, reason, event);
     return true;
   }
@@ -262,13 +264,14 @@ export class KernelTagInput extends KernelElement {
     const finish = () => {
       const next = this.currentTags.filter((t) => t !== tag);
       // The event may be long gone after a transition; the reason travels.
-      if (!this.emitChange("valuechange", { tags: next }, reason, event)) {
+      if (!this.emitChange("beforevaluechange", { tags: next }, reason, event)) {
         chip?.removeAttribute("data-removing");
         return;
       }
       this.currentTags = next;
       this.renderTags();
       this.setAttribute("value", this.currentTags.join(this.delimiters[0] ?? ","));
+      this.emitCommitted("valuechange", { tags: [...next] }, reason, event);
       this.emitCommitted("change", { tags: [...next] }, reason, event);
     };
     if (!chip || prefersReducedMotion()) {
