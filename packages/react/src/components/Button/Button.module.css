@@ -1,13 +1,45 @@
+/* An optical pill when --kernel-radius-control is a pill (Round), and an
+   optically padded rounded rectangle otherwise: the same recipe as
+   Badge.module.css, which explains the maths. Button differs in two ways:
+
+   - Its height is fixed by the control-height tokens, so --pill-py is
+     derived from it ((height − line box) / 2) rather than set.
+   - Icons always arrive in .icon wrappers, so React and elements both
+     set data-icon-start/-end from iconStart/iconEnd (or edge children)
+     rather than sniffing text nodes.
+
+   An icon-only button comes out square at every size, or a circle at
+   Round, with the icon concentric inside it. */
 .root {
+  --pill-bw: var(--kernel-border-width);
+  /* The icon slot and line box. An explicit length rather than 1lh,
+     because line-height is cap height so the baseline strut can
+     centre the capitals whatever the font's ascent and descent. */
+  --pill-lh: 1.25em;
+  --pill-cap: 0.7em;
+  --pill-height: var(--kernel-control-height-md);
+  --pill-px: var(--kernel-space-4);
+  --pill-py: calc((var(--pill-height) - var(--pill-lh)) / 2 - var(--pill-bw));
+  --pill-max: calc(var(--pill-height) / 2);
+  --pill-r: min(var(--kernel-radius-control), var(--pill-max));
+  --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut));
+  --pill-icon-edge: calc(var(--pill-py) - var(--pill-px) - var(--pill-label-edge));
+  /* The icon sits as far from the label as from the edge. Diego's
+     px-based gap reads too airy at Button's wider lg padding. */
+  --pill-gap: var(--pill-py);
+
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: var(--kernel-space-2);
-  border-radius: var(--kernel-radius-control);
-  border: var(--kernel-border-width) solid transparent;
+  gap: var(--pill-gap);
+  block-size: var(--pill-height);
+  padding-block: 0;
+  padding-inline: calc(var(--pill-px) + var(--pill-label-edge));
+  border-radius: var(--pill-r);
+  border: var(--pill-bw) solid transparent;
   font-family: var(--kernel-font-sans);
   font-weight: 500;
-  line-height: 1;
+  line-height: var(--pill-cap);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
@@ -22,6 +54,24 @@
     scale var(--kernel-duration-fast) var(--kernel-ease-out);
 }
 
+/* Baseline strut: see Badge.module.css, part 4. */
+.root::before {
+  content: "";
+  block-size: calc(var(--pill-height) / 2 + var(--pill-cap) / 2 - var(--pill-bw));
+  margin-inline-end: calc(var(--pill-gap) * -1);
+}
+
+@supports (width: 1cap) {
+  .root {
+    --pill-cap: 1cap;
+  }
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .root {
+    --pill-label-edge: calc(var(--pill-r) * var(--kernel-pill-cut) * var(--pill-r) / var(--pill-max));
+  }
+}
 
 .root:active:not(:disabled, [aria-disabled="true"]) {
   scale: var(--kernel-scale-press);
@@ -40,24 +90,21 @@
 
 /* Size */
 .root[data-size="sm"] {
-  padding-block: var(--kernel-space-1);
-  padding-inline: var(--kernel-space-3);
+  --pill-height: var(--kernel-control-height-sm);
+  --pill-px: var(--kernel-space-3);
   font-size: var(--kernel-font-size-sm);
-  block-size: var(--kernel-control-height-sm);
 }
 
 .root[data-size="md"] {
-  padding-block: var(--kernel-space-2);
-  padding-inline: var(--kernel-space-4);
+  --pill-height: var(--kernel-control-height-md);
+  --pill-px: var(--kernel-space-4);
   font-size: var(--kernel-font-size-base);
-  block-size: var(--kernel-control-height-md);
 }
 
 .root[data-size="lg"] {
-  padding-block: var(--kernel-space-3);
-  padding-inline: var(--kernel-space-6);
+  --pill-height: var(--kernel-control-height-lg);
+  --pill-px: var(--kernel-space-6);
   font-size: var(--kernel-font-size-lg);
-  block-size: var(--kernel-control-height-lg);
 }
 
 /* Variant: primary */
@@ -120,22 +167,52 @@
 
 .icon {
   display: inline-flex;
-  inline-size: 1em;
-  block-size: 1em;
+  flex: none;
+  align-self: flex-start;
+  margin-block-start: var(--pill-py);
+  inline-size: var(--pill-lh);
+  block-size: var(--pill-lh);
+  /* The icon draws at --kernel-icon-size inside the slot, whatever
+     width/height the consumer's own element carries, so it stays in
+     proportion at every size and matches icons in Badge/Suggestion. */
+  padding: max(0px, (var(--pill-lh) - var(--kernel-icon-size)) / 2);
 }
 
-/* Whatever `width`/`height` a consumer's own icon element happens to
-   carry (a fixed 14px SVG, say) loses to this: the wrapper above is
-   already sized proportionally to the button's own font-size (1em), so
-   the icon inside it should fill that box exactly, not render at some
-   unrelated fixed size that happens to look right at one specific
-   button `size` and drifts out of proportion at every other one. */
-.icon svg {
+/* .root in the selector so a page's own svg sizing rule doesn't win. */
+.root .icon > * {
   inline-size: 100%;
   block-size: 100%;
+  max-inline-size: none;
+}
+
+@container not style(--kernel-icon-stroke-width: auto) {
+  .icon > svg {
+    stroke-width: var(--kernel-icon-stroke-width);
+  }
+}
+
+.root[data-icon-start] > .icon:first-child {
+  margin-inline-start: var(--pill-icon-edge);
+}
+
+.root[data-icon-end] > .icon:nth-last-child(1 of .icon) {
+  margin-inline-end: var(--pill-icon-edge);
+}
+
+/* Icon-only: the two edge pulls together can outrun the content box
+   (which can't go below zero) at larger sizes, so pad to --pill-py
+   directly instead. Square at every size, a circle at Round. */
+.root[data-icon-start][data-icon-end]:not(:has(> .label)) {
+  padding-inline: var(--pill-py);
+}
+
+.root[data-icon-start][data-icon-end]:not(:has(> .label)) > .icon {
+  margin-inline: 0;
 }
 
 .spinner {
+  /* The label sits on the baseline strut; the spinner just centres. */
+  align-self: center;
   inline-size: 0.9em;
   block-size: 0.9em;
   border-radius: var(--kernel-radius-full);

@@ -54,8 +54,8 @@ real underlying element, fully functional, just unstyled — never broken.
   not a Provider you have to wrap the app in — the exceptions are
   `<ToastViewport>` (mount once, then call the imported `toast()`
   function from anywhere) and `<CommandPalette>` (same idea).
-- **Icons in pills** (`Badge`, `TagInput`'s tags, `SuggestionItem`): no
-  icon prop and no bundled icon set. Pass any `<svg>`, `<img>` or icon
+- **Icons in pills** (`Badge`, `TagInput`'s tags, `SuggestionItem`, and
+  `Button` via `iconStart`/`iconEnd`): no bundled icon set. Pass any `<svg>`, `<img>` or icon
   component (Lucide, Phosphor, Heroicons, Radix…) as a child, before the
   text, after it, or on its own: `<Badge variant="success"><Check /> Shipped</Badge>`.
   Whichever end holds an icon becomes a `1lh` slot, concentric with the
@@ -66,7 +66,9 @@ real underlying element, fully functional, just unstyled — never broken.
   `--kernel-icon-stroke-width` (stroke override in viewBox units,
   default `auto`). Give an icon-only pill an accessible name on the icon
   itself (`role="img" aria-label="…"`), since a `<span>`'s own
-  `aria-label` isn't reliably announced.
+  `aria-label` isn't reliably announced. An icon-only `Button` takes
+  `aria-label` on the Button (it's a real `<button>`); a lone icon passed
+  as `children` is treated the same as `iconStart` with no label.
 - **React and Web Components share one design**: `@kernelui-lib/elements`
   ships every component below as a framework-free Custom Element
   (`<kernel-button>`, `<kernel-text-field>`, ...) with the same visual
