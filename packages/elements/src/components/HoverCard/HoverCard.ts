@@ -44,6 +44,13 @@ export class KernelHoverCard extends KernelElement {
   /** Set while Escape hands focus back to the trigger, so that focus
    * doesn't immediately reopen the card it just dismissed. */
   private suppressFocusOpen = false;
+  /** Set by Escape until the pointer really leaves (or the trigger is
+   * focused again). A card appearing or animating under a pointer that
+   * hasn't moved gets boundary events the user never made — Firefox
+   * delivers them from its refresh driver, a frame or more late, so one can
+   * land mid-exit — and without this a `pointerenter` on the closing card
+   * would rescue it, undoing the dismissal WCAG 1.4.13 asks for. */
+  private escapeDismissed = false;
 
   protected createNative(): HTMLElement {
     const content = document.createElement("div");
@@ -129,6 +136,7 @@ export class KernelHoverCard extends KernelElement {
       const onEscape = (event: KeyboardEvent) => {
         if (event.key !== "Escape" || event.defaultPrevented || !this.open || this.closing) return;
         event.preventDefault();
+        this.escapeDismissed = true;
         clearTimeout(this.openTimer);
         clearTimeout(this.closeTimer);
         if (content.contains(document.activeElement)) {
@@ -170,17 +178,27 @@ export class KernelHoverCard extends KernelElement {
         }
       };
 
+      /** The pointer left for real: hover may open the card again. */
+      const leave = () => {
+        this.escapeDismissed = false;
+        scheduleHide();
+      };
+
       triggerEl.addEventListener("pointerenter", (event) => {
-        if ((event as PointerEvent).pointerType === "touch") return;
+        if ((event as PointerEvent).pointerType === "touch" || this.escapeDismissed) return;
         show(openDelay);
       });
-      triggerEl.addEventListener("pointerleave", scheduleHide);
+      triggerEl.addEventListener("pointerleave", leave);
       triggerEl.addEventListener("focus", () => {
-        if (!this.suppressFocusOpen) show(0);
+        if (this.suppressFocusOpen) return;
+        this.escapeDismissed = false;
+        show(0);
       });
       triggerEl.addEventListener("blur", hideOnBlur);
-      content.addEventListener("pointerenter", cancelHide);
-      content.addEventListener("pointerleave", scheduleHide);
+      content.addEventListener("pointerenter", () => {
+        if (!this.escapeDismissed) cancelHide();
+      });
+      content.addEventListener("pointerleave", leave);
       content.addEventListener("focusin", cancelHide);
       content.addEventListener("focusout", hideOnBlur);
     }
