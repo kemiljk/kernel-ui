@@ -679,7 +679,7 @@ export function attachSheetDrag(
     currentSnap: () => activeSnap,
     snapTo(snap: number) {
       const opts = readOptions();
-      const snaps = parseSnapPoints(opts.side === "bottom" ? opts.snapPoints : []);
+      const snaps = parseSnapPoints(opts.snapPoints);
       if (!snaps.includes(snap) || snap === activeSnap) return;
       // No release velocity to inherit — this is a programmatic move, so it
       // starts from rest.

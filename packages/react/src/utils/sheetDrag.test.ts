@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { VelocityTracker } from "./sheetDrag";
+import { describe, expect, it, vi } from "vitest";
+import { attachSheetDrag, VelocityTracker, type SheetDragOptions } from "./sheetDrag";
 
 /** Samples are fed as travel along the dismiss axis, already signed, so a
  * positive reading always means "toward dismissal". */
@@ -79,5 +79,61 @@ describe("VelocityTracker", () => {
     tracker.add(100, 50);
     tracker.reset();
     expect(tracker.velocity).toBe(0);
+  });
+});
+
+describe("attachSheetDrag snapTo", () => {
+  function setup(side: SheetDragOptions["side"]) {
+    const node = document.createElement("div");
+    document.body.append(node);
+    const onSnapChange = vi.fn();
+    const opts: SheetDragOptions = {
+      side,
+      enabled: true,
+      handleOnly: false,
+      closeThreshold: 0.25,
+      velocityThreshold: 0.5,
+      handle: null,
+      footer: null,
+      snapPoints: [40, 90],
+      snap: 40,
+      onDismiss: () => {},
+      onSnapChange,
+    };
+    const controller = attachSheetDrag(node, () => opts);
+    controller.reset();
+    return { node, controller, onSnapChange };
+  }
+
+  // Snap points work on every side, so the programmatic move has to as well —
+  // it used to read the snaps only for a bottom sheet and silently no-op
+  // everywhere else.
+  it.each([
+    ["bottom", "height", "dvh"],
+    ["top", "height", "dvh"],
+    ["left", "width", "dvw"],
+    ["right", "width", "dvw"],
+  ] as const)("moves a %s sheet to the requested snap", (side, prop, unit) => {
+    const { node, controller, onSnapChange } = setup(side);
+    expect(controller.currentSnap()).toBe(40);
+    expect(node.style[prop]).toBe(`40${unit}`);
+
+    controller.snapTo(90);
+
+    expect(controller.currentSnap()).toBe(90);
+    expect(node.dataset.snap).toBe("90");
+    expect(node.style[prop]).toBe(`90${unit}`);
+    expect(onSnapChange).toHaveBeenCalledWith(90);
+    controller.detach();
+    node.remove();
+  });
+
+  it("ignores a snap that isn't one of the sheet's snap points", () => {
+    const { node, controller, onSnapChange } = setup("right");
+    controller.snapTo(70);
+    expect(controller.currentSnap()).toBe(40);
+    expect(onSnapChange).not.toHaveBeenCalled();
+    controller.detach();
+    node.remove();
   });
 });
