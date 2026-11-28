@@ -6,6 +6,7 @@ import DropdownMenuDisclosureDemo from "../../components/demos/DropdownMenuDiscl
 import DropdownMenuDemo from "../../components/demos/DropdownMenuDemo";
 import DropdownMenuPlayground from "../../components/demos/DropdownMenuPlayground";
 import DropdownMenuMorphDemo from "../../components/demos/DropdownMenuMorphDemo";
+import ApiTable from "../../components/ApiTable.astro";
 
 const disclosureSnippet = `<DropdownMenu
   presentation="disclosure"
@@ -77,30 +78,7 @@ function ActionsMenu() {
     <DropdownMenuPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Dropdown Menu.</caption>
-      <thead><tr><th scope="col">Component</th><th scope="col">Prop</th><th scope="col">Type</th></tr></thead>
-      <tbody>
-        <tr><td><code>DropdownMenu</code></td><td><code>presentation</code></td><td>"popover" (default) | "disclosure"</td></tr>
-        <tr><td><code>DropdownMenu</code></td><td><code>render</code></td><td>the trigger (required)</td></tr>
-        <tr><td><code>DropdownMenu</code></td><td><code>renderContent</code></td><td>RenderProp — replace the popup</td></tr>
-        <tr><td><code>DropdownMenu</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
-        <tr><td><code>DropdownMenu</code></td><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td></tr>
-        <tr><td><code>DropdownMenu</code></td><td><code>align</code></td><td>"start" | "center" | "end"</td></tr>
-        <tr><td><code>DropdownMenu</code></td><td><code>offset</code></td><td>number (px)</td></tr>
-        <tr><td><code>MenuItem</code></td><td><code>render</code></td><td>RenderProp — e.g. <code>&lt;a&gt;</code> / router Link</td></tr>
-        <tr><td><code>MenuItem</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
-        <tr><td><code>MenuItem</code></td><td><code>onSelect</code></td><td>() =&gt; void</td></tr>
-        <tr><td><code>MenuItem</code></td><td><code>destructive</code></td><td>boolean</td></tr>
-        <tr><td><code>MenuChevron</code></td><td>—</td><td>no props — drop into a trigger's <code>iconEnd</code>; rotates via <code>aria-expanded</code></td></tr>
-        <tr><td><code>DropdownMenuMorph</code></td><td><code>render</code></td><td>the trigger (required) — same shape as <code>DropdownMenu</code>'s</td></tr>
-        <tr><td><code>DropdownMenuMorph</code></td><td><code>renderContent</code></td><td>RenderProp — replace the popup</td></tr>
-        <tr><td><code>DropdownMenuMorph</code></td><td><code>className</code></td><td>string | (state) =&gt; string</td></tr>
-        <tr><td><code>DropdownMenuMorph</code></td><td><code>placement</code></td><td>"top" | "bottom" | "left" | "right"</td></tr>
-        <tr><td><code>DropdownMenuMorph</code></td><td><code>align</code></td><td>"start" | "center" | "end"</td></tr>
-        <tr><td><code>DropdownMenuMorph</code></td><td><code>offset</code></td><td>number (px)</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="dropdown-menu" />
 
     <h2 id="disclosure-presentation">Native disclosure presentation</h2>
     <p>

@@ -22,6 +22,9 @@ let dialogCounter = 0;
  * the dialog into an edge-anchored sheet that slides in by translate
  * instead of the default scale settle, for drawers like a mobile nav).
  *
+ * Built-in strings: `label-close` (default "Close"), or the `labels`
+ * property (`{ close }`) — see `DialogLabels` in `@kernelui-lib/react`.
+ *
  * Part classes (stable `data-slot` hooks too): dialog, header, title,
  * description, content, close.
  *
@@ -38,7 +41,7 @@ export class KernelDialog extends KernelElement {
   private skipCloseEvent = false;
 
   static get observedAttributes() {
-    return ["open", "title", "description", "backdrop", "show-close-button", "side"];
+    return ["open", "title", "description", "backdrop", "show-close-button", "side", "label-close"];
   }
 
   connectedCallback() {
@@ -74,7 +77,6 @@ export class KernelDialog extends KernelElement {
     if (this.getAttribute("show-close-button") !== "false") {
       const closeButton = document.createElement("button");
       closeButton.type = "button";
-      closeButton.setAttribute("aria-label", "Close");
       closeButton.setAttribute("data-slot", "dialog-close");
       closeButton.className = `${kernelClass("Button")} ${kernelClass("Dialog", "closeButton")}`;
       closeButton.dataset.variant = "ghost";
@@ -126,6 +128,10 @@ export class KernelDialog extends KernelElement {
     this.syncAllAttrs();
   }
 
+  protected applyLabels() {
+    this.native?.querySelector('[data-slot="dialog-close"]')?.setAttribute("aria-label", this.builtInLabel("close", "Close"));
+  }
+
   private requestClose() {
     if (!this.hasAttribute("open") || this.closing) return;
     this.removeAttribute("open");
@@ -134,10 +140,12 @@ export class KernelDialog extends KernelElement {
   private async finishClose(dialog: HTMLDialogElement) {
     if (!dialog.open || this.closing) return;
     this.closing = true;
+    // Same state hooks as React's Dialog: `data-open` stays on through
+    // the exit (the dialog is still showing), `data-closing` joins it.
     dialog.removeAttribute("data-opening");
-    dialog.removeAttribute("data-open");
+    dialog.setAttribute("data-open", "true");
     dialog.setAttribute("data-state", "closing");
-    dialog.setAttribute("data-closing", "");
+    dialog.setAttribute("data-closing", "true");
 
     if (!prefersReducedMotion()) {
       const controller = new AbortController();
@@ -154,6 +162,7 @@ export class KernelDialog extends KernelElement {
     dialog.close();
     dialog.removeAttribute("data-state");
     dialog.removeAttribute("data-closing");
+    dialog.removeAttribute("data-open");
     this.closing = false;
     this.dispatchEvent(new Event("close", { bubbles: true }));
   }
@@ -169,11 +178,17 @@ export class KernelDialog extends KernelElement {
           this.closing = false;
           dialog.removeAttribute("data-closing");
           dialog.removeAttribute("data-state");
-          dialog.setAttribute("data-opening", "");
+          // `data-opening` for the first frame, then `data-open`: the
+          // same sequence (and "true" values) as React's Dialog.
+          dialog.setAttribute("data-opening", "true");
+          dialog.removeAttribute("data-open");
           dialog.showModal();
           dialog.setAttribute("data-state", "open");
-          dialog.setAttribute("data-open", "");
-          requestAnimationFrame(() => dialog.removeAttribute("data-opening"));
+          requestAnimationFrame(() => {
+            if (!dialog.hasAttribute("data-opening")) return;
+            dialog.removeAttribute("data-opening");
+            dialog.setAttribute("data-open", "true");
+          });
         }
         if (value === null && dialog.open) {
           void this.finishClose(dialog);

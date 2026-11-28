@@ -7,6 +7,7 @@ export interface SourcesProps extends Omit<HTMLAttributes<HTMLElement>, "classNa
   /** Visible heading above the list. Pass `null` to omit it when the
    * surrounding chat message already labels the sources. */
   heading?: ReactNode | null;
+  /** `Source` items. */
   children: ReactNode;
   className?: ClassNameValue<Record<string, never>>;
 }

@@ -16,6 +16,7 @@ export interface ToolCallProps {
   /** Live progress of the tool invocation. `running` shows shimmering
    * status text; `complete`/`error` settle to a static icon. */
   status?: ToolCallStatus;
+  /** Defaults to open while `status` is `pending` or `running`, closed otherwise. */
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

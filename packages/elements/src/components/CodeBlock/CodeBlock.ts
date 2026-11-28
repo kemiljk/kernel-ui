@@ -35,7 +35,9 @@ const COPIED_PATH = "M3.5 8.5 6.5 11.5 12.5 5";
  *
  * Attributes: `language`, `label`, `show-line-numbers`, `highlight-lines`
  * (comma-separated 1-based numbers), `streaming`, `no-copy`,
- * `max-block-size`.
+ * `max-block-size`, and built-in strings `label-copy` ("Copy"),
+ * `label-copied` ("Copied"), `label-copied-announcement` ("Copied to
+ * clipboard") — or the `labels` property.
  */
 export class KernelCodeBlock extends KernelElement {
   private viewport: HTMLElement | null = null;
@@ -48,7 +50,7 @@ export class KernelCodeBlock extends KernelElement {
   private ownLines: CodeLine[] = [];
 
   static get observedAttributes() {
-    return ["language", "label", "show-line-numbers", "highlight-lines", "streaming", "no-copy", "max-block-size"];
+    return ["language", "label", "show-line-numbers", "highlight-lines", "streaming", "no-copy", "max-block-size", "label-copy", "label-copied", "label-copied-announcement"];
   }
 
   /** Pre-tokenised lines. Assigning re-renders the block. */
@@ -132,7 +134,7 @@ export class KernelCodeBlock extends KernelElement {
     }
     if (name === "streaming") {
       if (value === null) this.native.removeAttribute("data-streaming");
-      else this.native.setAttribute("data-streaming", "");
+      else this.native.setAttribute("data-streaming", "true");
       return;
     }
     if (name === "language" || name === "label" || name === "no-copy") {
@@ -144,6 +146,10 @@ export class KernelCodeBlock extends KernelElement {
       return;
     }
     if (name === "show-line-numbers" || name === "highlight-lines") this.renderLines();
+  }
+
+  protected applyLabels() {
+    this.renderHeader();
   }
 
   private renderHeader() {
@@ -185,8 +191,8 @@ export class KernelCodeBlock extends KernelElement {
    */
   private renderCopyButton(button: HTMLButtonElement) {
     button.replaceChildren();
-    button.setAttribute("aria-label", this.copied ? "Copied" : "Copy");
-    if (this.copied) button.setAttribute("data-copied", "");
+    button.setAttribute("aria-label", this.copied ? this.builtInLabel("copied", "Copied") : this.builtInLabel("copy", "Copy"));
+    if (this.copied) button.setAttribute("data-copied", "true");
     else button.removeAttribute("data-copied");
 
     const iconStack = document.createElement("span");
@@ -221,8 +227,8 @@ export class KernelCodeBlock extends KernelElement {
     labelStack.className = kernelClass("CodeBlock", "copyLabelStack");
     labelStack.setAttribute("aria-hidden", "true");
     for (const [kind, text] of [
-      ["copy", "Copy"],
-      ["copied", "Copied"],
+      ["copy", this.builtInLabel("copy", "Copy")],
+      ["copied", this.builtInLabel("copied", "Copied")],
     ] as const) {
       const label = document.createElement("span");
       label.className = kernelClass("CodeBlock", "copyLabelLayer");
@@ -243,13 +249,13 @@ export class KernelCodeBlock extends KernelElement {
       return;
     }
     this.copied = true;
-    if (this.liveEl) this.liveEl.textContent = "Copied to clipboard";
+    if (this.liveEl) this.liveEl.textContent = this.builtInLabel("copiedAnnouncement", "Copied to clipboard");
     const button = this.headerEl?.querySelector<HTMLButtonElement>(
       `.${kernelClass("CodeBlock", "copy")}`,
     );
     if (button) {
-      button.setAttribute("aria-label", "Copied");
-      button.setAttribute("data-copied", "");
+      button.setAttribute("aria-label", this.builtInLabel("copied", "Copied"));
+      button.setAttribute("data-copied", "true");
     }
     clearTimeout(this.copyTimer);
     this.copyTimer = setTimeout(() => {
@@ -259,7 +265,7 @@ export class KernelCodeBlock extends KernelElement {
         `.${kernelClass("CodeBlock", "copy")}`,
       );
       if (current) {
-        current.setAttribute("aria-label", "Copy");
+        current.setAttribute("aria-label", this.builtInLabel("copy", "Copy"));
         current.removeAttribute("data-copied");
       }
     }, 2000);
@@ -295,7 +301,7 @@ export class KernelCodeBlock extends KernelElement {
         code.append(row);
       }
       row.replaceChildren();
-      if (highlighted.has(index + 1)) row.setAttribute("data-highlight", "");
+      if (highlighted.has(index + 1)) row.setAttribute("data-highlight", "true");
       else row.removeAttribute("data-highlight");
 
       if (showNumbers) {

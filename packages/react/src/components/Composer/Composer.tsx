@@ -8,6 +8,15 @@ export interface ComposerState {
   thinking: boolean;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface ComposerLabels {
+  /** The textarea's accessible name when there's no `placeholder` (which
+   * otherwise doubles as it). Default `"Message"`. */
+  message: string;
+}
+
+const defaultComposerLabels: ComposerLabels = { message: "Message" };
+
 export interface ComposerProps {
   value?: string;
   defaultValue?: string;
@@ -31,6 +40,9 @@ export interface ComposerProps {
   actionsTrailing?: ReactNode | ((context: { submit: () => void }) => ReactNode);
   id?: string;
   className?: ClassNameValue<ComposerState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<ComposerLabels>;
 }
 
 /**
@@ -53,9 +65,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
     actionsTrailing,
     id,
     className,
+    labels,
   },
   ref,
 ) {
+  const l = { ...defaultComposerLabels, ...labels };
   const generatedId = useId();
   const textareaId = id ?? generatedId;
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? "");
@@ -102,7 +116,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        aria-label={placeholder ?? "Message"}
+        aria-label={placeholder ?? l.message}
       />
       {actionsLeading || actionsTrailing ? (
         <div className={styles.actions}>

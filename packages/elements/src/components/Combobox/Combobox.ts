@@ -142,7 +142,7 @@ export class KernelCombobox extends KernelElement {
     if (this.open) return;
     this.open = true;
     this.inputEl.setAttribute("aria-expanded", "true");
-    this.listboxEl.setAttribute("data-open", "");
+    this.listboxEl.setAttribute("data-open", "true");
     this.listboxEl.removeAttribute("data-closing");
     this.listboxEl.showPopover?.();
     this.positioner.setOpen(true);
@@ -161,7 +161,7 @@ export class KernelCombobox extends KernelElement {
       this.positioner.setOpen(false);
       return;
     }
-    listbox.setAttribute("data-closing", "");
+    listbox.setAttribute("data-closing", "true");
     void waitForExitTransition(listbox).then(() => {
       listbox.removeAttribute("data-closing");
       // Reopened while closing: leave it open.

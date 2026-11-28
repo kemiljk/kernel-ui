@@ -78,7 +78,7 @@ export class KernelTooltip extends KernelElement {
 
       let counted = false;
       const showNow = (warm = false) => {
-        if (warm) content.setAttribute("data-instant", "");
+        if (warm) content.setAttribute("data-instant", "true");
         else content.removeAttribute("data-instant");
         if (!counted) {
           counted = true;
@@ -90,8 +90,8 @@ export class KernelTooltip extends KernelElement {
         clearTimeout(this.closeTimer);
         this.closing = false;
         content.removeAttribute("data-closing");
-        content.setAttribute("data-opening", "");
-        content.setAttribute("data-open", "");
+        content.setAttribute("data-opening", "true");
+        content.setAttribute("data-open", "true");
         this.open = true;
         this.positioner.setOpen(true);
         content.showPopover?.();
@@ -115,7 +115,7 @@ export class KernelTooltip extends KernelElement {
         this.closing = true;
         content.removeAttribute("data-opening");
         content.removeAttribute("data-open");
-        content.setAttribute("data-closing", "");
+        content.setAttribute("data-closing", "true");
 
         if (!prefersReducedMotion()) {
           const controller = new AbortController();
@@ -150,7 +150,7 @@ export class KernelTooltip extends KernelElement {
           this.exitAbort?.abort();
           this.closing = false;
           content.removeAttribute("data-closing");
-          content.setAttribute("data-open", "");
+          content.setAttribute("data-open", "true");
           this.open = true;
           content.showPopover?.();
         }

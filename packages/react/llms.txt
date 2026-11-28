@@ -110,6 +110,16 @@ imports.
   `change` event with `event.detail`, boolean props become boolean
   attributes). Reach for it in Vue/Svelte/Astro/plain-HTML projects
   instead of this package.
+- **Built-in strings go through `labels`**: every piece of English a
+  component renders on its own (a close button's `aria-label`, "Copy" /
+  "Copied", "Previous month", `Remove ${tag}`) is overridable per instance
+  with a `labels` prop typed `Partial<<Name>Labels>` (`DialogLabels`,
+  `TagInputLabels`, `PaginationLabels`, ... all exported). Unset keys keep
+  their English default; interpolated strings are functions:
+  `` <TagInput labels={{ removeTag: (tag) => `Supprimer ${tag}` }} /> ``,
+  `<Dialog labels={{ close: "Fermer" }} />`. Text you pass yourself
+  (`label`, `placeholder`, `emptyMessage`, `heading`) isn't duplicated in
+  `labels`.
 
 ## Agent skills and MCP
 

@@ -11,7 +11,7 @@ import {
 } from "../../utils/dateGrid";
 import "./DatePicker.css";
 
-const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAY_LABELS: readonly string[] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTH_FORMATTER = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 const PREV_PATH = "M10 3L5 8L10 13";
 const NEXT_PATH = "M6 3L11 8L6 13";
@@ -48,6 +48,10 @@ let datePickerCounter = 0;
  * auto-paging to the adjacent month); crossing a month boundary
  * requires the Previous/Next month buttons.
  *
+ * Built-in strings: `label-previous-month` ("Previous month"),
+ * `label-next-month` ("Next month"), `label-weekdays` (comma-separated,
+ * Sunday first; default "Su,Mo,Tu,We,Th,Fr,Sa"), or the `labels` property.
+ *
  * Attributes: `value`, `min-date`, `max-date` — all `YYYY-MM-DD`.
  * Events: `valuechange` (`event.detail.value`, a `YYYY-MM-DD` string).
  */
@@ -59,7 +63,7 @@ export class KernelDatePicker extends KernelElement {
   private tbodyEl!: HTMLTableSectionElement;
 
   static get observedAttributes() {
-    return ["value", "min-date", "max-date"];
+    return ["value", "min-date", "max-date", "label-previous-month", "label-next-month", "label-weekdays"];
   }
 
   constructor() {
@@ -89,7 +93,7 @@ export class KernelDatePicker extends KernelElement {
 
     const prevButton = document.createElement("button");
     prevButton.type = "button";
-    prevButton.setAttribute("aria-label", "Previous month");
+    prevButton.setAttribute("aria-label", this.builtInLabel("previousMonth", "Previous month"));
     prevButton.className = kernelClass("DatePicker", "navButton");
     prevButton.append(arrowIcon(PREV_PATH, kernelClass("DatePicker", "navIcon")));
     prevButton.addEventListener("click", () => {
@@ -103,7 +107,7 @@ export class KernelDatePicker extends KernelElement {
 
     const nextButton = document.createElement("button");
     nextButton.type = "button";
-    nextButton.setAttribute("aria-label", "Next month");
+    nextButton.setAttribute("aria-label", this.builtInLabel("nextMonth", "Next month"));
     nextButton.className = kernelClass("DatePicker", "navButton");
     nextButton.append(arrowIcon(NEXT_PATH, kernelClass("DatePicker", "navIcon")));
     nextButton.addEventListener("click", () => {
@@ -120,7 +124,7 @@ export class KernelDatePicker extends KernelElement {
 
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
-    for (const label of WEEKDAY_LABELS) {
+    for (const label of this.builtInLabelList("weekdays", WEEKDAY_LABELS)) {
       const th = document.createElement("th");
       th.scope = "col";
       th.className = kernelClass("DatePicker", "weekdayHead");
@@ -187,6 +191,18 @@ export class KernelDatePicker extends KernelElement {
 
     event.preventDefault();
     cells[nextIndex]?.focus();
+  }
+
+  protected applyLabels() {
+    const root = this.native;
+    if (!root) return;
+    const [prev, next] = Array.from(root.querySelectorAll(`.${kernelClass("DatePicker", "navButton")}`));
+    prev?.setAttribute("aria-label", this.builtInLabel("previousMonth", "Previous month"));
+    next?.setAttribute("aria-label", this.builtInLabel("nextMonth", "Next month"));
+    const weekdays = this.builtInLabelList("weekdays", WEEKDAY_LABELS);
+    root.querySelectorAll(`.${kernelClass("DatePicker", "weekdayHead")}`).forEach((th, index) => {
+      th.textContent = weekdays[index] ?? "";
+    });
   }
 
   private renderGrid() {

@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import HeaderDemo from "../../components/demos/HeaderDemo";
 import HeaderPlayground from "../../components/demos/HeaderPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Header" withSidebar>
@@ -27,13 +28,7 @@ import HeaderPlayground from "../../components/demos/HeaderPlayground";
     <HeaderPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Header.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>sticky</code></td><td>boolean</td><td>false</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="header" />
 
     <h2>Accessibility</h2>
     <ul>

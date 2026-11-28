@@ -9,6 +9,16 @@ export interface NumberFieldState {
   disabled: boolean;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface NumberFieldLabels {
+  /** Accessible name of the step-up button. Default `"Increment"`. */
+  increment: string;
+  /** Accessible name of the step-down button. Default `"Decrement"`. */
+  decrement: string;
+}
+
+const defaultNumberFieldLabels: NumberFieldLabels = { increment: "Increment", decrement: "Decrement" };
+
 export interface NumberFieldProps
   extends Omit<
     InputHTMLAttributes<HTMLInputElement>,
@@ -34,6 +44,9 @@ export interface NumberFieldProps
   size?: "sm" | "md" | "lg";
   className?: ClassNameValue<NumberFieldState>;
   wrapperClassName?: ClassNameValue<NumberFieldState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<NumberFieldLabels>;
 }
 
 /**
@@ -80,10 +93,12 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
       id,
       className,
       wrapperClassName,
+      labels,
       ...rest
     },
     ref,
   ) {
+    const l = { ...defaultNumberFieldLabels, ...labels };
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const descriptionId = `${inputId}-description`;
@@ -182,7 +197,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
             <button
               type="button"
               tabIndex={-1}
-              aria-label="Increment"
+              aria-label={l.increment}
               disabled={disabled || atMax}
               onClick={() => stepBy(1)}
               className={styles.stepperButton}
@@ -200,7 +215,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
             <button
               type="button"
               tabIndex={-1}
-              aria-label="Decrement"
+              aria-label={l.decrement}
               disabled={disabled || atMin}
               onClick={() => stepBy(-1)}
               className={styles.stepperButton}

@@ -34,7 +34,6 @@ export class KernelCallout extends KernelElement {
     icon.setAttribute("aria-hidden", "true");
 
     const content = document.createElement("div");
-    content.className = kernelClass("Callout", "content");
 
     const titleSlot = this.querySelector('[slot="title"]');
     if (titleSlot) {

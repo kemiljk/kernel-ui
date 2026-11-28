@@ -253,7 +253,7 @@ export class KernelSheet extends KernelDialog {
     const body = document.createElement("div");
     body.className = `${kernelClass("Sheet", "body")} ${kernelClass("ScrollArea")}`;
     body.setAttribute("data-slot", "sheet-body");
-    body.setAttribute("data-edge-shadow", "");
+    body.setAttribute("data-edge-shadow", "true");
 
     for (const node of Array.from(content.childNodes)) {
       if (node === footerSource || node === this.handleElement) continue;

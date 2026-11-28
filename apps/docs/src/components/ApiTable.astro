@@ -1,0 +1,206 @@
+---
+/**
+ * Props tables generated from the components' real source, so a docs page
+ * can't drift from the code. The data is `api.json`, written by the registry
+ * build (`packages/registry/scripts/extract-api.mjs`): every React export's
+ * declared props (type, optional, default, JSDoc) plus each Custom Element's
+ * observed attributes and dispatched events.
+ *
+ * To change what a row says, edit the prop's JSDoc in `packages/react` and
+ * rebuild the registry — not this file, and not the page.
+ *
+ * Markup matches the hand-written tables it replaced (`docs-table-scroll` +
+ * `docs-table`, a caption, `<th scope="col">`), so the markdown mirror
+ * (`scripts/generate-markdown.mjs`) turns it into markdown tables unchanged.
+ */
+import api from "@kernelui-lib/registry/api.json";
+
+interface ApiProp {
+  name: string;
+  type: string;
+  optional: boolean;
+  default?: string;
+  description?: string;
+}
+interface ApiReact {
+  description?: string;
+  extends: string[];
+  props: ApiProp[];
+}
+interface ApiElement {
+  description?: string;
+  attributes: string[];
+  events: string[];
+}
+interface ApiComponent {
+  name: string;
+  react: Record<string, ApiReact>;
+  elements: Record<string, ApiElement>;
+}
+
+interface Props {
+  /** Registry slug, e.g. `"text-field"`. */
+  slug: string;
+  /** Limit to these React exports (default: all of the component's exports). */
+  exports?: string[];
+  /** Omit the Web Components section. */
+  hideElements?: boolean;
+}
+
+const { slug, exports: only, hideElements = false } = Astro.props;
+const entry = (api.components as Record<string, ApiComponent>)[slug];
+if (!entry) throw new Error(`ApiTable: no api.json entry for slug "${slug}" — run \`bun run --cwd packages/registry build\`.`);
+
+const reactEntries = Object.entries(entry.react).filter(([name]) => !only || only.includes(name));
+const elementEntries = hideElements ? [] : Object.entries(entry.elements);
+
+const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/** First paragraph of a JSDoc comment, with `code` spans as <code>. */
+function notesHtml(description: string | undefined): string {
+  if (!description) return "";
+  const para = description.split(/\n\s*\n/)[0].replace(/\s+/g, " ").trim();
+  return escape(para).replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+// Convention props every component shares; documented once in llms.txt, so
+// their source declarations rarely carry JSDoc of their own.
+const conventionNotes: Record<string, string> = {
+  className: "A class string, or a function of the component's state that returns one.",
+  wrapperClassName: "Class for the outer wrapper (label, field and messages), not the control itself.",
+  render: "Render as a different element (an element, or a function of props and state).",
+  classNames: "Per-part class names.",
+};
+
+const nativeTags: Record<string, string> = {
+  Anchor: "a",
+  Button: "button",
+  Details: "details",
+  Div: "div",
+  HR: "hr",
+  Heading: "h1–h6",
+  Image: "img",
+  Input: "input",
+  LI: "li",
+  Label: "label",
+  OList: "ol",
+  Progress: "progress",
+  Select: "select",
+  Span: "span",
+  Table: "table",
+  TableCell: "th",
+  TextArea: "textarea",
+  UList: "ul",
+};
+
+/** `Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className">` → readable caption text. */
+function extendsHtml(ext: string): string {
+  const native = ext.match(/HTML(\w*)Element>/);
+  const omitted = [...ext.matchAll(/"(\w+)"/g)].map((m) => m[1]).filter((n) => n !== "className");
+  const except = omitted.length ? ` except ${omitted.map((o) => `<code>${o}</code>`).join(", ")}` : "";
+  if (native) {
+    const tag = nativeTags[native[1]];
+    return tag ? `every native <code>&lt;${tag}&gt;</code> attribute${except}` : `every native HTML attribute${except}`;
+  }
+  const base = ext.match(/^Omit<\s*(\w+)/)?.[1] ?? ext;
+  return `the props of <code>${escape(base.replace(/Props$/, ""))}</code>${except}`;
+}
+
+function captionHtml(name: string, r: ApiReact): string {
+  const own = `Props for <code>${name}</code>.`;
+  if (!r.extends.length) return own;
+  return `${own} Also accepts ${r.extends.map(extendsHtml).join(" and ")}.`;
+}
+---
+
+{
+  reactEntries.map(([name, r]) => (
+    <>
+      {reactEntries.length > 1 && <h3>{name}</h3>}
+      <div class="docs-table-scroll">
+        <table class="docs-table">
+          <caption set:html={captionHtml(name, r)} />
+          <thead>
+            <tr>
+              <th scope="col">Prop</th>
+              <th scope="col">Type</th>
+              <th scope="col">Default</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.props.length === 0 ? (
+              <tr>
+                <td colspan="4">No props of its own; see above for the native attributes it passes through.</td>
+              </tr>
+            ) : (
+              r.props.map((p) => (
+                <tr>
+                  <td>
+                    <code>{p.name}</code>
+                  </td>
+                  <td>
+                    <code>{p.type}</code>
+                  </td>
+                  <td>{p.default !== undefined ? <code>{p.default}</code> : p.optional ? "—" : "Required"}</td>
+                  <td set:html={notesHtml(p.description) || conventionNotes[p.name] || "—"} />
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  ))
+}
+
+{
+  elementEntries.length > 0 && (
+    <>
+      <h3>Web Components</h3>
+      <div class="docs-table-scroll">
+        <table class="docs-table">
+          <caption>
+            Attributes and events of the Custom Elements in <code>@kernelui-lib/elements</code>.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Tag</th>
+              <th scope="col">Attributes</th>
+              <th scope="col">Events</th>
+            </tr>
+          </thead>
+          <tbody>
+            {elementEntries.map(([tag, el]) => (
+              <tr>
+                <td>
+                  <code>&lt;{tag}&gt;</code>
+                </td>
+                <td>
+                  {el.attributes.length
+                    ? el.attributes.map((a, i) => (
+                        <>
+                          {i > 0 && ", "}
+                          <code>{a}</code>
+                        </>
+                      ))
+                    : "—"}
+                </td>
+                <td>
+                  {el.events.length
+                    ? el.events.map((e, i) => (
+                        <>
+                          {i > 0 && ", "}
+                          <code>{e}</code>
+                        </>
+                      ))
+                    : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}

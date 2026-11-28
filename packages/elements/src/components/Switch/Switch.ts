@@ -68,7 +68,9 @@ export class KernelSwitch extends KernelElement {
       case "disabled": {
         const disabled = value !== null;
         button.disabled = disabled;
-        if (disabled) wrapper?.setAttribute("data-disabled", "");
+        if (disabled) button.dataset.disabled = "true";
+        else delete button.dataset.disabled;
+        if (disabled) wrapper?.setAttribute("data-disabled", "true");
         else wrapper?.removeAttribute("data-disabled");
         break;
       }

@@ -24,6 +24,7 @@ export interface TextareaProps
    * them up with the textarea's own text padding (`--kernel-label-inset`). */
   labelOffset?: boolean;
   invalid?: boolean;
+  /** Classes for the `<textarea>` itself. Use `wrapperClassName` for the whole field. */
   className?: ClassNameValue<TextareaState>;
   wrapperClassName?: ClassNameValue<TextareaState>;
   labelClassName?: ClassNameValue<TextareaState>;

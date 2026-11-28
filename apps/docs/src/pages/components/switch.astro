@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import SwitchDemo from "../../components/demos/SwitchDemo";
 import SwitchPlayground from "../../components/demos/SwitchPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 ---
 
@@ -28,16 +29,7 @@ import SwitchPlayground from "../../components/demos/SwitchPlayground";
 
     
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Switch.</caption>
-      <thead>
-        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>checked</code> / <code>defaultChecked</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>onCheckedChange</code></td><td>(checked: boolean) =&gt; void</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="switch" />
 
     <h2>Accessibility</h2>
     <p>

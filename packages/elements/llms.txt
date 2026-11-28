@@ -100,6 +100,15 @@ imports.
   `--kernel-icon-size` and `--kernel-icon-stroke-width`. Label an
   icon-only pill on the icon itself (`role="img" aria-label="…"`), or an
   icon-only `<kernel-button>` with `aria-label` on the tag.
+- **Built-in strings go through labels**: every piece of English a tag
+  renders on its own is overridable with a `label-<key>` attribute (the
+  React `labels` key in kebab-case): `<kernel-dialog label-close="Fermer">`,
+  `<kernel-date-picker label-previous-month="Mois précédent"
+  label-weekdays="di,lu,ma,me,je,ve,sa">`. Interpolated strings are
+  `{name}` templates: `label-remove-tag="Supprimer {tag}"`. Or set the
+  `labels` property with the same keys as React's `<Name>Labels` (values
+  may be functions): `el.labels = { removeTag: (tag) => … }`; the property
+  wins over the attribute. Unset keys keep their English default.
 
 ## Agent skills and MCP
 

@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import CardDemo from "../../components/demos/CardDemo";
 import CardPlayground from "../../components/demos/CardPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Card" withSidebar>
@@ -28,16 +29,17 @@ import CardPlayground from "../../components/demos/CardPlayground";
 
     <h2>Parts</h2>
     <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Card.</caption>
-      <thead><tr><th scope="col">Component</th><th>Notes</th></tr></thead>
+      <caption>Parts with no props of their own beyond their element's native attributes and <code>className</code>.</caption>
+      <thead><tr><th scope="col">Component</th><th scope="col">Renders</th></tr></thead>
       <tbody>
-        <tr><td><code>Card</code></td><td><code>as</code>: "div" | "article" | "section", defaults to "div"</td></tr>
-        <tr><td><code>CardHeader</code></td><td>—</td></tr>
-        <tr><td><code>CardTitle</code></td><td><code>level</code>: 2–6, defaults to 3 (an <code>&lt;h3&gt;</code>)</td></tr>
-        <tr><td><code>CardDescription</code></td><td>Renders a <code>&lt;p&gt;</code></td></tr>
-        <tr><td><code>CardContent</code></td><td>—</td></tr>
-        <tr><td><code>CardFooter</code></td><td>—</td></tr>
+        <tr><td><code>CardHeader</code></td><td><code>&lt;div&gt;</code></td></tr>
+        <tr><td><code>CardDescription</code></td><td><code>&lt;p&gt;</code></td></tr>
+        <tr><td><code>CardContent</code></td><td><code>&lt;div&gt;</code></td></tr>
+        <tr><td><code>CardFooter</code></td><td><code>&lt;div&gt;</code></td></tr>
       </tbody>
     </table></div>
+
+    <h2>Props</h2>
+    <ApiTable slug="card" />
   </div>
 </BaseLayout>

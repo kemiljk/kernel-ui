@@ -108,7 +108,7 @@ export class KernelDropdownMenu extends KernelElement {
         triggerEl.setAttribute("aria-expanded", String(open));
         this.positioner.setOpen(open);
         if (open) {
-          content.setAttribute("data-open", "");
+          content.setAttribute("data-open", "true");
           requestAnimationFrame(() => {
             content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
           });
@@ -171,7 +171,8 @@ export class KernelDropdownMenu extends KernelElement {
     details.addEventListener("toggle", () => {
       details.querySelector("summary")?.setAttribute("aria-expanded", String(details.open));
       content.inert = !details.open;
-      content.toggleAttribute("data-open", details.open);
+      if (details.open) content.setAttribute("data-open", "true");
+      else content.removeAttribute("data-open");
       // WebKit exposes the previously skipped details subtree after layout.
       if (details.open) requestAnimationFrame(() => requestAnimationFrame(() => {
         if (details.open) content.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
@@ -291,7 +292,7 @@ export class KernelDropdownMenuMorph extends KernelElement {
     // specificity, keeping the calmer close timing for what should be
     // the bouncier open.
     content.removeAttribute("data-closing");
-    content.setAttribute("data-open", "");
+    content.setAttribute("data-open", "true");
 
     playMorphOpen(trigger, content, () => {
       // A reopen landing mid-close cancels that close's wait (below)
@@ -339,7 +340,7 @@ export class KernelDropdownMenuMorph extends KernelElement {
     this.triggerEl?.setAttribute("aria-expanded", "false");
     this.positioner.setOpen(false);
     content.removeAttribute("data-open");
-    content.setAttribute("data-closing", "");
+    content.setAttribute("data-closing", "true");
 
     const controller = new AbortController();
     this.closeController?.abort();
@@ -375,7 +376,7 @@ export class KernelMenuItem extends KernelElement {
     el.setAttribute("data-slot", "menu-item");
     el.className = kernelClass("DropdownMenu", "item");
 
-    el.addEventListener("focus", () => el.setAttribute("data-highlighted", ""));
+    el.addEventListener("focus", () => el.setAttribute("data-highlighted", "true"));
     el.addEventListener("blur", () => el.removeAttribute("data-highlighted"));
     el.addEventListener("keydown", (event) => {
       if (!(event instanceof KeyboardEvent) || event.key !== " ") return;
@@ -411,7 +412,7 @@ export class KernelMenuItem extends KernelElement {
       if (el instanceof HTMLButtonElement) el.disabled = disabled;
       if (disabled) {
         el.setAttribute("aria-disabled", "true");
-        el.setAttribute("data-disabled", "");
+        el.setAttribute("data-disabled", "true");
       } else {
         el.removeAttribute("aria-disabled");
         el.removeAttribute("data-disabled");

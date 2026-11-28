@@ -11,12 +11,8 @@ describe("Tooltip warm-up group", () => {
   it("waits for the open delay first, then opens neighbours instantly", () => {
     render(
       <>
-        <Tooltip content="Bold">
-          <button type="button">B</button>
-        </Tooltip>
-        <Tooltip content="Italic">
-          <button type="button">I</button>
-        </Tooltip>
+        <Tooltip content="Bold" render={<button type="button">B</button>} />
+        <Tooltip content="Italic" render={<button type="button">I</button>} />
       </>,
     );
     const [bold, italic] = screen.getAllByRole("button");
@@ -36,9 +32,7 @@ describe("Tooltip warm-up group", () => {
 
   it("goes cold again a while after the last tooltip closes", async () => {
     render(
-      <Tooltip content="Only">
-        <button type="button">O</button>
-      </Tooltip>,
+      <Tooltip content="Only" render={<button type="button">O</button>} />,
     );
     const button = screen.getByRole("button");
     fireEvent.pointerEnter(button, { pointerType: "mouse" });

@@ -75,6 +75,19 @@ new component done, grep both `packages/react/src/index.ts` and
   a simplified one.
 - `className`/`wrapperClassName` + `resolveClassName`/`dataAttr`/`mergeRefs`
   from `packages/react/src/utils/polymorphic.ts`.
+- **Built-in strings go through `labels`.** Never hard-code a new English
+  string a consumer can't change. In React, add it to the component's
+  exported `<Name>Labels` interface (each key's JSDoc states its default),
+  merge `{ ...default<Name>Labels, ...labels }` once at the top, and accept
+  `labels?: Partial<<Name>Labels>`; interpolated strings are functions
+  (`removeTag: (tag) => string`). In the Custom Element, read it with
+  `this.builtInLabel("key", "English default", { param })` (from
+  `KernelElement`, which resolves the `labels` property, then a
+  `label-<kebab-key>` attribute with `{param}` placeholders, then the
+  default), list the `label-*` attribute in `observedAttributes`, and
+  re-apply it in `applyLabels()`. Defaults must match between packages.
+  Strings the consumer already passes (`label`, `placeholder`,
+  `emptyMessage`) stay plain props.
 - Real elements over ARIA-only patterns wherever a native element exists.
   Every component's top JSDoc comment explains *why* it's built the way
   it is (which native element, which ARIA pattern, what tradeoff) — write

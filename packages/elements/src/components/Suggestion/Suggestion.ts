@@ -28,7 +28,7 @@ export class KernelSuggestion extends KernelElement {
     if (name === "label") {
       this.native.setAttribute("aria-label", value || "Suggestions");
     } else if (name === "disabled") {
-      if (value !== null) this.native.setAttribute("data-disabled", "");
+      if (value !== null) this.native.setAttribute("data-disabled", "true");
       else this.native.removeAttribute("data-disabled");
       for (const item of this.querySelectorAll("kernel-suggestion-item")) {
         if (value !== null) item.setAttribute("disabled", "");

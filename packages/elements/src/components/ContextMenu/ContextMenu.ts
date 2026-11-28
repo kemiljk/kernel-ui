@@ -47,7 +47,7 @@ export class KernelContextMenu extends KernelElement {
     const close = async () => {
       if (closing || !content.matches(":popover-open")) return;
       closing = true;
-      content.setAttribute("data-closing", "");
+      content.setAttribute("data-closing", "true");
       if (!prefersReducedMotion()) await waitForExitTransition(content);
       content.removeAttribute("data-closing");
       content.hidePopover?.();

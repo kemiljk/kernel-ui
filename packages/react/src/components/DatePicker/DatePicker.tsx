@@ -12,7 +12,21 @@ import {
 } from "../../utils/dateGrid";
 import styles from "./DatePicker.module.css";
 
-const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+/** Built-in strings, overridable for translation via `labels`. */
+export interface DatePickerLabels {
+  /** Accessible name of the previous-month button. Default `"Previous month"`. */
+  previousMonth: string;
+  /** Accessible name of the next-month button. Default `"Next month"`. */
+  nextMonth: string;
+  /** Column headers, Sunday first. Default `["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]`. */
+  weekdays: readonly string[];
+}
+
+const defaultDatePickerLabels: DatePickerLabels = {
+  previousMonth: "Previous month",
+  nextMonth: "Next month",
+  weekdays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+};
 const MONTH_FORMATTER = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 
 export interface DatePickerProps {
@@ -21,6 +35,9 @@ export interface DatePickerProps {
   onValueChange?: (date: Date) => void;
   minDate?: Date;
   maxDate?: Date;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<DatePickerLabels>;
 }
 
 /**
@@ -39,7 +56,8 @@ export interface DatePickerProps {
  * navigation to auto-page months is a reasonable follow-up, not done
  * here to keep focus management simple and predictable.
  */
-export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDate }: DatePickerProps) {
+export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDate, labels }: DatePickerProps) {
+  const l = { ...defaultDatePickerLabels, ...labels };
   const [selected, setSelected] = useControllableState<Date | undefined>({
     value,
     defaultValue,
@@ -111,7 +129,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
       <div className={styles.header}>
         <button
           type="button"
-          aria-label="Previous month"
+          aria-label={l.previousMonth}
           className={styles.navButton}
           onClick={goToPreviousMonth}
         >
@@ -124,7 +142,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
         </span>
         <button
           type="button"
-          aria-label="Next month"
+          aria-label={l.nextMonth}
           className={styles.navButton}
           onClick={goToNextMonth}
         >
@@ -137,7 +155,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
       <table className={styles.table} role="grid" aria-labelledby={`${baseId}-heading`}>
         <thead>
           <tr>
-            {WEEKDAY_LABELS.map((label, index) => (
+            {l.weekdays.map((label, index) => (
               <th key={index} scope="col" className={styles.weekdayHead}>
                 {label}
               </th>
