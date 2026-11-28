@@ -24,6 +24,8 @@ function arrowIcon(path: string, className: string): SVGSVGElement {
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("class", className);
+  // Mirrors in RTL (reset.css), where "previous month" sits on the right.
+  svg.setAttribute("data-icon-directional", "");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
   p.setAttribute("d", path);
   p.setAttribute("stroke", "currentColor");

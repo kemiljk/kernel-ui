@@ -89,7 +89,8 @@ export function PaginationPrevious({ className, children, labels, ...rest }: Pag
         aria-label={l.previousPage}
         className={[styles.control, resolveClassName(className, {})].filter(Boolean).join(" ")}
       >
-        ‹ {children ?? l.previous}
+        <span aria-hidden="true">‹</span>
+        <span className={styles.label}>{children ?? l.previous}</span>
       </button>
     </li>
   );
@@ -105,7 +106,8 @@ export function PaginationNext({ className, children, labels, ...rest }: Paginat
         aria-label={l.nextPage}
         className={[styles.control, resolveClassName(className, {})].filter(Boolean).join(" ")}
       >
-        {children ?? l.next} ›
+        <span className={styles.label}>{children ?? l.next}</span>
+        <span aria-hidden="true">›</span>
       </button>
     </li>
   );

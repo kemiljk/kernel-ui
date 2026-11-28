@@ -5,8 +5,11 @@
 
 .list {
   display: flex;
-  flex-wrap: wrap;
+  /* One row, always: below 30rem the Previous/Next labels collapse to
+     their chevrons (see the container query) instead of wrapping. */
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
   gap: var(--kernel-space-1);
   margin: 0;
   padding: 0;
@@ -20,6 +23,7 @@
   justify-content: center;
   min-inline-size: var(--kernel-control-height-sm);
   block-size: var(--kernel-control-height-sm);
+  gap: var(--kernel-space-1);
   padding-inline: var(--kernel-space-2);
   border: var(--kernel-border-width) solid transparent;
   border-radius: var(--kernel-radius-control);
@@ -27,6 +31,7 @@
   color: var(--kernel-color-text);
   text-decoration: none;
   font: inherit;
+  white-space: nowrap;
   /* Page numbers are digits, so equal-width figures keep every item
      the same size instead of "1" reading narrower than "10". */
   font-variant-numeric: tabular-nums;
@@ -78,4 +83,30 @@
   justify-content: center;
   min-inline-size: var(--kernel-control-height-sm);
   color: var(--kernel-color-text-muted);
+}
+
+/* The nav is the container, so the label hides when the pagination itself
+   is narrow — a DataTable footer in a sidebar as much as a phone. An
+   inline-size container can't be sized by its own content (it would
+   collapse to zero inside a centring flex parent), so the nav always
+   takes the full inline size it's given and centres its pages within it
+   — the same full-width, centred bar most pagination patterns use. */
+.root {
+  container-type: inline-size;
+  inline-size: 100%;
+}
+
+/* Below the threshold, Previous/Next drop to their chevrons: one line of
+   controls beats "Next ›" wrapping onto a second row on its own. The
+   word is visually hidden (the same declarations as `kernel-sr-only`),
+   not removed, and the button keeps its aria-label either way. */
+@container (max-width: 30rem) {
+  .label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }

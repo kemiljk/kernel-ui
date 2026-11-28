@@ -19,10 +19,20 @@
   user-select: none;
 }
 
+/* Each pane is a rounded clip on the container radius, so a surface a
+   consumer puts inside it follows the theme's rounding (square at Sharp,
+   a soft card at Round) instead of staying square beside every other
+   container on the page. The pane deliberately has no padding: it's a
+   clip, and its content (an editor, a list, a preview) owns its own
+   inset — padding here would push every consumer's layout in. Content
+   that draws a border or fill should take `border-radius: inherit` and
+   pad with --kernel-padding-container-curve, as the docs demo does.
+   shape-pairing-ok: the pane is a clip; the curve padding belongs to its content. */
 .pane {
   min-inline-size: 0;
   min-block-size: 0;
   overflow: auto;
+  border-radius: var(--kernel-radius-container);
 }
 
 .divider {
@@ -48,7 +58,9 @@
 .divider::before {
   content: "";
   position: absolute;
-  inset: calc(var(--kernel-space-2) * -1);
+  /* (24px target − 4px bar) / 2 either side: a 24px grab area (WCAG
+     2.5.8) centred on the bar. */
+  inset: calc((var(--kernel-space-6) - var(--kernel-space-1)) / -2);
 }
 
 .root[data-orientation="vertical"] .divider::before {
@@ -71,6 +83,33 @@
 
 .divider[data-dragging] {
   background-color: var(--kernel-color-accent);
+}
+
+/* A small grip centred on the bar, so the divider reads as something you
+   can pick up rather than a hairline between two panes. Purely visual:
+   the ::before hit area above is what takes the pointer. */
+.divider::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-text-muted);
+  pointer-events: none;
+}
+
+.root[data-orientation="horizontal"] .divider::after {
+  inline-size: var(--kernel-space-1);
+  block-size: var(--kernel-space-6);
+}
+
+.root[data-orientation="vertical"] .divider::after {
+  inline-size: var(--kernel-space-6);
+  block-size: var(--kernel-space-1);
+}
+
+.divider[data-dragging]::after {
+  background-color: var(--kernel-color-on-accent);
 }
 
 .divider:focus-visible {

@@ -133,7 +133,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
           className={styles.navButton}
           onClick={goToPreviousMonth}
         >
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" className={styles.navIcon}>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" data-icon-directional="" className={styles.navIcon}>
             <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -146,7 +146,7 @@ export function DatePicker({ value, defaultValue, onValueChange, minDate, maxDat
           className={styles.navButton}
           onClick={goToNextMonth}
         >
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" className={styles.navIcon}>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" data-icon-directional="" className={styles.navIcon}>
             <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>

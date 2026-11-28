@@ -12,6 +12,8 @@ function arrowIcon(path: string): SVGSVGElement {
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("width", "16");
   svg.setAttribute("height", "16");
+  // Mirrors in RTL (reset.css), where "previous" sits on the right.
+  svg.setAttribute("data-icon-directional", "");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
   p.setAttribute("d", path);
   p.setAttribute("stroke", "currentColor");

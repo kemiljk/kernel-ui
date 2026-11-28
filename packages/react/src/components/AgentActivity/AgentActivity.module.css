@@ -87,6 +87,10 @@
   inline-size: 0.875rem;
   block-size: 0.875rem;
   flex: none;
+  /* Trailing, at the end edge — where the nested Reasoning and ToolCall
+     rows in the same stream put theirs — not tucked right after the
+     label, so every disclosure in the stream opens from the same column. */
+  margin-inline-start: auto;
   color: var(--kernel-color-text-muted);
   transition: transform var(--kernel-duration-fast) var(--kernel-ease-out);
 }

@@ -241,6 +241,19 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+
+  /* Icons that point along the reading direction — previous/next
+     chevrons, an outbound "↗" — mirror in right-to-left text, where
+     "previous" sits on the right and points right. Opt in per icon with
+     `data-icon-directional`; most icons (a check, a close ×, a clock)
+     mean the same thing either way and must not flip. `scale` rather
+     than `transform` so it composes with any transform the component
+     already animates. Paired selector, not `:dir(rtl)` alone: Kernel's
+     build rewrites `:dir()` to `:lang()`, which stops tracking `dir`. */
+  [data-icon-directional]:dir(rtl),
+  :where([dir="rtl"]) [data-icon-directional] {
+    scale: -1 1;
+  }
 }
 
 /* Deliberately outside `@layer kernel.base`: component stylesheets are

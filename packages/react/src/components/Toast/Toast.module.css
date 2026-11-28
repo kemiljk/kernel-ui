@@ -263,6 +263,21 @@
   color: var(--kernel-color-text-muted);
 }
 
+/* On a tinted toast the warm muted grey goes muddy against green, amber
+   or red and loses contrast. The variant's own text colour — the one
+   the close × already uses — is tuned for exactly that tint. */
+.toast[data-variant="success"] .description {
+  color: var(--kernel-color-success-text);
+}
+
+.toast[data-variant="warning"] .description {
+  color: var(--kernel-color-warning-text);
+}
+
+.toast[data-variant="danger"] .description {
+  color: var(--kernel-color-danger-text);
+}
+
 .close {
   flex-shrink: 0;
   display: inline-flex;

@@ -52,6 +52,9 @@ export default function ResizablePlayground() {
                 alignItems: "center",
                 justifyContent: "center",
                 blockSize: "100%",
+                boxSizing: "border-box",
+                borderRadius: "inherit",
+                padding: "var(--kernel-padding-container-curve)",
                 border: "1px solid var(--kernel-color-border)",
                 backgroundColor: "var(--kernel-color-surface)",
               }}
@@ -64,6 +67,9 @@ export default function ResizablePlayground() {
                 alignItems: "center",
                 justifyContent: "center",
                 blockSize: "100%",
+                boxSizing: "border-box",
+                borderRadius: "inherit",
+                padding: "var(--kernel-padding-container-curve)",
                 border: "1px solid var(--kernel-color-border)",
                 backgroundColor: "var(--kernel-color-surface-raised)",
               }}

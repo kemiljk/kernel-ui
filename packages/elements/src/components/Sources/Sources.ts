@@ -18,6 +18,7 @@ function externalArrow(): SVGSVGElement {
   svg.setAttribute("fill", "none");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("class", kernelClass("Sources", "arrow"));
+  svg.setAttribute("data-icon-directional", "");
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
   path.setAttribute("d", "M4.5 11.5 11.5 4.5M6 4.5h5.5V10");
   path.setAttribute("stroke", "currentColor");

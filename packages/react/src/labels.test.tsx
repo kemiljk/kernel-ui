@@ -61,7 +61,7 @@ describe("labels (React)", () => {
       </Pagination>,
     );
     expect(screen.getByRole("navigation", { name: "Seiten" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Nächste Seite" })).toHaveTextContent("Weiter ›");
+    expect(screen.getByRole("button", { name: "Nächste Seite" })).toHaveTextContent("Weiter");
   });
 });
 

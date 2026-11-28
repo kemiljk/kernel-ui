@@ -165,7 +165,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, labels,
               if (target) scrollToSlide(target);
             }}
           >
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" data-icon-directional="" width="16" height="16">
               <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -179,7 +179,7 @@ export function Carousel({ children, "aria-label": ariaLabel, className, labels,
               if (target) scrollToSlide(target);
             }}
           >
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" data-icon-directional="" width="16" height="16">
               <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>

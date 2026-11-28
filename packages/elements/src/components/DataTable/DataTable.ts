@@ -4,6 +4,19 @@ import "../Pagination/Pagination.css";
 import "../TextField/TextField.css";
 import "./DataTable.css";
 
+/** Previous/Next content, matching `<kernel-pagination-previous>`: the
+ * chevron and the word in separate spans so the word can be visually
+ * hidden when the pagination is narrow (Pagination.css). */
+function controlContent(chevron: string, word: string, chevronFirst: boolean): HTMLElement[] {
+  const icon = document.createElement("span");
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = chevron;
+  const label = document.createElement("span");
+  label.className = kernelClass("Pagination", "label");
+  label.textContent = word;
+  return chevronFirst ? [icon, label] : [label, icon];
+}
+
 export interface KernelDataTableColumn<T> {
   key: string;
   header: string;
@@ -272,7 +285,7 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     prevButton.type = "button";
     prevButton.className = kernelClass("Pagination", "control");
     prevButton.setAttribute("aria-label", this.builtInLabel("previousPage", "Go to previous page"));
-    prevButton.textContent = `‹ ${this.builtInLabel("previous", "Previous")}`;
+    prevButton.append(...controlContent("‹", this.builtInLabel("previous", "Previous"), true));
     prevButton.disabled = currentPage === 1;
     prevButton.addEventListener("click", () => {
       this.page = Math.max(1, currentPage - 1);
@@ -302,7 +315,7 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     nextButton.type = "button";
     nextButton.className = kernelClass("Pagination", "control");
     nextButton.setAttribute("aria-label", this.builtInLabel("nextPage", "Go to next page"));
-    nextButton.textContent = `${this.builtInLabel("next", "Next")} ›`;
+    nextButton.append(...controlContent("›", this.builtInLabel("next", "Next"), false));
     nextButton.disabled = currentPage === pageCount;
     nextButton.addEventListener("click", () => {
       this.page = Math.min(pageCount, currentPage + 1);

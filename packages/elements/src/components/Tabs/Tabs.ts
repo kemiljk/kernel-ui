@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { syncScrollEdges } from "../../utils/scrollEdges";
 import "./Tabs.css";
 
 let tabsCounter = 0;
@@ -13,7 +14,9 @@ let tabsCounter = 0;
  * Attributes: `value` (controlled — set it to change tabs
  * externally), `default-value` (required if `value` is never set).
  * Fires a `valuechange` `CustomEvent` (`event.detail.value`) when the
- * active tab changes.
+ * active tab changes. A tablist wider than its container scrolls
+ * sideways (scrollbar hidden, an edge fade where tabs are cut off) rather
+ * than widening the page, and selecting a tab scrolls it into view.
  */
 export class KernelTabs extends KernelElement {
   private readonly baseId = `kernel-tabs-${++tabsCounter}`;
@@ -107,6 +110,9 @@ export class KernelTabs extends KernelElement {
  * children and the animated sliding indicator. */
 export class KernelTabsList extends KernelElement {
   private resizeObserver: ResizeObserver | null = null;
+  private readonly onScroll = () => {
+    if (this.native) syncScrollEdges(this.native);
+  };
   /** Where the indicator last landed, so the next move animates from the
    * right place — including after a resize snapped it. */
   lastIndicatorX: number | null = null;
@@ -138,6 +144,7 @@ export class KernelTabsList extends KernelElement {
   disconnectedCallback() {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    this.native?.removeEventListener("scroll", this.onScroll);
   }
 
   /** Re-measure on every size change, snapping rather than animating: a
@@ -151,8 +158,14 @@ export class KernelTabsList extends KernelElement {
     this.resizeObserver = new ResizeObserver(() => {
       const active = native.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
       if (active) this.updateIndicator(active, null);
+      syncScrollEdges(native);
     });
     this.resizeObserver.observe(native);
+    // Tabs growing (fonts loading) change the scroll width without
+    // resizing a list that's already capped at its container.
+    for (const child of native.children) this.resizeObserver.observe(child);
+    native.addEventListener("scroll", this.onScroll, { passive: true });
+    syncScrollEdges(native);
   }
 
   static get observedAttributes() {
@@ -223,6 +236,16 @@ export class KernelTabsList extends KernelElement {
     indicator.style.transitionDuration = `${duration}ms`;
     indicator.style.setProperty("--kernel-tabs-indicator-x", `${nextX}px`);
     indicator.style.setProperty("--kernel-tabs-indicator-width", `${nextWidth}px`);
+
+    // Same as React's TabsList: a scrolling tablist brings the newly
+    // selected tab into view, but not on first render or a resize snap.
+    if (!isFirstRender) {
+      activeButton.scrollIntoView?.({
+        block: "nearest",
+        inline: "nearest",
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    }
 
     this.lastIndicatorX = nextX;
     return nextX;

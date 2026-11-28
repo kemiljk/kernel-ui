@@ -16,6 +16,47 @@
   border-radius: var(--kernel-radius-control);
   background-color: var(--kernel-color-fill);
   width: fit-content;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+/* More tabs than room: the track scrolls inside its container instead of
+   pushing the page wider (a 481px tablist at 390px scrolled the whole
+   page sideways). The scrollbar is hidden — the edge fade below is the
+   affordance, and the list is still swipe-, wheel- and keyboard-
+   scrollable (selection scrolls the active tab into view). The fade is
+   drawn only on an edge that actually hides a tab; scrollEdges.ts sets
+   the physical data attributes, since a mask gradient has no logical
+   direction. */
+.list[data-overflow-left] {
+  --kernel-tabs-fade-left: var(--kernel-space-6);
+}
+
+.list[data-overflow-right] {
+  --kernel-tabs-fade-right: var(--kernel-space-6);
+}
+
+.list:is([data-overflow-left], [data-overflow-right]) {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--kernel-tabs-fade-left, 0px),
+    #000 calc(100% - var(--kernel-tabs-fade-right, 0px)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--kernel-tabs-fade-left, 0px),
+    #000 calc(100% - var(--kernel-tabs-fade-right, 0px)),
+    transparent
+  );
+}
+
+.list::-webkit-scrollbar {
+  display: none;
 }
 
 /* Pins both halves of the radius pair, not just the outer one: the inner
@@ -36,7 +77,12 @@
      wrong baseline. Pinning to 0 makes the transform an unambiguous
      offset from `.list`'s own padding edge, the same frame of reference
      `activeTab.offsetLeft` is measured in. */
-  inset-inline-start: 0;
+  /* Physical `left`, not `inset-inline-start`: `offsetLeft` is a
+     physical measurement from the list's left padding edge in both
+     directions, so the anchor has to be the left edge too. Logical
+     anchoring put the indicator on the right in RTL and then pushed it
+     further right by the tab's offset, off the selected tab entirely. */
+  left: 0;
   inline-size: var(--kernel-tabs-indicator-width);
   transform: translateX(var(--kernel-tabs-indicator-x));
   background-color: var(--kernel-color-surface);
@@ -56,6 +102,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
   /* Track height = --kernel-control-height-md, matching Button, Select
      and TextField at their default size. */
   block-size: calc(var(--kernel-control-height-md) - var(--kernel-control-inset) * 2);
