@@ -33,6 +33,7 @@
     },
     "./styles.css": "./dist/kernel.css",
     "./styles.layer.css": "./dist/kernel.layer.css",
+    "./schema.json": "./dist/schema.json",
     "./jsx": {
       "types": "./dist/jsx.d.ts"
     },

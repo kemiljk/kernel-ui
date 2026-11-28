@@ -1,0 +1,353 @@
+/* ArtifactPanel — a docked `<aside>` or a modal `<dialog>`, one stylesheet.
+   ------------------------------------------------------------------
+   Shape: docked, the panel is a container (`--kernel-radius-container`), so
+   everything that pads against its edge — the header's top and inline
+   sides, the body's inline sides and bottom — uses
+   `--kernel-padding-container-curve`. As an overlay it's a sheet anchored
+   to the inline end, rounded only on its free corners with
+   `--kernel-radius-sheet`, so the same edges switch to
+   `--kernel-padding-sheet-curve`. Both go through one custom property so
+   the header and body rules are written once. */
+
+.root {
+  --kernel-artifact-panel-pad: var(--kernel-padding-container-curve);
+  --kernel-artifact-panel-inline-size: min(100vw, 44rem);
+
+  box-sizing: border-box;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: var(--kernel-border-width) solid var(--kernel-color-border);
+  background-color: var(--kernel-color-surface);
+  color: var(--kernel-color-text);
+}
+
+/* Docked: fills whatever it's put in — a Resizable pane, a grid column. */
+.root[data-presentation="docked"] {
+  display: flex;
+  block-size: 100%;
+  border-radius: var(--kernel-radius-container);
+}
+
+/* Author `display` beats the UA's `[hidden] { display: none }`, so a closed
+   docked panel restates it. Kept in the DOM, not unmounted, so a preview
+   iframe doesn't reload every time the panel is reopened. */
+.root[data-presentation="docked"][hidden] {
+  display: none;
+}
+
+/* Overlay: a full-height sheet from the inline end. `display` only while
+   `[open]` (see Sheet.module.css for why it can't be unconditional, and
+   why it's left out of the closing transition). */
+.root[data-presentation="overlay"] {
+  --kernel-artifact-panel-pad: var(--kernel-padding-sheet-curve);
+  --kernel-artifact-panel-translate: 100% 0;
+
+  position: fixed;
+  inset-block: 0;
+  inset-inline: auto 0;
+  inline-size: var(--kernel-artifact-panel-inline-size);
+  max-inline-size: 100vw;
+  block-size: 100dvh;
+  max-block-size: 100dvh;
+  border-block: 0;
+  border-inline-end: 0;
+  border-radius: var(--kernel-radius-sheet) 0 0 var(--kernel-radius-sheet);
+  background-color: var(--kernel-color-surface-raised);
+  box-shadow: var(--kernel-shadow-lg);
+  overscroll-behavior: contain;
+
+  opacity: 0;
+  translate: var(--kernel-artifact-panel-translate);
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-exit) var(--kernel-ease-overlay),
+    overlay var(--kernel-duration-exit) allow-discrete;
+}
+
+.root[data-presentation="overlay"]:dir(rtl),
+:where([dir="rtl"]) .root[data-presentation="overlay"] {
+  --kernel-artifact-panel-translate: -100% 0;
+  border-radius: 0 var(--kernel-radius-sheet) var(--kernel-radius-sheet) 0;
+}
+
+.root[data-presentation="overlay"][open] {
+  display: flex;
+}
+
+.root[data-presentation="overlay"][data-state="open"] {
+  opacity: 1;
+  translate: 0 0;
+  /* A panel travels a large share of the viewport: drawer curve, sheet
+     duration, like Sheet's side variants. */
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-overlay),
+    translate var(--kernel-duration-sheet) var(--kernel-ease-drawer),
+    overlay var(--kernel-duration-sheet) allow-discrete;
+}
+
+/* Exits the way it came, faster than it entered. */
+.root[data-presentation="overlay"][data-state="closing"] {
+  opacity: 0;
+  translate: var(--kernel-artifact-panel-translate);
+  pointer-events: none;
+}
+
+@starting-style {
+  .root[data-presentation="overlay"][data-state="open"] {
+    opacity: 0;
+    translate: var(--kernel-artifact-panel-translate);
+  }
+}
+
+/* A phone gets the whole screen: no free corner left to round. */
+@media (max-width: 30rem) {
+  .root[data-presentation="overlay"],
+  .root[data-presentation="overlay"]:dir(rtl),
+  :where([dir="rtl"]) .root[data-presentation="overlay"] {
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+.root[data-presentation="overlay"]::backdrop {
+  background-color: var(--kernel-color-scrim);
+  opacity: 0;
+  transition:
+    opacity var(--kernel-duration-exit) var(--kernel-ease-scrim),
+    overlay var(--kernel-duration-exit) allow-discrete,
+    display var(--kernel-duration-exit) allow-discrete;
+}
+
+.root[data-presentation="overlay"][data-state="open"]::backdrop {
+  opacity: 1;
+  transition:
+    opacity var(--kernel-duration-enter) var(--kernel-ease-scrim),
+    overlay var(--kernel-duration-enter) allow-discrete,
+    display var(--kernel-duration-enter) allow-discrete;
+}
+
+.root[data-presentation="overlay"][data-state="closing"]::backdrop {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@starting-style {
+  .root[data-presentation="overlay"][data-state="open"]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* The column inside the root: header, then a body that takes the rest. It
+   is also the Tabs root when there are views, so it overrides Tabs' gap. */
+.frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0;
+  min-block-size: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-2);
+  /* Both top corners are rounded, so top and inline sides get the curve
+     padding; the underside is an interior edge and stays tight. */
+  padding: var(--kernel-artifact-panel-pad) var(--kernel-artifact-panel-pad) var(--kernel-space-2);
+  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
+  background-color: var(--kernel-color-surface-raised);
+  container: kernel-artifact-panel-header / inline-size;
+}
+
+.root[data-presentation="overlay"] .header {
+  padding-block-start: calc(var(--kernel-artifact-panel-pad) + env(safe-area-inset-top, 0px));
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  min-inline-size: 0;
+  /* Holds the controls on one row: the title gives way first. */
+  min-block-size: var(--kernel-control-height-sm);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: var(--kernel-space-2);
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  min-inline-size: 0;
+  overflow: hidden;
+  font-size: var(--kernel-font-size-base);
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status: a dot plus a few words, muted, beside the title. Empty when
+   ready, but never `display: none`: it stays rendered as a live region, so
+   the change to "Generating…" is announced. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  flex-shrink: 0;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  white-space: nowrap;
+}
+
+.status[data-status="ready"] .statusDot {
+  display: none;
+}
+
+/* In a narrow pane the title matters more than the words: below 30rem of
+   header the status keeps its dot and its live region, and the text is
+   visually hidden (still read out), the same way `kernel-sr-only` does it. */
+@container kernel-artifact-panel-header (max-width: 30rem) {
+  .statusText {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.statusDot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--kernel-radius-full);
+  background-color: var(--kernel-color-accent);
+}
+
+.status[data-status="streaming"] .statusDot {
+  animation: kernel-artifact-panel-pulse var(--kernel-duration-pulse) var(--kernel-ease-loop) infinite alternate;
+}
+
+.status[data-status="error"] {
+  color: var(--kernel-color-danger-text);
+}
+
+.status[data-status="error"] .statusDot {
+  background-color: var(--kernel-color-danger);
+}
+
+@keyframes kernel-artifact-panel-pulse {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+
+  to {
+    opacity: 0.35;
+    scale: 0.8;
+  }
+}
+
+.versions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  flex-shrink: 0;
+}
+
+.versionLabel {
+  min-inline-size: 4.5ch;
+  color: var(--kernel-color-text-muted);
+  font-size: var(--kernel-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Chevrons point the way the version moves in reading order. */
+.versions svg:dir(rtl),
+:where([dir="rtl"]) .versions svg {
+  scale: -1 1;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kernel-space-1);
+  flex-shrink: 0;
+}
+
+.tabs {
+  align-self: flex-start;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  /* Bottom corners meet the curve too. Full-bleed content (an iframe
+     preview) can drop it with `--kernel-artifact-panel-body-padding: 0`. */
+  padding: var(
+    --kernel-artifact-panel-body-padding,
+    var(--kernel-space-3) var(--kernel-artifact-panel-pad) var(--kernel-artifact-panel-pad)
+  );
+}
+
+.root[data-presentation="overlay"] .body {
+  padding-block-end: max(
+    var(--kernel-artifact-panel-pad),
+    env(safe-area-inset-bottom, 0px)
+  );
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-block-size: 0;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.panel:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset-inset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Fade only: no travel. The open/closing selectors are listed so this
+     outranks them, not just the base rule. */
+  .root[data-presentation="overlay"],
+  .root[data-presentation="overlay"][data-state="open"],
+  .root[data-presentation="overlay"][data-state="closing"] {
+    translate: 0 0;
+  }
+
+  @starting-style {
+    .root[data-presentation="overlay"][data-state="open"] {
+      translate: 0 0;
+    }
+  }
+
+  /* An essential loop slows rather than stops: it's the only sign that
+     generation is still running. */
+  .status[data-status="streaming"] .statusDot {
+    animation-duration: calc(var(--kernel-duration-pulse) * 2);
+  }
+}

@@ -1,0 +1,108 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocsSidebar from "../../components/DocsSidebar.astro";
+import ArtifactPanelDemo from "../../components/demos/ArtifactPanelDemo";
+import ArtifactPanelPlayground from "../../components/demos/ArtifactPanelPlayground";
+import ApiTable from "../../components/ApiTable.astro";
+import UsageAccordion from "../../components/UsageAccordion.astro";
+
+const resizableSnippet = `<Resizable defaultSplit={38}>
+  <Chat />
+  <ArtifactPanel
+    title="coffee-landing.html"
+    open={open}
+    onOpenChange={setOpen}
+    status={streaming ? "streaming" : "ready"}
+    version={version}
+    versionCount={versions.length}
+    onVersionChange={setVersion}
+    actions={<Button variant="ghost" size="sm" aria-label="Copy code" iconStart={<CopyIcon />} onClick={copy} />}
+    views={[
+      { value: "preview", label: "Preview", content: <iframe title="Preview" sandbox="" srcDoc={html} /> },
+      { value: "code", label: "Code", content: <CodeBlock language="html" code={html} /> },
+    ]}
+  />
+</Resizable>`;
+
+const elementsSnippet = `<kernel-resizable default-split="38">
+  <div>…chat…</div>
+  <kernel-artifact-panel title="coffee-landing.html" open status="streaming" version="3" version-count="3">
+    <kernel-button slot="actions" variant="ghost" size="sm" aria-label="Copy code">…</kernel-button>
+    <kernel-artifact-view value="preview" label="Preview">
+      <iframe title="Preview" sandbox="" srcdoc="…"></iframe>
+    </kernel-artifact-view>
+    <kernel-artifact-view value="code" label="Code">
+      <kernel-code-block language="html">…</kernel-code-block>
+    </kernel-artifact-view>
+  </kernel-artifact-panel>
+</kernel-resizable>`;
+---
+
+<BaseLayout title="Artifact Panel" withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Artifact Panel</h1>
+    <p>
+      The panel an AI app opens beside the chat to show what it made: a page
+      preview, a document, the code behind it. A title, a version switcher,
+      your own actions, a close button and Preview/Code views, around a body
+      you fill with anything.
+    </p>
+
+    <div class="docs-example">
+      <ArtifactPanelDemo client:visible />
+    </div>
+
+    <h2>Docked or overlay</h2>
+    <p>
+      On a wide screen the panel is an <code>&lt;aside&gt;</code> in the page
+      flow, named by its title, so it drops into a
+      <a href="/components/resizable">Resizable</a> pane or a grid column and
+      fills it. Below <code>overlayBelow</code> (768px by default) it becomes a
+      <code>&lt;dialog&gt;</code> opened with <code>showModal()</code>: a
+      full-height sheet from the inline end, with the focus trap, Escape,
+      backdrop and focus return all coming from the browser, like
+      <a href="/components/dialog">Dialog</a> and
+      <a href="/components/sheet">Sheet</a>.
+    </p>
+    <p>
+      The switch is a viewport media query, not a container query, because it
+      changes the element and how focus behaves, which CSS can't do. It's also
+      the right question: whether there's room beside the chat on this screen.
+      A narrow Resizable pane on a desktop stays docked. Pass
+      <code>presentation="docked"</code> or <code>"overlay"</code> to choose
+      yourself. Crossing the breakpoint swaps the element, so an iframe preview
+      reloads once.
+    </p>
+
+    <h2>Status and versions</h2>
+    <p>
+      <code>status="streaming"</code> shows a small pulsing dot and
+      "Generating…" beside the title, and marks the panel
+      <code>aria-busy</code>; <code>"error"</code> shows "Generation failed".
+      The text sits in a polite live region that's there from the start, so
+      the change is announced. With <code>versionCount</code> above 1 the header
+      gets previous/next buttons and a "v3 of 5" readout. Every built-in string
+      goes through <code>labels</code>.
+    </p>
+
+    <h2>Usage</h2>
+    <UsageAccordion code={resizableSnippet} elementsCode={elementsSnippet} lang="tsx" />
+
+    <h2>Playground</h2>
+    <p>Toggle every adjustable prop and watch the component, and the code, update live.</p>
+    <ArtifactPanelPlayground client:visible />
+
+    <h2>Props</h2>
+    <ApiTable slug="artifact-panel" />
+
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Docked, it's a complementary landmark (<code>&lt;aside&gt;</code>) named by its title heading, which is a real <code>h2</code> (set <code>headingLevel</code> to fit your outline).</li>
+      <li>As an overlay, it's a modal <code>&lt;dialog&gt;</code>: the page behind is inert, focus is trapped inside, Escape and the close button close it, and focus returns to whatever opened it.</li>
+      <li>Views are Kernel's <a href="/components/tabs">Tabs</a>: arrow keys move between tabs and inactive panels are <code>hidden</code>.</li>
+      <li>An iframe preview needs its own <code>title</code>. Give it <code>sandbox</code> too: generated code shouldn't run with your page's permissions.</li>
+      <li>The status dot keeps moving, slower, under reduced motion; it's the only sign that generation is still running. The overlay fades instead of sliding.</li>
+    </ul>
+  </div>
+</BaseLayout>

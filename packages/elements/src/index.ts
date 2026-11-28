@@ -156,6 +156,21 @@ export {
   formatFileSize,
 } from "./components/Attachment/Attachment";
 export { KernelUsageMeter, usageMeterLevel } from "./components/UsageMeter/UsageMeter";
+export { KernelArtifactPanel, KernelArtifactView } from "./components/ArtifactPanel/ArtifactPanel";
+export { KernelSchemaRenderer } from "./components/SchemaRenderer/SchemaRenderer";
+export {
+  SCHEMA_VERSION,
+  SCHEMA_NODE_TYPES,
+  SCHEMA_LIMITS,
+  SCHEMA_NODE_SPECS,
+  kernelSchemaJson,
+  schemaPrompt,
+  sanitizeSchema,
+  sanitizeUrl,
+  validateSchemaNode,
+  parsePartialJson,
+} from "./components/SchemaRenderer/schema";
+export type * from "./components/SchemaRenderer/schema";
 
 export { KernelStreamingMarkdown } from "./components/StreamingMarkdown/StreamingMarkdown";
 export { parseMarkdown, safeHref } from "./utils/markdown";

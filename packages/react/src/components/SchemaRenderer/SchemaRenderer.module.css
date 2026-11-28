@@ -1,0 +1,176 @@
+/* SchemaRenderer — layout and type for the nodes that aren't already a
+   Kernel component (Stack, Text, Heading, Form, Image, Link). Everything
+   else renders as the real component and brings its own styles. Every
+   value is a token: a model picks from enums, never from raw CSS. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  min-inline-size: 0;
+  color: var(--kernel-color-text);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kernel-space-4);
+  min-inline-size: 0;
+}
+
+.stack[data-direction="horizontal"] {
+  flex-direction: row;
+  align-items: center;
+}
+
+.stack[data-wrap="true"] {
+  flex-wrap: wrap;
+}
+
+.stack[data-gap="none"] {
+  gap: 0;
+}
+
+.stack[data-gap="xs"] {
+  gap: var(--kernel-space-1);
+}
+
+.stack[data-gap="sm"] {
+  gap: var(--kernel-space-2);
+}
+
+.stack[data-gap="lg"] {
+  gap: var(--kernel-space-6);
+}
+
+.stack[data-align="start"] {
+  align-items: flex-start;
+}
+
+.stack[data-align="center"] {
+  align-items: center;
+}
+
+.stack[data-align="end"] {
+  align-items: flex-end;
+}
+
+.stack[data-align="stretch"] {
+  align-items: stretch;
+}
+
+.stack[data-justify="start"] {
+  justify-content: flex-start;
+}
+
+.stack[data-justify="center"] {
+  justify-content: center;
+}
+
+.stack[data-justify="end"] {
+  justify-content: flex-end;
+}
+
+.stack[data-justify="between"] {
+  justify-content: space-between;
+}
+
+.text {
+  margin: 0;
+  font-size: var(--kernel-font-size-base);
+  line-height: var(--kernel-line-height);
+  /* Model output is often one long unbroken token (a URL, a hash). */
+  overflow-wrap: anywhere;
+}
+
+.text[data-size="sm"] {
+  font-size: var(--kernel-font-size-sm);
+}
+
+.text[data-size="lg"] {
+  font-size: var(--kernel-font-size-lg);
+}
+
+.text[data-weight="medium"] {
+  font-weight: 500;
+}
+
+.text[data-weight="bold"] {
+  font-weight: 600;
+}
+
+.text[data-tone="muted"] {
+  color: var(--kernel-color-text-muted);
+}
+
+.text[data-tone="success"] {
+  color: var(--kernel-color-success-text);
+}
+
+.text[data-tone="warning"] {
+  color: var(--kernel-color-warning-text);
+}
+
+.text[data-tone="danger"] {
+  color: var(--kernel-color-danger-text);
+}
+
+.heading {
+  margin: 0;
+  font-weight: 600;
+  line-height: var(--kernel-line-height-tight);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.heading[data-level="2"] {
+  font-size: var(--kernel-font-size-xl);
+}
+
+.heading[data-level="3"] {
+  font-size: var(--kernel-font-size-lg);
+}
+
+.heading[data-level="4"],
+.heading[data-level="5"],
+.heading[data-level="6"] {
+  font-size: var(--kernel-font-size-base);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--kernel-space-4);
+  margin: 0;
+}
+
+/* A submit row reads as one action, not a full-width bar. */
+.form > button {
+  align-self: flex-start;
+}
+
+.image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--kernel-radius-md);
+}
+
+.link {
+  color: var(--kernel-color-accent-text);
+  text-decoration-line: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+  border-radius: var(--kernel-radius-sm);
+}
+
+.link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--kernel-color-focus-ring);
+  outline-offset: var(--kernel-focus-offset);
+}

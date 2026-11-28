@@ -4,6 +4,7 @@ import { computeAccessibleDescription, computeAccessibleName } from "dom-accessi
 import { afterEach, describe, expect, it } from "vitest";
 import "../../elements/src/index";
 import { Accordion, AccordionItem } from "./components/Accordion/Accordion";
+import { ArtifactPanel } from "./components/ArtifactPanel/ArtifactPanel";
 import { Badge } from "./components/Badge/Badge";
 import { Button } from "./components/Button/Button";
 import { Callout } from "./components/Callout/Callout";
@@ -12,6 +13,7 @@ import { Dialog } from "./components/Dialog/Dialog";
 import { Label } from "./components/Label/Label";
 import { NumberField } from "./components/NumberField/NumberField";
 import { Progress } from "./components/Progress/Progress";
+import { SchemaRenderer } from "./components/SchemaRenderer/SchemaRenderer";
 import { RadioGroup, RadioGroupItem } from "./components/RadioGroup/RadioGroup";
 import { Select, SelectOption } from "./components/Select/Select";
 import { Separator } from "./components/Separator/Separator";
@@ -63,6 +65,52 @@ interface Case {
   /** An interaction run against both renders, compared again afterwards. */
   interact?: (root: HTMLElement) => void;
 }
+
+/** One tree touching every SchemaRenderer node type, including a dropped
+ * unknown type and an unsafe URL, rendered by both packages. */
+const schemaTree = {
+  version: 1,
+  root: [
+    { type: "Heading", props: { text: "Your trip", level: 2 } },
+    {
+      type: "Stack",
+      props: { direction: "horizontal", gap: "sm", wrap: true },
+      children: [
+        { type: "Badge", props: { text: "Confirmed", variant: "success" } },
+        { type: "Badge", props: { text: "2 guests" } },
+      ],
+    },
+    {
+      type: "Card",
+      props: { title: "Lisbon", description: "3 nights" },
+      children: [
+        { type: "Text", props: { text: "Check-in from 3pm. ", tone: "muted" }, children: [{ type: "Link", props: { href: "https://example.com/map", text: "Map", external: true } }] },
+        { type: "Image", props: { src: "/hotel.jpg", alt: "Hotel lobby", width: 320, height: 180 } },
+        { type: "Progress", props: { label: "Trip planned", value: 60 } },
+      ],
+    },
+    {
+      type: "Table",
+      props: { caption: "Flights", columns: [{ key: "leg", label: "Leg" }, { key: "time", label: "Time" }], rows: [{ leg: "LHR → LIS", time: "08:10" }, { leg: "LIS → LHR", time: null }] },
+    },
+    { type: "Callout", props: { variant: "warning", title: "Passport", text: "Valid for 6 months." } },
+    { type: "Separator" },
+    {
+      type: "Form",
+      props: { action: "save" },
+      children: [
+        { type: "TextField", props: { name: "name", label: "Full name", defaultValue: "Ada", required: true } },
+        { type: "Select", props: { name: "seat", label: "Seat", options: ["Aisle", "Window"], defaultValue: "Window" } },
+        { type: "Checkbox", props: { name: "bag", label: "Checked bag", defaultChecked: true } },
+        { type: "Switch", props: { name: "sms", label: "Text me updates" } },
+        { type: "Button", props: { label: "Save", variant: "primary", submit: true } },
+      ],
+    },
+    { type: "Button", props: { label: "Cancel trip", variant: "danger", action: "cancel" } },
+    { type: "Link", props: { href: "javascript:alert(1)", text: "Unsafe" } },
+    { type: "Marquee", props: { text: "dropped" } },
+  ],
+};
 
 const click = (selector: string) => (root: HTMLElement) => {
   const target = root.querySelectorAll<HTMLElement>(selector);
@@ -317,6 +365,40 @@ const cases: Case[] = [
       />
     ),
     element: `<kernel-model-picker value="sonnet" name="model"><optgroup label="Anthropic"><option value="opus" data-description="Most capable" data-badges="New:accent">Opus</option><option value="sonnet" data-badges="Fast">Sonnet</option></optgroup><option value="mini" disabled>Mini</option></kernel-model-picker>`,
+  },
+  {
+    name: "SchemaRenderer",
+    react: () => <SchemaRenderer value={schemaTree} onIssue={() => {}} />,
+    element: `<kernel-schema-renderer value='${JSON.stringify(schemaTree).replace(/'/g, "&#39;")}'></kernel-schema-renderer>`,
+    attrs: ["href", "target", "rel", "src", "alt", "width", "height", "loading", "scope", "name", "data-level"],
+    interact: click('button[role="switch"]'),
+  },
+  {
+    name: "ArtifactPanel (docked, views, versions, streaming)",
+    react: () => (
+      <ArtifactPanel
+        title="Landing page"
+        presentation="docked"
+        status="streaming"
+        version={2}
+        versionCount={3}
+        views={[
+          { value: "preview", label: "Preview", content: "Rendered" },
+          { value: "code", label: "Code", content: "Source" },
+        ]}
+      />
+    ),
+    element: `<kernel-artifact-panel title="Landing page" open presentation="docked" status="streaming" version="2" version-count="3"><kernel-artifact-view value="preview" label="Preview">Rendered</kernel-artifact-view><kernel-artifact-view value="code" label="Code">Source</kernel-artifact-view></kernel-artifact-panel>`,
+    interact: click('[role="tab"]'),
+  },
+  {
+    name: "ArtifactPanel (body, error)",
+    react: () => (
+      <ArtifactPanel title="Report" presentation="docked" status="error">
+        Body
+      </ArtifactPanel>
+    ),
+    element: `<kernel-artifact-panel title="Report" open presentation="docked" status="error">Body</kernel-artifact-panel>`,
   },
 ];
 
