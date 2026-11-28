@@ -31,7 +31,8 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./styles.css": "./dist/kernel.css"
+    "./styles.css": "./dist/kernel.css",
+    "./styles.layer.css": "./dist/kernel.layer.css"
   },
   "files": [
     "dist",

@@ -2,6 +2,7 @@ import { KernelElement, kernelClass } from "../../base";
 import { FloatingPositioner, readFloatingAttributes } from "../../utils/floatingPosition";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
 import { findTriggerElement } from "../../utils/trigger";
+import { isTooltipGroupWarm, markTooltipClosed, markTooltipOpen } from "../../utils/tooltipGroup";
 import "./Tooltip.css";
 
 let tooltipCounter = 0;
@@ -20,7 +21,8 @@ let tooltipCounter = 0;
  *
  * Attributes: `placement` (top/bottom/left/right, default top),
  * `align` (start/center/end, default center), `offset` (px, default 8),
- * `open-delay` / `close-delay` (ms, default 0), `arrow` (boolean).
+ * `open-delay` (ms, default 400; neighbours open at once once any tooltip
+ * has shown) / `close-delay` (ms, default 0), `arrow` (boolean).
  */
 export class KernelTooltip extends KernelElement {
   private readonly contentId = `kernel-tooltip-${++tooltipCounter}`;
@@ -55,7 +57,7 @@ export class KernelTooltip extends KernelElement {
     content.append(...rest);
 
     const { placement, align, offset } = readFloatingAttributes(this, { placement: "top" });
-    const openDelay = Number(this.getAttribute("open-delay") ?? "0");
+    const openDelay = Number(this.getAttribute("open-delay") ?? "400");
     const closeDelay = Number(this.getAttribute("close-delay") ?? "0");
     content.setAttribute("data-placement", placement);
     content.setAttribute("data-align", align);
@@ -74,7 +76,14 @@ export class KernelTooltip extends KernelElement {
       triggerEl.setAttribute("interestfor", this.contentId);
       this.positioner.attach(triggerEl, content, { placement, align, offset });
 
-      const showNow = () => {
+      let counted = false;
+      const showNow = (warm = false) => {
+        if (warm) content.setAttribute("data-instant", "true");
+        else content.removeAttribute("data-instant");
+        if (!counted) {
+          counted = true;
+          markTooltipOpen();
+        }
         this.exitAbort?.abort();
         this.exitAbort = null;
         clearTimeout(this.openTimer);
@@ -96,7 +105,7 @@ export class KernelTooltip extends KernelElement {
           return;
         }
         clearTimeout(this.openTimer);
-        this.openTimer = setTimeout(showNow, delay);
+        this.openTimer = setTimeout(() => showNow(), delay);
       };
 
       const hideNow = async () => {
@@ -119,8 +128,13 @@ export class KernelTooltip extends KernelElement {
         this.open = false;
         this.closing = false;
         content.removeAttribute("data-closing");
+        content.removeAttribute("data-instant");
         this.positioner.setOpen(false);
         content.hidePopover?.();
+        if (counted) {
+          counted = false;
+          markTooltipClosed();
+        }
       };
 
       const scheduleHide = () => {
@@ -144,6 +158,11 @@ export class KernelTooltip extends KernelElement {
 
       triggerEl.addEventListener("pointerenter", (event) => {
         if ((event as PointerEvent).pointerType === "touch") return;
+        if (isTooltipGroupWarm()) {
+          clearTimeout(this.closeTimer);
+          if (!(this.open && !this.closing)) showNow(true);
+          return;
+        }
         show(openDelay);
       });
       triggerEl.addEventListener("pointerleave", scheduleHide);

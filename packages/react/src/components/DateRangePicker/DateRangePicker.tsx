@@ -170,7 +170,7 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
         </button>
       </div>
 
-      <table className={styles.table} aria-labelledby={`${baseId}-heading`}>
+      <table className={styles.table} role="grid" aria-labelledby={`${baseId}-heading`}>
         <thead>
           <tr>
             {l.weekdays.map((label, index) => (
@@ -198,9 +198,13 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
                 const isSelected = isStart || isEnd;
 
                 return (
+                  // ARIA grid: aria-selected belongs on the gridcell, not the
+                  // button inside it (ARIA doesn't allow it on a button).
                   <td
                     key={day.toISOString()}
                     className={styles.cell}
+                    role="gridcell"
+                    aria-selected={inCurrentMonth ? isSelected : undefined}
                     data-in-range={dataAttr(inCurrentMonth && isInRange)}
                   >
                     {inCurrentMonth ? (
@@ -211,7 +215,7 @@ export function DateRangePicker({ value, defaultValue, onValueChange, minDate, m
                         data-range-end={dataAttr(isEnd)}
                         data-in-range={dataAttr(isInRange)}
                         data-today={dataAttr(isToday)}
-                        aria-selected={isSelected}
+                        aria-current={isToday ? "date" : undefined}
                         disabled={disabled}
                         tabIndex={isSelected || (!from && isToday) ? 0 : -1}
                         className={styles.dayButton}

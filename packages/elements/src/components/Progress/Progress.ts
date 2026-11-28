@@ -17,6 +17,7 @@ export class KernelProgress extends KernelElement {
 
   protected createNative(): HTMLElement {
     const progress = document.createElement("progress");
+    progress.dataset.kernelMotion = "essential";
     progress.className = kernelClass("Progress");
     progress.max = 100;
     return progress;

@@ -205,7 +205,15 @@ export function CodeBlock({
         </figcaption>
       ) : null}
 
-      <div ref={viewportRef} className={styles.viewport}>
+      <div
+        ref={viewportRef}
+        className={styles.viewport}
+        // A scrolling region keyboard users can reach and scroll, named by
+        // the header so focus announces what it is.
+        tabIndex={0}
+        role="region"
+        aria-label={typeof heading === "string" && heading ? heading : (language ?? "Code")}
+      >
         <div ref={contentRef}>
           <pre className={styles.pre}>
             <code className={styles.code} data-language={language}>

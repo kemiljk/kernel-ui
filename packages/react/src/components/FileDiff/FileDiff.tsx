@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import type { HTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { useDetailsTransition } from "../../utils/detailsTransition";
@@ -125,6 +125,7 @@ export function FileDiff({
   const resolvedAdditions = additions ?? counts.added;
   const resolvedDeletions = deletions ?? counts.removed;
 
+  const pathId = useId();
   const { detailsRef, contentRef, open, setOpen } = useDetailsTransition({
     defaultOpen: defaultOpen ?? true,
   });
@@ -160,7 +161,7 @@ export function FileDiff({
       className={[styles.root, resolveClassName(className, state)].filter(Boolean).join(" ")}
     >
       <summary className={styles.trigger}>
-        <span className={styles.path}>{path}</span>
+        <span id={pathId} className={styles.path}>{path}</span>
         <span className={styles.counts}>
           <span className={styles.additions}>+{resolvedAdditions}</span>
           <span className={styles.deletions}>−{resolvedDeletions}</span>
@@ -176,7 +177,14 @@ export function FileDiff({
         </svg>
       </summary>
 
-      <div ref={contentRef} className={styles.content}>
+      <div
+        ref={contentRef}
+        className={styles.content}
+        // Wide diffs scroll sideways: reachable by keyboard, named by the path.
+        tabIndex={0}
+        role="region"
+        aria-labelledby={pathId}
+      >
         <table className={styles.table}>
           <caption className="kernel-sr-only">
             {l.caption(typeof path === "string" ? path : l.unnamedFile, resolvedAdditions, resolvedDeletions)}

@@ -117,6 +117,7 @@ export class KernelDateRangePicker extends KernelElement {
     header.append(prevButton, this.headingEl, nextButton);
 
     const table = document.createElement("table");
+    table.setAttribute("role", "grid");
     table.className = kernelClass("DateRangePicker", "table");
     table.setAttribute("aria-labelledby", `${this.baseId}-heading`);
 
@@ -244,6 +245,8 @@ export class KernelDateRangePicker extends KernelElement {
 
         const td = document.createElement("td");
         td.className = kernelClass("DateRangePicker", "cell");
+        // ARIA grid: aria-selected goes on the gridcell, not the button.
+        td.setAttribute("role", "gridcell");
         const cellInRange = dataAttr(inCurrentMonth && isInRange);
         if (cellInRange) td.setAttribute("data-in-range", cellInRange);
 
@@ -259,7 +262,8 @@ export class KernelDateRangePicker extends KernelElement {
           if (inRangeAttr) button.setAttribute("data-in-range", inRangeAttr);
           const todayAttr = dataAttr(isToday);
           if (todayAttr) button.setAttribute("data-today", todayAttr);
-          button.setAttribute("aria-selected", String(isSelected));
+          td.setAttribute("aria-selected", String(isSelected));
+          if (isToday) button.setAttribute("aria-current", "date");
           button.disabled = disabled;
           button.tabIndex = isSelected || (!from && isToday) ? 0 : -1;
           button.className = kernelClass("DateRangePicker", "dayButton");

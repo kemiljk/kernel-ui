@@ -85,6 +85,9 @@ export class KernelCodeBlock extends KernelElement {
 
     const viewport = document.createElement("div");
     viewport.className = kernelClass("CodeBlock", "viewport");
+    viewport.tabIndex = 0;
+    viewport.setAttribute("role", "region");
+    viewport.setAttribute("aria-label", "Code");
     const inner = document.createElement("div");
     const pre = document.createElement("pre");
     pre.className = kernelClass("CodeBlock", "pre");
@@ -153,6 +156,7 @@ export class KernelCodeBlock extends KernelElement {
     const header = this.headerEl;
     if (!header) return;
     const heading = this.getAttribute("label") || this.getAttribute("language");
+    this.viewport?.setAttribute("aria-label", heading || "Code");
     const copyable = !this.hasAttribute("no-copy");
     header.replaceChildren();
     header.hidden = !heading && !copyable;

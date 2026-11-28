@@ -22,6 +22,8 @@ const MARKERS: Record<DiffRowKind, string> = {
   hunk: "@",
 };
 
+let fileDiffCounter = 0;
+
 /**
  * `<kernel-file-diff>` — a file's changes as a real `<table>` inside a
  * `<details>`. A diff *is* tabular data (old line, new line, marker, content);
@@ -43,6 +45,7 @@ const MARKERS: Record<DiffRowKind, string> = {
  * `labels` property.
  */
 export class KernelFileDiff extends KernelElement {
+  private readonly idBase = `kernel-file-diff-${++fileDiffCounter}`;
   private summaryEl: HTMLElement | null = null;
   private bodyEl: HTMLTableSectionElement | null = null;
   private captionEl: HTMLElement | null = null;
@@ -89,6 +92,10 @@ export class KernelFileDiff extends KernelElement {
 
     const content = document.createElement("div");
     content.className = kernelClass("FileDiff", "content");
+    // Wide diffs scroll sideways: reachable by keyboard, named by the path.
+    content.tabIndex = 0;
+    content.setAttribute("role", "region");
+    content.setAttribute("aria-labelledby", `${this.idBase}-path`);
 
     const table = document.createElement("table");
     table.className = kernelClass("FileDiff", "table");
@@ -197,6 +204,7 @@ export class KernelFileDiff extends KernelElement {
 
     const pathEl = document.createElement("span");
     pathEl.className = kernelClass("FileDiff", "path");
+    pathEl.id = `${this.idBase}-path`;
     pathEl.textContent = path;
 
     const counts = document.createElement("span");

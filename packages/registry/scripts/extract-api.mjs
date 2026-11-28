@@ -135,17 +135,40 @@ export function extractApi(registryComponents, repoRoot) {
   const classes = new Map();
   for (const sf of elementFiles) {
     const byName = new Map();
-    for (const stmt of sf.statements) if (ts.isClassDeclaration(stmt) && stmt.name) byName.set(stmt.name.text, stmt);
+    const factories = new Map();
+    for (const stmt of sf.statements) {
+      if (ts.isClassDeclaration(stmt) && stmt.name) byName.set(stmt.name.text, stmt);
+      if (ts.isFunctionDeclaration(stmt) && stmt.name) factories.set(stmt.name.text, stmt);
+    }
+    const firstClassExpression = (root) => {
+      let found;
+      const find = (n) => {
+        if (found) return;
+        if (ts.isClassExpression(n)) found = n;
+        else ts.forEachChild(n, find);
+      };
+      find(root);
+      return found;
+    };
     const visit = (node) => {
       if (
         ts.isCallExpression(node) &&
         node.expression.getText() === "customElements.define" &&
         ts.isStringLiteralLike(node.arguments[0]) &&
-        node.arguments[1] &&
-        ts.isIdentifier(node.arguments[1])
+        node.arguments[1]
       ) {
-        const cls = byName.get(node.arguments[1].text);
-        if (cls) classes.set(node.arguments[0].text, { cls, sourceFile: sf });
+        const arg = node.arguments[1];
+        if (ts.isIdentifier(arg)) {
+          const cls = byName.get(arg.text);
+          if (cls) classes.set(node.arguments[0].text, { cls, sourceFile: sf });
+        } else if (ts.isCallExpression(arg) && ts.isIdentifier(arg.expression)) {
+          // Tags defined from a class factory (Card's and Table's
+          // sections: `simpleSection("div", "header")`). Read the class the
+          // factory returns, so the tag still appears with its attributes.
+          const factory = factories.get(arg.expression.text);
+          const cls = factory && firstClassExpression(factory);
+          if (cls) classes.set(node.arguments[0].text, { cls, sourceFile: sf });
+        }
       }
       ts.forEachChild(node, visit);
     };

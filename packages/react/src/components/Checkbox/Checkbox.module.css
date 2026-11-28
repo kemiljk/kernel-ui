@@ -102,12 +102,11 @@
 .input:checked + .control .checkmark {
   opacity: 1;
   stroke-dashoffset: 0;
-  /* Delayed by --kernel-duration-fast so the box's own background-color
-     fill (also --kernel-duration-fast, on .control above) reads as
-     "the box fills, then the check draws" rather than both firing at
-     once. */
+  /* A short --kernel-duration-stagger delay lets the box's fill lead, so
+     it reads as "the box fills, then the check draws". Kept brief: a
+     checkbox is toggled often, so the whole thing settles in ~240ms. */
   transition:
-    stroke-dashoffset var(--kernel-duration-slow) var(--kernel-ease-out) var(--kernel-duration-fast),
+    stroke-dashoffset var(--kernel-duration-base) var(--kernel-ease-out) var(--kernel-duration-stagger),
     opacity var(--kernel-duration-fast) linear;
 }
 

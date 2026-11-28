@@ -105,6 +105,8 @@ export class KernelButton extends KernelElement {
         const spinner = document.createElement("span");
         spinner.className = kernelClass("Button", "spinner");
         spinner.setAttribute("aria-hidden", "true");
+        // A busy state: reduced motion slows it, never freezes it (reset.css).
+        spinner.dataset.kernelMotion = "essential";
         button.append(spinner);
       }
     } else {

@@ -118,6 +118,7 @@ export class KernelDatePicker extends KernelElement {
     header.append(prevButton, this.headingEl, nextButton);
 
     const table = document.createElement("table");
+    table.setAttribute("role", "grid");
     table.className = kernelClass("DatePicker", "table");
     table.setAttribute("aria-labelledby", `${this.baseId}-heading`);
 
@@ -217,6 +218,8 @@ export class KernelDatePicker extends KernelElement {
       for (const day of week) {
         const td = document.createElement("td");
         td.className = kernelClass("DatePicker", "cell");
+        // ARIA grid: aria-selected goes on the gridcell, not the button.
+        td.setAttribute("role", "gridcell");
         const inCurrentMonth = day.getMonth() === this.visibleMonth.getMonth();
 
         if (inCurrentMonth) {
@@ -231,7 +234,8 @@ export class KernelDatePicker extends KernelElement {
           if (selectedAttr) button.setAttribute("data-selected", selectedAttr);
           const todayAttr = dataAttr(isToday);
           if (todayAttr) button.setAttribute("data-today", todayAttr);
-          button.setAttribute("aria-selected", String(isSelected));
+          td.setAttribute("aria-selected", String(isSelected));
+          if (isToday) button.setAttribute("aria-current", "date");
           button.disabled = disabled;
           button.tabIndex = isSelected || (!this.selected && isToday) ? 0 : -1;
           button.className = kernelClass("DatePicker", "dayButton");
