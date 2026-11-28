@@ -9,6 +9,7 @@ import {
   type RenderProp,
 } from "../../utils/polymorphic";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import { warnDeprecated } from "../../utils/warnDeprecated";
 import { Button } from "../Button/Button";
 import styles from "./Dialog.module.css";
 
@@ -98,6 +99,9 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(
     },
     forwardedRef,
   ) {
+    if (process.env.NODE_ENV !== "production" && className !== undefined) {
+      warnDeprecated("Dialog", "`className` is deprecated. Use `classNames.root` instead.");
+    }
     const l = { ...defaultDialogLabels, ...labels };
     const internalRef = useRef<HTMLDialogElement>(null);
     const titleId = useId();
