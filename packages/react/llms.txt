@@ -67,8 +67,9 @@ real underlying element, fully functional, just unstyled — never broken.
   default `auto`). Give an icon-only pill an accessible name on the icon
   itself (`role="img" aria-label="…"`), since a `<span>`'s own
   `aria-label` isn't reliably announced. An icon-only `Button` takes
-  `aria-label` on the Button (it's a real `<button>`); a lone icon passed
-  as `children` is treated the same as `iconStart` with no label.
+  `aria-label` on the Button (it's a real `<button>`); a lone `<svg>`/`<img>`
+  passed as `children` is treated the same as `iconStart` with no label
+  (pass icon components through `iconStart`/`iconEnd`).
 - **React and Web Components share one design**: `@kernelui-lib/elements`
   ships every component below as a framework-free Custom Element
   (`<kernel-button>`, `<kernel-text-field>`, ...) with the same visual
