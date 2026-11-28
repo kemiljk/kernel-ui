@@ -18,8 +18,25 @@ function prepareGesture(node: HTMLElement, width = 200) {
   node.hasPointerCapture = vi.fn(() => true);
 }
 
-function pointer(node: HTMLElement, type: "pointerDown" | "pointerMove" | "pointerUp" | "pointerCancel", x: number) {
-  fireEvent[type](node, { button: 0, pointerId: 1, pointerType: "touch", clientX: x });
+function pointer(
+  node: HTMLElement,
+  type: "pointerDown" | "pointerMove" | "pointerUp" | "pointerCancel",
+  x: number,
+  y = 0,
+  target: HTMLElement = node,
+) {
+  fireEvent[type](target, { button: 0, pointerId: 1, pointerType: "touch", clientX: x, clientY: y });
+}
+
+/** A hand-driven clock for `performance.now()`, so velocity is deterministic. */
+function useClock() {
+  let now = 0;
+  vi.spyOn(performance, "now").mockImplementation(() => now);
+  return {
+    at(ms: number) {
+      now = ms;
+    },
+  };
 }
 
 beforeEach(() => {
@@ -57,14 +74,16 @@ describe("Toast swipe", () => {
   });
 
   it("springs back below the distance and velocity thresholds, then returns translate to CSS", async () => {
-    vi.spyOn(performance, "now").mockReturnValueOnce(0).mockReturnValueOnce(200);
+    const clock = useClock();
     addToast("Snap back");
     render(<ToastViewport />);
     const node = screen.getByRole("status");
     prepareGesture(node);
 
     pointer(node, "pointerDown", 0);
+    clock.at(200);
     pointer(node, "pointerMove", 30);
+    clock.at(400);
     pointer(node, "pointerUp", 30);
 
     expect(node).not.toHaveAttribute("data-dragging");
@@ -77,23 +96,107 @@ describe("Toast swipe", () => {
     expect(node.style.translate).toBe("");
   });
 
-  it.each([
-    ["right", 100, "300px var(--y)"],
-    ["left", -100, "-300px var(--y)"],
-  ] as const)("continues a %s dismissal in the swipe direction", (_direction, x, expected) => {
-    vi.spyOn(performance, "now").mockReturnValueOnce(0).mockReturnValueOnce(200);
-    addToast(`Dismiss ${_direction}`);
+  it("dismisses on distance and continues the exit toward the edge", () => {
+    const clock = useClock();
+    addToast("Dismiss on distance");
+    render(<ToastViewport />);
+    const node = screen.getByRole("status");
+    prepareGesture(node);
+
+    // 100px of a 200px toast, slowly: past 40%, nowhere near a flick.
+    pointer(node, "pointerDown", 0);
+    clock.at(400);
+    pointer(node, "pointerMove", 100);
+    clock.at(800);
+    pointer(node, "pointerUp", 100);
+
+    expect(node).not.toHaveAttribute("data-dragging");
+    expect(node).toHaveAttribute("data-closing");
+    expect(node.style.translate).toBe("300px var(--y)");
+  });
+
+  it("dismisses a short flick on velocity alone", () => {
+    const clock = useClock();
+    addToast("Flick");
+    render(<ToastViewport />);
+    const node = screen.getByRole("status");
+    prepareGesture(node);
+
+    // 40px in 40ms = 1px/ms: well past the 0.5px/ms bar, only 20% travelled.
+    pointer(node, "pointerDown", 0);
+    clock.at(20);
+    pointer(node, "pointerMove", 20);
+    clock.at(40);
+    pointer(node, "pointerMove", 40);
+    pointer(node, "pointerUp", 40);
+
+    expect(node).toHaveAttribute("data-closing");
+  });
+
+  it("keeps the toast when the pointer is pulling back at release", () => {
+    const clock = useClock();
+    addToast("Reversal");
     render(<ToastViewport />);
     const node = screen.getByRole("status");
     prepareGesture(node);
 
     pointer(node, "pointerDown", 0);
-    pointer(node, "pointerMove", x);
-    pointer(node, "pointerUp", x);
+    clock.at(300);
+    pointer(node, "pointerMove", 140);
+    clock.at(340);
+    pointer(node, "pointerMove", 110);
+    clock.at(360);
+    pointer(node, "pointerUp", 100);
+
+    expect(node).not.toHaveAttribute("data-closing");
+  });
+
+  it("rubber-bands a swipe away from the edge and never dismisses it", () => {
+    const clock = useClock();
+    addToast("Wrong way");
+    render(<ToastViewport />);
+    const node = screen.getByRole("status");
+    prepareGesture(node);
+
+    pointer(node, "pointerDown", 0);
+    clock.at(20);
+    pointer(node, "pointerMove", -100);
+    const x = parseFloat(node.style.translate);
+    expect(x).toBeLessThan(0);
+    expect(x).toBeGreaterThan(-100 * 0.55);
+
+    clock.at(40);
+    pointer(node, "pointerUp", -200);
+    expect(node).not.toHaveAttribute("data-closing");
+  });
+
+  it("leaves a press on the close button to the button", () => {
+    addToast("Button press");
+    render(<ToastViewport />);
+    const node = screen.getByRole("status");
+    prepareGesture(node);
+    const button = screen.getByRole("button", { name: "Dismiss" });
+
+    pointer(node, "pointerDown", 0, 0, button);
+    pointer(node, "pointerMove", 120, 0, button);
+
+    expect(node.setPointerCapture).not.toHaveBeenCalled();
+    expect(node).not.toHaveAttribute("data-dragging");
+    expect(node.style.translate).toBe("");
+  });
+
+  it("does not claim a mostly vertical drag", () => {
+    addToast("Vertical");
+    render(<ToastViewport />);
+    const node = screen.getByRole("status");
+    prepareGesture(node);
+
+    pointer(node, "pointerDown", 0, 0);
+    pointer(node, "pointerMove", 3, 30);
+    pointer(node, "pointerMove", 80, 40);
 
     expect(node).not.toHaveAttribute("data-dragging");
-    expect(node).toHaveAttribute("data-closing");
-    expect(node.style.translate).toBe(expected);
+    expect(node.style.translate).toBe("");
   });
 
   it("preserves the live X offset when another toast is inserted mid-drag", () => {
