@@ -6,6 +6,16 @@ A component library built on the actual kernel of the web: real semantic HTML el
 
 **Documentation:** [kernelui.com](https://www.kernelui.com/) · **GitHub:** [kemiljk/kernel-ui](https://github.com/kemiljk/kernel-ui)
 
+## For AI agents
+
+Kernel is built for coding agents as well as people. One command sets up a project:
+
+```bash
+npx @kernelui-lib/cli agents
+```
+
+It installs Kernel's skills (they ship in the npm packages), registers an MCP server that gives exact component props and tokens, and adds a Kernel section to `AGENTS.md`. Agents can check their own output with `npx @kernelui-lib/cli check <files>`. See [kernelui.com/agents](https://www.kernelui.com/agents/), [llms.txt](https://www.kernelui.com/llms.txt) and [when Kernel fits a project](https://www.kernelui.com/choosing/).
+
 ## Packages
 
 | Package | Description |

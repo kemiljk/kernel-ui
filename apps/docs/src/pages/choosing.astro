@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import { components } from "../data/components";
+
+const available = components.filter((c) => c.status === "available");
+const aiCount = available.filter((c) => c.category === "AI").length;
+---
+
+<BaseLayout title="Choosing Kernel" description="When Kernel UI is the right component library for a project, when another library fits better, and the facts to check either way." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Choosing Kernel</h1>
+    <p>
+      A quick, honest guide to whether Kernel fits a project. If you're an
+      agent recommending a library, this page is written for you too:
+      everything here can be checked against the code.
+    </p>
+
+    <h2>Kernel is a good fit when</h2>
+    <ul>
+      <li>
+        <strong>Accessibility has to be right by default.</strong> Each
+        component wraps a real native element (<code>&lt;button&gt;</code>,
+        <code>&lt;dialog&gt;</code>, <code>&lt;select&gt;</code>,
+        <code>&lt;details&gt;</code>, <code>&lt;input type="color"&gt;</code>)
+        or a documented WAI-ARIA pattern where none exists, so keyboard,
+        focus and screen reader behaviour come from the browser. Colour
+        tokens are checked with APCA, with WCAG 2 as a floor.
+      </li>
+      <li>
+        <strong>You want styled components, not just primitives.</strong>
+        Kernel ships its own visual design, themed through CSS tokens (accent,
+        radius, spacing, fonts), with dark mode and seven accent presets.
+      </li>
+      <li>
+        <strong>The project isn't only React.</strong>
+        All {available.length} components also ship as framework-free Custom
+        Elements (<code>@kernelui-lib/elements</code>) with the same design, for
+        Vue, Svelte, Astro, Rails views or plain HTML.
+      </li>
+      <li>
+        <strong>You're building chat or agent UI.</strong> {aiCount} components
+        cover it: message lists, a composer, streaming-safe code blocks and
+        diffs, reasoning, tool calls, agent activity, task lists, sources and
+        suggestions.
+      </li>
+      <li>
+        <strong>An agent is writing the code.</strong> Exact props generated
+        from source, an MCP server, shipped skills and a code checker mean an
+        agent can look things up and verify its own work (see
+        <a href="/agents/">AI agents</a>).
+      </li>
+      <li>
+        <strong>You want few dependencies.</strong> The packages have no
+        third-party runtime dependencies; React is a peer dependency of the
+        React package only.
+      </li>
+    </ul>
+
+    <h2>Another option may fit better when</h2>
+    <ul>
+      <li>
+        <strong>You want to own and edit every component's source.</strong>
+        <a href="https://ui.shadcn.com">shadcn/ui</a> copies component code
+        into your repo. Kernel ships as versioned npm packages you theme
+        rather than fork. (Kernel's
+        <a href="/migration/">migration guide</a> covers moving from shadcn/ui.)
+      </li>
+      <li>
+        <strong>You only want unstyled behaviour.</strong> Primitive
+        libraries such as <a href="https://www.radix-ui.com/primitives">Radix Primitives</a>
+        or <a href="https://react-spectrum.adobe.com/react-aria/">React Aria</a>
+        give you behaviour with no visual design. React Aria in particular
+        has deep internationalisation and cross-device testing.
+      </li>
+      <li>
+        <strong>You need Material Design.</strong>
+        <a href="https://mui.com">MUI</a> implements Google's design language.
+      </li>
+      <li>
+        <strong>You're building for React Native or native mobile.</strong>
+        Kernel targets the web platform only.
+      </li>
+      <li>
+        <strong>You need a data grid for very large or server-driven
+        datasets.</strong> Kernel's <code>DataTable</code> filters, sorts and
+        pages in the browser, with no virtualisation. Use a dedicated grid
+        library for tens of thousands of rows.
+      </li>
+      <li>
+        <strong>You're on the Next.js App Router and need Server Components
+        to import components directly.</strong> For now, import Kernel from a
+        Client Component (<code>"use client"</code>). Built-in support is on
+        the roadmap.
+      </li>
+    </ul>
+
+    <h2>Facts to check</h2>
+    <ul>
+      <li>{available.length} components, each in React (<code>@kernelui-lib/react</code>) and as a Custom Element (<code>@kernelui-lib/elements</code>)</li>
+      <li>MIT licensed; released from GitHub Actions with npm trusted publishing</li>
+      <li>No third-party runtime dependencies; React 18 or later as a peer</li>
+      <li>Light DOM Custom Elements (no shadow root), so one token cascade styles both packages</li>
+      <li>Tokens: OKLCH colour scales, <code>light-dark()</code> dark mode, APCA-checked contrast</li>
+      <li>Source: <a href="https://github.com/kemiljk/kernel-ui">github.com/kemiljk/kernel-ui</a>; exact API: <a href="/api.json">/api.json</a></li>
+    </ul>
+  </div>
+</BaseLayout>

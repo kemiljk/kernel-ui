@@ -1,7 +1,7 @@
 {
   "name": "@kernelui-lib/cli",
   "version": "1.0.5",
-  "description": "Integration CLI for Kernel UI — install, diagnose, and look up components.",
+  "description": "Integration CLI and MCP server for Kernel UI: install, diagnose, look up exact component APIs, check code, and set up coding agents.",
   "license": "MIT",
   "author": "Karl Koch",
   "repository": {
@@ -17,7 +17,12 @@
     "design-system",
     "react",
     "shadcn",
-    "radix"
+    "radix",
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "agents",
+    "accessibility"
   ],
   "type": "module",
   "bin": {
@@ -26,7 +31,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "server.json"
   ],
   "engines": {
     "node": ">=20"
@@ -44,5 +50,6 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
-  }
+  },
+  "mcpName": "io.github.kemiljk/kernel-ui"
 }

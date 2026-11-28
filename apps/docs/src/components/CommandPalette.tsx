@@ -15,6 +15,8 @@ const pages = [
   { name: "Components", href: "/components/", summary: "Every component, built and planned." },
   { name: "Platforms", href: "/platforms/", summary: "React, Web Components, and headless usage." },
   { name: "Installation", href: "/installation/", summary: "Install the packages and import the tokens." },
+  { name: "Choosing Kernel", href: "/choosing/", summary: "When Kernel fits a project, and when another library fits better." },
+  { name: "AI agents", href: "/agents/", summary: "Skills, MCP server and code check for coding agents." },
   { name: "Theming", href: "/theming/", summary: "Every token that drives a component's appearance." },
   { name: "CLI", href: "/cli/", summary: "Install and diagnose Kernel in a project." },
   { name: "Migration", href: "/migration/", summary: "Move an existing app onto Kernel." },
