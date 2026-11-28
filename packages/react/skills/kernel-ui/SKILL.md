@@ -56,6 +56,7 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 - **Pair radius with padding.** If you round your own box with `--kernel-radius-container`, pad it with `--kernel-padding-container-curve`. With `--kernel-radius-sheet`, use `--kernel-padding-sheet-curve`. A radius picked without its paired padding looks cramped once the theme rounds its corners.
 - **Nested controls.** Anything inside a rounded box needs at least `outer radius − inner radius` of inset at the corner.
 - **Clickable elements are controls.** Never put `onClick` on a `<div>` or `<span>`: use `Button`.
+- **Colours you add meet APCA.** Text needs Lc 75 (Lc 60 for secondary text), and thin outlines need Lc 45, with WCAG 2's 4.5:1 and 3:1 as floors. Kernel's own tokens already meet these, so prefer them.
 
 ## When you're unsure
 

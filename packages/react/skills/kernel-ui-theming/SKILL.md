@@ -36,6 +36,11 @@ Every visual decision is a CSS custom property in `@kernelui-lib/styles`. There'
 - **Use the semantic tokens.** Components read the role tokens (`--kernel-color-accent`, `-surface`, `-border`, `-text-muted`, `--kernel-radius-control`, `-container`, `-sheet`), not the raw scales. Override a role token to change its meaning everywhere.
 - **Round radius and padding together.** `--kernel-radius-container` and `--kernel-radius-sheet` are derived from padding, so they grow together. If you build a surface, pair `--kernel-radius-container` with `--kernel-padding-container-curve`.
 - **Keep themes to tokens.** Don't restyle components with selectors on their class names. Those names are stable, but a token override survives upgrades and keeps React and Web Components identical.
-- **Check contrast.** After changing the accent hue, check `--kernel-color-on-accent` text contrast. It uses `contrast-color()` where supported.
+- **Check contrast with APCA, not just WCAG 2.** Kernel measures contrast with APCA, the perceptual method proposed for WCAG 3, and keeps the WCAG 2 ratio as a floor. Its targets on the canvas and surface:
+  - text: Lc 75 and 4.5:1;
+  - muted text: Lc 60 and 4.5:1;
+  - focus ring and control borders: Lc 45 and 3:1.
+
+  When you override a colour token, check it in both light and dark mode against those levels (e.g. apcacontrast.com). Dark mode is where WCAG 2 overrates contrast most. `--kernel-color-on-accent` uses `contrast-color()` where supported. In a Kernel checkout, `bun run test:contrast` checks every preset.
 
 To list every token with its value and purpose, use the MCP `get_tokens` tool, or read `node_modules/@kernelui-lib/styles/src/tokens.css`.
