@@ -28,7 +28,7 @@
   inline-size: var(--kernel-switch-inline);
   block-size: var(--kernel-switch-block);
   border-radius: var(--kernel-switch-radius);
-  border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
+  border: var(--kernel-border-width) solid var(--kernel-color-border-control);
   background-color: var(--kernel-color-surface-raised);
   cursor: inherit;
   padding: 0;
@@ -78,9 +78,9 @@
 }
 
 .kernel-Switch-control[data-state="checked"] .kernel-Switch-thumb {
-  translate: calc(
+  translate: calc(var(--_dir, 1) * (
     var(--kernel-switch-inline) - var(--kernel-switch-block) - var(--kernel-switch-thumb-extra)
-  ) 0;
+  )) 0;
 }
 
 .kernel-Switch-label {
@@ -100,4 +100,10 @@
   .kernel-Switch-control:active:not(:disabled) {
     scale: 1;
   }
+}
+
+/* The thumb starts at inset-inline-start, so in RTL it has to slide the
+   other way: translate is physical, unlike the logical inset. */
+.kernel-Switch-thumb:dir(rtl) {
+  --_dir: -1;
 }

@@ -58,6 +58,9 @@ jobs:
       - name: Inline SVG size check
         run: bun run test:svg
 
+      - name: Colour contrast (APCA and WCAG 2)
+        run: bun run test:contrast
+
       - name: Test React package
         run: bun run --cwd packages/react test
 

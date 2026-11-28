@@ -129,6 +129,19 @@ new component done, grep both `packages/react/src/index.ts` and
   and a large corner on many, the height is not knowable in CSS — use
   `utils/lineFit.ts`, which marks the element
   `data-lines="single" | "multi"` (see `MessageBubble`).
+- **Contrast is measured with APCA, with WCAG 2 as a floor.** APCA is
+  the perceptual method proposed for WCAG 3. It catches dark-mode colours
+  that WCAG 2's ratio overrates. Targets on the canvas and surface:
+  - body text: Lc 75 and 4.5:1;
+  - muted text: Lc 60 and 4.5:1;
+  - focus rings and control borders: Lc 45 and 3:1. These are 1–2px lines,
+    which APCA treats as fine detail.
+
+  `bun run test:contrast` (`scripts/check-contrast.mjs`) checks every accent
+  preset in both schemes. Add a rule there when you add a semantic colour
+  token that carries meaning. A control whose border is its only outline
+  (Checkbox, Radio, a Switch track) uses `--kernel-color-border-control`,
+  not `-border-interactive`.
 - **Anything you click needs `user-select: none`.** Triggers, summaries,
   menu items, tabs, chips, segment buttons, the lot — a double-click on a
   disclosure otherwise selects its label, which is never what the click
@@ -216,6 +229,8 @@ new component done, grep both `packages/react/src/index.ts` and
   the mistakes the Shape and select-none rules above exist to stop, and
   both are invisible until someone switches the theme to Round or
   double-clicks a disclosure.
+- `bun run test:contrast` (`scripts/check-contrast.mjs`) — APCA and WCAG 2
+  targets for the semantic colour tokens, every preset, light and dark.
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every
