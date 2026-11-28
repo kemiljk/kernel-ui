@@ -100,6 +100,16 @@
   background-color: var(--kernel-color-canvas);
 }
 
+/* The tag list exists for the accessibility tree only (a role="list"
+   that owns just the chips, with the text input as its sibling rather
+   than a fake listitem). display: contents takes its box out of layout,
+   so the chips and the input stay sibling flex items of .field and keep
+   flowing inline together. The explicit role="list" keeps the list
+   semantics that display: contents would otherwise risk dropping. */
+.tags {
+  display: contents;
+}
+
 /* Each tag is a <Badge>, so it's an optical pill: the remove button
    is marked data-icon, which makes it Badge's trailing 1lh icon box,
    pulled in until it's concentric with the end cap. */
