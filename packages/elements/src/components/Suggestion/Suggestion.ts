@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { observePillIcons } from "../../utils/pillIcons";
 import "./Suggestion.css";
 
 /**
@@ -55,7 +56,10 @@ export class KernelSuggestionItem extends KernelElement {
 
   connectedCallback() {
     this.style.display = "contents";
+    const firstConnect = !this.native;
     super.connectedCallback();
+    const button = this.native?.querySelector("button");
+    if (firstConnect && button) observePillIcons(button);
   }
 
   protected createNative(): HTMLElement {

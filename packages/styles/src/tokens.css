@@ -375,6 +375,40 @@
       calc(var(--kernel-radius-control) - var(--kernel-control-inset))
     );
 
+    /* Optical pills (Diego Haz's technique). A round end cap cuts into
+       the space beside a label, so a pill's padding reads smaller than
+       it is. Averaged over the cap's height, the curve removes
+       r × (1 − π/4) of width; pill components add that back. Only the
+       constant lives here: the rest of the maths uses `lh`, `cap` and
+       the component's own padding, so it has to resolve on the
+       component's own element (a token declared at :root would
+       substitute :root's values). See Badge.module.css for the full
+       recipe and AGENTS.md's "Optical pills" rule. */
+    --kernel-pill-cut: 0.2146;
+    @supports (scale: calc(1 - pi / 4)) {
+      --kernel-pill-cut: calc(1 - pi / 4);
+    }
+
+    /* Icons. Kernel ships no icon set: any <svg>, <img> or icon component
+       (Lucide, Phosphor, Heroicons, Tabler…) dropped into a pill or
+       button lands in a 1lh slot that the optical-pill maths keeps
+       concentric with the end cap. These two tokens are how a product
+       makes whichever set it picked look native:
+
+       --kernel-icon-size is the size the icon is drawn at inside that
+       slot. 1.25em suits 24px-grid sets whose glyphs fill about 85% of
+       their viewBox. Lower it for sets drawn edge to edge, raise it for
+       sets with generous built-in padding.
+
+       --kernel-icon-stroke-width overrides an outline set's stroke, in
+       the icon's own viewBox units (Lucide and Tabler default to 2,
+       Heroicons to 1.5). `auto` leaves each icon's stroke alone. The
+       override needs container style queries (Chrome 111+, Safari 18+);
+       elsewhere icons keep their own stroke. It only reaches strokes
+       set on the <svg> itself, which is where those sets put them. */
+    --kernel-icon-size: 1.25em;
+    --kernel-icon-stroke-width: auto;
+
     --kernel-border-width: 1px;
 
     /* ---------------------------------------------------------------- */
