@@ -34,7 +34,7 @@
    static border or the data-thinking sweep. */
 .kernel-Composer-root:has(.kernel-Composer-input:focus-visible) {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Composer-input {
@@ -103,7 +103,7 @@
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: kernel-composer-sweep 2s linear infinite;
+  animation: kernel-composer-sweep calc(var(--kernel-duration-shimmer) * 1.25) var(--kernel-ease-loop) infinite;
   pointer-events: none;
 }
 

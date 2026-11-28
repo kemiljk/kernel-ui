@@ -17,7 +17,7 @@ This project builds its UI with Kernel UI (\`@kernelui-lib/*\`), components on r
 - Pick a Kernel component before writing markup, and check its exact props before using it. Use the \`kernel\` MCP server (\`search_components\`, \`get_component\`) or \`npx @kernelui-lib/cli docs <name> --markdown\`. Props from other libraries (\`asChild\`, \`leftIcon\`) don't exist.
 - Style only with \`--kernel-*\` tokens (MCP \`get_tokens\`), never raw colours, pixel radii or \`999px\`.
 - Every form field needs \`label\` (use \`hideLabel\` to hide it visually). Every icon-only button needs \`aria-label\`.
-- After writing UI, run \`npx @kernelui-lib/cli check <files>\` (or MCP \`check_code\`) and fix what it reports.
+- After writing UI, run \`npx @kernelui-lib/cli check <files>\` (or MCP \`check_code\`) and fix what it reports. With ESLint, add \`@kernelui-lib/eslint-plugin\`'s recommended config.
 - Skills with the full guidance: \`kernel-ui\`, \`kernel-ui-theming\`, \`kernel-ui-migrate\`, \`kernel-ui-elements\`.
 ${END}`;
 

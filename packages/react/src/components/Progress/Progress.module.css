@@ -32,7 +32,7 @@
     transparent
   );
   background-size: 50% 100%;
-  animation: kernel-progress-sweep 1.4s var(--kernel-ease-out) infinite;
+  animation: kernel-progress-sweep var(--kernel-duration-shimmer) var(--kernel-ease-loop) infinite;
 }
 
 .root:indeterminate::-moz-progress-bar {
@@ -54,6 +54,6 @@
   }
 
   .root:indeterminate {
-    animation-duration: 2.4s;
+    animation-duration: calc(var(--kernel-duration-shimmer) * 2);
   }
 }

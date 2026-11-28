@@ -154,7 +154,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               </span>
             ) : null}
             {loading ? (
-              <span className={styles.spinner} aria-hidden="true" />
+              <span className={styles.spinner} aria-hidden="true" data-kernel-motion="essential" />
             ) : null}
           </>
         ),

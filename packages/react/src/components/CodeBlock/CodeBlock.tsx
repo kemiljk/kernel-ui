@@ -10,6 +10,22 @@ export interface CodeBlockState {
   copied: boolean;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface CodeBlockLabels {
+  /** Copy button text and accessible name. Default `"Copy"`. */
+  copy: string;
+  /** Copy button text and accessible name after a copy. Default `"Copied"`. */
+  copied: string;
+  /** Live-region announcement after a copy. Default `"Copied to clipboard"`. */
+  copiedAnnouncement: string;
+}
+
+const defaultCodeBlockLabels: CodeBlockLabels = {
+  copy: "Copy",
+  copied: "Copied",
+  copiedAnnouncement: "Copied to clipboard",
+};
+
 export interface CodeBlockProps
   extends Omit<HTMLAttributes<HTMLElement>, "className" | "children"> {
   /** Pre-tokenised lines from your highlighter of choice. Takes precedence
@@ -30,6 +46,9 @@ export interface CodeBlockProps
   /** Height at which the block starts scrolling. */
   maxBlockSize?: string;
   className?: ClassNameValue<CodeBlockState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<CodeBlockLabels>;
 }
 
 /**
@@ -65,8 +84,10 @@ export function CodeBlock({
   maxBlockSize,
   className,
   style,
+  labels,
   ...rest
 }: CodeBlockProps) {
+  const l = { ...defaultCodeBlockLabels, ...labels };
   const resolvedLines = useMemo(
     () => lines ?? linesFromCode(code),
     [lines, code],
@@ -118,7 +139,7 @@ export function CodeBlock({
               className={styles.copy}
               onClick={copy}
               data-copied={dataAttr(copied)}
-              aria-label={copied ? "Copied" : "Copy"}
+              aria-label={copied ? l.copied : l.copy}
             >
               {/* Both icon and label render both states at once, stacked,
                   and cross-fade on data-copied — same convention as
@@ -173,10 +194,10 @@ export function CodeBlock({
               </span>
               <span className={styles.copyLabelStack} aria-hidden="true">
                 <span className={styles.copyLabelLayer} data-kind="copy">
-                  Copy
+                  {l.copy}
                 </span>
                 <span className={styles.copyLabelLayer} data-kind="copied">
-                  Copied
+                  {l.copied}
                 </span>
               </span>
             </button>
@@ -184,7 +205,15 @@ export function CodeBlock({
         </figcaption>
       ) : null}
 
-      <div ref={viewportRef} className={styles.viewport}>
+      <div
+        ref={viewportRef}
+        className={styles.viewport}
+        // A scrolling region keyboard users can reach and scroll, named by
+        // the header so focus announces what it is.
+        tabIndex={0}
+        role="region"
+        aria-label={typeof heading === "string" && heading ? heading : (language ?? "Code")}
+      >
         <div ref={contentRef}>
           <pre className={styles.pre}>
             <code className={styles.code} data-language={language}>
@@ -222,7 +251,7 @@ export function CodeBlock({
       {/* Copy feedback as a live region, not just a changed icon: the button's
           own label changing is announced only if focus happens to be on it. */}
       <span role="status" className="kernel-sr-only">
-        {copied ? "Copied to clipboard" : ""}
+        {copied ? l.copiedAnnouncement : ""}
       </span>
     </figure>
   );

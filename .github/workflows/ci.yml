@@ -43,6 +43,9 @@ jobs:
       - name: Build packages
         run: bun run --filter '@kernelui-lib/*' build
 
+      - name: Check published package contents
+        run: bun run test:package
+
       - name: Build registry
         run: bun run --cwd packages/registry build
 
@@ -76,9 +79,22 @@ jobs:
       - name: Test CLI package
         run: bun run --cwd packages/cli test
 
+      - name: Test ESLint plugin
+        run: bun run --cwd packages/eslint-plugin test
+
       - name: Typecheck docs
         run: bun run --cwd apps/docs typecheck
 
       - name: Build docs
         if: github.event_name == 'pull_request'
         run: bun run docs:build
+
+      # axe-core in a real browser against every component's live examples,
+      # light and dark. Fails on serious or critical violations.
+      - name: Install Chromium for the accessibility check
+        if: github.event_name == 'pull_request'
+        run: bunx playwright install --with-deps chromium
+
+      - name: Accessibility check (axe)
+        if: github.event_name == 'pull_request'
+        run: bun run test:a11y

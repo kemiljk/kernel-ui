@@ -15,7 +15,10 @@ function motionTokens(node: HTMLElement, opening: boolean) {
     style.getPropertyValue(durationToken),
     opening ? 200 : 150,
   );
-  const easing = style.getPropertyValue("--kernel-ease-out").trim() || "ease-out";
+  // Height moves between two visible sizes, so it eases in and out (see the
+  // --kernel-ease-in-out token): ease-out alone reads as overshooting a
+  // clipped edge that can't actually overshoot.
+  const easing = style.getPropertyValue("--kernel-ease-in-out").trim() || "ease-in-out";
   return { durationMs, easing };
 }
 
@@ -80,14 +83,22 @@ function measurePanel(content: HTMLElement): PanelBox {
   return natural;
 }
 
-function panelKeyframes(from: PanelBox, to: PanelBox): Keyframe[] {
+/** Height and padding follow the measured boxes; opacity fades the content
+ * with them, so the clipped edge doesn't read as a hard wipe. */
+function panelKeyframes(from: PanelBox, to: PanelBox, opening: boolean, fromOpacity?: number): Keyframe[] {
   return [
     {
       height: `${from.height}px`,
       paddingTop: from.paddingTop,
       paddingBottom: from.paddingBottom,
+      opacity: fromOpacity ?? (opening ? 0 : 1),
     },
-    { height: `${to.height}px`, paddingTop: to.paddingTop, paddingBottom: to.paddingBottom },
+    {
+      height: `${to.height}px`,
+      paddingTop: to.paddingTop,
+      paddingBottom: to.paddingBottom,
+      opacity: opening ? 1 : 0,
+    },
   ];
 }
 
@@ -222,6 +233,8 @@ export class DetailsPanelAnimator {
     // travel. `details.open` stays true for the whole of our own close
     // animation, so interruptions still measure their real current box.
     const from = this.details.open ? readPanel(this.content) : COLLAPSED;
+    // Read before cancelling, so a reversal fades on from where it is.
+    const fromOpacity = this.details.open && this.animation ? Number(getComputedStyle(this.content).opacity) : undefined;
     this.animation?.cancel();
     this.animation = null;
 
@@ -241,7 +254,7 @@ export class DetailsPanelAnimator {
     }
 
     const { durationMs, easing } = motionTokens(this.details, nextOpen);
-    this.animation = this.content.animate(panelKeyframes(from, to), {
+    this.animation = this.content.animate(panelKeyframes(from, to, nextOpen, fromOpacity), {
       // Scaled so reversing mid-flight covers the shorter remaining distance
       // at the same speed instead of crawling through a full-length run.
       duration: durationMs * (distance / Math.max(to.height, from.height)),

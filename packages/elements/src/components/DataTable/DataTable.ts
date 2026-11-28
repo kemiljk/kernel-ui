@@ -51,7 +51,12 @@ let dataTableCounter = 0;
  *
  * Attributes: `filter-label` (the field's visible label, falling back to
  * `filter-placeholder`), `filter-placeholder` (default "Filter"),
- * `page-size` (default 10), `caption`.
+ * `page-size` (default 10), `caption`. Built-in strings (React's
+ * `DataTableLabels`): `label-results` (template applied to every count,
+ * e.g. `"{count} rows"`; the default is "1 result" / "{count} results" —
+ * set `labels.results` to a function for real plural rules),
+ * `label-navigation`, `label-previous-page`, `label-next-page`,
+ * `label-previous`, `label-next` — or the `labels` property.
  */
 export class KernelDataTable<T = unknown> extends KernelElement {
   private readonly baseId = `kernel-data-table-${++dataTableCounter}`;
@@ -69,7 +74,18 @@ export class KernelDataTable<T = unknown> extends KernelElement {
   private paginationEl!: HTMLElement;
 
   static get observedAttributes() {
-    return ["filter-label", "filter-placeholder", "page-size", "caption"];
+    return [
+      "filter-label",
+      "filter-placeholder",
+      "page-size",
+      "caption",
+      "label-results",
+      "label-navigation",
+      "label-previous-page",
+      "label-next-page",
+      "label-previous",
+      "label-next",
+    ];
   }
 
   get columns(): KernelDataTableColumn<T>[] {
@@ -143,7 +159,6 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     table.append(this.theadEl, this.tbodyEl);
 
     this.paginationEl = document.createElement("nav");
-    this.paginationEl.setAttribute("aria-label", "Pagination");
     this.paginationEl.className = `${kernelClass("Pagination")} ${kernelClass("DataTable", "pagination")}`;
 
     const scroll = document.createElement("div");
@@ -152,7 +167,7 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     root.append(filterWrapper, this.statusEl, scroll, this.paginationEl);
     this.native = root;
     this.append(root);
-    this.renderAll();
+    this.applyLabels();
   }
 
   private get filtered(): T[] {
@@ -205,7 +220,9 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     const currentPage = Math.min(this.page, pageCount);
     const pageRows = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-    this.statusEl.textContent = `${sorted.length} ${sorted.length === 1 ? "result" : "results"}`;
+    this.statusEl.textContent = this.builtInLabel("results", sorted.length === 1 ? "{count} result" : "{count} results", {
+      count: sorted.length,
+    });
 
     this.theadEl.replaceChildren();
     const headRow = document.createElement("tr");
@@ -267,8 +284,8 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     const prevButton = document.createElement("button");
     prevButton.type = "button";
     prevButton.className = kernelClass("Pagination", "control");
-    prevButton.setAttribute("aria-label", "Go to previous page");
-    prevButton.append(...controlContent("‹", "Previous", true));
+    prevButton.setAttribute("aria-label", this.builtInLabel("previousPage", "Go to previous page"));
+    prevButton.append(...controlContent("‹", this.builtInLabel("previous", "Previous"), true));
     prevButton.disabled = currentPage === 1;
     prevButton.addEventListener("click", () => {
       this.page = Math.max(1, currentPage - 1);
@@ -297,8 +314,8 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     const nextButton = document.createElement("button");
     nextButton.type = "button";
     nextButton.className = kernelClass("Pagination", "control");
-    nextButton.setAttribute("aria-label", "Go to next page");
-    nextButton.append(...controlContent("›", "Next", false));
+    nextButton.setAttribute("aria-label", this.builtInLabel("nextPage", "Go to next page"));
+    nextButton.append(...controlContent("›", this.builtInLabel("next", "Next"), false));
     nextButton.disabled = currentPage === pageCount;
     nextButton.addEventListener("click", () => {
       this.page = Math.min(pageCount, currentPage + 1);
@@ -308,6 +325,11 @@ export class KernelDataTable<T = unknown> extends KernelElement {
     list.append(nextItem);
 
     this.paginationEl.append(list);
+  }
+
+  protected applyLabels() {
+    this.paginationEl?.setAttribute("aria-label", this.builtInLabel("navigation", "Pagination"));
+    this.renderAll();
   }
 
   protected syncAttr(name: string, value: string | null) {

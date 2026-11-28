@@ -229,6 +229,12 @@
     }
 
     --kernel-color-danger: var(--kernel-danger-9);
+    /* Step 10, the same as --kernel-color-accent-hover. It goes darker in
+       light mode and lighter in dark mode, so it moves away from the canvas
+       in both schemes and towards more contrast with --kernel-color-on-danger
+       in both. Mixing in black, as Button's hover used to, darkened the dark
+       fill under its black label. */
+    --kernel-color-danger-hover: var(--kernel-danger-10);
     --kernel-color-danger-subtle: var(--kernel-danger-3);
     --kernel-color-danger-text: var(--kernel-danger-11);
     /* Checked numerically against danger-9: white wins in light mode
@@ -266,6 +272,24 @@
        (about 4.2:1) overrates. Accent-11 clears Lc 57 in dark and Lc 77 in
        light for every preset. */
     --kernel-color-focus-ring: var(--kernel-accent-11);
+
+    /* Where a focus ring sits relative to the box it outlines. Read these
+       instead of writing outline-offset by hand, so every ring in the
+       library keeps the same distance.
+
+       --kernel-focus-offset: the default, outside the box with a 2px gap,
+         so the ring never touches the control's own border or fill.
+       --kernel-focus-offset-inset: inside the box. For a ring that would be
+         clipped by an overflow: hidden parent, or would collide with a
+         neighbour that sits flush against it (list rows, table cells,
+         segments).
+       --kernel-focus-offset-tight: a 1px gap. For text fields, selects and
+         swatches, where the ring traces the field's own border and a wider
+         gap reads as a second, detached box. Also for small controls packed
+         into a clipped row. */
+    --kernel-focus-offset: 2px;
+    --kernel-focus-offset-inset: -2px;
+    --kernel-focus-offset-tight: 1px;
 
     /* Shared by Switch's and Slider's thumbs: a fixed light colour
        regardless of theme or the track's own colour underneath, the same
@@ -346,15 +370,23 @@
       var(--kernel-padding-sheet) + var(--kernel-radius-base) * 0.4
     );
 
-    /* Matches the fixed inline padding every text-bearing field already
-       uses for its own value/placeholder text (TextField, Textarea,
-       Select, Combobox, TagInput all pad with --kernel-space-3), so a
+    /* The base inline padding every text-bearing field uses for its own
+       value/placeholder text (TextField, Textarea, Select, Combobox,
+       TagInput, NumberField all start from --kernel-space-3), so a
        field's <label> lines up with where its actual text starts
-       instead of the field's literal inline-start edge — true
-       regardless of --kernel-radius-control, since that padding never
-       changes with corner rounding. Not applied to ColorPicker: its
-       label sits above a swatch, not read-as-text field content, so
-       "where the text starts" doesn't apply there. */
+       instead of the field's literal inline-start edge.
+
+       Fields on --kernel-radius-control add the optical-pill label edge
+       on top of this (r² × (1 − π/4) / half-height, about 0.7px at the
+       default radius, about 4px when the control radius is a pill), and
+       their label adds the same amount, so the label still lines up with
+       the text at every rounding. That sum is computed on each field's
+       own element, because it depends on the field's height; this token
+       stays the flat base. Textarea keeps the flat value: it uses
+       --kernel-radius-md, and a corner averaged over a multi-line box
+       cuts away under a pixel. Not applied to ColorPicker: its label sits
+       above a swatch, not read-as-text field content, so "where the text
+       starts" doesn't apply there. */
     --kernel-label-inset: var(--kernel-space-3);
 
     /* Control DNA: one height scale, one inset, one inner radius. Every
@@ -500,6 +532,30 @@
 
     --kernel-scale-enter: 0.96;
     --kernel-scale-exit: 0.99;
+    /* Large surfaces (Dialog, a side panel) enter from closer to full
+       size: at 0.96 a full-screen-ish panel visibly changes too much of
+       the screen. Popovers and menus keep --kernel-scale-enter. */
+    --kernel-scale-enter-lg: 0.98;
+    /* A layer pushed behind the one in front (Toast's collapsed stack):
+       how far each step back shrinks. */
+    --kernel-scale-recede: 0.92;
+
+    /* Sheets and drawers: the iOS sheet curve (via Ionic and Vaul), which
+       leaves fast and settles long, at a duration that suits travelling a
+       large share of the viewport. Exits still use --kernel-duration-exit. */
+    --kernel-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --kernel-duration-sheet: 400ms;
+
+    /* Loops: spinners, shimmer, pulsing dots. Continuous motion is linear,
+       and one set of durations keeps every loading state moving at the same
+       rhythm instead of each component picking its own. Loops that carry
+       meaning (a busy spinner, indeterminate progress) are marked
+       data-kernel-motion="essential" so reduced motion slows them rather
+       than freezing them. */
+    --kernel-ease-loop: linear;
+    --kernel-duration-spin: 700ms;
+    --kernel-duration-pulse: 1.2s;
+    --kernel-duration-shimmer: 1.6s;
     /* Press feedback on anything clickable. Was drifting to eight
        different hand-picked values across components (0.90–0.99) with
        no shared token — converge on one. 0.96 is deliberate, not
@@ -564,7 +620,7 @@
        from nothing. Using --kernel-ease-out (or the spring alias) on a
        resizing element like Accordion's height overshoots visually,
        which a clipped `height` can't actually do. */
-    --kernel-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --kernel-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     /* For a scrim's opacity, and opacity alone. The overlay curve is
        deliberately front-loaded — over 200ms it reaches 40% by 20ms and
        96% by 100ms — which is what makes a *moving* surface feel like it

@@ -4,6 +4,7 @@ import DocsSidebar from "../../components/DocsSidebar.astro";
 import UsageAccordion from "../../components/UsageAccordion.astro";
 import DatePickerDemo from "../../components/demos/DatePickerDemo";
 import DatePickerPlayground from "../../components/demos/DatePickerPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 const usageSnippet = `import { useState } from "react";
 import { DatePicker } from "@kernelui-lib/react";
@@ -38,19 +39,7 @@ function BookingDate() {
     <DatePickerPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Date Picker.</caption>
-      <thead>
-        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>value</code></td><td>Date</td><td>—</td></tr>
-        <tr><td><code>defaultValue</code></td><td>Date</td><td>—</td></tr>
-        <tr><td><code>onValueChange</code></td><td>(date: Date) =&gt; void</td><td>—</td></tr>
-        <tr><td><code>minDate</code></td><td>Date</td><td>—</td></tr>
-        <tr><td><code>maxDate</code></td><td>Date</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="date-picker" />
 
     <h2>Accessibility</h2>
     <ul>

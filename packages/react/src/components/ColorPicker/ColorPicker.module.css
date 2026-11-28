@@ -5,6 +5,28 @@
   font-family: var(--kernel-font-sans);
   max-inline-size: 100%;
   --label-offset: var(--kernel-label-inset);
+  /* The hex field is an optical field like TextField (see its comment
+     and Badge.module.css): its text clears a pill's end cap at Round.
+     The label above stays flat, because it sits over the swatch. */
+  --field-height: var(--kernel-control-height-md);
+  --field-px: var(--kernel-space-3);
+  --field-max: calc(var(--field-height) / 2);
+  --field-r: min(var(--kernel-radius-control), var(--field-max));
+  --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut));
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .root {
+    --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut) * var(--field-r) / var(--field-max));
+  }
+}
+
+.root[data-size="sm"] {
+  --field-height: var(--kernel-control-height-sm);
+}
+
+.root[data-size="lg"] {
+  --field-height: var(--kernel-control-height-lg);
 }
 
 .root[data-label-offset="false"] {
@@ -55,6 +77,8 @@
   block-size: 100%;
   opacity: 0;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .input:disabled {
@@ -67,17 +91,17 @@
    progressive control. */
 .swatchLabel:has(.input:focus-visible) .swatch {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .hexInput {
-  border-radius: var(--kernel-radius-control);
+  border-radius: var(--field-r);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
   font-family: var(--kernel-font-mono);
-  padding-inline: var(--kernel-space-3);
-  block-size: var(--kernel-control-height-md);
+  padding-inline: calc(var(--field-px) + var(--field-label-edge));
+  block-size: var(--field-height);
   inline-size: 8rem;
   text-transform: lowercase;
   transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
@@ -91,7 +115,7 @@
 
 .hexInput:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .hexInput[aria-invalid="true"] {

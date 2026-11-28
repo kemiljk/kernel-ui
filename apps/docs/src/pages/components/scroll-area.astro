@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import ScrollAreaDemo from "../../components/demos/ScrollAreaDemo";
 import ScrollAreaPlayground from "../../components/demos/ScrollAreaPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Scroll Area" withSidebar>
@@ -28,14 +29,7 @@ import ScrollAreaPlayground from "../../components/demos/ScrollAreaPlayground";
     <ScrollAreaPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Scroll Area.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
-        <tr><td><code>edgeShadow</code></td><td>boolean</td><td>false</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="scroll-area" />
     <p>
       <code>edgeShadow</code> soft-fades content into the host surface and
       draws a layered inset shadow at whichever edge still has content to

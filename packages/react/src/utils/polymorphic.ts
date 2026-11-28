@@ -92,8 +92,10 @@ export function resolveClassName<TState>(
   return typeof value === "function" ? value(state) : value;
 }
 
-/** Presence-based data attribute: renders `data-foo=""` when true, and is
- * omitted entirely when false, so `[data-foo]` selectors just work in CSS. */
+/** Presence-based data attribute: React renders `data-foo="true"` when true,
+ * and omits it entirely when false, so `[data-foo]` selectors just work in
+ * CSS. `@kernelui-lib/elements` writes the same `"true"` (its own `dataAttr()`
+ * in `base.ts`); `parity.test.tsx` holds the two to it. */
 export function dataAttr(condition: boolean | undefined): true | undefined {
   return condition ? true : undefined;
 }

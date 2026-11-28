@@ -6,6 +6,7 @@ import Example from "../../components/Example.astro";
 import SourcesDemo from "../../components/demos/SourcesDemo";
 import SourcesPlayground from "../../components/demos/SourcesPlayground";
 import { Source, Sources } from "@kernelui-lib/react";
+import ApiTable from "../../components/ApiTable.astro";
 
 const listSnippet = `<Sources>
   <Source
@@ -74,36 +75,12 @@ const inlineSnippet = `<p>
     <SourcesPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Sources.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>heading</code></td><td>ReactNode | null</td><td>"Sources"</td></tr>
-        <tr><td><code>children</code></td><td>ReactNode (Source)</td><td>—</td></tr>
-      </tbody>
-    </table></div>
-
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Source.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>href</code></td><td>string</td><td>—</td></tr>
-        <tr><td><code>title</code></td><td>ReactNode (required)</td><td>—</td></tr>
-        <tr><td><code>host</code></td><td>ReactNode</td><td>derived from href</td></tr>
-        <tr><td><code>index</code></td><td>number</td><td>—</td></tr>
-        <tr><td><code>target</code></td><td>string</td><td>"_blank"</td></tr>
-      </tbody>
-    </table></div>
-
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Citation.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>index</code></td><td>number (required)</td><td>—</td></tr>
-        <tr><td><code>href</code></td><td>string</td><td>—</td></tr>
-        <tr><td><code>target</code></td><td>string</td><td>"_blank"</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="sources" />
+    <p>
+      <code>Source</code> and <code>Citation</code> open their link in a new tab by default
+      (<code>target="_blank"</code>, with <code>rel="noopener noreferrer"</code>); pass
+      <code>target</code> to change that.
+    </p>
 
     <h2>Accessibility</h2>
     <ul>

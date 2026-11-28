@@ -27,6 +27,7 @@ export interface TodoListProps
   /** Completion count. Derived from `TodoItem` children when omitted, which
    * covers the common case of a statically listed plan. */
   completed?: number;
+  /** Total count. Derived from `TodoItem` children when omitted. */
   total?: number;
   defaultOpen?: boolean;
   open?: boolean;

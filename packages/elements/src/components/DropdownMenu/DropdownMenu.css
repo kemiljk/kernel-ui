@@ -108,7 +108,7 @@ a.kernel-DropdownMenu-item {
   /* Inset rather than outset — see the matching comment in
      @kernelui-lib/react's DropdownMenu.module.css `.item`. */
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: -2px;
+  outline-offset: var(--kernel-focus-offset-inset);
 }
 
 .kernel-DropdownMenu-item:disabled {

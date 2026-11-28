@@ -14,6 +14,7 @@ import {
   type FloatingPlacement,
 } from "../../utils/useFloatingPosition";
 import { prefersReducedMotion, waitForExitTransition } from "../../utils/exitTransition";
+import { isTooltipGroupWarm, markTooltipClosed, markTooltipOpen } from "../../utils/tooltipGroup";
 import styles from "./Tooltip.module.css";
 
 export interface TooltipState {
@@ -31,8 +32,9 @@ export interface TooltipProps {
   align?: FloatingAlign;
   /** Gap between the trigger and the tooltip, in pixels. */
   offset?: number;
-  /** Delay before showing on hover, in milliseconds. Focus shows
-   * near-instantly regardless. */
+  /** Delay before showing on hover, in milliseconds. Defaults to 400.
+   * Focus shows immediately regardless, and once any tooltip has been
+   * shown, neighbours open with no delay (see utils/tooltipGroup). */
   openDelay?: number;
   /** Delay before hiding once the pointer leaves both the trigger and
    * the tooltip. Gives the pointer time to travel into rich content. */
@@ -72,7 +74,7 @@ export function Tooltip({
   placement = "top",
   align = "center",
   offset = 8,
-  openDelay = 0,
+  openDelay = 400,
   closeDelay = 0,
   arrow = false,
   renderArrow,
@@ -83,6 +85,9 @@ export function Tooltip({
   const [open, setOpen] = useState(false);
   const [opening, setOpening] = useState(false);
   const [closing, setClosing] = useState(false);
+  // Shown while the group is warm: no delay and no enter transition.
+  const [instant, setInstant] = useState(false);
+  const countedRef = useRef(false);
   const id = useId();
   const popoverRef = useRef<HTMLDivElement>(null);
   const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -101,6 +106,11 @@ export function Tooltip({
     return () => {
       clearTimeout(openTimeoutRef.current);
       clearTimeout(closeTimeoutRef.current);
+      // Unmounting while open must release the group, or it stays warm.
+      if (countedRef.current) {
+        countedRef.current = false;
+        markTooltipClosed();
+      }
       exitAbortRef.current?.abort();
     };
   }, []);
@@ -110,7 +120,12 @@ export function Tooltip({
     clearTimeout(closeTimeoutRef.current);
   }
 
-  function showNow() {
+  function showNow(warm = false) {
+    setInstant(warm);
+    if (!countedRef.current) {
+      countedRef.current = true;
+      markTooltipOpen();
+    }
     exitAbortRef.current?.abort();
     exitAbortRef.current = null;
     clearTimers();
@@ -132,11 +147,16 @@ export function Tooltip({
       showNow();
       return;
     }
-    openTimeoutRef.current = setTimeout(showNow, delay);
+    openTimeoutRef.current = setTimeout(() => showNow(), delay);
   }
 
   function showOnHover(event: { pointerType: string }, delay: number) {
     if (event.pointerType === "touch") return;
+    if (isTooltipGroupWarm()) {
+      clearTimeout(closeTimeoutRef.current);
+      if (!(open && !closing)) showNow(true);
+      return;
+    }
     show(delay);
   }
 
@@ -158,7 +178,12 @@ export function Tooltip({
 
     setOpen(false);
     setClosing(false);
+    setInstant(false);
     node.hidePopover?.();
+    if (countedRef.current) {
+      countedRef.current = false;
+      markTooltipClosed();
+    }
   }
 
   function scheduleHide() {
@@ -229,6 +254,7 @@ export function Tooltip({
     "data-open": dataAttr(open && !closing),
     "data-opening": dataAttr(opening),
     "data-closing": dataAttr(closing),
+    "data-instant": dataAttr(instant),
     className: resolvedClassName,
     onPointerEnter: cancelHide,
     onPointerLeave: scheduleHide,

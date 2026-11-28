@@ -3,7 +3,21 @@
   flex-direction: column;
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
-  --label-offset: var(--kernel-label-inset);
+  /* Optical field: the same label edge as TextField (see its comment
+     and Badge.module.css for the maths), so text clears a pill's end
+     cap at Round and the label keeps lining up with it. */
+  --field-height: var(--kernel-control-height-md);
+  --field-px: var(--kernel-space-3);
+  --field-max: calc(var(--field-height) / 2);
+  --field-r: min(var(--kernel-radius-control), var(--field-max));
+  --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut));
+  --label-offset: calc(var(--kernel-label-inset) + var(--field-label-edge));
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .root {
+    --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut) * var(--field-r) / var(--field-max));
+  }
 }
 
 .root[data-label-offset="false"] {
@@ -19,12 +33,12 @@
 
 .input {
   inline-size: 100%;
-  block-size: var(--kernel-control-height-md);
-  border-radius: var(--kernel-radius-control);
+  block-size: var(--field-height);
+  border-radius: var(--field-r);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
-  padding-inline: var(--kernel-space-3);
+  padding-inline: calc(var(--field-px) + var(--field-label-edge));
   font-size: var(--kernel-font-size-base);
   transition: border-color var(--kernel-duration-fast) var(--kernel-ease-out);
 }
@@ -37,7 +51,7 @@
 
 .input:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .listbox {

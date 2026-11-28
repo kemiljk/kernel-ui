@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import SidebarDemo from "../../components/demos/SidebarDemo";
 import SidebarPlayground from "../../components/demos/SidebarPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 interface Props {}
 ---
@@ -28,13 +29,7 @@ interface Props {}
     <SidebarPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Sidebar.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>aria-label</code></td><td>string (required)</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="sidebar" />
 
     <h2>Accessibility</h2>
     <ul>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import type { HTMLAttributes, ReactNode } from "react";
 import { dataAttr, resolveClassName, type ClassNameValue } from "../../utils/polymorphic";
 import { useDetailsTransition } from "../../utils/detailsTransition";
@@ -26,6 +26,31 @@ export interface FileDiffState {
   deletions: number;
 }
 
+/** Built-in strings (all screen-reader only), overridable for translation via `labels`. */
+export interface FileDiffLabels {
+  /** Column header. Default `"Old line"`. */
+  oldLine: string;
+  /** Column header. Default `"New line"`. */
+  newLine: string;
+  /** Column header. Default `"Change"`. */
+  change: string;
+  /** Column header. Default `"Content"`. */
+  content: string;
+  /** Stands in for `path` in the caption when it isn't plain text. Default `"the file"`. */
+  unnamedFile: string;
+  /** Table caption. Default ``(path, additions, deletions) => `Changes to ${path}: ${additions} added, ${deletions} removed` ``. */
+  caption: (path: string, additions: number, deletions: number) => string;
+}
+
+const defaultFileDiffLabels: FileDiffLabels = {
+  oldLine: "Old line",
+  newLine: "New line",
+  change: "Change",
+  content: "Content",
+  unnamedFile: "the file",
+  caption: (path, additions, deletions) => `Changes to ${path}: ${additions} added, ${deletions} removed`,
+};
+
 export interface FileDiffProps
   extends Omit<HTMLAttributes<HTMLDetailsElement>, "className" | "children"> {
   /** The changed file's path, shown on the summary. */
@@ -37,11 +62,16 @@ export interface FileDiffProps
   showLineNumbers?: boolean;
   /** Collapse once the diff is complete. */
   collapseOnComplete?: boolean;
+  /** Defaults to `true`. */
   defaultOpen?: boolean;
-  /** Explicit counts, when `rows` is a window onto a larger diff. */
+  /** Explicit counts, when `rows` is a window onto a larger diff. Derived from `rows` when omitted. */
   additions?: number;
+  /** Same as `additions`: derived from `rows` when omitted. */
   deletions?: number;
   className?: ClassNameValue<FileDiffState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<FileDiffLabels>;
 }
 
 const MARKERS: Record<DiffRowKind, string> = {
@@ -79,8 +109,10 @@ export function FileDiff({
   additions,
   deletions,
   className,
+  labels,
   ...rest
 }: FileDiffProps) {
+  const l = { ...defaultFileDiffLabels, ...labels };
   const counts = useMemo(() => {
     let added = 0;
     let removed = 0;
@@ -93,6 +125,7 @@ export function FileDiff({
   const resolvedAdditions = additions ?? counts.added;
   const resolvedDeletions = deletions ?? counts.removed;
 
+  const pathId = useId();
   const { detailsRef, contentRef, open, setOpen } = useDetailsTransition({
     defaultOpen: defaultOpen ?? true,
   });
@@ -128,7 +161,7 @@ export function FileDiff({
       className={[styles.root, resolveClassName(className, state)].filter(Boolean).join(" ")}
     >
       <summary className={styles.trigger}>
-        <span className={styles.path}>{path}</span>
+        <span id={pathId} className={styles.path}>{path}</span>
         <span className={styles.counts}>
           <span className={styles.additions}>+{resolvedAdditions}</span>
           <span className={styles.deletions}>−{resolvedDeletions}</span>
@@ -144,19 +177,25 @@ export function FileDiff({
         </svg>
       </summary>
 
-      <div ref={contentRef} className={styles.content}>
+      <div
+        ref={contentRef}
+        className={styles.content}
+        // Wide diffs scroll sideways: reachable by keyboard, named by the path.
+        tabIndex={0}
+        role="region"
+        aria-labelledby={pathId}
+      >
         <table className={styles.table}>
           <caption className="kernel-sr-only">
-            Changes to {typeof path === "string" ? path : "the file"}: {resolvedAdditions} added,{" "}
-            {resolvedDeletions} removed
+            {l.caption(typeof path === "string" ? path : l.unnamedFile, resolvedAdditions, resolvedDeletions)}
           </caption>
           {showLineNumbers ? (
             <thead className="kernel-sr-only">
               <tr>
-                <th scope="col">Old line</th>
-                <th scope="col">New line</th>
-                <th scope="col">Change</th>
-                <th scope="col">Content</th>
+                <th scope="col">{l.oldLine}</th>
+                <th scope="col">{l.newLine}</th>
+                <th scope="col">{l.change}</th>
+                <th scope="col">{l.content}</th>
               </tr>
             </thead>
           ) : null}

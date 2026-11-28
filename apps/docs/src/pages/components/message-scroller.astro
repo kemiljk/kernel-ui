@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import MessageScrollerDemo from "../../components/demos/MessageScrollerDemo";
 import MessageScrollerPlayground from "../../components/demos/MessageScrollerPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 ---
 
 <BaseLayout title="Message Scroller" withSidebar>
@@ -27,19 +28,7 @@ import MessageScrollerPlayground from "../../components/demos/MessageScrollerPla
     <MessageScrollerPlayground client:visible />
 
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Message Scroller.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>maxBlockSize</code></td><td>string</td><td>—</td></tr>
-        <tr><td><code>defaultPinned</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>threshold</code></td><td>number</td><td>24</td></tr>
-        <tr><td><code>onPinnedChange</code></td><td>(pinned: boolean) =&gt; void</td><td>—</td></tr>
-        <tr><td><code>showJumpToLatest</code></td><td>boolean</td><td>true</td></tr>
-        <tr><td><code>jumpLabel</code></td><td>ReactNode</td><td>"Jump to latest"</td></tr>
-        <tr><td><code>conversationKey</code></td><td>unknown</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="message-scroller" />
 
     <h2>Why pinning isn't a controlled prop</h2>
     <p>

@@ -8,6 +8,7 @@ import ButtonPlayground from "../../components/demos/ButtonPlayground";
 import ButtonIconsExample from "../../components/demos/ButtonIconsExample";
 import ButtonAsLinkExample from "../../components/demos/ButtonAsLinkExample";
 import { Button } from "@kernelui-lib/react";
+import ApiTable from "../../components/ApiTable.astro";
 
 const variantsSnippet = `<Button variant="primary">Primary</Button>
 <Button variant="secondary">Secondary</Button>
@@ -89,19 +90,7 @@ const asLinkSnippet = `// render swaps the underlying element — the action her
 
     
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Only the props specific to Button. Every native button attribute (onClick, form, name…) also works.</caption>
-      <thead>
-        <tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>variant</code></td><td>"primary" | "secondary" | "ghost" | "danger"</td><td>"secondary"</td></tr>
-        <tr><td><code>size</code></td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
-        <tr><td><code>loading</code></td><td>boolean</td><td>false</td></tr>
-        <tr><td><code>iconStart</code> / <code>iconEnd</code></td><td>ReactNode</td><td>—</td></tr>
-        <tr><td><code>render</code></td><td>ReactElement | (props, state) =&gt; ReactElement</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="button" />
 
     <h2>Accessibility</h2>
     <ul>

@@ -56,7 +56,7 @@ kernel-nav-link {
 
 .kernel-Nav-link:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--kernel-focus-offset);
 }
 
 .kernel-Nav-link[aria-current="page"] {

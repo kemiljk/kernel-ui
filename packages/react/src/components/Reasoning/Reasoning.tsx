@@ -10,17 +10,31 @@ export interface ReasoningState {
   streaming: boolean;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface ReasoningLabels {
+  /** Summary text while streaming. Default `"Thinking"`. */
+  thinking: string;
+  /** Summary text once streaming ends, when no `durationLabel` is given. Default `"Reasoning"`. */
+  reasoning: string;
+}
+
+const defaultReasoningLabels: ReasoningLabels = { thinking: "Thinking", reasoning: "Reasoning" };
+
 export interface ReasoningProps {
   /** Auto-opens the trace while true; auto-closes it the moment it flips
    * back to false. Only forces `open` on that transition's edge — once
    * streaming ends, the user's own manual open/close via the summary is
    * left alone, same as native `<details>`. */
   streaming?: boolean;
-  /** Consumer-computed, e.g. "Thought for 4s" — shown once streaming ends. */
+  /** Consumer-computed, e.g. "Thought for 4s" — shown once streaming ends.
+   * Defaults to `"Reasoning"`. */
   durationLabel?: ReactNode;
   defaultOpen?: boolean;
   children: ReactNode;
   className?: ClassNameValue<ReasoningState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<ReasoningLabels>;
 }
 
 /**
@@ -35,7 +49,9 @@ export function Reasoning({
   defaultOpen = false,
   children,
   className,
+  labels,
 }: ReasoningProps) {
+  const l = { ...defaultReasoningLabels, ...labels };
   const { detailsRef, contentRef, open, setOpen } = useDetailsTransition({
     defaultOpen: defaultOpen || streaming,
   });
@@ -73,7 +89,7 @@ export function Reasoning({
     >
       <summary className={styles.trigger}>
         {streaming ? (
-          <ThinkingIndicator label="Thinking" />
+          <ThinkingIndicator label={l.thinking} />
         ) : (
           <span className={styles.label}>
             <svg
@@ -92,7 +108,7 @@ export function Reasoning({
               />
               <path d="M6.25 14.5h3.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
             </svg>
-            {durationLabel ?? "Reasoning"}
+            {durationLabel ?? l.reasoning}
           </span>
         )}
         <svg

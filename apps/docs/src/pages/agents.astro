@@ -29,6 +29,11 @@ tokens. When you're done, run npx @kernelui-lib/cli check on the files you
 changed and fix what it reports.`;
 
 const checkSnippet = `npx @kernelui-lib/cli check src/**/*.tsx`;
+
+const eslintSnippet = `// eslint.config.js
+import kernel from "@kernelui-lib/eslint-plugin";
+
+export default [kernel.configs.recommended];`;
 ---
 
 <BaseLayout title="AI agents" description="Set up Claude Code, Cursor, VS Code or any coding agent to build with Kernel: one command installs skills, an MCP server with exact props, and a code check." withSidebar>
@@ -102,6 +107,28 @@ const checkSnippet = `npx @kernelui-lib/cli check src/**/*.tsx`;
       one, so it also works in CI.
     </p>
     <CodeBlock code={checkSnippet} lang="bash" />
+
+    <h2 id="lint">Lint rules</h2>
+    <p>
+      For the same checks in your editor and CI on every save, add the ESLint
+      plugin. It recognises Kernel components by their import, and every
+      message says how to fix the problem.
+    </p>
+    <CodeBlock code={eslintSnippet} lang="tsx" />
+    <div class="docs-table-scroll"><table class="docs-table">
+      <caption>Rules in kernel.configs.recommended.</caption>
+      <thead><tr><th scope="col">Rule</th><th scope="col">Catches</th></tr></thead>
+      <tbody>
+        <tr id="lint-no-foreign-props"><td><code>no-foreign-props</code> (error)</td><td>Props from other libraries: <code>asChild</code>, <code>leftIcon</code>, <code>isDisabled</code>…, with Kernel's equivalent</td></tr>
+        <tr id="lint-valid-prop-values"><td><code>valid-prop-values</code> (error)</td><td>Values a prop doesn't accept, such as <code>variant="primry"</code></td></tr>
+        <tr id="lint-field-requires-label"><td><code>field-requires-label</code> (error)</td><td>Form fields without <code>label</code></td></tr>
+        <tr id="lint-icon-button-requires-label"><td><code>icon-button-requires-label</code> (error)</td><td>Icon-only Buttons without <code>aria-label</code></td></tr>
+        <tr id="lint-no-clickable-non-interactive"><td><code>no-clickable-non-interactive</code> (error)</td><td>Click handlers on <code>&lt;div&gt;</code>s and other non-controls</td></tr>
+        <tr id="lint-no-unknown-props"><td><code>no-unknown-props</code> (warn)</td><td>Props a component doesn't have, with the closest real one</td></tr>
+        <tr id="lint-no-raw-colors"><td><code>no-raw-colors</code> (warn)</td><td>Raw colours in inline styles instead of tokens</td></tr>
+        <tr id="lint-prefer-kernel-components"><td><code>prefer-kernel-components</code> (warn)</td><td>shadcn/ui and Radix imports Kernel replaces</td></tr>
+      </tbody>
+    </table></div>
 
     <h2>A prompt that works</h2>
     <p>If your agent doesn't have the skills or MCP server yet, start with this:</p>

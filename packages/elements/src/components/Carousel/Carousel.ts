@@ -1,4 +1,5 @@
 import { KernelElement, dataAttr, kernelClass } from "../../base";
+import { prefersReducedMotion } from "../../utils/exitTransition";
 import "./Carousel.css";
 
 const PREV_PATH = "M10 3L5 8L10 13";
@@ -37,7 +38,10 @@ function arrowIcon(path: string): SVGSVGElement {
  * could add a `MutationObserver` if dynamic slide lists turn out to be
  * needed.
  *
- * Attributes: `aria-label` (required).
+ * Attributes: `aria-label` (required). Built-in strings:
+ * `label-previous-slide` ("Previous slide"), `label-next-slide`
+ * ("Next slide"), `label-go-to-slide` (template, default
+ * `"Go to slide {slide}"`), or the `labels` property.
  */
 export class KernelCarousel extends KernelElement {
   private order: HTMLElement[] = [];
@@ -49,7 +53,7 @@ export class KernelCarousel extends KernelElement {
   private buildScheduled = false;
 
   static get observedAttributes() {
-    return ["aria-label"];
+    return ["aria-label", "label-previous-slide", "label-next-slide", "label-go-to-slide"];
   }
 
   connectedCallback() {
@@ -83,7 +87,6 @@ export class KernelCarousel extends KernelElement {
 
     this.prevButton = document.createElement("button");
     this.prevButton.type = "button";
-    this.prevButton.setAttribute("aria-label", "Previous slide");
     this.prevButton.className = kernelClass("Carousel", "prev");
     this.prevButton.append(arrowIcon(PREV_PATH));
     this.prevButton.addEventListener("click", () => {
@@ -93,7 +96,6 @@ export class KernelCarousel extends KernelElement {
 
     this.nextButton = document.createElement("button");
     this.nextButton.type = "button";
-    this.nextButton.setAttribute("aria-label", "Next slide");
     this.nextButton.className = kernelClass("Carousel", "next");
     this.nextButton.append(arrowIcon(NEXT_PATH));
     this.nextButton.addEventListener("click", () => {
@@ -116,7 +118,6 @@ export class KernelCarousel extends KernelElement {
       this.order.forEach((slide, index) => {
         const dot = document.createElement("button");
         dot.type = "button";
-        dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
         dot.className = kernelClass("Carousel", "dot");
         dot.addEventListener("click", () => this.scrollToSlide(slide));
         dots.append(dot);
@@ -127,6 +128,7 @@ export class KernelCarousel extends KernelElement {
 
     this.native = root;
     this.append(root);
+    this.applyLabels();
     this.updateControls();
 
     if (this.order.length > 0) {
@@ -158,6 +160,14 @@ export class KernelCarousel extends KernelElement {
     this.observer?.disconnect();
   }
 
+  protected applyLabels() {
+    this.prevButton?.setAttribute("aria-label", this.builtInLabel("previousSlide", "Previous slide"));
+    this.nextButton?.setAttribute("aria-label", this.builtInLabel("nextSlide", "Next slide"));
+    this.dotButtons.forEach((dot, index) => {
+      dot.setAttribute("aria-label", this.builtInLabel("goToSlide", "Go to slide {slide}", { slide: index + 1 }));
+    });
+  }
+
   protected syncAttr(name: string, value: string | null) {
     if (name !== "aria-label" || !this.native) return;
     if (value === null) this.native.removeAttribute("aria-label");
@@ -165,7 +175,8 @@ export class KernelCarousel extends KernelElement {
   }
 
   private scrollToSlide(slide: HTMLElement) {
-    slide.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    // An explicit "smooth" overrides the CSS reduced-motion preference.
+    slide.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", inline: "start", block: "nearest" });
   }
 
   private updateControls() {

@@ -31,7 +31,8 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./styles.css": "./dist/kernel.css"
+    "./styles.css": "./dist/kernel.css",
+    "./styles.layer.css": "./dist/kernel.layer.css"
   },
   "files": [
     "dist",
@@ -60,6 +61,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "dom-accessibility-api": "^0.7.0",
     "jsdom": "^26.1.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

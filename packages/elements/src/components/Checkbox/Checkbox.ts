@@ -59,7 +59,7 @@ export class KernelCheckbox extends KernelElement {
         break;
       case "disabled":
         input.disabled = value !== null;
-        if (value !== null) label.setAttribute("data-disabled", "");
+        if (value !== null) label.setAttribute("data-disabled", "true");
         else label.removeAttribute("data-disabled");
         break;
       case "required":

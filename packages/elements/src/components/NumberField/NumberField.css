@@ -4,7 +4,29 @@
   gap: var(--kernel-space-2);
   font-family: var(--kernel-font-sans);
   max-inline-size: 100%;
-  --label-offset: var(--kernel-label-inset);
+  /* Optical field: the same label edge as TextField (see its comment
+     and Badge.module.css for the maths), so text clears a pill's end
+     cap at Round and the label keeps lining up with it. */
+  --field-height: var(--kernel-control-height-md);
+  --field-px: var(--kernel-space-3);
+  --field-max: calc(var(--field-height) / 2);
+  --field-r: min(var(--kernel-radius-control), var(--field-max));
+  --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut));
+  --label-offset: calc(var(--kernel-label-inset) + var(--field-label-edge));
+  /* The steppers: see .kernel-NumberField-stepper below. --kernel-control-inset of air
+     inside the border, but never under a 24px target (sm would be 22). */
+  --stepper-size: max(
+    calc(var(--kernel-space-unit) * 6),
+    var(--field-height) - 2 * (var(--kernel-border-width) + var(--kernel-control-inset))
+  );
+  --stepper-inset: calc((var(--field-height) - var(--stepper-size)) / 2);
+  --stepper-r: max(0px, var(--field-r) - var(--stepper-inset));
+}
+
+@supports (width: calc(1px * 1px / 1px)) {
+  .kernel-NumberField-root {
+    --field-label-edge: calc(var(--field-r) * var(--kernel-pill-cut) * var(--field-r) / var(--field-max));
+  }
 }
 
 .kernel-NumberField-root[data-label-offset="false"] {
@@ -27,11 +49,15 @@
   flex: 1;
   inline-size: 100%;
   min-inline-size: 0;
-  border-radius: var(--kernel-radius-control);
+  block-size: var(--field-height);
+  border-radius: var(--field-r);
   border: var(--kernel-border-width) solid var(--kernel-color-border-interactive);
   background-color: var(--kernel-color-surface);
   color: var(--kernel-color-text);
-  padding-inline: var(--kernel-space-3) calc(var(--kernel-space-unit) * 7);
+  /* The end padding clears both steppers plus a --kernel-space-2 gap
+     before the value text. */
+  padding-inline: calc(var(--field-px) + var(--field-label-edge))
+    calc(2 * var(--stepper-size) + var(--stepper-inset) + var(--kernel-space-2));
   /* Equal-width digits, so a stepper click that changes digit count
      (9 -> 10) doesn't shift the field's own width or nudge the caret. */
   font-variant-numeric: tabular-nums;
@@ -41,18 +67,27 @@
   appearance: textfield;
 }
 
+.kernel-NumberField-root[data-size="sm"] {
+  --field-height: var(--kernel-control-height-sm);
+}
+
 .kernel-NumberField-root[data-size="sm"] .kernel-NumberField-input {
-  block-size: var(--kernel-control-height-sm);
   font-size: var(--kernel-font-size-sm);
 }
 
+.kernel-NumberField-root[data-size="md"] {
+  --field-height: var(--kernel-control-height-md);
+}
+
 .kernel-NumberField-root[data-size="md"] .kernel-NumberField-input {
-  block-size: var(--kernel-control-height-md);
   font-size: var(--kernel-font-size-base);
 }
 
+.kernel-NumberField-root[data-size="lg"] {
+  --field-height: var(--kernel-control-height-lg);
+}
+
 .kernel-NumberField-root[data-size="lg"] .kernel-NumberField-input {
-  block-size: var(--kernel-control-height-lg);
   font-size: var(--kernel-font-size-lg);
 }
 
@@ -70,7 +105,7 @@
 
 .kernel-NumberField-input:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: 1px;
+  outline-offset: var(--kernel-focus-offset-tight);
 }
 
 .kernel-NumberField-input:user-invalid {
@@ -118,25 +153,35 @@
   }
 }
 
+/* Inline − / + buttons rather than a stacked up/down column. Stacked,
+   two buttons share one control height, so neither can reach a 24×24
+   target at any size (19.5px tall at md), and at Round the column sat
+   inside the pill's end cap with its divider running into the curve.
+   Side by side, each is a square --stepper-size wide and tall, centred
+   in the field so it sits --stepper-inset from the field's outer edge
+   on every side, and its radius is the field's minus that inset. That
+   makes it concentric with the field's corner by construction: a
+   rounded square at the default radius, square at Sharp, a circle
+   nested in the end cap at Round, with inset = outer − inner radius,
+   exactly the clearance AGENTS.md's nested-control rule asks for. */
 .kernel-NumberField-stepper {
   position: absolute;
-  inset-block: var(--kernel-border-width);
-  inset-inline-end: var(--kernel-border-width);
+  inset-block: 0;
+  inset-inline-end: var(--stepper-inset);
   display: flex;
-  flex-direction: column;
-  inline-size: calc(var(--kernel-space-unit) * 6);
-  border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
-  border-end-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
-  overflow: hidden;
+  align-items: center;
 }
 
 .kernel-NumberField-stepperButton {
-  flex: 1;
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
+  inline-size: var(--stepper-size);
+  block-size: var(--stepper-size);
   border: none;
   padding: 0;
+  border-radius: var(--stepper-r);
   background: none;
   color: var(--kernel-color-text-muted);
   cursor: pointer;
@@ -154,33 +199,35 @@
   scale: var(--kernel-scale-press);
 }
 
-.kernel-NumberField-stepperButton:first-child {
-  /* Matches .kernel-NumberField-stepper's own outer-corner radius
-     exactly — see the matching comment in @kernelui-lib/react's
-     NumberField.module.css. */
-  border-start-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
-  border-block-end: var(--kernel-border-width) solid var(--kernel-color-border);
-}
-
-.kernel-NumberField-stepperButton:last-child {
-  border-end-end-radius: calc(var(--kernel-radius-control) - var(--kernel-border-width));
-}
-
+/* The glyph is 1em at the field's own font size, so it scales with the
+   value text beside it: 14px at sm, 16px at md, 18px at lg. */
 .kernel-NumberField-stepperButton svg {
-  inline-size: 0.625rem;
-  block-size: 0.625rem;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.kernel-NumberField-root[data-size="sm"] .kernel-NumberField-stepperButton {
+  font-size: var(--kernel-font-size-sm);
+}
+
+.kernel-NumberField-root[data-size="md"] .kernel-NumberField-stepperButton {
+  font-size: var(--kernel-font-size-base);
+}
+
+.kernel-NumberField-root[data-size="lg"] .kernel-NumberField-stepperButton {
+  font-size: var(--kernel-font-size-lg);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .kernel-NumberField-stepperButton:hover:not(:disabled) {
-    background-color: var(--kernel-color-surface-raised);
+    background-color: var(--kernel-color-fill);
     color: var(--kernel-color-text);
   }
 }
 
 .kernel-NumberField-stepperButton:focus-visible {
   outline: 2px solid var(--kernel-color-focus-ring);
-  outline-offset: -2px;
+  outline-offset: var(--kernel-focus-offset-inset);
 }
 
 .kernel-NumberField-stepperButton:disabled {

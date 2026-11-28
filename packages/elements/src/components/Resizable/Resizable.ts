@@ -148,13 +148,13 @@ export class KernelResizable extends KernelElement {
     if (!root || !divider) return;
 
     root.setAttribute("data-orientation", this.orientation);
-    if (this.dragging) root.setAttribute("data-dragging", "");
+    if (this.dragging) root.setAttribute("data-dragging", "true");
     else root.removeAttribute("data-dragging");
 
     divider.setAttribute("aria-orientation", this.orientation === "horizontal" ? "vertical" : "horizontal");
     divider.setAttribute("aria-valuemin", String(this.min));
     divider.setAttribute("aria-valuemax", String(this.max));
-    if (this.dragging) divider.setAttribute("data-dragging", "");
+    if (this.dragging) divider.setAttribute("data-dragging", "true");
     else divider.removeAttribute("data-dragging");
     this.applyLiveSplit();
   }

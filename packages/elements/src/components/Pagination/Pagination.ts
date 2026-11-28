@@ -7,19 +7,33 @@ import "./Pagination.css";
  * exactly what an ordered list is for. Compose with
  * `<kernel-pagination-item>`, `<kernel-pagination-previous>`,
  * `<kernel-pagination-next>`, and `<kernel-pagination-ellipsis>`.
+ *
+ * Built-in strings (same keys as React's `PaginationLabels`, each part
+ * reading its own): `label-navigation` here ("Pagination");
+ * `label-previous-page` / `label-previous` on the previous control
+ * ("Go to previous page" / "Previous"), `label-next-page` / `label-next`
+ * on the next control — or the `labels` property on each part.
  */
 export class KernelPagination extends KernelElement {
+  static get observedAttributes() {
+    return ["label-navigation"];
+  }
+
+  protected applyLabels() {
+    this.native?.setAttribute("aria-label", this.builtInLabel("navigation", "Pagination"));
+  }
+
   connectedCallback() {
     if (this.native) return;
     const nav = document.createElement("nav");
     nav.className = kernelClass("Pagination");
-    nav.setAttribute("aria-label", "Pagination");
     const list = document.createElement("ol");
     list.className = kernelClass("Pagination", "list");
     this.moveChildrenInto(list);
     nav.append(list);
     this.native = nav;
     this.append(nav);
+    this.applyLabels();
   }
 }
 
@@ -58,7 +72,7 @@ export class KernelPaginationItem extends KernelElement {
 /** Shared button behaviour for Previous/Next. */
 abstract class KernelPaginationControl extends KernelElement {
   static get observedAttributes() {
-    return ["disabled"];
+    return ["disabled", "label-previous-page", "label-previous", "label-next-page", "label-next"];
   }
 
   protected abstract defaultLabel(): string;
@@ -66,6 +80,15 @@ abstract class KernelPaginationControl extends KernelElement {
   /** Named to avoid colliding with the native, public
    * `HTMLElement.ariaLabel` ARIA-reflection property. */
   protected abstract controlAriaLabel(): string;
+
+  protected applyLabels() {
+    const button = this.native?.querySelector("button");
+    if (!button) return;
+    button.setAttribute("aria-label", this.controlAriaLabel());
+    // Only the word span: the chevron sits in its own span (see render).
+    const label = button.querySelector(`.${kernelClass("Pagination", "label")}`);
+    if (!this.labelNodes.length && label) label.textContent = this.defaultLabel();
+  }
 
   private labelNodes: ChildNode[] = [];
 
@@ -108,26 +131,26 @@ abstract class KernelPaginationControl extends KernelElement {
  * "previous page" changes state on the same view. */
 export class KernelPaginationPrevious extends KernelPaginationControl {
   protected defaultLabel() {
-    return "Previous";
+    return this.builtInLabel("previous", "Previous");
   }
   protected chevronFirst() {
     return true;
   }
   protected controlAriaLabel() {
-    return "Go to previous page";
+    return this.builtInLabel("previousPage", "Go to previous page");
   }
 }
 
 /** `<kernel-pagination-next>` — see `KernelPaginationPrevious`. */
 export class KernelPaginationNext extends KernelPaginationControl {
   protected defaultLabel() {
-    return "Next";
+    return this.builtInLabel("next", "Next");
   }
   protected chevronFirst() {
     return false;
   }
   protected controlAriaLabel() {
-    return "Go to next page";
+    return this.builtInLabel("nextPage", "Go to next page");
   }
 }
 

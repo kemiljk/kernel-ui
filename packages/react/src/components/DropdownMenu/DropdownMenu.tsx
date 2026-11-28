@@ -81,12 +81,14 @@ export interface DropdownMenuProps {
    * in the page's stacking context. For disclosure, render a <summary>
    * (or Button render={<summary />}) instead of a button. */
   presentation?: "popover" | "disclosure";
+  /** The trigger. */
   render: RenderProp<{ open: boolean }>;
   children: ReactNode;
+  /** Which side of the trigger the menu opens on. Defaults to `"bottom"`. */
   placement?: FloatingPlacement;
-  /** Cross-axis alignment relative to the trigger. */
+  /** Cross-axis alignment relative to the trigger. Defaults to `"center"`. */
   align?: FloatingAlign;
-  /** Gap between the trigger and the menu, in pixels. */
+  /** Gap between the trigger and the menu, in pixels. Defaults to `8`. */
   offset?: number;
   /** Classes for the menu popup. */
   className?: ClassNameValue<DropdownMenuState>;
@@ -412,6 +414,7 @@ export function MenuChevron() {
 }
 
 export interface DropdownMenuMorphProps {
+  /** The trigger, same shape as `DropdownMenu`'s. */
   render: RenderProp<{ open: boolean }>;
   children: ReactNode;
   placement?: FloatingPlacement;

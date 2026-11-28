@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocsSidebar from "../../components/DocsSidebar.astro";
 import AvatarDemo from "../../components/demos/AvatarDemo";
 import AvatarPlayground from "../../components/demos/AvatarPlayground";
+import ApiTable from "../../components/ApiTable.astro";
 
 ---
 
@@ -28,14 +29,6 @@ import AvatarPlayground from "../../components/demos/AvatarPlayground";
 
     
     <h2>Props</h2>
-    <div class="docs-table-scroll"><table class="docs-table">
-      <caption>Props for Avatar.</caption>
-      <thead><tr><th scope="col">Prop</th><th scope="col">Type</th><th scope="col">Default</th></tr></thead>
-      <tbody>
-        <tr><td><code>fallback</code></td><td>string (required)</td><td>—</td></tr>
-        <tr><td><code>src</code></td><td>string</td><td>—</td></tr>
-        <tr><td><code>alt</code></td><td>string</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+    <ApiTable slug="avatar" />
   </div>
 </BaseLayout>

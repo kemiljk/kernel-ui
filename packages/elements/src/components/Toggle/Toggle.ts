@@ -1,4 +1,5 @@
 import { KernelElement, kernelClass } from "../../base";
+import { observePillIcons } from "../../utils/pillIcons";
 import "./Toggle.css";
 
 /**
@@ -8,13 +9,18 @@ import "./Toggle.css";
  * the pattern for an on/off setting. Mirrors `@kernelui-lib/react`'s
  * `<Toggle>`.
  *
+ * Shaped like `<kernel-button>`: an optical pill at a round theme, with
+ * an icon child at either end flagged by `observePillIcons()` so it sits
+ * concentric with the corner (see `@kernelui-lib/react`'s `<Toggle>`).
+ *
  * Attributes: `pressed`, `disabled` (both boolean), `size`
- * (sm/md/lg, default md). Toggling dispatches a real, bubbling `change`
- * event.
+ * (sm/md/lg, default md), `aria-label` (forwarded to the inner
+ * `<button>`, for an icon-only toggle — on the host it would name
+ * nothing). Toggling dispatches a real, bubbling `change` event.
  */
 export class KernelToggle extends KernelElement {
   static get observedAttributes() {
-    return ["pressed", "disabled", "size"];
+    return ["pressed", "disabled", "size", "aria-label"];
   }
 
   protected createNative(): HTMLElement {
@@ -32,6 +38,12 @@ export class KernelToggle extends KernelElement {
     return button;
   }
 
+  connectedCallback() {
+    const firstConnect = !this.native;
+    super.connectedCallback();
+    if (firstConnect && this.native) observePillIcons(this.native);
+  }
+
   protected syncAttr(name: string, value: string | null) {
     const button = this.native as HTMLButtonElement | null;
     if (!button) return;
@@ -44,9 +56,15 @@ export class KernelToggle extends KernelElement {
       }
       case "disabled":
         button.disabled = value !== null;
+        if (value !== null) button.dataset.disabled = "true";
+        else delete button.dataset.disabled;
         break;
       case "size":
         button.dataset.size = value ?? "md";
+        break;
+      case "aria-label":
+        if (value === null) button.removeAttribute("aria-label");
+        else button.setAttribute("aria-label", value);
         break;
     }
   }

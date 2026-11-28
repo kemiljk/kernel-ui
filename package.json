@@ -24,6 +24,8 @@
     "test:svg": "node scripts/check-svg-size.mjs",
     "test:contrast": "node scripts/check-contrast.mjs",
     "test:parity": "node scripts/check-parity.mjs",
+    "test:package": "node scripts/check-package-exports.mjs",
+    "test:a11y": "node scripts/check-a11y.mjs",
     "test:motion:docs": "node scripts/disclosure-docs-check.mjs",
     "test:motion:filmstrip": "node scripts/disclosure-filmstrip.mjs",
     "check:changeset": "node scripts/check-changeset.mjs",
@@ -36,6 +38,7 @@
     "test:styles-package": "node scripts/check-styles-package.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.1",
     "@changesets/cli": "^3.0.3",
     "playwright": "^1.65.1"
   },

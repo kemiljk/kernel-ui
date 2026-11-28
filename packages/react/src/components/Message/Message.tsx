@@ -48,6 +48,14 @@ export interface MessageState {
   grouped: boolean;
 }
 
+/** Built-in strings, overridable for translation via `labels`. */
+export interface MessageLabels {
+  /** Header mark on a `live` message. Default `"Writing"`. */
+  writing: string;
+}
+
+const defaultMessageLabels: MessageLabels = { writing: "Writing" };
+
 export interface MessageProps extends Omit<LiHTMLAttributes<HTMLLIElement>, "className"> {
   children: ReactNode;
   /** Who is speaking. Drives alignment and tone defaults in CSS via
@@ -70,6 +78,9 @@ export interface MessageProps extends Omit<LiHTMLAttributes<HTMLLIElement>, "cla
   animateOnMount?: boolean;
   className?: ClassNameValue<MessageState>;
   bodyClassName?: ClassNameValue<MessageState>;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<MessageLabels>;
 }
 
 /**
@@ -100,10 +111,12 @@ export const Message = forwardRef<HTMLLIElement, MessageProps>(function Message(
     animateOnMount = true,
     className,
     bodyClassName,
+    labels,
     ...rest
   },
   forwardedRef,
 ) {
+  const l = { ...defaultMessageLabels, ...labels };
   const state: MessageState = { author, grouped };
   const header = !grouped && (name || live);
 
@@ -134,7 +147,7 @@ export const Message = forwardRef<HTMLLIElement, MessageProps>(function Message(
         {header ? (
           <header className={styles.header}>
             {name ? <span className={styles.name}>{name}</span> : null}
-            {live ? <span className={styles.liveMark}>Writing</span> : null}
+            {live ? <span className={styles.liveMark}>{l.writing}</span> : null}
           </header>
         ) : null}
         {children}

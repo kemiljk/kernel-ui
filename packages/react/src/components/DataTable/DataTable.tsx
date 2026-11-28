@@ -9,7 +9,13 @@ import {
   TableHead,
   TableCell,
 } from "../Table/Table";
-import { Pagination, PaginationItem, PaginationPrevious, PaginationNext } from "../Pagination/Pagination";
+import {
+  Pagination,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  type PaginationLabels,
+} from "../Pagination/Pagination";
 import { TextField } from "../TextField/TextField";
 import styles from "./DataTable.module.css";
 
@@ -24,6 +30,17 @@ export interface DataTableColumn<T> {
   sortValue?: (row: T) => string | number;
 }
 
+/** Built-in strings, overridable for translation via `labels`: the
+ * result count plus the pagination's own `PaginationLabels`. */
+export interface DataTableLabels extends PaginationLabels {
+  /** Result-count status line. Default ``(count) => `${count} ${count === 1 ? "result" : "results"}` ``. */
+  results: (count: number) => string;
+}
+
+const defaultDataTableLabels: Pick<DataTableLabels, "results"> = {
+  results: (count) => `${count} ${count === 1 ? "result" : "results"}`,
+};
+
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   data: T[];
@@ -35,6 +52,9 @@ export interface DataTableProps<T> {
   filterPlaceholder?: string;
   pageSize?: number;
   caption?: ReactNode;
+  /** Override built-in strings (e.g. for translation); unset keys keep
+   * their English default. */
+  labels?: Partial<DataTableLabels>;
 }
 
 type SortDirection = "ascending" | "descending";
@@ -67,7 +87,9 @@ export function DataTable<T>({
   filterPlaceholder = "Filter",
   pageSize = 10,
   caption,
+  labels,
 }: DataTableProps<T>) {
+  const results = labels?.results ?? defaultDataTableLabels.results;
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<{ key: string; direction: SortDirection } | null>(null);
   const [page, setPage] = useState(1);
@@ -135,7 +157,7 @@ export function DataTable<T>({
         className={styles.filter}
       />
       <p className={styles.status} role="status">
-        {sorted.length} {sorted.length === 1 ? "result" : "results"}
+        {results(sorted.length)}
       </p>
       <Table>
         {caption ? <TableCaption>{caption}</TableCaption> : null}
@@ -185,8 +207,9 @@ export function DataTable<T>({
           ))}
         </TableBody>
       </Table>
-      <Pagination className={styles.pagination}>
+      <Pagination className={styles.pagination} labels={labels}>
         <PaginationPrevious
+          labels={labels}
           disabled={currentPage === 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         />
@@ -204,6 +227,7 @@ export function DataTable<T>({
           </PaginationItem>
         ))}
         <PaginationNext
+          labels={labels}
           disabled={currentPage === pageCount}
           onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
         />

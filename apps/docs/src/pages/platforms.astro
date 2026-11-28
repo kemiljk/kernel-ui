@@ -15,7 +15,18 @@ const elementsSnippet = `<script type="module">
 
 <kernel-button variant="primary">Save changes</kernel-button>`;
 
-const headlessNoneSnippet = `import { Button } from "@kernelui-lib/react";
+const vscodeSnippet = `{
+  "html.customData": ["./node_modules/@kernelui-lib/elements/dist/vscode.html-custom-data.json"]
+}`;
+
+const jsxSnippet = `import "@kernelui-lib/elements";
+import type {} from "@kernelui-lib/elements/jsx"; // or add it to compilerOptions.types
+
+<kernel-tabs value="general" onvaluechange={(event) => console.log(event.detail)}>
+  …
+</kernel-tabs>`;
+
+const headlessNoneSnippet =`import { Button } from "@kernelui-lib/react";
 // No "@kernelui-lib/react/styles.css" import anywhere —
 // <Button> is still a real <button>, just unstyled.`;
 
@@ -68,6 +79,36 @@ const headlessTokensSnippet = `@import "@kernelui-lib/styles";       /* tokens +
       popover/anchor positioning, <code>&lt;details&gt;</code> — which is
       what makes a vanilla-JS port of that behavior tractable at all.
     </p>
+
+    <h3>Editor support and TypeScript</h3>
+    <p>
+      The package ships three files generated from the elements' own
+      source, so they list the attributes and events each tag really has:
+    </p>
+    <ul>
+      <li>
+        <code>custom-elements.json</code>, a{" "}
+        <a href="https://github.com/webcomponents/custom-elements-manifest">Custom Elements Manifest</a>,
+        named in <code>package.json</code>'s <code>customElements</code>{" "}
+        field. Storybook, the web components language server and other
+        manifest-aware tools find it on their own.
+      </li>
+      <li>
+        <code>vscode.html-custom-data.json</code>, for tag and attribute
+        completion in plain HTML files in VS Code. Point{" "}
+        <code>.vscode/settings.json</code> at it:
+      </li>
+    </ul>
+    <CodeBlock code={vscodeSnippet} lang="json" />
+    <ul>
+      <li>
+        <code>@kernelui-lib/elements/jsx</code>, which declares every{" "}
+        <code>kernel-*</code> tag for React 19's JSX, so TSX accepts the
+        tags and their attributes without a cast. Events use React 19's
+        custom element syntax, <code>on</code> plus the exact event name:
+      </li>
+    </ul>
+    <CodeBlock code={jsxSnippet} lang="tsx" />
 
     <h2>Headless / unstyled</h2>
     <p>

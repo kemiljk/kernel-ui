@@ -62,8 +62,9 @@ export class KernelAccordionItem extends KernelElement {
     const summary = document.createElement("summary");
     summary.className = kernelClass("Accordion", "trigger");
 
+    // Unclassed, like React's: no stylesheet rule targets the title, and
+    // a class only one package emits would be a parity trap.
     const titleSpan = document.createElement("span");
-    titleSpan.className = kernelClass("Accordion", "title");
     if (titleSlot) titleSpan.append(titleSlot);
     else titleSpan.textContent = this.getAttribute("title") ?? "";
 
@@ -103,7 +104,7 @@ export class KernelAccordionItem extends KernelElement {
 
   protected syncAttr(name: string, value: string | null) {
     if (name !== "title" || !this.native) return;
-    const titleSpan = this.native.querySelector(`.${kernelClass("Accordion", "title")}`);
+    const titleSpan = this.native.querySelector(":scope > summary > span:first-child");
     if (titleSpan && !titleSpan.querySelector("*")) titleSpan.textContent = value ?? "";
   }
 }
