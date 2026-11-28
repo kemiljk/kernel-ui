@@ -11,15 +11,17 @@
  * Usage: build the docs first (`bun run docs:build`), then
  *   node scripts/check-a11y.mjs            # all components
  *   node scripts/check-a11y.mjs button tabs   # only these slugs
+ *   node scripts/check-a11y.mjs --browser=webkit        # chromium (default), firefox, webkit
+ *   node scripts/check-a11y.mjs --browser=all           # each engine in turn
  *
- * Needs a Chromium for Playwright: in CI `bunx playwright install chromium`;
- * locally it falls back to installed Chrome.
+ * Needs the engines for Playwright: in CI `bunx playwright install chromium
+ * firefox webkit`; locally Chromium falls back to installed Chrome.
  */
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join } from "node:path";
-import { chromium } from "playwright";
 import { AxeBuilder } from "@axe-core/playwright";
+import { launchBrowser, parseBrowsers, withoutBrowserFlag } from "./lib/browsers.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const dist = join(root, "apps/docs/dist");
@@ -29,7 +31,8 @@ if (!existsSync(dist)) {
 }
 
 const registry = JSON.parse(readFileSync(join(root, "apps/docs/public/registry.json"), "utf8"));
-const only = process.argv.slice(2);
+const engines = parseBrowsers(process.argv.slice(2), { script: "check-a11y" });
+const only = withoutBrowserFlag(process.argv.slice(2));
 const slugs = registry.components
   .filter((c) => c.status === "available")
   .map((c) => c.slug)
@@ -50,50 +53,46 @@ const server = createServer((req, res) => {
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 
-let browser;
-try {
-  browser = await chromium.launch();
-} catch {
-  browser = await chromium.launch({ channel: "chrome" });
-}
-
 const SCHEMES = ["light", "dark"];
 const failures = [];
 let checked = 0;
-for (const scheme of SCHEMES) {
-  const context = await browser.newContext({ colorScheme: scheme });
-  await context.addInitScript((s) => {
-    try {
-      localStorage.setItem("kernel:color-scheme", s);
-    } catch {}
-  }, scheme);
-  const page = await context.newPage();
-  for (const slug of slugs) {
-    await page.goto(`${base}/components/${slug}/`, { waitUntil: "networkidle" });
-    // Let client islands hydrate and entrance animations settle.
-    await page.waitForTimeout(300);
-    const regions = await page.locator(".docs-example, .prop-playground-stage").count();
-    if (regions === 0) continue;
-    const results = await new AxeBuilder({ page })
-      .include(".docs-example")
-      .include(".prop-playground-stage")
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
-      .analyze();
-    checked++;
-    for (const violation of results.violations) {
-      const entry = { slug, scheme, id: violation.id, impact: violation.impact, help: violation.help, nodes: violation.nodes.map((n) => n.target.join(" ")).slice(0, 3) };
-      if (violation.impact === "serious" || violation.impact === "critical") failures.push(entry);
-      else console.log(`  note  ${slug} (${scheme}) ${violation.id}: ${violation.help} — ${entry.nodes.join(", ")}`);
+for (const engine of engines) {
+  const browser = await launchBrowser(engine);
+  for (const scheme of SCHEMES) {
+    const context = await browser.newContext({ colorScheme: scheme });
+    await context.addInitScript((s) => {
+      try {
+        localStorage.setItem("kernel:color-scheme", s);
+      } catch {}
+    }, scheme);
+    const page = await context.newPage();
+    for (const slug of slugs) {
+      await page.goto(`${base}/components/${slug}/`, { waitUntil: "networkidle" });
+      // Let client islands hydrate and entrance animations settle.
+      await page.waitForTimeout(300);
+      const regions = await page.locator(".docs-example, .prop-playground-stage").count();
+      if (regions === 0) continue;
+      const results = await new AxeBuilder({ page })
+        .include(".docs-example")
+        .include(".prop-playground-stage")
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+        .analyze();
+      checked++;
+      for (const violation of results.violations) {
+        const entry = { engine, slug, scheme, id: violation.id, impact: violation.impact, help: violation.help, nodes: violation.nodes.map((n) => n.target.join(" ")).slice(0, 3) };
+        if (violation.impact === "serious" || violation.impact === "critical") failures.push(entry);
+        else console.log(`  note  [${engine}] ${slug} (${scheme}) ${violation.id}: ${violation.help} — ${entry.nodes.join(", ")}`);
+      }
     }
+    await context.close();
   }
-  await context.close();
+  await browser.close();
 }
-await browser.close();
 server.close();
 
 if (failures.length) {
   console.error(`\ncheck-a11y: ${failures.length} serious/critical violation(s):\n`);
-  for (const f of failures) console.error(`  ✗ ${f.slug} (${f.scheme}) [${f.impact}] ${f.id}: ${f.help}\n      ${f.nodes.join("\n      ")}`);
+  for (const f of failures) console.error(`  ✗ [${f.engine}] ${f.slug} (${f.scheme}) [${f.impact}] ${f.id}: ${f.help}\n      ${f.nodes.join("\n      ")}`);
   process.exit(1);
 }
-console.log(`check-a11y: ${checked} page × scheme checks, no serious or critical axe violations.`);
+console.log(`check-a11y: ${checked} page × scheme checks in ${engines.join(", ")}, no serious or critical axe violations.`);
