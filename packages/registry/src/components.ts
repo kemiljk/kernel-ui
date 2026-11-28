@@ -49,6 +49,20 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("agent-activity"),
   },
   {
+    name: "Artifact Panel",
+    category: "AI",
+    slug: "artifact-panel",
+    element: "<aside> docked / <dialog> overlay + tablist",
+    summary: "The side panel beside the chat that shows a generated artifact, with views, versions and status.",
+    llmsNote:
+      "ArtifactPanel takes title (a real heading; headingLevel 2–4 when docked, always h2 as an overlay), open (default true) with onOpenChange, presentation (\"auto\" | \"docked\" | \"overlay\"; auto is docked and becomes a modal overlay below overlayBelow px of viewport, default 768), status (\"ready\" | \"streaming\" | \"error\"; a dot plus \"Generating…\"/\"Generation failed\" in a polite live region, and aria-busy while streaming), version + versionCount + onVersionChange (previous/next buttons and a \"v3 of 5\" readout when versionCount > 1), actions (your own header buttons, before the built-in close button; showCloseButton={false} hides it), views ([{ value, label, content, disabled? }], switched with Kernel's Tabs) with view/defaultView/onViewChange, or children as the body when there are no views, and labels (Partial<{ close, previousVersion, nextVersion, version: (current, total) => string, versions, views, streaming, error }>). Docked it's an <aside> named by the title, sized to its parent (put it in a Resizable pane); as an overlay it's a <dialog> opened with showModal(), so the focus trap, Escape and focus restoration are native. Full-bleed body content (an iframe) can zero --kernel-artifact-panel-body-padding. The element version reads <kernel-artifact-view value label> children as views and slot=\"actions\" children as actions, needs the open attribute to show, and fires close, versionchange (cancelable) and viewchange.",
+    status: "available",
+    reactExports: ["ArtifactPanel"],
+    elementTag: "kernel-artifact-panel",
+    elementSubTags: ["kernel-artifact-view"],
+    docsUrl: docs("artifact-panel"),
+  },
+  {
     name: "Attachment",
     category: "AI",
     slug: "attachment",
@@ -596,6 +610,19 @@ export const components: RegistryEntry[] = [
     docsUrl: docs("resizable"),
     shadcnAliases: ["resizable"],
     radixPackages: ["react-resizable-panels"],
+  },
+  {
+    name: "Schema Renderer",
+    category: "AI",
+    slug: "schema-renderer",
+    element: "allow-listed JSON → real Kernel components",
+    summary: "Render a model's JSON as real Kernel components, from a typed, versioned, allow-listed schema.",
+    llmsNote:
+      "SchemaRenderer takes value (a { version: 1, root } document, a bare node or an array of nodes: { type, id?, props?, children? }), streaming, onAction({ action, payload, values }), onIssue(issue) and onValuesChange(values). Node types: Stack, Text, Heading, Button, Badge, Card, Form, TextField, Select, Checkbox, Switch, Table, Callout, Separator, Image, Link, Progress, each with an allow-list of props. Unknown types/props, invalid values and unsafe URLs (anything but http(s), mailto: for links, or relative) are dropped and reported, never thrown; there is no raw HTML. Buttons and Form submits never execute anything: they call onAction with the form controls' values keyed by name. Exports schemaPrompt (a compact system-prompt description of the schema), kernelSchemaJson (JSON Schema draft 2020-12, also the package file schema.json), validateSchemaNode(value) → issues, sanitizeSchema, sanitizeUrl, parsePartialJson(text) (closes open strings/arrays/objects so a streaming response renders progressively; pass streaming while it streams), SCHEMA_VERSION and the TypeScript types. The element version takes the value property or a JSON value attribute and fires action, issue (preventDefault silences the console warning) and valueschange.",
+    status: "available",
+    reactExports: ["SchemaRenderer"],
+    elementTag: "kernel-schema-renderer",
+    docsUrl: docs("schema-renderer"),
   },
   {
     name: "Scroll Area",

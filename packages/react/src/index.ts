@@ -394,6 +394,32 @@ export type {
   UsageMeterLevel,
 } from "./components/UsageMeter/UsageMeter";
 
+export { ArtifactPanel, defaultArtifactPanelLabels } from "./components/ArtifactPanel/ArtifactPanel";
+export type {
+  ArtifactPanelProps,
+  ArtifactPanelState,
+  ArtifactPanelLabels,
+  ArtifactPanelView,
+  ArtifactPanelPresentation,
+  ArtifactPanelStatus,
+} from "./components/ArtifactPanel/ArtifactPanel";
+
+export { SchemaRenderer } from "./components/SchemaRenderer/SchemaRenderer";
+export type { SchemaRendererProps, SchemaRendererState } from "./components/SchemaRenderer/SchemaRenderer";
+export {
+  SCHEMA_VERSION,
+  SCHEMA_NODE_TYPES,
+  SCHEMA_LIMITS,
+  SCHEMA_NODE_SPECS,
+  kernelSchemaJson,
+  schemaPrompt,
+  sanitizeSchema,
+  sanitizeUrl,
+  validateSchemaNode,
+  parsePartialJson,
+} from "./components/SchemaRenderer/schema";
+export type * from "./components/SchemaRenderer/schema";
+
 export {
   renderElement,
   resolveClassName,
