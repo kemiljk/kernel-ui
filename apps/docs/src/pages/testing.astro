@@ -1,0 +1,169 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const installSnippet = `npm install -D @kernelui-lib/testing`;
+
+const vitestSnippet = `// Settings.test.tsx — vitest or jest, with jsdom or happy-dom
+import { act, render } from "@testing-library/react";
+import { assertComponent, assertPage, checkPattern } from "@kernelui-lib/testing";
+import { Settings } from "./Settings";
+
+const options = { act }; // lets React flush between simulated key presses
+
+test("the plan picker is an accessible radio group", async () => {
+  const { container } = render(<Settings />);
+  await assertComponent(container, "RadioGroup", options);
+});
+
+test("every Kernel component on the screen passes", async () => {
+  render(<Settings />);
+  await assertPage(document.body, options);
+});
+
+test("our own tablist follows the APG tabs pattern", async () => {
+  const { getByRole } = render(<Settings />);
+  const result = await checkPattern(getByRole("tablist"), "tabs", options);
+  expect(result.issues).toEqual([]);
+});`;
+
+const elementsSnippet = `import "@kernelui-lib/elements";
+import { assertComponent } from "@kernelui-lib/testing";
+
+test("<kernel-tabs>", async () => {
+  document.body.innerHTML = \`
+    <kernel-tabs default-value="a">
+      <kernel-tabs-list aria-label="Sections">
+        <kernel-tab value="a">Account</kernel-tab>
+        <kernel-tab value="b">Billing</kernel-tab>
+      </kernel-tabs-list>
+      <kernel-tab-panel value="a">…</kernel-tab-panel>
+      <kernel-tab-panel value="b">…</kernel-tab-panel>
+    </kernel-tabs>\`;
+  await assertComponent(document.body, "Tabs");
+});`;
+
+const playwrightSnippet = `// settings.spec.ts
+import { test, expect } from "@playwright/test";
+import { assertComponentInPage, checkPageInPage } from "@kernelui-lib/testing/playwright";
+
+test("settings page", async ({ page }) => {
+  await page.goto("/settings");
+  await assertComponentInPage(page, "#plan", "RadioGroup");
+
+  // Open the dialog first: closed dialogs skip their focus checks.
+  await page.getByRole("button", { name: "Edit profile" }).click();
+  const result = await checkPageInPage(page, "dialog[open]");
+  expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+});`;
+
+const evaluateSnippet = `import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+
+await page.addScriptTag({ path: require.resolve("@kernelui-lib/testing/browser") });
+const result = await page.evaluate(() =>
+  window.KernelTesting.checkPattern(document.querySelector("[role=tablist]"), "tabs"),
+);`;
+
+const resultSnippet = `{
+  passed: false,
+  environment: "jsdom",
+  issues: [{
+    rule: "tooltip/escape-dismisses",
+    severity: "error",
+    message: "Escape didn't hide the tooltip. WCAG 1.4.13 requires …",
+    target: 'div.kernel-Tooltip-content[role=tooltip] "Copy to clipboard"',
+    component: "Tooltip",
+  }],
+  skipped: [{ rule: "dialog/escape", kind: "native", reason: "Escape closes a modal <dialog> natively …" }],
+  passes: ["tooltip/content", "tooltip/trigger", "tooltip/shows-on-focus"],
+}`;
+---
+
+<BaseLayout title="Testing" description="Verify keyboard behaviour, ARIA and accessible names of Kernel components, and anything composed from them, in your own vitest, jest or Playwright tests." withSidebar>
+  <DocsSidebar slot="sidebar" />
+  <div class="docs-prose">
+    <h1>Testing</h1>
+    <p>
+      <code>@kernelui-lib/testing</code> checks a rendered UI against the
+      <a href="https://www.w3.org/WAI/ARIA/apg/patterns/">WAI-ARIA Authoring Practices</a>
+      patterns Kernel is built on, plus Kernel's own promises. Use it in your
+      test suite to verify a screen you composed from Kernel components, or a
+      widget you built yourself. A coding agent can run it too: every failure
+      names the rule, the element and the fix.
+    </p>
+    <CodeBlock code={installSnippet} lang="bash" />
+
+    <h2>What it checks</h2>
+    <ul>
+      <li><strong>Roles and elements.</strong> The native element where one exists (<code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code>, <code>&lt;input type="range"&gt;</code>, a real <code>&lt;button&gt;</code> under <code>role="switch"</code>) and the ARIA roles where it doesn't.</li>
+      <li><strong>Accessible names.</strong> From <code>aria-labelledby</code>, <code>aria-label</code>, <code>&lt;label&gt;</code>, <code>alt</code>, <code>&lt;legend&gt;</code> and content. A field named only by its placeholder fails.</li>
+      <li><strong>State that agrees with itself.</strong> Exactly one selected tab, <code>aria-controls</code> and other id references that resolve, <code>aria-expanded</code> matching whether the popup is actually open.</li>
+      <li><strong>Keyboard behaviour.</strong> Dispatched key presses, then the focus and selection are read back: arrow keys, Home and End, Escape, roving tabindex with a single Tab stop.</li>
+      <li><strong>Kernel invariants.</strong> A field keeps its <code>&lt;label&gt;</code> in the DOM under <code>hideLabel</code>, icons are decorative, and in a browser, clickable parts have <code>user-select: none</code>.</li>
+    </ul>
+
+    <h2>API</h2>
+    <ul>
+      <li><code>checkPattern(root, pattern, options?)</code>: one APG pattern on <code>root</code> or anything inside it. Patterns: <code>accordion</code>, <code>button</code>, <code>checkbox</code>, <code>combobox</code>, <code>dialog</code>, <code>disclosure</code>, <code>field</code>, <code>grid</code>, <code>listbox</code>, <code>menu</code>, <code>radio-group</code>, <code>select</code>, <code>slider</code>, <code>switch</code>, <code>tabs</code>, <code>toggle-button</code>, <code>toolbar</code> and <code>tooltip</code>.</li>
+      <li><code>checkComponent(root, name, options?)</code>: a Kernel component's patterns plus its invariants. <code>name</code> is the React export (<code>"DropdownMenu"</code>), the docs slug or the custom element tag. React output and custom elements pass the same checks, because they render the same DOM.</li>
+      <li><code>checkPage(root?, options?)</code>: finds every Kernel component under <code>root</code> (default <code>document.body</code>) and checks each one, plus page-wide rules: unique ids, resolving references, named controls, no interactive element nested in another.</li>
+      <li><code>assertPattern</code>, <code>assertComponent</code> and <code>assertPage</code> throw an error listing every issue instead of returning.</li>
+    </ul>
+    <p>
+      Every function is async and returns <code>{"{ passed, issues, skipped, passes, environment }"}</code>.
+      Errors fail a check. Warnings, for APG recommendations that aren't
+      requirements, fail only with <code>strict: true</code>. Options:
+      <code>act</code> wraps each interaction (pass React Testing Library's),
+      <code>interactions: false</code> skips the keyboard checks,
+      <code>ignore</code> takes rule ids (<code>"tabs/tablist-name"</code>)
+      or whole patterns, and <code>settle</code> replaces the wait after each
+      interaction.
+    </p>
+    <CodeBlock code={resultSnippet} lang="tsx" />
+
+    <h2>Vitest and Jest</h2>
+    <p>
+      It's plain DOM with no test-runner globals, so it works the same in
+      vitest and jest, with jsdom or happy-dom.
+    </p>
+    <CodeBlock code={vitestSnippet} lang="tsx" />
+    <p>The custom elements are checked the same way:</p>
+    <CodeBlock code={elementsSnippet} lang="tsx" />
+
+    <h2>Playwright</h2>
+    <p>
+      In a real browser the checks also see the Popover API, modal
+      <code>&lt;dialog&gt;</code> focus and Kernel's CSS. The
+      <code>/playwright</code> helpers add the checks to the page and run them there:
+    </p>
+    <CodeBlock code={playwrightSnippet} lang="tsx" />
+    <p>
+      Or add the browser bundle yourself, which defines
+      <code>window.KernelTesting</code>:
+    </p>
+    <CodeBlock code={evaluateSnippet} lang="tsx" />
+
+    <h2>What a simulated DOM can't check</h2>
+    <p>
+      jsdom and happy-dom have no layout, no Popover API and no modal
+      <code>&lt;dialog&gt;</code> behaviour. Checks that need these are listed
+      in <code>skipped</code> with <code>kind: "environment"</code>, and they
+      never pass or fail. Run the same checks in Playwright to cover them.
+    </p>
+    <p>
+      Synthetic key events can't trigger what the browser itself does
+      either: Space on a <code>&lt;button&gt;</code>, arrow keys in a native
+      radio group, Escape on a <code>&lt;dialog&gt;</code> or a
+      <code>popover="auto"</code>. Kernel uses the native element for these
+      instead of rebuilding them, so the check confirms the native element is
+      there and lists the behaviour as <code>kind: "native"</code>.
+    </p>
+    <ul>
+      <li>A closed dialog or menu skips its open-state checks. Open it before checking.</li>
+      <li>jsdom has no <code>scrollIntoView</code>. Stub it in your test setup if a combobox throws.</li>
+      <li>Interactions change state, like a selected tab or a flipped switch, and restore it where they can. Run checks on a fresh render.</li>
+    </ul>
+  </div>
+</BaseLayout>

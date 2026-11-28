@@ -82,6 +82,9 @@ jobs:
       - name: Test ESLint plugin
         run: bun run --cwd packages/eslint-plugin test
 
+      - name: Test testing kit
+        run: bun run --cwd packages/testing test
+
       - name: Typecheck docs
         run: bun run --cwd apps/docs typecheck
 
@@ -98,3 +101,9 @@ jobs:
       - name: Accessibility check (axe)
         if: github.event_name == 'pull_request'
         run: bun run test:a11y
+
+      # @kernelui-lib/testing's APG pattern checks in a real browser, against
+      # the same live examples: keyboard, focus and popover state jsdom can't see.
+      - name: Pattern checks (@kernelui-lib/testing)
+        if: github.event_name == 'pull_request'
+        run: bun run test:patterns && bun run --cwd packages/testing test:browser

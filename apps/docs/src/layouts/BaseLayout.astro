@@ -39,7 +39,7 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
 // page has one (scripts/generate-markdown.mjs), and the home page's is the
 // llms.txt index. Advertised with rel="alternate" so a crawler that lands
 // on the HTML can find the clean text without guessing the URL scheme.
-const GUIDE_SLUGS = ["choosing", "agents", "installation", "cli", "migration", "theming", "icons", "platforms"];
+const GUIDE_SLUGS = ["choosing", "agents", "installation", "cli", "testing", "migration", "theming", "icons", "platforms"];
 const guideMatch = Astro.url.pathname.match(/^\/([^/]+)\/$/);
 const markdownUrl =
   Astro.url.pathname === "/"

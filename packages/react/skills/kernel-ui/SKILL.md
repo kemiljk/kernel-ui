@@ -19,6 +19,7 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 3. **Get exact props, don't guess.** Use the MCP `get_component` tool, or `npx @kernelui-lib/cli docs <name> --markdown`, or the types in `node_modules/@kernelui-lib/react/dist/index.d.ts`. Props from other libraries (`asChild`, `leftIcon`, `isDisabled`, `colorScheme`) don't exist here.
 4. **Style with tokens only.** Every colour, space, radius and duration is a `--kernel-*` custom property (MCP `get_tokens`). Never hard-code a hex colour, a pixel radius or `999px`.
 5. **Review what you wrote.** Run the MCP `check_code` tool, or `npx @kernelui-lib/cli check <files>`, and fix every error it reports before you finish. If the project uses ESLint, `@kernelui-lib/eslint-plugin` (`kernel.configs.recommended`) runs the same checks on every save.
+6. **Verify the rendered UI with `@kernelui-lib/testing`.** Static checks can't see keyboard behaviour. In the project's tests, `await assertPage(document.body, { act })` (or `assertComponent(container, "Tabs", { act })`) checks every Kernel component on screen against its WAI-ARIA pattern: names, state, arrow keys, Escape, focus. Each failure names the rule and the fix. Don't add one-off ARIA to make it pass; fix the props.
 
 ## Conventions that hold across components
 
