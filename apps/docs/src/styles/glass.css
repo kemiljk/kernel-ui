@@ -58,6 +58,13 @@
     --glass-hover-glow: light-dark(oklch(0.99 0.018 85 / 0.18), oklch(0.99 0.018 85 / 0.1));
     /* 85% surface + blur. Reduced transparency flips both (below). */
     --glass-alpha: 85%;
+    /* The theme Sheet covers most of a phone screen, and the page under it
+       is the home page's "Customise theme" button: an accent fill sitting
+       right behind the Density and Dark mode rows. At 85% that fill bled
+       through the blur as an orange halo. A full-width sheet gains little
+       from seeing the page anyway, so it keeps the edge light and blur but
+       only lets 4% through. */
+    --glass-alpha-sheet: 96%;
     --glass-backdrop: blur(calc(var(--kernel-blur-backdrop) * 1.5)) saturate(1.4);
     --glass-backdrop-button: blur(calc(var(--kernel-blur-backdrop) * 2.25)) saturate(1.2);
   }
@@ -65,6 +72,7 @@
   @media (prefers-reduced-transparency: reduce) {
     :root {
       --glass-alpha: 100%;
+      --glass-alpha-sheet: 100%;
       --glass-backdrop: none;
       --glass-backdrop-button: none;
     }
@@ -250,10 +258,11 @@
      colour; match it to the glass so a drag past the edge doesn't show a
      differently coloured strip. */
   dialog.theme-panel-scope[data-side="bottom"]:not(:is(.docs-example, .prop-playground-stage) *) {
+    background-color: color-mix(in oklch, var(--kernel-color-surface-raised) var(--glass-alpha-sheet), transparent);
     box-shadow:
       var(--edge-shadow),
       var(--kernel-shadow-lg),
-      0 50vh 0 color-mix(in oklch, var(--kernel-color-surface-raised) var(--glass-alpha), transparent);
+      0 50vh 0 color-mix(in oklch, var(--kernel-color-surface-raised) var(--glass-alpha-sheet), transparent);
   }
 
   /* The grabber sits on glass now, so it reads off the edge stroke
