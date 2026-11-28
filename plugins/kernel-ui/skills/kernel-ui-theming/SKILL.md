@@ -20,6 +20,7 @@ Every visual decision is a CSS custom property in `@kernelui-lib/styles`. There'
 
 - **Accent presets.** `<html data-kernel-accent="violet">` picks one, or import `@kernelui-lib/styles/themes/<name>.css`. Names: amber, blue, green, orange, red, teal, violet.
 - **Pill controls (the "Round" look).** Set `--kernel-radius-control: var(--kernel-radius-full)`. Badges, buttons and suggestions cap their radius at a true half-height pill, so their padding stays optically correct. Don't hand-set `999px` on individual components.
+- **Density.** `data-kernel-density="compact"` on `<html>` or on any element tightens everything inside it: a 3px space unit instead of 4px, so gaps, padding and control heights drop by a quarter while font sizes stay put. `"comfortable"` is the default and restores it inside a compact scope. Use the attribute, not `--kernel-space-unit` alone on a subtree: derived tokens (`--kernel-space-*`, control heights, container padding and radii) resolve where they're declared, and the attribute is what re-declares them. For a custom unit on a subtree, add the attribute with any value: `<section data-kernel-density="custom" style="--kernel-space-unit: 0.3rem">`. If you pin a derived token such as `--kernel-radius-container`, pin it on `:root, [data-kernel-density]`.
 - **Dark mode.** It follows `prefers-color-scheme` by default. Force it with `<html data-theme="dark">` or `data-theme="light"`. Colours use `light-dark()`, so only override the semantic tokens (`--kernel-color-*`), never per-mode copies.
 - **Icon sets.** Set `--kernel-icon-size` and, for outline sets, `--kernel-icon-stroke-width` once, to match your icon library to Kernel's type. Tuned values:
 
@@ -42,5 +43,7 @@ Every visual decision is a CSS custom property in `@kernelui-lib/styles`. There'
   - focus ring and control borders: Lc 45 and 3:1.
 
   When you override a colour token, check it in both light and dark mode against those levels (e.g. apcacontrast.com). Dark mode is where WCAG 2 overrates contrast most. `--kernel-color-on-accent` uses `contrast-color()` where supported. In a Kernel checkout, `bun run test:contrast` checks every preset.
+
+- **Accessibility preferences are built in.** Under `forced-colors: active` (Windows High Contrast) components redraw state in system colours (`Highlight`, `HighlightText`, `CanvasText`); under `prefers-reduced-transparency: reduce` glass and blurred scrims turn solid through `--kernel-opacity-glass`, `--kernel-opacity-frost`, `--kernel-blur-backdrop` and `--kernel-color-scrim`. A custom translucent surface should mix with those tokens (`color-mix(in oklch, var(--kernel-color-surface) var(--kernel-opacity-glass), transparent)`) so it follows the setting too.
 
 To list every token with its value and purpose, use the MCP `get_tokens` tool, or read `node_modules/@kernelui-lib/styles/src/tokens.css`.

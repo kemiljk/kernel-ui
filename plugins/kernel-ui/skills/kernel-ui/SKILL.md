@@ -19,10 +19,19 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 3. **Get exact props, don't guess.** Use the MCP `get_component` tool, or `npx @kernelui-lib/cli docs <name> --markdown`, or the types in `node_modules/@kernelui-lib/react/dist/index.d.ts`. Props from other libraries (`asChild`, `leftIcon`, `isDisabled`, `colorScheme`) don't exist here.
 4. **Style with tokens only.** Every colour, space, radius and duration is a `--kernel-*` custom property (MCP `get_tokens`). Never hard-code a hex colour, a pixel radius or `999px`.
 5. **Review what you wrote.** Run the MCP `check_code` tool, or `npx @kernelui-lib/cli check <files>`, and fix every error it reports before you finish. If the project uses ESLint, `@kernelui-lib/eslint-plugin` (`kernel.configs.recommended`) runs the same checks on every save.
+6. **Verify the rendered UI with `@kernelui-lib/testing`.** Static checks can't see keyboard behaviour. In the project's tests, `await assertPage(document.body, { act })` (or `assertComponent(container, "Tabs", { act })`) checks every Kernel component on screen against its WAI-ARIA pattern: names, state, arrow keys, Escape, focus. Each failure names the rule and the fix. Don't add one-off ARIA to make it pass; fix the props.
 
 ## Conventions that hold across components
 
 - **State.** Use `value` / `defaultValue` / `onValueChange` for controlled or uncontrolled use. `onChange` stays the native DOM event. Toggles use `checked` / `defaultChecked` / `onCheckedChange`.
+- **Change reasons.** Every change callback gets a second argument, `details: ChangeDetails<Reason>` = `{ reason, event?, cancel(), isCanceled }`. `reason` is a per-component string union (Tabs: `"trigger-press" | "keyboard"`; Dialog `onOpenChange`: `"close-button" | "escape-key" | "outside-press" | "programmatic"`; DropdownMenu adds `"item-press" | "item-keyboard"`). The callback runs *before* the update; `details.cancel()` keeps the current state and skips side effects such as closing. Use it instead of re-deriving intent from events:
+  ```tsx
+  <DropdownMenu render={<Button>Edit</Button>} onOpenChange={(open, d) => {
+    if (!open && d.reason === "item-keyboard") d.cancel(); // stay open for keyboard users
+  }}>…</DropdownMenu>
+  ```
+  In a controlled component, not updating your state already keeps the value; `cancel()` makes it explicit. Custom elements: the same `reason` is on the existing event's `detail`, and the event is cancelable (`event.preventDefault()`).
+- **Filtering.** Combobox and CommandPalette rank results with a fuzzy match and underline matched characters. Pass `filter={(text, query) => score}` (0 hides) to replace it; `fuzzyScore` / `fuzzyFilter` are exported for your own lists.
 - **Form fields** (TextField, Textarea, Select, Combobox, TagInput, NumberField, ColorPicker, Slider, FileUpload):
   - `label` is required: it's the accessible name, rendered as a real `<label>`. To hide it visually, use `hideLabel`. Never drop it.
   - The rest of the scaffold: `description`, `invalid` plus `errorMessage` (shown instead of the description), `disabled` and `required`.
@@ -34,6 +43,7 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
   - Icon-only Buttons need `aria-label`.
   - `--kernel-icon-size` and `--kernel-icon-stroke-width` tune a whole icon set.
 - **ARIA.** Don't add ARIA that the native element already provides, such as `role="button"` on `<Button>`.
+- **One `<h1>` per page.** No Kernel component renders the page heading (`Header` is a landmark, not a heading), so add it yourself; axe flags a page without one.
 - **Global setup.** Nothing needs a provider except `<ToastViewport>` (mount once, then call `toast()`) and `<CommandPalette>`.
 
 ## Choosing components for common jobs
@@ -57,6 +67,10 @@ Kernel components wrap real elements: `<Button>` is a `<button>`, `<Dialog>` is 
 - **Nested controls.** Anything inside a rounded box needs at least `outer radius − inner radius` of inset at the corner.
 - **Clickable elements are controls.** Never put `onClick` on a `<div>` or `<span>`: use `Button`.
 - **Colours you add meet APCA.** Text needs Lc 75 (Lc 60 for secondary text), and thin outlines need Lc 45, with WCAG 2's 4.5:1 and 3:1 as floors. Kernel's own tokens already meet these, so prefer them.
+
+## Letting an agent use the UI
+
+If the app should be usable by an in-page agent (an assistant panel, or a browser agent through WebMCP), use `@kernelui-lib/agent`: `useAgentBridge({ root, registerTools: true })` from `@kernelui-lib/agent/react`. It reads the real roles and labels, so correctly labelled Kernel components need no extra wiring. Mark risky controls with `data-kernel-agent-confirm`, pass a `confirm` that renders `ToolApproval` outside `root`, and put private regions in `data-kernel-agent-ignore`. Guide: https://www.kernelui.com/agent-bridge/
 
 ## When you're unsure
 
