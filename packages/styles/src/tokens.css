@@ -454,6 +454,9 @@
     /* ---------------------------------------------------------------- */
     /* Space: one unit, every gap and pad is a multiple of it           */
     /* ---------------------------------------------------------------- */
+    /* The default is the "comfortable" density. `data-kernel-density`
+       (see the density block after this one) swaps the unit for a whole
+       subtree and makes everything built from it re-resolve there. */
     --kernel-space-unit: 0.25rem;
     --kernel-space-1: calc(var(--kernel-space-unit) * 1);
     --kernel-space-2: calc(var(--kernel-space-unit) * 2);
@@ -665,6 +668,18 @@
     --kernel-blur-md: 6px;
     --kernel-blur-backdrop: 8px;
 
+    /* Translucency — how much of a see-through surface is actually
+       surface. -glass is a sticky bar that content scrolls under
+       (Header's `sticky`); -frost is a scrim that blurs what's behind it
+       (Dialog's `backdrop="blur"`, CommandPalette's `blur`). Components mix
+       these into their own colour (`color-mix(in oklch, <colour>
+       var(--kernel-opacity-glass), transparent)`) rather than reading a
+       pre-mixed colour token, so a subtree that overrides
+       --kernel-color-surface still gets its own surface back. Both go to
+       100% under prefers-reduced-transparency (below). */
+    --kernel-opacity-glass: 85%;
+    --kernel-opacity-frost: 70%;
+
     /* ---------------------------------------------------------------- */
     /* Elevation                                                        */
     /* ---------------------------------------------------------------- */
@@ -725,6 +740,101 @@
        another) stays a small local `z-index`, which is correct — not an
        arbitrary global value. */
     --kernel-z-overlay: 100;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Density                                                            */
+  /* ------------------------------------------------------------------ */
+  /*
+   * `data-kernel-density="compact" | "comfortable"` on any element sets the
+   * density for everything inside it. "comfortable" is the default, the
+   * spacing Kernel has always shipped, so it never needs writing on :root;
+   * it exists to put a comfortable island back inside a compact page.
+   *
+   * compact is a 3px unit instead of 4px: every gap, padding and control
+   * height drops by a quarter, and the type scale doesn't move — density is
+   * about how much room sits around the text, not how big the text is. 3px
+   * is the floor because it keeps the small control height at 24px, the
+   * WCAG 2.2 minimum target size (2.5.8); go lower and `size="sm"` controls
+   * stop being reliably hittable.
+   *
+   * Why the block below repeats formulas from :root: a custom property
+   * built with calc() resolves on the element that declares it, and
+   * descendants inherit the *result*. Changing --kernel-space-unit on a
+   * <section> would change nothing, because --kernel-space-4 was already
+   * worked out from :root's unit. So every token derived from the unit is
+   * declared again on any element carrying the attribute, and re-resolves
+   * there. The container/sheet radii come along because they're derived
+   * from the padding: a compact padding under a comfortable-sized curve
+   * would break the clearance rule in AGENTS.md at Round.
+   *
+   * Any value of the attribute re-resolves the derived set, so a custom
+   * unit works on a subtree too:
+   *   <section data-kernel-density="custom" style="--kernel-space-unit: 0.3rem">
+   *
+   * One consequence to know: a derived token you pin yourself on :root
+   * (`--kernel-radius-container: 0` for square cards, say) is recomputed
+   * inside a density scope like the rest. Pin it on both:
+   *   :root, [data-kernel-density] { --kernel-radius-container: 0; }
+   *
+   * These formulas mirror the :root declarations above exactly;
+   * scripts/check-shape-pairing.mjs fails if the two drift.
+   */
+  [data-kernel-density] {
+    --kernel-space-1: calc(var(--kernel-space-unit) * 1);
+    --kernel-space-2: calc(var(--kernel-space-unit) * 2);
+    --kernel-space-3: calc(var(--kernel-space-unit) * 3);
+    --kernel-space-4: calc(var(--kernel-space-unit) * 4);
+    --kernel-space-6: calc(var(--kernel-space-unit) * 6);
+    --kernel-space-8: calc(var(--kernel-space-unit) * 8);
+    --kernel-space-12: calc(var(--kernel-space-unit) * 12);
+    --kernel-padding-container: var(--kernel-space-4);
+    --kernel-padding-sheet: var(--kernel-space-6);
+    --kernel-radius-container: calc(var(--kernel-radius-md) + var(--kernel-padding-container));
+    --kernel-radius-sheet: calc(var(--kernel-radius-md) + var(--kernel-padding-sheet));
+    --kernel-padding-container-curve: calc(
+      var(--kernel-padding-container) + var(--kernel-radius-base) * 0.4
+    );
+    --kernel-padding-sheet-curve: calc(
+      var(--kernel-padding-sheet) + var(--kernel-radius-base) * 0.4
+    );
+    --kernel-label-inset: var(--kernel-space-3);
+    --kernel-control-height-sm: calc(var(--kernel-space-unit) * 8);
+    --kernel-control-height-md: calc(var(--kernel-space-unit) * 10);
+    --kernel-control-height-lg: calc(var(--kernel-space-unit) * 12);
+    --kernel-control-inset: var(--kernel-space-1);
+    --kernel-radius-control-inner: max(
+      0px,
+      calc(var(--kernel-radius-control) - var(--kernel-control-inset))
+    );
+  }
+
+  [data-kernel-density="comfortable"] {
+    --kernel-space-unit: 0.25rem;
+  }
+
+  [data-kernel-density="compact"] {
+    --kernel-space-unit: 0.1875rem;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Reduced transparency                                               */
+  /* ------------------------------------------------------------------ */
+  /* People who turn on "Reduce transparency" (macOS, iOS, Windows) find
+     content showing through a surface hard to read past. Every see-through
+     surface in Kernel reads one of these tokens, so they go solid here in
+     one place: glass and frost become fully opaque, backdrop blur stops,
+     and the modal scrim gets dark enough that the page behind it stops
+     competing with the dialog. The scrim stays a little short of black on
+     purpose: a fully opaque wash hides that the page is still there, which
+     reads as navigating away rather than opening something on top. */
+  @media (prefers-reduced-transparency: reduce) {
+    :root {
+      --kernel-opacity-glass: 100%;
+      --kernel-opacity-frost: 100%;
+      --kernel-blur-backdrop: 0px;
+      --kernel-color-scrim: oklch(0% 0 0 / 0.8);
+    }
   }
 
   [data-theme="light"] {

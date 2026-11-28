@@ -56,6 +56,19 @@ const lines = tokens.map((line) => ({ tokens: line }));
       at connect, so the code is real page content before any script runs.
     </p>
 
+    <h2>Wrapping</h2>
+    <p>
+      Long lines scroll sideways by default, because code reads best with its
+      author's own line breaks. In a narrow column (a chat message, a phone)
+      set <code>wrap</code> (the <code>wrap</code> attribute on
+      <code>&lt;kernel-code-block&gt;</code>) and lines wrap instead, keeping
+      their indentation and breaking anywhere a long identifier or URL needs
+      to. Every line is a row of one CSS subgrid, so the number column is as
+      wide as the widest number and each number stays on the first visual
+      line of its wrapped line.
+    </p>
+    <pre class="docs-pre"><code>{`<CodeBlock code={source} showLineNumbers wrap />`}</code></pre>
+
     <h2>Stable streaming</h2>
     <p>
       Lines are keyed by index, so appending output re-renders only the last

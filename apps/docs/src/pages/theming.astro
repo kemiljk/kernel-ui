@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import DocsSidebar from "../components/DocsSidebar.astro";
 import CodeBlock from "../components/CodeBlock.astro";
+import DensityDemo from "../components/demos/DensityDemo";
 
 const overrideSnippet = `@import "@kernelui-lib/styles";
 
@@ -31,6 +32,22 @@ const layerResetSnippet = `/* Layer order is set by first mention, so this goes 
 }`;
 
 const presetSnippet =`<html data-kernel-accent="violet">`;
+
+const densitySnippet = `<!-- The whole app -->
+<html data-kernel-density="compact">
+
+<!-- Or one dense panel in a comfortable page -->
+<aside data-kernel-density="compact">…</aside>
+
+<!-- A custom unit on a subtree: any value re-resolves the scale -->
+<section data-kernel-density="custom" style="--kernel-space-unit: 0.3rem">…</section>`;
+
+const densityPinSnippet = `/* Square cards everywhere, including inside density scopes. */
+:root,
+[data-kernel-density] {
+  --kernel-radius-container: 0;
+  --kernel-radius-sheet: 0;
+}`;
 
 const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
 --kernel-accent-3   through -5   component background (rest / hover / pressed)
@@ -175,6 +192,37 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       its own gap value.
     </p>
 
+    <h2 id="density">Density</h2>
+    <p>
+      Two presets ship as an attribute:{" "}
+      <code>data-kernel-density="comfortable"</code> (the default, the spacing
+      every component already has) and{" "}
+      <code>data-kernel-density="compact"</code>. Put it on{" "}
+      <code>&lt;html&gt;</code> for the whole app, or on any element for just
+      what's inside it: a dense data panel, a toolbar, a settings sidebar.
+      Inside a compact scope, <code>comfortable</code> puts the default back.
+    </p>
+    <DensityDemo client:visible />
+    <CodeBlock code={densitySnippet} lang="html" />
+    <p>
+      Compact is a 3px unit instead of 4px, so every gap, padding and control
+      height drops by a quarter. The type scale doesn't move: density is how
+      much room sits around text, not how big the text is. 3px is as low as
+      it goes because it keeps <code>size="sm"</code> controls at 24px, the
+      WCAG 2.2 minimum target size.
+    </p>
+    <p>
+      It works on a subtree because the attribute re-declares every token
+      built from the unit (the space scale, control heights, container
+      padding and the radii derived from it). A <code>calc()</code> custom
+      property resolves where it's declared and descendants inherit the
+      result, so changing <code>--kernel-space-unit</code> alone on a{" "}
+      <code>&lt;section&gt;</code> would change nothing. The same goes the
+      other way: a derived token you pin yourself on <code>:root</code> is
+      recomputed inside a density scope like the rest, so pin it on both.
+    </p>
+    <CodeBlock code={densityPinSnippet} lang="css" />
+
     <h2>Elevation</h2>
     <p>
       <code>--kernel-shadow-sm/md/lg</code> are baked multi-layer shadows,
@@ -184,6 +232,35 @@ const scaleSnippet = `--kernel-accent-1   through -2   backgrounds
       falloff contrast through <code>light-dark()</code>, so cards,
       popovers, menus, and dialogs keep their depth in either theme.
     </p>
+
+    <h2 id="accessibility-preferences">Accessibility preferences</h2>
+    <p>
+      Two operating-system settings change how components draw, with nothing
+      to configure:
+    </p>
+    <ul>
+      <li>
+        <strong>Forced colours</strong> (Windows High Contrast, matched by{" "}
+        <code>@media (forced-colors: active)</code>). The browser repaints
+        everything in the user's own palette and drops backgrounds and
+        shadows, which is where a lot of state lives: a checked switch, a
+        selected tab, a slider's fill, the current page. Every component that
+        shows state that way redraws it in system colours instead
+        (<code>Highlight</code> for selected or on, <code>CanvasText</code>{" "}
+        for edges). Focus rings are outlines throughout, which the repaint keeps.
+      </li>
+      <li>
+        <strong>Reduced transparency</strong>
+        (<code>prefers-reduced-transparency: reduce</code>). See-through
+        surfaces turn solid: the sticky Header's glass, the blurred Dialog
+        and Command Palette scrims, and the scrim itself gets darker. It's
+        done in the tokens (<code>--kernel-opacity-glass</code>,{" "}
+        <code>--kernel-opacity-frost</code>,{" "}
+        <code>--kernel-blur-backdrop</code>,{" "}
+        <code>--kernel-color-scrim</code>), so a surface of your own that
+        mixes in those tokens follows the setting too.
+      </li>
+    </ul>
 
     <h2>Type and motion</h2>
     <p>

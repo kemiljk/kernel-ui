@@ -410,3 +410,19 @@
     transition: none;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the sheet, which relies on its shadow for an edge, would
+   have none, and the drag handle would vanish. System colours survive the
+   repaint, so the state comes back in Highlight/HighlightText and the edges
+   in CanvasText. */
+@media (forced-colors: active) {
+  .sheet {
+    border: var(--kernel-border-width) solid CanvasText;
+  }
+
+  .handleBar {
+    background: CanvasText;
+  }
+}

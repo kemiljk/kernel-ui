@@ -228,3 +228,18 @@ kernel-attachment-list {
     transition: none;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the upload progress bar would vanish. System colours
+   survive the repaint, so the state comes back in Highlight/HighlightText
+   and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Attachment-progress::-webkit-progress-value {
+    background-color: Highlight;
+  }
+
+  .kernel-Attachment-progress::-moz-progress-bar {
+    background-color: Highlight;
+  }
+}

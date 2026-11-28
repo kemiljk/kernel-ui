@@ -311,3 +311,42 @@ a.kernel-DropdownMenu-item {
   .kernel-DropdownMenu-disclosure::details-content,
   .kernel-DropdownMenu-content.kernel-DropdownMenu-disclosureContent { transition: none; }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the highlighted item (an accent-tinted background) would
+   vanish. ContextMenu shares these item styles. System colours survive the
+   repaint, so the state comes back in Highlight/HighlightText and the edges
+   in CanvasText. Anything with text on a Highlight fill also sets
+   forced-color-adjust: none, or the browser paints a Canvas backplate behind
+   the text and hides it. */
+@media (forced-colors: active) {
+  /* Hover is a highlight too, and listing the component's own hover
+     selectors here is what beats their tinted fills. */
+  .kernel-DropdownMenu-item[data-highlighted],
+  .kernel-DropdownMenu-item:focus-visible,
+  .kernel-DropdownMenu-item:hover:not(:disabled),
+  .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    outline-color: CanvasText;
+  }
+
+  .kernel-DropdownMenu-item[data-highlighted],
+  .kernel-DropdownMenu-item:focus-visible,
+  .kernel-DropdownMenu-item:hover:not(:disabled),
+  .kernel-DropdownMenu-item[data-destructive]:hover:not(:disabled),
+  .kernel-DropdownMenu-item[data-highlighted] *,
+  .kernel-DropdownMenu-item:focus-visible *,
+  .kernel-DropdownMenu-item:hover:not(:disabled) * {
+    color: HighlightText;
+  }
+
+  .kernel-DropdownMenu-item:disabled {
+    color: GrayText;
+  }
+
+  .kernel-DropdownMenu-separator {
+    background-color: CanvasText;
+  }
+}

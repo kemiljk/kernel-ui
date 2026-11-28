@@ -17,6 +17,10 @@ import CopyButton from "../CopyButton";
 /** --kernel-space-unit in px. 4 is the library default (0.25rem). */
 const DENSITY = { min: 3, max: 5, step: 0.5, default: 4 };
 
+/** Slider stops that match a `data-kernel-density` preset in
+ * @kernelui-lib/styles. The default (4px, "comfortable") needs no attribute. */
+const DENSITY_PRESETS: Record<number, string> = { 3: "compact" };
+
 const PANEL_ID = "theme-panel";
 /** Below this the panel would cover most of the page; a sheet takes over. */
 const NARROW_QUERY = "(width < 800px)";
@@ -27,17 +31,28 @@ function capitalise(name: string) {
 
 function cssFor(accent: AccentName, radiusName: string, unit: number) {
   const radius = RADII.find((option) => option.name === radiusName) ?? RADII[0]!;
+  const density = DENSITY_PRESETS[unit];
   const lines = [`  --kernel-radius-base: ${radius.value};`];
   if (radius.control) lines.push(`  --kernel-radius-control: ${radius.control};`);
-  if (radius.container) lines.push(`  --kernel-radius-container: ${radius.container};`);
-  if (radius.sheet) lines.push(`  --kernel-radius-sheet: ${radius.sheet};`);
-  if (unit !== DENSITY.default) lines.push(`  --kernel-space-unit: ${unit / 16}rem;`);
-  return `<html data-kernel-accent="${accent}">
+  // A preset is an attribute, not a number to copy: it's what lets the
+  // same density be set on one panel instead of the whole page.
+  if (!density && unit !== DENSITY.default) lines.push(`  --kernel-space-unit: ${unit / 16}rem;`);
+  // The container radii are derived from padding, and a density scope
+  // re-derives them, so a pinned value has to be pinned there as well.
+  const pinned: string[] = [];
+  if (radius.container) pinned.push(`  --kernel-radius-container: ${radius.container};`);
+  if (radius.sheet) pinned.push(`  --kernel-radius-sheet: ${radius.sheet};`);
+  const attributes = [`data-kernel-accent="${accent}"`];
+  if (density) attributes.push(`data-kernel-density="${density}"`);
+  const pinnedBlock = pinned.length
+    ? `\n\n:root,\n[data-kernel-density] {\n${pinned.join("\n")}\n}`
+    : "";
+  return `<html ${attributes.join(" ")}>
 
 <style>
 :root {
 ${lines.join("\n")}
-}
+}${pinnedBlock}
 </style>`;
 }
 
@@ -90,6 +105,7 @@ export default function ThemeBuilder() {
     return () => {
       window.removeEventListener(THEME_CHANGE_EVENT, sync);
       document.documentElement.style.removeProperty("--kernel-space-unit");
+      document.documentElement.removeAttribute("data-kernel-density");
     };
   }, []);
 
@@ -102,10 +118,17 @@ export default function ThemeBuilder() {
     const anchor = document.elementFromPoint(window.innerWidth * 0.3, window.innerHeight / 2);
     const anchored = anchor && !anchor.closest(".theme-panel-scope") ? anchor : null;
     const before = anchored?.getBoundingClientRect().top;
-    if (next === DENSITY.default) {
-      document.documentElement.style.removeProperty("--kernel-space-unit");
+    // A preset stop applies the real attribute, so the page is showing
+    // exactly what the snippet beside the slider says; in-between stops
+    // set the unit directly.
+    const root = document.documentElement;
+    const preset = DENSITY_PRESETS[next];
+    if (preset) root.setAttribute("data-kernel-density", preset);
+    else root.removeAttribute("data-kernel-density");
+    if (next === DENSITY.default || preset) {
+      root.style.removeProperty("--kernel-space-unit");
     } else {
-      document.documentElement.style.setProperty("--kernel-space-unit", `${next / 16}rem`);
+      root.style.setProperty("--kernel-space-unit", `${next / 16}rem`);
     }
     if (anchored && before !== undefined) {
       window.scrollBy({ top: anchored.getBoundingClientRect().top - before, behavior: "instant" });

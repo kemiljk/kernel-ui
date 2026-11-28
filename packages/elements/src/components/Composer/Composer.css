@@ -120,3 +120,16 @@
     opacity: 0.4;
   }
 }
+
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the border, an inset box-shadow, would vanish and leave
+   the field with no edge. System colours survive the repaint, so the state
+   comes back in Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .kernel-Composer-root,
+  .kernel-Composer-root[data-thinking] {
+    outline: var(--kernel-border-width) solid CanvasText;
+    outline-offset: calc(var(--kernel-border-width) * -1);
+  }
+}

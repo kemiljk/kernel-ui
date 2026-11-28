@@ -126,3 +126,38 @@
   }
 }
 
+/* Forced colours (Windows High Contrast). The browser repaints the page in
+   the user's system palette and drops backgrounds, gradients and
+   box-shadows, so the thumb and the checked fill would vanish. System
+   colours survive the repaint, so the state comes back in
+   Highlight/HighlightText and the edges in CanvasText. */
+@media (forced-colors: active) {
+  .thumb {
+    background-color: CanvasText;
+  }
+
+  .control[data-state="checked"] {
+    background-color: Highlight;
+    border-color: Highlight;
+  }
+
+  .control[data-state="checked"] .thumb {
+    background-color: HighlightText;
+  }
+
+  .control:disabled {
+    border-color: GrayText;
+  }
+
+  .control:disabled .thumb {
+    background-color: GrayText;
+  }
+
+  .control[data-state="checked"]:disabled {
+    background-color: GrayText;
+  }
+
+  .control[data-state="checked"]:disabled .thumb {
+    background-color: Canvas;
+  }
+}
