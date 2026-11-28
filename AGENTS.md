@@ -240,6 +240,11 @@ new component done, grep both `packages/react/src/index.ts` and
   double-clicks a disclosure.
 - `bun run test:contrast` (`scripts/check-contrast.mjs`) — APCA and WCAG 2
   targets for the semantic colour tokens, every preset, light and dark.
+
+- `bun run test:parity` (`scripts/check-parity.mjs`) — fails when a
+  registry entry's React export or custom element tag is missing from
+  either package, or the two packages' component folders differ. CI runs
+  it alongside `test:shape` and `test:svg`.
 - `bun run test:svg` (`scripts/check-svg-size.mjs`) — fails on any inline
   `<svg>` without `width`/`height` attributes. A `viewBox` alone renders at
   the browser's 300×150 default when component CSS is absent, so give every
