@@ -7,14 +7,50 @@ import type { GlobalOptions } from "../lib/types.js";
 
 const SERVER = { command: "npx", args: ["-y", "@kernelui-lib/cli", "mcp"] };
 
-/** Where each client reads project-level MCP config, and the shape it wants. */
+/** Where each JSON-config client reads project-level MCP config, and the shape it wants. */
 const CLIENTS = {
   claude: { file: ".mcp.json", key: "mcpServers", entry: SERVER },
   cursor: { file: ".cursor/mcp.json", key: "mcpServers", entry: SERVER },
   vscode: { file: ".vscode/mcp.json", key: "servers", entry: { type: "stdio", ...SERVER } },
 } as const;
 
-type Client = keyof typeof CLIENTS;
+/** Codex reads TOML, not JSON: a [mcp_servers.<name>] table in
+ * .codex/config.toml (project scope, used once the project is trusted) or
+ * ~/.codex/config.toml. */
+const CODEX_FILE = ".codex/config.toml";
+const CODEX_BLOCK = `[mcp_servers.kernel]
+command = "npx"
+args = ["-y", "@kernelui-lib/cli", "mcp"]
+`;
+
+type Client = keyof typeof CLIENTS | "codex";
+const CLIENT_NAMES = [...Object.keys(CLIENTS), "codex"];
+
+/** Replaces our own [mcp_servers.kernel] table (and nothing else), or appends it. */
+export function mergeCodexToml(existing: string) {
+  const lines = existing.split("\n");
+  const start = lines.findIndex((line) => line.trim() === "[mcp_servers.kernel]");
+  if (start === -1) return `${existing.trimEnd()}${existing.trim() ? "\n\n" : ""}${CODEX_BLOCK}`;
+  let end = start + 1;
+  // A sub-table of ours ([mcp_servers.kernel.env]) belongs to the block too.
+  while (end < lines.length && !(/^\s*\[/.test(lines[end]!) && !/^\s*\[mcp_servers\.kernel\./.test(lines[end]!))) end++;
+  const after = lines.slice(end).join("\n").replace(/^\n+/, "");
+  return [...lines.slice(0, start), CODEX_BLOCK.trimEnd(), ...(after ? ["", after] : [])].join("\n").trimEnd() + "\n";
+}
+
+async function initCodex(global: GlobalOptions) {
+  const file = path.join(global.cwd, CODEX_FILE);
+  const next = mergeCodexToml(existsSync(file) ? await readFile(file, "utf8") : "");
+  if (global.dryRun) {
+    info(`Would write ${CODEX_FILE}:`);
+    log(next);
+    return;
+  }
+  await mkdir(path.dirname(file), { recursive: true });
+  await writeFile(file, next, "utf8");
+  success(`Added the Kernel MCP server to ${CODEX_FILE}`);
+  info("Codex loads project config once you trust the project. Restart Codex to pick it up.");
+}
 
 async function version() {
   const pkg = await import("../../package.json", { with: { type: "json" } });
@@ -24,10 +60,11 @@ async function version() {
 export async function initMcp(global: GlobalOptions, rest: string[]) {
   const flag = rest.find((arg) => arg.startsWith("--client"));
   const client = !flag ? "claude" : flag.includes("=") ? flag.split("=")[1]! : (rest[rest.indexOf(flag) + 1] ?? "claude");
-  if (!(client in CLIENTS)) {
-    throw new Error(`Unknown client "${client}". Use one of: ${Object.keys(CLIENTS).join(", ")}.`);
+  if (!CLIENT_NAMES.includes(client)) {
+    throw new Error(`Unknown client "${client}". Use one of: ${CLIENT_NAMES.join(", ")}.`);
   }
-  const target = CLIENTS[client as Client];
+  if (client === "codex") return initCodex(global);
+  const target = CLIENTS[client as keyof typeof CLIENTS];
   const file = path.join(global.cwd, target.file);
 
   // Merge into an existing config rather than replacing other servers.

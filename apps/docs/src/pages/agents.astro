@@ -8,6 +8,7 @@ const oneStepSnippet = `npx @kernelui-lib/cli agents`;
 const clientsSnippet = `npx @kernelui-lib/cli agents                   # Claude Code: .claude/skills + .mcp.json
 npx @kernelui-lib/cli agents --client cursor   # Cursor: .cursor/mcp.json
 npx @kernelui-lib/cli agents --client vscode   # VS Code: .vscode/mcp.json
+npx @kernelui-lib/cli agents --client codex    # Codex: .codex/config.toml
 npx @kernelui-lib/cli agents --dir .agents/skills --no-mcp   # skills only, anywhere`;
 
 const manualMcpSnippet = `{
@@ -15,6 +16,11 @@ const manualMcpSnippet = `{
     "kernel": { "command": "npx", "args": ["-y", "@kernelui-lib/cli", "mcp"] }
   }
 }`;
+
+const codexSnippet = `# .codex/config.toml (or ~/.codex/config.toml)
+[mcp_servers.kernel]
+command = "npx"
+args = ["-y", "@kernelui-lib/cli", "mcp"]`;
 
 const promptSnippet = `Build this UI with Kernel UI (@kernelui-lib/react). Before writing markup,
 look up components and their exact props with the kernel MCP server (or
@@ -70,6 +76,8 @@ const checkSnippet = `npx @kernelui-lib/cli check src/**/*.tsx`;
       MCP client by hand:
     </p>
     <CodeBlock code={manualMcpSnippet} lang="tsx" />
+    <p>Codex reads TOML instead:</p>
+    <CodeBlock code={codexSnippet} lang="bash" />
     <div class="docs-table-scroll"><table class="docs-table">
       <caption>Tools the Kernel MCP server provides.</caption>
       <thead><tr><th scope="col">Tool</th><th scope="col">What it gives the agent</th></tr></thead>
